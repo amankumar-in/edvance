@@ -1,6 +1,11 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 
+// TOGGLE THIS VARIABLE TO ALLOW/BLOCK ADMIN REGISTRATION
+// Set to true to allow platform_admin registration
+// Set to false to block platform_admin registration
+const ALLOW_ADMIN_REGISTRATION = true;
+
 // Register new user
 exports.register = async (req, res) => {
   try {
@@ -15,13 +20,25 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Create new user
+    // Create new user - with toggle for admin registration
+    let finalRoles;
+    if (ALLOW_ADMIN_REGISTRATION) {
+      // Original behavior - allow any role including platform_admin
+      finalRoles = roles || ["student"];
+    } else {
+      // Filter out platform_admin role
+      const allowedRoles = (roles || ["student"]).filter(
+        (role) => role !== "platform_admin"
+      );
+      finalRoles = allowedRoles.length ? allowedRoles : ["student"];
+    }
+
     const newUser = new User({
       email,
       password,
       firstName,
       lastName,
-      roles: roles || ["student"],
+      roles: finalRoles,
     });
 
     await newUser.save();

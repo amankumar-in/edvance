@@ -6,18 +6,21 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 // Import routes
-const authRoutes = require("./routes/auth.routes");
+const pointAccountRoutes = require("./routes/pointAccount.routes");
+const pointTransactionRoutes = require("./routes/pointTransaction.routes");
+const schoolPointPolicyRoutes = require("./routes/schoolPointPolicy.routes"); // Add this line
+const pointLimitRoutes = require("./routes/pointLimit.routes"); // Add this line
 
 // Environment variables
 const NODE_ENV = process.env.NODE_ENV || "development";
 const PORT =
   NODE_ENV === "production"
-    ? process.env.PRODUCTION_AUTH_PORT
-    : process.env.AUTH_PORT || 3001;
+    ? process.env.PRODUCTION_POINTS_PORT
+    : process.env.POINTS_PORT || 3004;
 const HOST =
   NODE_ENV === "production"
-    ? process.env.PRODUCTION_AUTH_HOST
-    : process.env.AUTH_HOST || "0.0.0.0";
+    ? process.env.PRODUCTION_POINTS_HOST
+    : process.env.POINTS_HOST || "0.0.0.0";
 const NETWORK_IP = process.env.NETWORK_IP || "192.168.1.23";
 const MONGO_URI =
   NODE_ENV === "production"
@@ -33,16 +36,20 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-// Routes
+// Health check route
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
-    message: "Auth Service is running",
+    message: "Points Service is running",
     environment: NODE_ENV,
   });
 });
 
-app.use("/api/auth", authRoutes);
+// API Routes - include full path prefixes to match gateway routing
+app.use("/api/points/accounts", pointAccountRoutes);
+app.use("/api/points/transactions", pointTransactionRoutes);
+app.use("/api/points", schoolPointPolicyRoutes); // Add this line
+app.use("/api/points/limits", pointLimitRoutes); // Add this line
 
 // MongoDB connection
 const connectDB = async () => {
@@ -57,7 +64,7 @@ const connectDB = async () => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error("Auth Service Error:", err);
+  console.error("Points Service Error:", err);
   res.status(500).json({
     success: false,
     message: "Internal Server Error",
@@ -75,7 +82,7 @@ const startServer = async () => {
 
     app.listen(PORT, HOST, () => {
       console.log(
-        `Auth Service running at http://${
+        `Points Service running at http://${
           HOST === "0.0.0.0" ? "localhost" : HOST
         }:${PORT}`
       );
