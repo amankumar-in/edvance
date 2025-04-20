@@ -8,6 +8,7 @@
         └── package.json
         └── 📁src
             └── index.js
+            └── swagger.js
     └── 📁auth-service
         └── .env
         └── .env.example
@@ -51,6 +52,7 @@
                 └── pointTransaction.routes.js
                 └── schoolPointPolicy.routes.js
         └── .env
+        └── .env.example
         └── package-lock.json
         └── package.json
         └── 📁src

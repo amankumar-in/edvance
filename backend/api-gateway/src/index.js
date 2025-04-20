@@ -8,6 +8,8 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 require("dotenv").config();
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./swagger"); // the file you just created
 
 // Environment variables
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -61,6 +63,15 @@ app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(morgan("dev"));
+
+// Serve the Swagger UI at http://localhost:<PORT>/docs
+app.use("/devdocs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Optional: serve the raw JSON at /docs/swagger.json
+app.get("/docs/swagger.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -120,6 +131,13 @@ createServiceProxy("/api/users", USER_SERVICE_URL);
 createServiceProxy("/api/students", USER_SERVICE_URL);
 createServiceProxy("/api/parents", USER_SERVICE_URL);
 createServiceProxy("/api/teachers", USER_SERVICE_URL);
+createServiceProxy("/api/attendance", USER_SERVICE_URL);
+createServiceProxy("/api/link-requests", USER_SERVICE_URL);
+createServiceProxy("/api/badges", USER_SERVICE_URL);
+createServiceProxy("/api/classes", USER_SERVICE_URL);
+createServiceProxy("/api/search", USER_SERVICE_URL);
+createServiceProxy("/api/social-workers", USER_SERVICE_URL);
+
 createServiceProxy("/api/tasks", TASK_SERVICE_URL);
 createServiceProxy("/api/points", POINTS_SERVICE_URL);
 createServiceProxy("/api/rewards", REWARDS_SERVICE_URL);
