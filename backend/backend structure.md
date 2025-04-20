@@ -73,7 +73,26 @@
                 └── pointConfiguration.routes.js
                 └── pointTransaction.routes.js
     └── 📁rewards-service
+        └── controller
+        └── model
+        └── redemption model
+        └── redemptioncontroller
     └── 📁task-service
+        └── 📁src
+            └── 📁controllers
+                └── task.controller.js
+                └── taskCategory.controller.js
+                └── taskTemplate.controller.js
+            └── 📁middleware
+                └── auth.middleware.js
+            └── 📁models
+                └── task.model.js
+                └── taskCategory.model.js
+                └── taskTemplate.model.js
+            └── 📁routes
+                └── task.routes.js
+                └── taskCategory.routes.js
+                └── taskTemplate.routes.js
     └── 📁user-service
         └── .env
         └── .env.example

@@ -1,0 +1,232 @@
+const mongoose = require("mongoose");
+
+const redemptionSchema = new mongoose.Schema({
+  // Reference to the reward
+  rewardId: {
+    type: String,
+    required: true,
+    index: true,
+  },
+  // Reference to the student who redeemed
+  studentId: {
+    type: String,
+    required: true,
+    index: true,
+  },
+  // Cost in Scholarship Points (SP)
+  pointsSpent: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  // Reward snapshot at time of redemption (in case reward changes later)
+  rewardSnapshot: {
+    name: String,
+    description: String,
+    cost: Number,
+    image: String,
+    provider: String,
+    providerId: String,
+    type: String,
+    category: String,
+    redemptionType: String,
+  },
+  // Redemption status
+  status: {
+    type: String,
+    enum: [
+      "pending",
+      "approved",
+      "fulfilled",
+      "rejected",
+      "cancelled",
+      "expired",
+    ],
+    default: "pending",
+    index: true,
+  },
+  // For rewards requiring approval
+  approvedBy: {
+    type: String, // User ID of approver
+  },
+  approvedAt: {
+    type: Date,
+  },
+  // For rewards requiring fulfillment
+  fulfilledBy: {
+    type: String, // User ID of fulfiller
+  },
+  fulfilledAt: {
+    type: Date,
+  },
+  // For rejected redemptions
+  rejectedBy: {
+    type: String,
+  },
+  rejectedAt: {
+    type: Date,
+  },
+  rejectionReason: {
+    type: String,
+  },
+  // For generated redemption codes
+  redemptionCode: {
+    type: String,
+    trim: true,
+  },
+  // For QR code redemptions
+  redemptionQrCode: {
+    type: String, // URL or data for QR code
+  },
+  // For voucher or physical redemptions
+  pickupLocation: {
+    type: String,
+  },
+  pickupInstructions: {
+    type: String,
+  },
+  // For tracking when redemption expires
+  expiresAt: {
+    type: Date,
+  },
+  // Student note during redemption
+  studentNote: {
+    type: String,
+  },
+  // Provider/Admin note during fulfillment
+  fulfillmentNote: {
+    type: String,
+  },
+  // For audit and tracking
+  pointTransactionId: {
+    type: String, // ID of the point transaction
+    index: true,
+  },
+  // Metadata and timestamps
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+// Indexes for common queries
+redemptionSchema.index({ status: 1, createdAt: -1 });
+redemptionSchema.index({ rewardId: 1, status: 1 });
+redemptionSchema.index({ providerId: 1, status: 1 });
+redemptionSchema.index({ studentId: 1, createdAt: -1 });
+
+// Middleware to update the updatedAt field
+redemptionSchema.pre("save", function (next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+// Method to approve a redemption
+redemptionSchema.methods.approve = async function (approverId) {
+  if (this.status !== "pending") {
+    throw new Error(`Cannot approve redemption with status: ${this.status}`);
+  }
+
+  this.status = "approved";
+  this.approvedBy = approverId;
+  this.approvedAt = new Date();
+
+  return await this.save();
+};
+
+// Method to fulfill a redemption
+redemptionSchema.methods.fulfill = async function (fulfillerId, note) {
+  if (this.status !== "approved" && this.status !== "pending") {
+    throw new Error(`Cannot fulfill redemption with status: ${this.status}`);
+  }
+
+  this.status = "fulfilled";
+  this.fulfilledBy = fulfillerId;
+  this.fulfilledAt = new Date();
+
+  if (note) {
+    this.fulfillmentNote = note;
+  }
+
+  return await this.save();
+};
+
+// Method to reject a redemption
+redemptionSchema.methods.reject = async function (rejecterId, reason) {
+  if (this.status !== "pending" && this.status !== "approved") {
+    throw new Error(`Cannot reject redemption with status: ${this.status}`);
+  }
+
+  this.status = "rejected";
+  this.rejectedBy = rejecterId;
+  this.rejectedAt = new Date();
+
+  if (reason) {
+    this.rejectionReason = reason;
+  }
+
+  return await this.save();
+};
+
+// Method to cancel a redemption
+redemptionSchema.methods.cancel = async function (reason) {
+  if (this.status !== "pending") {
+    throw new Error(`Cannot cancel redemption with status: ${this.status}`);
+  }
+
+  this.status = "cancelled";
+  this.rejectionReason = reason || "Cancelled by user";
+
+  return await this.save();
+};
+
+// Static method to find pending redemptions for a provider
+redemptionSchema.statics.findPendingForProvider = async function (providerId) {
+  return await this.find({
+    status: "pending",
+    "rewardSnapshot.providerId": providerId,
+  }).sort({ createdAt: 1 });
+};
+
+// Static method to find all redemptions for a student
+redemptionSchema.statics.findByStudent = async function (studentId, status) {
+  const query = { studentId };
+
+  if (status) {
+    query.status = status;
+  }
+
+  return await this.find(query).sort({ createdAt: -1 });
+};
+
+// Static method to find expired redemptions
+redemptionSchema.statics.findExpired = async function () {
+  const now = new Date();
+
+  return await this.find({
+    expiresAt: { $lt: now },
+    status: "pending",
+  });
+};
+
+// Static method to mark expired redemptions
+redemptionSchema.statics.markExpired = async function () {
+  const now = new Date();
+
+  return await this.updateMany(
+    {
+      expiresAt: { $lt: now },
+      status: "pending",
+    },
+    {
+      $set: { status: "expired" },
+    }
+  );
+};
+
+module.exports = mongoose.model("Redemption", redemptionSchema);

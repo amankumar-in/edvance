@@ -1,0 +1,778 @@
+const Redemption = require("../models/redemption.model");
+const Reward = require("../models/reward.model");
+const axios = require("axios");
+
+// Get all redemptions with filtering (admin only)
+exports.getRedemptions = async (req, res) => {
+  try {
+    // Only platform admins can see all redemptions
+    if (!req.user.roles.includes("platform_admin")) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied: insufficient permissions",
+      });
+    }
+
+    const {
+      status,
+      studentId,
+      rewardId,
+      providerId,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    // Build query
+    const query = {};
+
+    // Filter by status
+    if (status) {
+      query.status = status;
+    }
+
+    // Filter by student
+    if (studentId) {
+      query.studentId = studentId;
+    }
+
+    // Filter by reward
+    if (rewardId) {
+      query.rewardId = rewardId;
+    }
+
+    // Filter by provider
+    if (providerId) {
+      query["rewardSnapshot.providerId"] = providerId;
+    }
+
+    // Filter by date range
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.createdAt.$lte = new Date(endDate);
+      }
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+    // Execute query with pagination
+    const redemptions = await Redemption.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get total count for pagination
+    const total = await Redemption.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        redemptions,
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(total / parseInt(limit)),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get redemptions error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get redemptions",
+      error: error.message,
+    });
+  }
+};
+
+// Get redemption details by ID
+exports.getRedemptionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const redemption = await Redemption.findById(id);
+
+    if (!redemption) {
+      return res.status(404).json({
+        success: false,
+        message: "Redemption not found",
+      });
+    }
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      req.user.id === redemption.studentId ||
+      (redemption.rewardSnapshot.provider === "school" &&
+        (req.user.roles.includes("school_admin") ||
+          req.user.roles.includes("teacher")) &&
+        redemption.rewardSnapshot.providerId === req.user.schoolId) ||
+      (redemption.rewardSnapshot.provider === "family" &&
+        redemption.rewardSnapshot.providerId === req.user.id);
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this redemption",
+      });
+    }
+
+    // Additional reward information can be fetched if needed
+    let rewardInfo = null;
+    try {
+      const reward = await Reward.findById(redemption.rewardId);
+      if (reward) {
+        rewardInfo = {
+          available: reward.available,
+          currentQuantity: reward.quantityAvailable
+            ? reward.quantityAvailable - reward.quantityRedeemed
+            : null,
+        };
+      }
+    } catch (rewardError) {
+      console.error("Error fetching reward info:", rewardError);
+      // Continue without reward info
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        redemption,
+        rewardInfo,
+      },
+    });
+  } catch (error) {
+    console.error("Get redemption by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get redemption",
+      error: error.message,
+    });
+  }
+};
+
+// Update redemption details (admin/provider only)
+exports.updateRedemption = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      redemptionCode,
+      pickupLocation,
+      pickupInstructions,
+      expiresAt,
+      fulfillmentNote,
+    } = req.body;
+
+    const redemption = await Redemption.findById(id);
+
+    if (!redemption) {
+      return res.status(404).json({
+        success: false,
+        message: "Redemption not found",
+      });
+    }
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      (redemption.rewardSnapshot.provider === "school" &&
+        (req.user.roles.includes("school_admin") ||
+          req.user.roles.includes("teacher")) &&
+        redemption.rewardSnapshot.providerId === req.user.schoolId) ||
+      (redemption.rewardSnapshot.provider === "family" &&
+        redemption.rewardSnapshot.providerId === req.user.id);
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this redemption",
+      });
+    }
+
+    // Can only update if not cancelled or expired
+    if (redemption.status === "cancelled" || redemption.status === "expired") {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot update redemption with status: ${redemption.status}`,
+      });
+    }
+
+    // Update fields if provided
+    if (redemptionCode !== undefined) {
+      redemption.redemptionCode = redemptionCode;
+    }
+
+    if (pickupLocation !== undefined) {
+      redemption.pickupLocation = pickupLocation;
+    }
+
+    if (pickupInstructions !== undefined) {
+      redemption.pickupInstructions = pickupInstructions;
+    }
+
+    if (expiresAt !== undefined) {
+      redemption.expiresAt = expiresAt;
+    }
+
+    if (fulfillmentNote !== undefined) {
+      redemption.fulfillmentNote = fulfillmentNote;
+    }
+
+    // Save updates
+    redemption.updatedAt = new Date();
+    await redemption.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Redemption updated successfully",
+      data: redemption,
+    });
+  } catch (error) {
+    console.error("Update redemption error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update redemption",
+      error: error.message,
+    });
+  }
+};
+
+// Get redemptions summary for provider
+exports.getProviderRedemptionsSummary = async (req, res) => {
+  try {
+    let providerId;
+    let providerType;
+
+    // Determine provider ID based on user role
+    if (req.user.roles.includes("platform_admin")) {
+      providerId = req.query.providerId || "system";
+      providerType = req.query.providerType || "system";
+    } else if (
+      req.user.roles.includes("school_admin") ||
+      req.user.roles.includes("teacher")
+    ) {
+      providerId = req.user.schoolId;
+      providerType = "school";
+    } else if (req.user.roles.includes("parent")) {
+      providerId = req.user.id;
+      providerType = "family";
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "User role not authorized to view redemption summary",
+      });
+    }
+
+    // Count redemptions by status
+    const pendingCount = await Redemption.countDocuments({
+      "rewardSnapshot.provider": providerType,
+      "rewardSnapshot.providerId": providerId,
+      status: "pending",
+    });
+
+    const approvedCount = await Redemption.countDocuments({
+      "rewardSnapshot.provider": providerType,
+      "rewardSnapshot.providerId": providerId,
+      status: "approved",
+    });
+
+    const fulfilledCount = await Redemption.countDocuments({
+      "rewardSnapshot.provider": providerType,
+      "rewardSnapshot.providerId": providerId,
+      status: "fulfilled",
+    });
+
+    const rejectedCount = await Redemption.countDocuments({
+      "rewardSnapshot.provider": providerType,
+      "rewardSnapshot.providerId": providerId,
+      status: "rejected",
+    });
+
+    const cancelledCount = await Redemption.countDocuments({
+      "rewardSnapshot.provider": providerType,
+      "rewardSnapshot.providerId": providerId,
+      status: "cancelled",
+    });
+
+    // Get recent pending redemptions
+    const pendingRedemptions = await Redemption.find({
+      "rewardSnapshot.provider": providerType,
+      "rewardSnapshot.providerId": providerId,
+      status: "pending",
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Get total redemptions
+    const totalCount =
+      pendingCount +
+      approvedCount +
+      fulfilledCount +
+      rejectedCount +
+      cancelledCount;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        summary: {
+          total: totalCount,
+          pending: pendingCount,
+          approved: approvedCount,
+          fulfilled: fulfilledCount,
+          rejected: rejectedCount,
+          cancelled: cancelledCount,
+        },
+        recentPending: pendingRedemptions,
+      },
+    });
+  } catch (error) {
+    console.error("Get provider redemptions summary error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get redemptions summary",
+      error: error.message,
+    });
+  }
+};
+
+// Get student redemption summary
+exports.getStudentRedemptionsSummary = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      req.user.id === studentId ||
+      (req.user.roles.includes("parent") &&
+        req.user.childIds?.includes(studentId)) ||
+      req.user.roles.includes("teacher") ||
+      req.user.roles.includes("school_admin");
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this student's redemption summary",
+      });
+    }
+
+    // Count redemptions by status
+    const pendingCount = await Redemption.countDocuments({
+      studentId,
+      status: "pending",
+    });
+
+    const approvedCount = await Redemption.countDocuments({
+      studentId,
+      status: "approved",
+    });
+
+    const fulfilledCount = await Redemption.countDocuments({
+      studentId,
+      status: "fulfilled",
+    });
+
+    const rejectedCount = await Redemption.countDocuments({
+      studentId,
+      status: "rejected",
+    });
+
+    const cancelledCount = await Redemption.countDocuments({
+      studentId,
+      status: "cancelled",
+    });
+
+    // Get recent redemptions
+    const recentRedemptions = await Redemption.find({
+      studentId,
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Get total points spent
+    const totalSpent = await Redemption.aggregate([
+      { $match: { studentId, status: { $nin: ["rejected", "cancelled"] } } },
+      { $group: { _id: null, total: { $sum: "$pointsSpent" } } },
+    ]);
+
+    const pointsSpent = totalSpent.length > 0 ? totalSpent[0].total : 0;
+
+    // Get redemptions by provider type
+    const byProvider = await Redemption.aggregate([
+      { $match: { studentId } },
+      {
+        $group: {
+          _id: "$rewardSnapshot.provider",
+          count: { $sum: 1 },
+          pointsSpent: { $sum: "$pointsSpent" },
+        },
+      },
+      {
+        $project: {
+          provider: "$_id",
+          count: 1,
+          pointsSpent: 1,
+          _id: 0,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        summary: {
+          total:
+            pendingCount +
+            approvedCount +
+            fulfilledCount +
+            rejectedCount +
+            cancelledCount,
+          pending: pendingCount,
+          approved: approvedCount,
+          fulfilled: fulfilledCount,
+          rejected: rejectedCount,
+          cancelled: cancelledCount,
+          pointsSpent,
+        },
+        recentRedemptions,
+        byProvider,
+      },
+    });
+  } catch (error) {
+    console.error("Get student redemptions summary error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get redemptions summary",
+      error: error.message,
+    });
+  }
+};
+
+// Process expired redemptions (admin/system only)
+exports.processExpiredRedemptions = async (req, res) => {
+  try {
+    // Only platform admin or system can process expired redemptions
+    if (
+      !req.user.roles.includes("platform_admin") &&
+      req.user.id !== "system"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to process expired redemptions",
+      });
+    }
+
+    // Find and mark expired redemptions
+    const result = await Redemption.markExpired();
+
+    // For each newly expired redemption, process refund
+    if (result.modifiedCount > 0) {
+      try {
+        // Get the list of newly expired redemptions
+        const newlyExpired = await Redemption.find({
+          status: "expired",
+          // Look for ones that were updated in the last minute to catch the ones we just processed
+          updatedAt: { $gte: new Date(Date.now() - 60000) },
+        });
+
+        // Process refunds for each
+        for (const redemption of newlyExpired) {
+          try {
+            // Create point transaction to refund points
+            const pointsServiceUrl =
+              process.env.POINTS_SERVICE_URL || "http://localhost:3004";
+            await axios.post(
+              `${pointsServiceUrl}/api/points/transactions`,
+              {
+                studentId: redemption.studentId,
+                amount: redemption.pointsSpent, // Positive for refund
+                type: "adjusted",
+                source: "redemption",
+                sourceId: redemption.rewardId,
+                description: `Refund for expired reward: ${redemption.rewardSnapshot.name}`,
+                awardedBy: "system",
+                awardedByRole: "system",
+                metadata: {
+                  rewardId: redemption.rewardId,
+                  redemptionId: redemption._id,
+                  refundReason: "Redemption expired",
+                },
+              },
+              {
+                headers: {
+                  Authorization: req.headers.authorization,
+                },
+              }
+            );
+
+            // If the refund succeeded, update the reward's quantity if applicable
+            const reward = await Reward.findById(redemption.rewardId);
+            if (reward && reward.quantityAvailable !== undefined) {
+              reward.quantityRedeemed = Math.max(
+                0,
+                reward.quantityRedeemed - 1
+              );
+              await reward.save();
+            }
+          } catch (refundError) {
+            console.error(
+              `Error refunding points for redemption ${redemption._id}:`,
+              refundError
+            );
+            // Continue with other refunds
+          }
+        }
+      } catch (refundProcessError) {
+        console.error(
+          "Error processing refunds for expired redemptions:",
+          refundProcessError
+        );
+        // Continue but log the error
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Marked ${result.modifiedCount} redemptions as expired`,
+      data: {
+        modifiedCount: result.modifiedCount,
+      },
+    });
+  } catch (error) {
+    console.error("Process expired redemptions error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to process expired redemptions",
+      error: error.message,
+    });
+  }
+};
+
+// Generate reports on redemption activity
+exports.generateRedemptionsReport = async (req, res) => {
+  try {
+    // Only platform admin, school admin, or teacher can generate reports
+    if (
+      !req.user.roles.includes("platform_admin") &&
+      !req.user.roles.includes("school_admin") &&
+      !req.user.roles.includes("teacher")
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to generate redemption reports",
+      });
+    }
+
+    const {
+      startDate,
+      endDate,
+      providerId,
+      providerType,
+      studentId,
+      groupBy = "day",
+    } = req.query;
+
+    // Validate date range
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date and end date are required",
+      });
+    }
+
+    // Build match query
+    const match = {
+      createdAt: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    };
+
+    // If provider is specified
+    if (providerType && providerId) {
+      match["rewardSnapshot.provider"] = providerType;
+      match["rewardSnapshot.providerId"] = providerId;
+    } else {
+      // If no provider specified, limit based on user role
+      if (
+        req.user.roles.includes("school_admin") ||
+        req.user.roles.includes("teacher")
+      ) {
+        match["rewardSnapshot.provider"] = "school";
+        match["rewardSnapshot.providerId"] = req.user.schoolId;
+      }
+    }
+
+    // If studentId is provided
+    if (studentId) {
+      match.studentId = studentId;
+    }
+
+    // Group by time period
+    let groupByFormat;
+    if (groupBy === "day") {
+      groupByFormat = {
+        $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+      };
+    } else if (groupBy === "week") {
+      groupByFormat = {
+        $dateToString: {
+          format: "%Y-W%U",
+          date: "$createdAt",
+        },
+      };
+    } else if (groupBy === "month") {
+      groupByFormat = {
+        $dateToString: { format: "%Y-%m", date: "$createdAt" },
+      };
+    }
+
+    // Aggregate data
+    const timeline = await Redemption.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: {
+            period: groupByFormat,
+            status: "$status",
+          },
+          count: { $sum: 1 },
+          pointsTotal: { $sum: "$pointsSpent" },
+        },
+      },
+      { $sort: { "_id.period": 1 } },
+      {
+        $group: {
+          _id: "$_id.period",
+          byStatus: {
+            $push: {
+              status: "$_id.status",
+              count: "$count",
+              pointsTotal: "$pointsTotal",
+            },
+          },
+          totalCount: { $sum: "$count" },
+          totalPoints: { $sum: "$pointsTotal" },
+        },
+      },
+      { $sort: { _id: 1 } },
+      {
+        $project: {
+          period: "$_id",
+          byStatus: 1,
+          totalCount: 1,
+          totalPoints: 1,
+          _id: 0,
+        },
+      },
+    ]);
+
+    // Get summary by reward type
+    const byRewardType = await Redemption.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: "$rewardSnapshot.type",
+          count: { $sum: 1 },
+          pointsTotal: { $sum: "$pointsSpent" },
+        },
+      },
+      {
+        $project: {
+          type: "$_id",
+          count: 1,
+          pointsTotal: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Get summary by reward category
+    const byRewardCategory = await Redemption.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: "$rewardSnapshot.category",
+          count: { $sum: 1 },
+          pointsTotal: { $sum: "$pointsSpent" },
+        },
+      },
+      {
+        $project: {
+          category: "$_id",
+          count: 1,
+          pointsTotal: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Get total stats
+    const totalStats = await Redemption.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: null,
+          totalRedemptions: { $sum: 1 },
+          totalPointsSpent: { $sum: "$pointsSpent" },
+          uniqueStudents: { $addToSet: "$studentId" },
+          uniqueRewards: { $addToSet: "$rewardId" },
+        },
+      },
+      {
+        $project: {
+          totalRedemptions: 1,
+          totalPointsSpent: 1,
+          uniqueStudentsCount: { $size: "$uniqueStudents" },
+          uniqueRewardsCount: { $size: "$uniqueRewards" },
+          _id: 0,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        timeline,
+        byRewardType,
+        byRewardCategory,
+        summary:
+          totalStats.length > 0
+            ? totalStats[0]
+            : {
+                totalRedemptions: 0,
+                totalPointsSpent: 0,
+                uniqueStudentsCount: 0,
+                uniqueRewardsCount: 0,
+              },
+        filters: {
+          startDate,
+          endDate,
+          providerId,
+          providerType,
+          studentId,
+          groupBy,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Generate redemptions report error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate redemptions report",
+      error: error.message,
+    });
+  }
+};

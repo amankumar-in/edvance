@@ -1,0 +1,1382 @@
+const Reward = require("../models/reward.model");
+const Redemption = require("../models/redemption.model");
+const axios = require("axios");
+
+// Create a new reward
+exports.createReward = async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      cost,
+      image,
+      provider,
+      schoolId,
+      sponsorId,
+      sponsorName,
+      category,
+      type,
+      availableFrom,
+      availableUntil,
+      quantityAvailable,
+      limitPerStudent,
+      limitPerPeriod,
+      limitPeriodType,
+      eligibility,
+      redemptionInstructions,
+      redemptionType,
+      redemptionCode,
+      requiresApproval,
+      approvalRoles,
+      scholarshipDetails,
+      tags,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !cost) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and cost are required",
+      });
+    }
+
+    // Determine provider type based on user role if not specified
+    let providerType = provider;
+    let providerId;
+
+    if (!providerType) {
+      if (req.user.roles.includes("platform_admin")) {
+        providerType = "system";
+        providerId = "system";
+      } else if (req.user.roles.includes("school_admin")) {
+        providerType = "school";
+        providerId = schoolId || req.body.schoolId;
+      } else if (req.user.roles.includes("teacher")) {
+        providerType = "school";
+        providerId = schoolId || req.body.schoolId;
+      } else if (req.user.roles.includes("parent")) {
+        providerType = "family";
+        providerId = req.user.id;
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "User role not authorized to create rewards",
+        });
+      }
+    } else {
+      // If provider type is specified, ensure user has appropriate role
+      if (
+        providerType === "system" &&
+        !req.user.roles.includes("platform_admin")
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Only platform admins can create system rewards",
+        });
+      } else if (
+        providerType === "school" &&
+        !(
+          req.user.roles.includes("school_admin") ||
+          req.user.roles.includes("teacher") ||
+          req.user.roles.includes("platform_admin")
+        )
+      ) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Only school admins, teachers, or platform admins can create school rewards",
+        });
+      } else if (
+        providerType === "family" &&
+        !(
+          req.user.roles.includes("parent") ||
+          req.user.roles.includes("platform_admin")
+        )
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Only parents or platform admins can create family rewards",
+        });
+      } else if (
+        providerType === "sponsor" &&
+        !req.user.roles.includes("platform_admin")
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Only platform admins can create sponsor rewards",
+        });
+      }
+
+      // Set providerId based on the provider type
+      if (providerType === "system") {
+        providerId = "system";
+      } else if (providerType === "school") {
+        providerId = schoolId;
+      } else if (providerType === "family") {
+        providerId = req.user.id;
+      } else if (providerType === "sponsor") {
+        providerId = sponsorId;
+      }
+    }
+
+    // Create new reward
+    const reward = new Reward({
+      name,
+      description,
+      cost,
+      image,
+      provider: providerType,
+      providerId,
+      schoolId: providerType === "school" ? schoolId : undefined,
+      parentId: providerType === "family" ? req.user.id : undefined,
+      sponsorId: providerType === "sponsor" ? sponsorId : undefined,
+      sponsorName: providerType === "sponsor" ? sponsorName : undefined,
+      category: category || "other",
+      type: type || "other",
+      availableFrom,
+      availableUntil,
+      quantityAvailable,
+      quantityRedeemed: 0,
+      limitPerStudent,
+      limitPerPeriod,
+      limitPeriodType,
+      eligibility,
+      redemptionInstructions,
+      redemptionType: redemptionType || "manual",
+      redemptionCode,
+      requiresApproval:
+        requiresApproval !== undefined ? requiresApproval : true,
+      approvalRoles,
+      scholarshipDetails,
+      tags,
+      createdBy: req.user.id,
+    });
+
+    // Save the reward
+    await reward.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Reward created successfully",
+      data: reward,
+    });
+  } catch (error) {
+    console.error("Create reward error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create reward",
+      error: error.message,
+    });
+  }
+};
+
+// Get all rewards with filtering
+exports.getRewards = async (req, res) => {
+  try {
+    const {
+      provider,
+      schoolId,
+      parentId,
+      sponsorId,
+      category,
+      type,
+      available,
+      minCost,
+      maxCost,
+      page = 1,
+      limit = 20,
+      sortBy = "cost",
+      sortOrder = "asc",
+    } = req.query;
+
+    // Build query
+    const query = {};
+
+    // Filter by provider
+    if (provider) {
+      query.provider = provider;
+    }
+
+    // Filter by schoolId
+    if (schoolId) {
+      query.schoolId = schoolId;
+    }
+
+    // Filter by parentId
+    if (parentId) {
+      query.parentId = parentId;
+    }
+
+    // Filter by sponsorId
+    if (sponsorId) {
+      query.sponsorId = sponsorId;
+    }
+
+    // Filter by category
+    if (category) {
+      query.category = category;
+    }
+
+    // Filter by type
+    if (type) {
+      query.type = type;
+    }
+
+    // Filter by availability
+    if (available !== undefined) {
+      query.available = available === "true";
+    }
+
+    // Filter by cost range
+    if (minCost !== undefined || maxCost !== undefined) {
+      query.cost = {};
+      if (minCost !== undefined) {
+        query.cost.$gte = parseInt(minCost);
+      }
+      if (maxCost !== undefined) {
+        query.cost.$lte = parseInt(maxCost);
+      }
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+    // Execute query with pagination
+    const rewards = await Reward.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get total count for pagination
+    const total = await Reward.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        rewards,
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(total / parseInt(limit)),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get rewards error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get rewards",
+      error: error.message,
+    });
+  }
+};
+
+// Get a single reward by ID
+exports.getRewardById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reward = await Reward.findById(id);
+
+    if (!reward) {
+      return res.status(404).json({
+        success: false,
+        message: "Reward not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: reward,
+    });
+  } catch (error) {
+    console.error("Get reward by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get reward",
+      error: error.message,
+    });
+  }
+};
+
+// Update a reward
+exports.updateReward = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      description,
+      cost,
+      image,
+      category,
+      type,
+      available,
+      availableFrom,
+      availableUntil,
+      quantityAvailable,
+      limitPerStudent,
+      limitPerPeriod,
+      limitPeriodType,
+      eligibility,
+      redemptionInstructions,
+      redemptionType,
+      redemptionCode,
+      requiresApproval,
+      approvalRoles,
+      scholarshipDetails,
+      tags,
+    } = req.body;
+
+    const reward = await Reward.findById(id);
+
+    if (!reward) {
+      return res.status(404).json({
+        success: false,
+        message: "Reward not found",
+      });
+    }
+
+    // Check authorization - only reward creator, provider, or admin can update
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      req.user.id === reward.createdBy ||
+      (req.user.roles.includes("school_admin") &&
+        reward.provider === "school" &&
+        reward.schoolId === req.user.schoolId) ||
+      (req.user.roles.includes("teacher") &&
+        reward.provider === "school" &&
+        reward.schoolId === req.user.schoolId) ||
+      (req.user.roles.includes("parent") &&
+        reward.provider === "family" &&
+        reward.parentId === req.user.id);
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this reward",
+      });
+    }
+
+    // Update fields
+    if (name) reward.name = name;
+    if (description !== undefined) reward.description = description;
+    if (cost) reward.cost = cost;
+    if (image !== undefined) reward.image = image;
+    if (category) reward.category = category;
+    if (type) reward.type = type;
+    if (available !== undefined) reward.available = available;
+    if (availableFrom !== undefined) reward.availableFrom = availableFrom;
+    if (availableUntil !== undefined) reward.availableUntil = availableUntil;
+    if (quantityAvailable !== undefined)
+      reward.quantityAvailable = quantityAvailable;
+    if (limitPerStudent !== undefined) reward.limitPerStudent = limitPerStudent;
+    if (limitPerPeriod !== undefined) reward.limitPerPeriod = limitPerPeriod;
+    if (limitPeriodType) reward.limitPeriodType = limitPeriodType;
+    if (eligibility)
+      reward.eligibility = { ...reward.eligibility, ...eligibility };
+    if (redemptionInstructions !== undefined)
+      reward.redemptionInstructions = redemptionInstructions;
+    if (redemptionType) reward.redemptionType = redemptionType;
+    if (redemptionCode !== undefined) reward.redemptionCode = redemptionCode;
+    if (requiresApproval !== undefined)
+      reward.requiresApproval = requiresApproval;
+    if (approvalRoles) reward.approvalRoles = approvalRoles;
+    if (scholarshipDetails)
+      reward.scholarshipDetails = {
+        ...reward.scholarshipDetails,
+        ...scholarshipDetails,
+      };
+    if (tags) reward.tags = tags;
+
+    reward.updatedBy = req.user.id;
+
+    // Save updates
+    await reward.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Reward updated successfully",
+      data: reward,
+    });
+  } catch (error) {
+    console.error("Update reward error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update reward",
+      error: error.message,
+    });
+  }
+};
+
+// Delete a reward (soft delete)
+exports.deleteReward = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reward = await Reward.findById(id);
+
+    if (!reward) {
+      return res.status(404).json({
+        success: false,
+        message: "Reward not found",
+      });
+    }
+
+    // Check authorization - only reward creator, provider, or admin can delete
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      req.user.id === reward.createdBy ||
+      (req.user.roles.includes("school_admin") &&
+        reward.provider === "school" &&
+        reward.schoolId === req.user.schoolId) ||
+      (req.user.roles.includes("teacher") &&
+        reward.provider === "school" &&
+        reward.schoolId === req.user.schoolId) ||
+      (req.user.roles.includes("parent") &&
+        reward.provider === "family" &&
+        reward.parentId === req.user.id);
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this reward",
+      });
+    }
+
+    // Soft delete
+    reward.isDeleted = true;
+    reward.available = false;
+    reward.updatedBy = req.user.id;
+    await reward.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Reward deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete reward error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete reward",
+      error: error.message,
+    });
+  }
+};
+
+// Redeem a reward
+exports.redeemReward = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { note } = req.body;
+    const studentId = req.user.id; // Student is the current user
+
+    // Get the reward
+    const reward = await Reward.findById(id);
+
+    if (!reward) {
+      return res.status(404).json({
+        success: false,
+        message: "Reward not found",
+      });
+    }
+
+    // Verify availability
+    if (!reward.available) {
+      return res.status(400).json({
+        success: false,
+        message: "Reward is not available",
+      });
+    }
+
+    // Check if reward is within availability dates
+    const now = new Date();
+    if (reward.availableFrom && new Date(reward.availableFrom) > now) {
+      return res.status(400).json({
+        success: false,
+        message: "Reward is not available yet",
+      });
+    }
+
+    if (reward.availableUntil && new Date(reward.availableUntil) < now) {
+      return res.status(400).json({
+        success: false,
+        message: "Reward availability has expired",
+      });
+    }
+
+    // Check quantity limits
+    if (
+      reward.quantityAvailable !== undefined &&
+      reward.quantityAvailable !== null &&
+      reward.quantityRedeemed >= reward.quantityAvailable
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Reward is out of stock",
+      });
+    }
+
+    // Check redemption limits
+    const limitCheck = await Reward.checkRedemptionLimits(
+      id,
+      studentId,
+      Redemption
+    );
+    if (!limitCheck.canRedeem) {
+      return res.status(400).json({
+        success: false,
+        message: limitCheck.reason,
+      });
+    }
+
+    // Verify student has enough points
+    try {
+      // Get student's point balance from Points service
+      const pointsServiceUrl =
+        process.env.POINTS_SERVICE_URL || "http://localhost:3004";
+      const balanceResponse = await axios.get(
+        `${pointsServiceUrl}/api/points/accounts/student/${studentId}/balance`,
+        {
+          headers: {
+            Authorization: req.headers.authorization,
+          },
+        }
+      );
+
+      const balance = balanceResponse.data.data.currentBalance;
+
+      if (balance < reward.cost) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient points. You have ${balance} SP, but the reward costs ${reward.cost} SP.`,
+        });
+      }
+    } catch (pointsError) {
+      console.error("Error checking point balance:", pointsError);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to verify point balance",
+        error: pointsError.message,
+      });
+    }
+
+    // Deduct points
+    let pointTransactionId;
+    try {
+      // Create point transaction to deduct points
+      const pointsServiceUrl =
+        process.env.POINTS_SERVICE_URL || "http://localhost:3004";
+      const pointTransactionResponse = await axios.post(
+        `${pointsServiceUrl}/api/points/transactions`,
+        {
+          studentId,
+          amount: -reward.cost, // Negative for spending
+          type: "spent",
+          source: "redemption",
+          sourceId: id,
+          description: `Redeemed reward: ${reward.name}`,
+          awardedBy: "system",
+          awardedByRole: "system",
+          metadata: {
+            rewardId: id,
+            rewardName: reward.name,
+            rewardProvider: reward.provider,
+            rewardProviderId: reward.providerId,
+          },
+        },
+        {
+          headers: {
+            Authorization: req.headers.authorization,
+          },
+        }
+      );
+
+      pointTransactionId = pointTransactionResponse.data.data.transaction._id;
+    } catch (transactionError) {
+      console.error("Error creating point transaction:", transactionError);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to deduct points",
+        error: transactionError.message,
+      });
+    }
+
+    // Create redemption record
+    const redemption = new Redemption({
+      rewardId: id,
+      studentId,
+      pointsSpent: reward.cost,
+      rewardSnapshot: {
+        name: reward.name,
+        description: reward.description,
+        cost: reward.cost,
+        image: reward.image,
+        provider: reward.provider,
+        providerId: reward.providerId,
+        type: reward.type,
+        category: reward.category,
+        redemptionType: reward.redemptionType,
+      },
+      status: reward.requiresApproval ? "pending" : "approved", // Auto-approve if not requiring approval
+      studentNote: note,
+      pointTransactionId,
+    });
+
+    // Set expiration if applicable
+    if (reward.availableUntil) {
+      redemption.expiresAt = reward.availableUntil;
+    } else {
+      // Default expiration: 30 days
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+      redemption.expiresAt = expiresAt;
+    }
+
+    // For auto-redemption rewards (like digital codes)
+    if (reward.redemptionType === "code" && reward.redemptionCode) {
+      redemption.redemptionCode = reward.redemptionCode;
+
+      // If it has a code and doesn't require approval, mark as fulfilled
+      if (!reward.requiresApproval) {
+        redemption.status = "fulfilled";
+        redemption.fulfilledBy = "system";
+        redemption.fulfilledAt = new Date();
+      }
+    }
+
+    await redemption.save();
+
+    // Update reward's quantity redeemed
+    if (
+      reward.quantityAvailable !== undefined &&
+      reward.quantityAvailable !== null
+    ) {
+      await reward.decrementQuantity();
+    }
+
+    // Return response based on redemption status
+    if (redemption.status === "pending") {
+      res.status(200).json({
+        success: true,
+        message: "Reward redeemed successfully, waiting for approval",
+        data: redemption,
+      });
+    } else if (
+      redemption.status === "approved" ||
+      redemption.status === "fulfilled"
+    ) {
+      res.status(200).json({
+        success: true,
+        message: "Reward redeemed and approved successfully",
+        data: redemption,
+      });
+    }
+  } catch (error) {
+    console.error("Redeem reward error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to redeem reward",
+      error: error.message,
+    });
+  }
+};
+
+// Approve a redemption
+exports.approveRedemption = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const redemption = await Redemption.findById(id);
+
+    if (!redemption) {
+      return res.status(404).json({
+        success: false,
+        message: "Redemption not found",
+      });
+    }
+
+    // Get the associated reward
+    const reward = await Reward.findById(redemption.rewardId);
+
+    if (!reward) {
+      return res.status(404).json({
+        success: false,
+        message: "Associated reward not found",
+      });
+    }
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      (reward.provider === "school" &&
+        (req.user.roles.includes("school_admin") ||
+          req.user.roles.includes("teacher")) &&
+        reward.schoolId === req.user.schoolId) ||
+      (reward.provider === "family" && req.user.id === reward.parentId) ||
+      (reward.provider === "sponsor" &&
+        req.user.roles.includes("platform_admin"));
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to approve this redemption",
+      });
+    }
+
+    // Check if redemption is pending
+    if (redemption.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot approve redemption with status: ${redemption.status}`,
+      });
+    }
+
+    // Approve the redemption
+    await redemption.approve(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Redemption approved successfully",
+      data: redemption,
+    });
+  } catch (error) {
+    console.error("Approve redemption error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to approve redemption",
+      error: error.message,
+    });
+  }
+};
+
+// Fulfill a redemption
+exports.fulfillRedemption = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { note, redemptionCode, pickupLocation, pickupInstructions } =
+      req.body;
+
+    const redemption = await Redemption.findById(id);
+
+    if (!redemption) {
+      return res.status(404).json({
+        success: false,
+        message: "Redemption not found",
+      });
+    }
+
+    // Get the associated reward
+    const reward = await Reward.findById(redemption.rewardId);
+
+    if (!reward) {
+      return res.status(404).json({
+        success: false,
+        message: "Associated reward not found",
+      });
+    }
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      (reward.provider === "school" &&
+        (req.user.roles.includes("school_admin") ||
+          req.user.roles.includes("teacher")) &&
+        reward.schoolId === req.user.schoolId) ||
+      (reward.provider === "family" && req.user.id === reward.parentId) ||
+      (reward.provider === "sponsor" &&
+        req.user.roles.includes("platform_admin"));
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to fulfill this redemption",
+      });
+    }
+
+    // Check if redemption can be fulfilled
+    if (redemption.status !== "approved" && redemption.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot fulfill redemption with status: ${redemption.status}`,
+      });
+    }
+
+    // Update redemption details if provided
+    if (redemptionCode) {
+      redemption.redemptionCode = redemptionCode;
+    }
+
+    if (pickupLocation) {
+      redemption.pickupLocation = pickupLocation;
+    }
+
+    if (pickupInstructions) {
+      redemption.pickupInstructions = pickupInstructions;
+    }
+
+    // Mark as fulfilled
+    await redemption.fulfill(req.user.id, note);
+
+    res.status(200).json({
+      success: true,
+      message: "Redemption fulfilled successfully",
+      data: redemption,
+    });
+  } catch (error) {
+    console.error("Fulfill redemption error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fulfill redemption",
+      error: error.message,
+    });
+  }
+};
+
+// Reject a redemption
+exports.rejectRedemption = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const redemption = await Redemption.findById(id);
+
+    if (!redemption) {
+      return res.status(404).json({
+        success: false,
+        message: "Redemption not found",
+      });
+    }
+
+    // Get the associated reward
+    const reward = await Reward.findById(redemption.rewardId);
+
+    if (!reward) {
+      return res.status(404).json({
+        success: false,
+        message: "Associated reward not found",
+      });
+    }
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      (reward.provider === "school" &&
+        (req.user.roles.includes("school_admin") ||
+          req.user.roles.includes("teacher")) &&
+        reward.schoolId === req.user.schoolId) ||
+      (reward.provider === "family" && req.user.id === reward.parentId) ||
+      (reward.provider === "sponsor" &&
+        req.user.roles.includes("platform_admin"));
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to reject this redemption",
+      });
+    }
+
+    // Check if redemption can be rejected
+    if (redemption.status !== "pending" && redemption.status !== "approved") {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot reject redemption with status: ${redemption.status}`,
+      });
+    }
+
+    // Process refund for the points
+    try {
+      // Create point transaction to refund points
+      const pointsServiceUrl =
+        process.env.POINTS_SERVICE_URL || "http://localhost:3004";
+      await axios.post(
+        `${pointsServiceUrl}/api/points/transactions`,
+        {
+          studentId: redemption.studentId,
+          amount: redemption.pointsSpent, // Positive for refund
+          type: "adjusted",
+          source: "redemption",
+          sourceId: redemption.rewardId,
+          description: `Refund for rejected reward: ${redemption.rewardSnapshot.name}`,
+          awardedBy: req.user.id,
+          awardedByRole: req.user.roles[0],
+          metadata: {
+            rewardId: redemption.rewardId,
+            redemptionId: redemption._id,
+            refundReason: reason || "Rejected by provider",
+          },
+        },
+        {
+          headers: {
+            Authorization: req.headers.authorization,
+          },
+        }
+      );
+    } catch (refundError) {
+      console.error("Error refunding points:", refundError);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to refund points",
+        error: refundError.message,
+      });
+    }
+
+    // Reject the redemption
+    await redemption.reject(req.user.id, reason);
+
+    // If the reward has quantity tracking, decrement the redeemed count
+    if (
+      reward.quantityAvailable !== undefined &&
+      reward.quantityAvailable !== null
+    ) {
+      reward.quantityRedeemed = Math.max(0, reward.quantityRedeemed - 1);
+      await reward.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Redemption rejected and points refunded",
+      data: redemption,
+    });
+  } catch (error) {
+    console.error("Reject redemption error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to reject redemption",
+      error: error.message,
+    });
+  }
+};
+
+// Cancel a redemption (by student)
+exports.cancelRedemption = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const studentId = req.user.id;
+
+    const redemption = await Redemption.findById(id);
+
+    if (!redemption) {
+      return res.status(404).json({
+        success: false,
+        message: "Redemption not found",
+      });
+    }
+
+    // Check if this is the student's redemption
+    if (redemption.studentId !== studentId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to cancel this redemption",
+      });
+    }
+
+    // Can only cancel if pending
+    if (redemption.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel redemption with status: ${redemption.status}`,
+      });
+    }
+
+    // Process refund for the points
+    try {
+      // Create point transaction to refund points
+      const pointsServiceUrl =
+        process.env.POINTS_SERVICE_URL || "http://localhost:3004";
+      await axios.post(
+        `${pointsServiceUrl}/api/points/transactions`,
+        {
+          studentId: redemption.studentId,
+          amount: redemption.pointsSpent, // Positive for refund
+          type: "adjusted",
+          source: "redemption",
+          sourceId: redemption.rewardId,
+          description: `Refund for cancelled reward: ${redemption.rewardSnapshot.name}`,
+          awardedBy: "system",
+          awardedByRole: "system",
+          metadata: {
+            rewardId: redemption.rewardId,
+            redemptionId: redemption._id,
+            refundReason: reason || "Cancelled by student",
+          },
+        },
+        {
+          headers: {
+            Authorization: req.headers.authorization,
+          },
+        }
+      );
+    } catch (refundError) {
+      console.error("Error refunding points:", refundError);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to refund points",
+        error: refundError.message,
+      });
+    }
+
+    // Cancel the redemption
+    await redemption.cancel(reason);
+
+    // Update reward quantity if applicable
+    const reward = await Reward.findById(redemption.rewardId);
+    if (
+      reward &&
+      reward.quantityAvailable !== undefined &&
+      reward.quantityAvailable !== null
+    ) {
+      reward.quantityRedeemed = Math.max(0, reward.quantityRedeemed - 1);
+      await reward.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Redemption cancelled and points refunded",
+      data: redemption,
+    });
+  } catch (error) {
+    console.error("Cancel redemption error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel redemption",
+      error: error.message,
+    });
+  }
+};
+
+// Get student redemption history
+exports.getStudentRedemptions = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { status, page = 1, limit = 20 } = req.query;
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      req.user.id === studentId ||
+      (req.user.roles.includes("parent") &&
+        req.user.childIds?.includes(studentId)) ||
+      req.user.roles.includes("teacher") ||
+      req.user.roles.includes("school_admin");
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this student's redemptions",
+      });
+    }
+
+    // Build query
+    const query = { studentId };
+    if (status) {
+      query.status = status;
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Execute query with pagination
+    const redemptions = await Redemption.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get total count
+    const total = await Redemption.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        redemptions,
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(total / parseInt(limit)),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get student redemptions error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get redemption history",
+      error: error.message,
+    });
+  }
+};
+
+// Get provider pending redemptions
+exports.getProviderPendingRedemptions = async (req, res) => {
+  try {
+    let providerId;
+
+    // Determine providerId based on user role
+    if (req.user.roles.includes("platform_admin")) {
+      providerId = req.query.providerId || "system";
+    } else if (
+      req.user.roles.includes("school_admin") ||
+      req.user.roles.includes("teacher")
+    ) {
+      providerId = req.user.schoolId;
+    } else if (req.user.roles.includes("parent")) {
+      providerId = req.user.id;
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "User role not authorized to view pending redemptions",
+      });
+    }
+
+    // Get pending redemptions
+    const pendingRedemptions = await Redemption.findPendingForProvider(
+      providerId
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        redemptions: pendingRedemptions,
+        count: pendingRedemptions.length,
+      },
+    });
+  } catch (error) {
+    console.error("Get provider pending redemptions error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get pending redemptions",
+      error: error.message,
+    });
+  }
+};
+
+// Get redemption by ID
+exports.getRedemptionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const redemption = await Redemption.findById(id);
+
+    if (!redemption) {
+      return res.status(404).json({
+        success: false,
+        message: "Redemption not found",
+      });
+    }
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      req.user.id === redemption.studentId ||
+      (redemption.rewardSnapshot.provider === "school" &&
+        (req.user.roles.includes("school_admin") ||
+          req.user.roles.includes("teacher")) &&
+        redemption.rewardSnapshot.providerId === req.user.schoolId) ||
+      (redemption.rewardSnapshot.provider === "family" &&
+        redemption.rewardSnapshot.providerId === req.user.id) ||
+      (redemption.rewardSnapshot.provider === "sponsor" &&
+        req.user.roles.includes("platform_admin"));
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this redemption",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: redemption,
+    });
+  } catch (error) {
+    console.error("Get redemption by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get redemption",
+      error: error.message,
+    });
+  }
+};
+
+// Get available rewards for a student
+exports.getAvailableRewardsForStudent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { category, type, provider, page = 1, limit = 20 } = req.query;
+
+    // Check authorization
+    const isAuthorized =
+      req.user.roles.includes("platform_admin") ||
+      req.user.id === studentId ||
+      (req.user.roles.includes("parent") &&
+        req.user.childIds?.includes(studentId)) ||
+      req.user.roles.includes("teacher") ||
+      req.user.roles.includes("school_admin");
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view rewards for this student",
+      });
+    }
+
+    // Get student info to apply eligibility filters
+    // In a real implementation, you would fetch this from the user service
+    const studentInfo = {
+      grade: req.query.grade ? parseInt(req.query.grade) : undefined,
+      age: req.query.age ? parseInt(req.query.age) : undefined,
+      schoolId: req.query.schoolId,
+      region: req.query.region,
+    };
+
+    // Get available rewards for student
+    const query = {
+      available: true,
+      isDeleted: false,
+    };
+
+    // Apply additional filters
+    if (category) query.category = category;
+    if (type) query.type = type;
+    if (provider) query.provider = provider;
+
+    // Apply eligibility filters (simplified version - full implementation would be in Reward.findAvailableForStudent)
+    if (studentInfo.grade !== undefined) {
+      query.$or = query.$or || [];
+      query.$or.push(
+        { "eligibility.minGrade": { $exists: false } },
+        { "eligibility.minGrade": null },
+        { "eligibility.minGrade": { $lte: studentInfo.grade } }
+      );
+
+      query.$or.push(
+        { "eligibility.maxGrade": { $exists: false } },
+        { "eligibility.maxGrade": null },
+        { "eligibility.maxGrade": { $gte: studentInfo.grade } }
+      );
+    }
+
+    if (studentInfo.schoolId) {
+      query.$or = query.$or || [];
+      query.$or.push(
+        { "eligibility.targetSchoolIds": { $exists: false } },
+        { "eligibility.targetSchoolIds": { $size: 0 } },
+        { "eligibility.targetSchoolIds": null },
+        { "eligibility.targetSchoolIds": studentInfo.schoolId },
+        { "eligibility.targetSchoolIds": { $in: [studentInfo.schoolId] } }
+      );
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Execute query with pagination
+    const rewards = await Reward.find(query)
+      .sort({ cost: 1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get total count
+    const total = await Reward.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        rewards,
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(total / parseInt(limit)),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get available rewards error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get available rewards",
+      error: error.message,
+    });
+  }
+};
+
+// Process expired redemptions
+exports.processExpiredRedemptions = async (req, res) => {
+  try {
+    // Only system or platform admin can trigger this
+    if (
+      !req.user.roles.includes("platform_admin") &&
+      req.user.id !== "system"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to process expired redemptions",
+      });
+    }
+
+    // Mark expired redemptions
+    const result = await Redemption.markExpired();
+
+    res.status(200).json({
+      success: true,
+      message: `Marked ${result.modifiedCount} redemptions as expired`,
+      data: {
+        modifiedCount: result.modifiedCount,
+      },
+    });
+  } catch (error) {
+    console.error("Process expired redemptions error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to process expired redemptions",
+      error: error.message,
+    });
+  }
+};
+
+// Get reward categories and types (for dropdown lists)
+exports.getRewardCategories = async (req, res) => {
+  try {
+    // Hard-coded for now, but could be dynamic based on system configuration
+    const categories = [
+      { value: "privilege", label: "Privilege" },
+      { value: "material", label: "Material Item" },
+      { value: "experience", label: "Experience" },
+      { value: "recognition", label: "Recognition" },
+      { value: "scholarship", label: "Scholarship" },
+      { value: "other", label: "Other" },
+    ];
+
+    const types = [
+      { value: "digital", label: "Digital" },
+      { value: "physical", label: "Physical Item" },
+      { value: "service", label: "Service" },
+      { value: "privilege", label: "Privilege" },
+      { value: "other", label: "Other" },
+    ];
+
+    const providers = [
+      { value: "family", label: "Family" },
+      { value: "school", label: "School" },
+      { value: "sponsor", label: "Sponsor" },
+      { value: "system", label: "System" },
+    ];
+
+    res.status(200).json({
+      success: true,
+      data: {
+        categories,
+        types,
+        providers,
+      },
+    });
+  } catch (error) {
+    console.error("Get reward categories error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get reward categories",
+      error: error.message,
+    });
+  }
+};

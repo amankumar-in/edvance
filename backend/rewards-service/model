@@ -1,0 +1,453 @@
+const mongoose = require("mongoose");
+
+const rewardSchema = new mongoose.Schema({
+  // Basic reward information
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    trim: true,
+  },
+  // Cost in Scholarship Points (SP)
+  cost: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
+  // Image or thumbnail for the reward
+  image: {
+    type: String,
+    trim: true,
+  },
+  // Reward provider info
+  provider: {
+    type: String,
+    enum: ["family", "school", "sponsor", "system"],
+    required: true,
+  },
+  providerId: {
+    type: String, // User ID or School ID or Sponsor ID
+    required: true,
+    index: true,
+  },
+  // For school rewards
+  schoolId: {
+    type: String,
+    index: true,
+  },
+  // For parent/family rewards
+  parentId: {
+    type: String,
+    index: true,
+  },
+  // For sponsor rewards
+  sponsorId: {
+    type: String,
+    index: true,
+  },
+  sponsorName: {
+    type: String,
+    trim: true,
+  },
+  // Reward category
+  category: {
+    type: String,
+    enum: [
+      "privilege",
+      "material",
+      "experience",
+      "recognition",
+      "scholarship",
+      "other",
+    ],
+    default: "other",
+  },
+  // Reward type
+  type: {
+    type: String,
+    enum: ["digital", "physical", "service", "privilege", "other"],
+    default: "other",
+  },
+  // Availability
+  available: {
+    type: Boolean,
+    default: true,
+  },
+  availableFrom: {
+    type: Date,
+  },
+  availableUntil: {
+    type: Date,
+  },
+  // Inventory
+  quantityAvailable: {
+    type: Number,
+    min: 0,
+  },
+  quantityRedeemed: {
+    type: Number,
+    default: 0,
+  },
+  // Purchase limits
+  limitPerStudent: {
+    type: Number,
+    min: 0, // 0 means no limit
+  },
+  limitPerPeriod: {
+    type: Number,
+    min: 0, // 0 means no limit
+  },
+  limitPeriodType: {
+    type: String,
+    enum: ["daily", "weekly", "monthly", "yearly", "once"],
+  },
+  // Targeting/eligibility (for specific grades, ages, schools)
+  eligibility: {
+    // Target grade range
+    minGrade: {
+      type: Number,
+      min: 0, // Kindergarten
+      max: 12, // 12th grade
+    },
+    maxGrade: {
+      type: Number,
+      min: 0,
+      max: 12,
+    },
+    // Target age range
+    minAge: {
+      type: Number,
+      min: 5,
+    },
+    maxAge: {
+      type: Number,
+    },
+    // For targeted school districts or specific schools
+    targetSchoolIds: {
+      type: [String],
+    },
+    // For targeted regions
+    targetRegions: {
+      type: [String], // e.g., ["New York", "California"]
+    },
+  },
+  // Redemption details
+  redemptionInstructions: {
+    type: String,
+    trim: true,
+  },
+  redemptionType: {
+    type: String,
+    enum: ["automatic", "code", "manual", "qr", "pickup"],
+    default: "manual",
+  },
+  redemptionCode: {
+    type: String, // For prefilled codes
+    trim: true,
+  },
+  // Approval flow for redemption
+  requiresApproval: {
+    type: Boolean,
+    default: true,
+  },
+  approvalRoles: {
+    type: [String], // Who can approve
+    default: [],
+  },
+  // For scholarships or educational rewards
+  scholarshipDetails: {
+    type: {
+      type: String,
+      enum: ["direct", "contribution", "contest", "opportunity"],
+    },
+    amount: {
+      type: Number,
+    },
+    restrictions: {
+      type: String,
+    },
+    applicationInstructions: {
+      type: String,
+    },
+  },
+  // Metadata and timestamps
+  tags: {
+    type: [String],
+    default: [],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  createdBy: {
+    type: String, // User ID
+    required: true,
+  },
+  updatedBy: {
+    type: String, // User ID
+  },
+  // Soft delete flag
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true,
+  },
+});
+
+// Indexes for common queries
+rewardSchema.index({ provider: 1, available: 1 });
+rewardSchema.index({ schoolId: 1, available: 1 });
+rewardSchema.index({ parentId: 1, available: 1 });
+rewardSchema.index({ sponsorId: 1, available: 1 });
+rewardSchema.index({ cost: 1 });
+rewardSchema.index({ category: 1 });
+
+// Middleware to update the updatedAt field
+rewardSchema.pre("save", function (next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+// Middleware for soft deletes (modify find queries to exclude deleted items)
+rewardSchema.pre(/^find/, function (next) {
+  if (!this.getQuery().includeDeleted) {
+    this.find({ isDeleted: { $ne: true } });
+  }
+  delete this.getQuery().includeDeleted;
+  next();
+});
+
+// Static method to find available rewards for a student
+rewardSchema.statics.findAvailableForStudent = async function (
+  studentId,
+  studentInfo
+) {
+  // Default query filters
+  const query = {
+    available: true,
+    isDeleted: false,
+    $or: [
+      { availableFrom: { $exists: false } },
+      { availableFrom: null },
+      { availableFrom: { $lte: new Date() } },
+    ],
+    $and: [
+      {
+        $or: [
+          { availableUntil: { $exists: false } },
+          { availableUntil: null },
+          { availableUntil: { $gte: new Date() } },
+        ],
+      },
+    ],
+  };
+
+  // Check quantity
+  if (
+    query.quantityAvailable !== undefined &&
+    query.quantityAvailable !== null
+  ) {
+    query.$and.push({
+      $or: [
+        { quantityAvailable: { $exists: false } },
+        { quantityAvailable: null },
+        { quantityAvailable: { $gt: "$quantityRedeemed" } },
+      ],
+    });
+  }
+
+  // Apply student-specific filters if we have student info
+  if (studentInfo) {
+    // Filter by grade
+    if (studentInfo.grade !== undefined) {
+      query.$and.push({
+        $or: [
+          {
+            $and: [
+              { "eligibility.minGrade": { $exists: true } },
+              { "eligibility.minGrade": { $lte: studentInfo.grade } },
+            ],
+          },
+          { "eligibility.minGrade": { $exists: false } },
+          { "eligibility.minGrade": null },
+        ],
+      });
+
+      query.$and.push({
+        $or: [
+          {
+            $and: [
+              { "eligibility.maxGrade": { $exists: true } },
+              { "eligibility.maxGrade": { $gte: studentInfo.grade } },
+            ],
+          },
+          { "eligibility.maxGrade": { $exists: false } },
+          { "eligibility.maxGrade": null },
+        ],
+      });
+    }
+
+    // Filter by age
+    if (studentInfo.age !== undefined) {
+      query.$and.push({
+        $or: [
+          {
+            $and: [
+              { "eligibility.minAge": { $exists: true } },
+              { "eligibility.minAge": { $lte: studentInfo.age } },
+            ],
+          },
+          { "eligibility.minAge": { $exists: false } },
+          { "eligibility.minAge": null },
+        ],
+      });
+
+      query.$and.push({
+        $or: [
+          {
+            $and: [
+              { "eligibility.maxAge": { $exists: true } },
+              { "eligibility.maxAge": { $gte: studentInfo.age } },
+            ],
+          },
+          { "eligibility.maxAge": { $exists: false } },
+          { "eligibility.maxAge": null },
+        ],
+      });
+    }
+
+    // Filter by school
+    if (studentInfo.schoolId) {
+      query.$and.push({
+        $or: [
+          { "eligibility.targetSchoolIds": { $exists: false } },
+          { "eligibility.targetSchoolIds": { $size: 0 } },
+          { "eligibility.targetSchoolIds": null },
+          { "eligibility.targetSchoolIds": studentInfo.schoolId },
+          { "eligibility.targetSchoolIds": { $in: [studentInfo.schoolId] } },
+        ],
+      });
+    }
+
+    // Filter by region
+    if (studentInfo.region) {
+      query.$and.push({
+        $or: [
+          { "eligibility.targetRegions": { $exists: false } },
+          { "eligibility.targetRegions": { $size: 0 } },
+          { "eligibility.targetRegions": null },
+          { "eligibility.targetRegions": studentInfo.region },
+          { "eligibility.targetRegions": { $in: [studentInfo.region] } },
+        ],
+      });
+    }
+  }
+
+  return await this.find(query);
+};
+
+// Static method to check if student has reached reward redemption limits
+rewardSchema.statics.checkRedemptionLimits = async function (
+  rewardId,
+  studentId,
+  redemptionModel
+) {
+  const reward = await this.findById(rewardId);
+
+  if (!reward) {
+    throw new Error("Reward not found");
+  }
+
+  // If no limits, return immediately
+  if (!reward.limitPerStudent && !reward.limitPerPeriod) {
+    return { canRedeem: true };
+  }
+
+  // Check student total limit
+  if (reward.limitPerStudent) {
+    const totalRedemptions = await redemptionModel.countDocuments({
+      rewardId,
+      studentId,
+      status: { $ne: "cancelled" },
+    });
+
+    if (totalRedemptions >= reward.limitPerStudent) {
+      return {
+        canRedeem: false,
+        reason: `Reached maximum redemption limit (${reward.limitPerStudent})`,
+      };
+    }
+  }
+
+  // Check period limit
+  if (reward.limitPerPeriod && reward.limitPeriodType) {
+    let periodStart = new Date();
+    const now = new Date();
+
+    // Determine period start date based on period type
+    switch (reward.limitPeriodType) {
+      case "daily":
+        periodStart.setHours(0, 0, 0, 0);
+        break;
+      case "weekly":
+        const day = periodStart.getDay();
+        const diff = periodStart.getDate() - day + (day === 0 ? -6 : 1); // Adjust to previous Monday
+        periodStart = new Date(periodStart.setDate(diff));
+        periodStart.setHours(0, 0, 0, 0);
+        break;
+      case "monthly":
+        periodStart = new Date(
+          periodStart.getFullYear(),
+          periodStart.getMonth(),
+          1
+        );
+        break;
+      case "yearly":
+        periodStart = new Date(periodStart.getFullYear(), 0, 1);
+        break;
+      case "once":
+        // For "once", we already checked with limitPerStudent
+        break;
+    }
+
+    // Count redemptions in the period
+    const periodRedemptions = await redemptionModel.countDocuments({
+      rewardId,
+      studentId,
+      status: { $ne: "cancelled" },
+      createdAt: { $gte: periodStart, $lte: now },
+    });
+
+    if (periodRedemptions >= reward.limitPerPeriod) {
+      return {
+        canRedeem: false,
+        reason: `Reached ${reward.limitPeriodType} redemption limit (${reward.limitPerPeriod})`,
+      };
+    }
+  }
+
+  return { canRedeem: true };
+};
+
+// Method to decrement available quantity when redeemed
+rewardSchema.methods.decrementQuantity = async function () {
+  if (this.quantityAvailable !== undefined && this.quantityAvailable !== null) {
+    if (this.quantityAvailable <= this.quantityRedeemed) {
+      throw new Error("Reward is out of stock");
+    }
+
+    this.quantityRedeemed++;
+    return await this.save();
+  }
+  return this;
+};
+
+module.exports = mongoose.model("Reward", rewardSchema);
