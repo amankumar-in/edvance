@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Univance Brand Guidelines</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Animation libraries with fixed CDN links -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <!-- Fixed Mo.js links with specific versions -->
+    <script src="https://unpkg.com/@mojs/core@0.288.2/build/mo.min.js"></script>
+
+    <style>
+      /* Reset and base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        /* Primary Colors */
+        --orange: #ff8da1; /* Hydrangea Pink */
+        --teal: #ffc2ba; /* Blush Peach */
+        --blue: #ff9ce9; /* Light Lavender */
+        --slate: #ad56c4; /* Deep Purple */
+
+        /* Secondary Colors */
+        --coral: #ff6b85; /* Darker pink */
+        --yellow: #ffad9f; /* Darker peach */
+        --green: #ff7de0; /* Darker lavender */
+        --purple: #9548a8; /* Darker purple */
+
+        /* Background colors */
+        --bg-light-pink: #fff1f3;
+        --bg-light-peach: #fff6f5;
+        --bg-light-lavender: #fff5fc;
+        --bg-light-purple: #f9f0fc;
+
+        /* Neutrals */
+        --white: #ffffff;
+        --light-gray: #f5f7fa;
+        --medium-gray: #cdd5df;
+        --dark-gray: #526d82;
+        --black: #2d3748;
+
+        /* Card backgrounds - Better contrast */
+        --card-bg: #f9f9f9;
+        --card-alt-bg: #f1f1f1;
+
+        /* Borders - Replacing shadows */
+        --border-light: #e0e0e0;
+        --border-medium: #d0d0d0;
+        --border-dark: #b0b0b0;
+
+        /* Gradients */
+        --gradient-primary: linear-gradient(
+          135deg,
+          var(--orange) 0%,
+          var(--coral) 100%
+        );
+        --gradient-secondary: linear-gradient(
+          135deg,
+          var(--teal) 0%,
+          var(--blue) 100%
+        );
+        --gradient-success: linear-gradient(
+          135deg,
+          var(--green) 0%,
+          #ff62d8 100%
+        );
+        --gradient-warning: linear-gradient(
+          135deg,
+          var(--yellow) 0%,
+          var(--orange) 100%
+        );
+        --gradient-purple: linear-gradient(
+          135deg,
+          var(--purple) 0%,
+          #8a40a0 100%
+        );
+        --gradient-danger: linear-gradient(135deg, #ff5252 0%, #ff1a1a 100%);
+
+        /* Fonts - Keep original fonts */
+        --heading-font: "Nunito", sans-serif;
+        --body-font: "Open Sans", sans-serif;
+        --display-font: "Quicksand", sans-serif;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: var(--body-font);
+        color: var(--black);
+        background-color: var(--light-gray);
+        overflow-x: hidden;
+        line-height: 1.6;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: var(--heading-font);
+        font-weight: 700;
+      }
+
+      .section {
+        padding: 5rem 0;
+        position: relative;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        display: inline-block;
+      }
+
+      .section-title::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -0.5rem;
+        width: 50px;
+        height: 4px;
+        background: var(--gradient-primary);
+        border-radius: 0;
+      }
+
+      .section-subtitle {
+        color: var(--dark-gray);
+        font-size: 1.25rem;
+        margin-bottom: 3rem;
+        max-width: 800px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      /* Card - flat with borders instead of shadows */
+      .card {
+        background-color: var(--card-bg);
+        border-radius: 0;
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+        transition: border-color 0.3s ease;
+      }
+
+      .card:hover {
+        border-color: var(--border-dark);
+      }
+
+      /* Header */
+      .header {
+        padding: 1.5rem 0;
+        position: sticky;
+        top: 0;
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        z-index: 100;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-family: var(--heading-font);
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--black);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo span {
+        color: var(--orange);
+      }
+
+      .nav {
+        display: flex;
+        gap: 2rem;
+      }
+
+      .nav-link {
+        text-decoration: none;
+        color: var(--dark-gray);
+        font-weight: 600;
+        transition: color 0.3s ease;
+        position: relative;
+        padding: 0.5rem 0;
+      }
+
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 0%;
+        height: 2px;
+        background: var(--gradient-primary);
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--orange);
+      }
+
+      .nav-link:hover::after,
+      .nav-link.active::after {
+        width: 100%;
+      }
+
+      /* Hero section */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        background-color: var(--bg-light-pink);
+      }
+
+      .hero-content {
+        z-index: 10;
+        position: relative;
+        max-width: 700px;
+      }
+
+      .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+      }
+
+      .hero-subtitle {
+        font-size: 1.5rem;
+        color: var(--dark-gray);
+        margin-bottom: 2rem;
+      }
+
+      .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      /* Square shapes for Swiss style */
+      .shape {
+        position: absolute;
+        border-radius: 0;
+      }
+
+      .shape-1 {
+        width: 300px;
+        height: 300px;
+        background: var(--orange);
+        opacity: 0.1;
+        top: 10%;
+        right: 10%;
+        animation: float 8s ease-in-out infinite;
+      }
+
+      .shape-2 {
+        width: 200px;
+        height: 200px;
+        background: var(--teal);
+        opacity: 0.1;
+        bottom: 10%;
+        left: 15%;
+        animation: float 6s ease-in-out infinite;
+        animation-delay: 1s;
+      }
+
+      .shape-3 {
+        width: 150px;
+        height: 150px;
+        background: var(--purple);
+        opacity: 0.1;
+        top: 30%;
+        left: 10%;
+        animation: float 10s ease-in-out infinite;
+        animation-delay: 2s;
+      }
+
+      .shape-4 {
+        width: 100px;
+        height: 100px;
+        background: var(--green);
+        opacity: 0.1;
+        bottom: 25%;
+        right: 20%;
+        animation: float 7s ease-in-out infinite;
+        animation-delay: 3s;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-20px) rotate(5deg);
+        }
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+      }
+
+      /* Color section */
+      .color-section {
+        padding: 5rem 0;
+        background-color: var(--bg-light-peach);
+      }
+
+      .color-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border: 1px solid var(--border-light);
+        background-color: var(--card-bg);
+      }
+
+      .color-card-header {
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.25rem;
+        transition: transform 0.3s ease;
+      }
+
+      .color-card-header:hover {
+        transform: scale(1.05);
+        cursor: pointer;
+      }
+
+      .color-card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+      }
+
+      .color-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .color-hex {
+        font-size: 0.875rem;
+        color: var(--dark-gray);
+        margin-bottom: 1rem;
+      }
+
+      .color-description {
+        color: var(--dark-gray);
+      }
+
+      /* Gradient Palette */
+      .gradient-palette {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+      }
+
+      .gradient-card {
+        border-radius: 0;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: transform 0.3s ease;
+      }
+
+      .gradient-card:hover {
+        transform: scale(1.05);
+        cursor: pointer;
+        border-color: var(--border-dark);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container header-container">
+        <a href="#" class="logo">Univance<span>.</span></a>
+        <nav class="nav">
+          <a href="#brand-story" class="nav-link">Brand Story</a>
+          <a href="#colors" class="nav-link active">Colors</a>
+          <a href="#typography" class="nav-link">Typography</a>
+          <a href="#components" class="nav-link">Components</a>
+          <a href="#animations" class="nav-link">Animations</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Hero Section WITH FLAT BACKGROUND SHAPES -->
+    <section class="hero">
+      <div id="hero-shapes" class="hero-background">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+      </div>
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            Univance<span style="color: var(--orange)">.</span>
+          </h1>
+          <p class="hero-subtitle">Brand Guidelines & Design System</p>
+          <p style="color: var(--dark-gray); max-width: 600px">
+            A comprehensive visual language that brings our educational platform
+            to life with Swiss design principles: clarity, minimalism, and
+            purpose.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Brand Story Section -->
+    <section class="section" id="brand-story">
+      <div class="container">
+        <h2 class="section-title">Brand Story</h2>
+        <p class="section-subtitle">
+          Univance combines "Universal" and "Advance," reflecting our mission to
+          provide universal access to advanced educational tools that help every
+          student progress.
+        </p>
+
+        <div class="grid">
+          <div class="card" style="border-top: 4px solid var(--orange)">
+            <div style="padding: 2rem">
+              <h3 style="font-size: 1.5rem; margin-bottom: 1rem">
+                Our Mission
+              </h3>
+              <p style="color: var(--dark-gray); margin-bottom: 1rem">
+                Univance is an educational platform designed to transform the
+                way students, teachers, and parents engage with learning through
+                motivation, tracking, and celebration of academic progress.
+              </p>
+              <p style="color: var(--dark-gray)">
+                We believe that education thrives when students are actively
+                engaged, properly motivated, and have the right tools to track
+                their progress.
+              </p>
+            </div>
+          </div>
+
+          <div class="card" style="border-top: 4px solid var(--teal)">
+            <div style="padding: 2rem">
+              <h3 style="font-size: 1.5rem; margin-bottom: 1rem">Our Values</h3>
+              <ul style="color: var(--dark-gray)">
+                <li style="margin-bottom: 0.75rem">
+                  <strong>Accessibility</strong> – Education for everyone
+                </li>
+                <li style="margin-bottom: 0.75rem">
+                  <strong>Engagement</strong> – Learning through active
+                  participation
+                </li>
+                <li style="margin-bottom: 0.75rem">
+                  <strong>Progress</strong> – Celebrating every achievement
+                </li>
+                <li><strong>Community</strong> – Growing together</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card" style="border-top: 4px solid var(--blue)">
+            <div style="padding: 2rem">
+              <h3 style="font-size: 1.5rem; margin-bottom: 1rem">
+                Design Philosophy
+              </h3>
+              <p style="color: var(--dark-gray); margin-bottom: 1rem">
+                Our design approach embraces Swiss Design principles:
+                minimalism, clarity, and objective organization with strong
+                typography and purposeful use of color.
+              </p>
+              <p style="color: var(--dark-gray)">
+                We employ a flat design aesthetic that prioritizes usability and
+                readability while creating clear hierarchical structures for
+                different user groups.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Color Palette Section - Note we don't close this section in Part 1 -->
+    <section class="color-section" id="colors">
+      <div class="container">
+        <h2 class="section-title">Color Palette</h2>
+        <p class="section-subtitle">
+          Our vibrant color system creates an energetic yet relaxing mood,
+          inspiring both creativity and focus.
+        </p>
+
+        <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem">Primary Colors</h3>
+        <div class="grid" style="margin-bottom: 3rem">
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--orange)"
+            >
+              #FF8DA1
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Hydrangea Pink</div>
+              <div class="color-hex">#FF8DA1</div>
+              <p class="color-description">
+                Our primary brand color, used for key actions, primary buttons,
+                and important highlights.
+              </p>
+            </div>
+          </div>
+
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--teal)"
+            >
+              #FFC2BA
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Blush Peach</div>
+              <div class="color-hex">#FFC2BA</div>
+              <p class="color-description">
+                Used for secondary elements, success states, and to provide
+                contrast with our primary pink.
+              </p>
+            </div>
+          </div>
+
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--blue)"
+            >
+              #FF9CE9
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Light Lavender</div>
+              <div class="color-hex">#FF9CE9</div>
+              <p class="color-description">
+                Used for informational elements, links, and to represent
+                progress.
+              </p>
+            </div>
+          </div>
+
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--slate); color: white"
+            >
+              #AD56C4
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Deep Purple</div>
+              <div class="color-hex">#AD56C4</div>
+              <p class="color-description">
+                Used for tertiary elements, highlights, and to provide balance
+                and professionalism.
+              </p>
+            </div>
+          </div>
+        </div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem">
+          Secondary Colors
+        </h3>
+        <div class="grid" style="margin-bottom: 3rem">
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--coral); color: white"
+            >
+              #FF6B85
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Deep Pink</div>
+              <div class="color-hex">#FF6B85</div>
+              <p class="color-description">
+                Used for tertiary actions, accents, and to complement our
+                primary pink in gradients.
+              </p>
+            </div>
+          </div>
+
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--yellow)"
+            >
+              #FFAD9F
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Peach Coral</div>
+              <div class="color-hex">#FFAD9F</div>
+              <p class="color-description">
+                Used for warnings, highlights, and to represent achievements and
+                rewards.
+              </p>
+            </div>
+          </div>
+
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--green)"
+            >
+              #FF7DE0
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Deep Lavender</div>
+              <div class="color-hex">#FF7DE0</div>
+              <p class="color-description">
+                Used for success states, positive feedback, and to represent
+                growth and progress.
+              </p>
+            </div>
+          </div>
+
+          <div class="color-card">
+            <div
+              class="color-card-header"
+              style="background-color: var(--purple); color: white"
+            >
+              #9548A8
+            </div>
+            <div class="color-card-body">
+              <div class="color-name">Rich Purple</div>
+              <div class="color-hex">#9548A8</div>
+              <p class="color-description">
+                Used for special features, premium content, and to provide
+                visual variety.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem">
+          Gradient Palette
+        </h3>
+        <div class="gradient-palette">
+          <div
+            class="gradient-card"
+            style="background: var(--gradient-primary); color: white"
+          >
+            Primary Gradient
+          </div>
+          <div
+            class="gradient-card"
+            style="background: var(--gradient-secondary)"
+          >
+            Secondary Gradient
+          </div>
+          <div
+            class="gradient-card"
+            style="background: var(--gradient-success)"
+          >
+            Success Gradient
+          </div>
+          <div
+            class="gradient-card"
+            style="background: var(--gradient-warning)"
+          >
+            Warning Gradient
+          </div>
+          <div
+            class="gradient-card"
+            style="background: var(--gradient-purple); color: white"
+          >
+            Purple Gradient
+          </div>
+          <div
+            class="gradient-card"
+            style="background: var(--gradient-danger); color: white"
+          >
+            Danger Gradient
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typography Section -->
+    <section class="typography-section" id="typography">
+      <div class="container">
+        <h2 class="section-title">Typography</h2>
+        <p class="section-subtitle">
+          Our typography system balances professionalism with approachability,
+          ensuring optimal readability in the Swiss design tradition.
+        </p>
+
+        <style>
+          /* Typography styles */
+          .typography-section {
+            padding: 5rem 0;
+            background-color: var(--bg-light-lavender);
+          }
+
+          .typography-showcase {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+          }
+
+          .font-family {
+            border-radius: 0;
+            padding: 2.5rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+          }
+
+          .font-family::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+          }
+
+          .nunito-font::before {
+            background: var(--gradient-primary);
+          }
+
+          .opensans-font::before {
+            background: var(--gradient-secondary);
+          }
+
+          .quicksand-font::before {
+            background: var(--gradient-success);
+          }
+
+          .font-name {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--black);
+          }
+
+          .font-sample {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+            padding: 1rem;
+            background-color: var(--light-gray);
+            border-radius: 0;
+          }
+
+          .font-weights {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+          }
+
+          .font-weight {
+            padding: 1.5rem;
+            background-color: var(--light-gray);
+            border-radius: 0;
+            border: 1px solid var(--border-light);
+            transition: transform 0.2s ease;
+          }
+
+          .font-weight:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-medium);
+          }
+
+          .weight-name {
+            font-size: 1rem;
+            color: var(--black);
+            margin-bottom: 1rem;
+            font-weight: 600;
+          }
+
+          .font-usage {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: var(--light-gray);
+            border-left: 4px solid;
+            border-radius: 0;
+          }
+
+          .nunito-font .font-usage {
+            border-color: var(--orange);
+          }
+
+          .opensans-font .font-usage {
+            border-color: var(--teal);
+          }
+
+          .quicksand-font .font-usage {
+            border-color: var(--green);
+          }
+
+          .font-usage-title {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+          }
+
+          .font-usage-item {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+          }
+
+          .font-usage-item i {
+            margin-right: 0.75rem;
+            color: var(--orange);
+            margin-top: 0.25rem;
+          }
+        </style>
+
+        <div class="typography-showcase">
+          <div class="font-family nunito-font">
+            <h3 class="font-name">Nunito</h3>
+            <div class="font-sample" style="font-family: var(--heading-font)">
+              The quick brown fox jumps over the lazy dog.
+            </div>
+            <div class="font-weights">
+              <div class="font-weight">
+                <div class="weight-name">Regular (400)</div>
+                <div style="font-family: var(--heading-font); font-weight: 400">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">Medium (500)</div>
+                <div style="font-family: var(--heading-font); font-weight: 500">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">SemiBold (600)</div>
+                <div style="font-family: var(--heading-font); font-weight: 600">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">Bold (700)</div>
+                <div style="font-family: var(--heading-font); font-weight: 700">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+            </div>
+            <div class="font-usage">
+              <h4 class="font-usage-title">Usage Guidelines</h4>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Headings and titles across all user interfaces</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Navigation elements and important UI components</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Call to action buttons and interactive elements</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Brand name and primary marketing materials</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="font-family opensans-font">
+            <h3 class="font-name">Open Sans</h3>
+            <div class="font-sample" style="font-family: var(--body-font)">
+              The quick brown fox jumps over the lazy dog.
+            </div>
+            <div class="font-weights">
+              <div class="font-weight">
+                <div class="weight-name">Regular (400)</div>
+                <div style="font-family: var(--body-font); font-weight: 400">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">Medium (500)</div>
+                <div style="font-family: var(--body-font); font-weight: 500">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">SemiBold (600)</div>
+                <div style="font-family: var(--body-font); font-weight: 600">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">Bold (700)</div>
+                <div style="font-family: var(--body-font); font-weight: 700">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+            </div>
+            <div class="font-usage">
+              <h4 class="font-usage-title">Usage Guidelines</h4>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Body text for all interfaces and content</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Form elements, tables, and data displays</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Secondary interface elements and captions</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span
+                  >Parent and teacher interfaces requiring extended
+                  reading</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="font-family quicksand-font">
+            <h3 class="font-name">Quicksand</h3>
+            <div class="font-sample" style="font-family: var(--display-font)">
+              The quick brown fox jumps over the lazy dog.
+            </div>
+            <div class="font-weights">
+              <div class="font-weight">
+                <div class="weight-name">Medium (500)</div>
+                <div style="font-family: var(--display-font); font-weight: 500">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">SemiBold (600)</div>
+                <div style="font-family: var(--display-font); font-weight: 600">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+              <div class="font-weight">
+                <div class="weight-name">Bold (700)</div>
+                <div style="font-family: var(--display-font); font-weight: 700">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                  abcdefghijklmnopqrstuvwxyz<br />
+                  0123456789
+                </div>
+              </div>
+            </div>
+            <div class="font-usage">
+              <h4 class="font-usage-title">Usage Guidelines</h4>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Display text for younger student interfaces</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Playful elements, achievements, and celebrations</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Special announcements and featured content</span>
+              </div>
+              <div class="font-usage-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Elementary grade-level learning materials</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Components Section - Starting with Cards -->
+    <section class="components-section" id="components">
+      <div class="container">
+        <h2 class="section-title">Components</h2>
+        <p class="section-subtitle">
+          Our component library provides consistent, accessible, and engaging
+          user interface elements for our educational platform.
+        </p>
+
+        <style>
+          /* Components section styles */
+          .components-section {
+            padding: 5rem 0;
+            background-color: var(--bg-light-purple);
+          }
+
+          .component-group {
+            margin-bottom: 5rem;
+          }
+
+          .component-title {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+          }
+
+          .component-description {
+            color: var(--dark-gray);
+            margin-bottom: 2rem;
+            max-width: 800px;
+          }
+
+          .component-showcase {
+            background-color: var(--card-bg);
+            border-radius: 0;
+            padding: 2.5rem;
+            border: 1px solid var(--border-light);
+          }
+
+          /* Cards */
+          .cards-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2.5rem;
+          }
+
+          .showcase-card {
+            background-color: var(--card-bg);
+            border-radius: 0;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            transition: border-color 0.3s ease;
+          }
+
+          .showcase-card:hover {
+            border-color: var(--border-dark);
+          }
+
+          .card-header {
+            height: 160px;
+            position: relative;
+            overflow: hidden;
+          }
+
+          .card-body {
+            padding: 1.5rem;
+          }
+
+          .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+          }
+
+          .card-text {
+            color: var(--dark-gray);
+            margin-bottom: 1.5rem;
+          }
+
+          .card-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          /* Swiss-style card tags */
+          .card-tag {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            border: 1px solid;
+          }
+
+          .card-tag-elementary {
+            background-color: rgba(255, 141, 161, 0.1);
+            color: #ff6b85;
+            border-color: #ff6b85;
+          }
+
+          .card-tag-complete {
+            background-color: rgba(255, 194, 186, 0.1);
+            color: #e8908a;
+            border-color: #e8908a;
+          }
+
+          .card-tag-math {
+            background-color: rgba(255, 156, 233, 0.1);
+            color: #d45fc4;
+            border-color: #d45fc4;
+          }
+
+          /* Swiss-style buttons */
+          .swiss-button {
+            background-color: var(--orange);
+            color: white;
+            border: none;
+            border-radius: 0;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+          }
+
+          .swiss-button:hover {
+            background-color: var(--coral);
+          }
+
+          .swiss-button.secondary {
+            background-color: var(--teal);
+          }
+
+          .swiss-button.secondary:hover {
+            background-color: var(--blue);
+          }
+
+          .swiss-button.success {
+            background-color: var(--green);
+          }
+
+          .swiss-button.success:hover {
+            background-color: #ff62d8;
+          }
+
+          /* Badges section styles */
+          .badge-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+          }
+
+          .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+          }
+
+          .badge-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%; /* Return to circular shape */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            color: white;
+          }
+
+          .badge-icon::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%; /* Return to circular shape */
+            background: transparent;
+            border: 2px solid;
+            opacity: 0.5;
+          }
+
+          .badge-gold {
+            background: linear-gradient(
+              135deg,
+              var(--orange) 0%,
+              var(--coral) 100%
+            );
+          }
+
+          .badge-gold::before {
+            border-color: var(--orange);
+          }
+
+          .badge-silver {
+            background: linear-gradient(
+              135deg,
+              var(--teal) 0%,
+              var(--blue) 100%
+            );
+          }
+
+          .badge-silver::before {
+            border-color: var(--teal);
+          }
+
+          .badge-bronze {
+            background: linear-gradient(
+              135deg,
+              var(--yellow) 0%,
+              var(--orange) 100%
+            );
+          }
+
+          .badge-bronze::before {
+            border-color: var(--yellow);
+          }
+
+          .badge-blue {
+            background: var(--gradient-secondary);
+          }
+
+          .badge-blue::before {
+            border-color: var(--teal);
+          }
+
+          .badge-purple {
+            background: var(--gradient-purple);
+          }
+
+          .badge-purple::before {
+            border-color: var(--purple);
+          }
+
+          .badge-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+          }
+
+          .badge-description {
+            font-size: 0.75rem;
+            color: var(--dark-gray);
+          }
+        </style>
+
+        <div class="component-group">
+          <h3 class="component-title">Cards</h3>
+          <p class="component-description">
+            Cards group related information into scannable, actionable
+            containers in line with Swiss design principles of clarity and
+            organization.
+          </p>
+
+          <div class="component-showcase">
+            <div class="cards-showcase">
+              <!-- Student Card -->
+              <div class="showcase-card">
+                <div class="card-header">
+                  <div
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      background: var(--gradient-primary);
+                      position: relative;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        position: absolute;
+                        width: 100px;
+                        height: 100px;
+                        background: rgba(0, 0, 0, 0.1);
+                        top: -30px;
+                        right: -30px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        position: absolute;
+                        width: 60px;
+                        height: 60px;
+                        background: rgba(0, 0, 0, 0.1);
+                        bottom: -20px;
+                        left: 30px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                      "
+                    >
+                      <div
+                        style="
+                          width: 60px;
+                          height: 60px;
+                          background: rgba(255, 255, 255, 0.2);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        <i
+                          class="fas fa-user"
+                          style="color: white; font-size: 1.5rem"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">Student Profile Card</h3>
+                  <p class="card-text">
+                    Showcases student information with a clean, accessible
+                    layout for easy tracking of progress and achievements.
+                  </p>
+                  <button class="swiss-button">View Profile</button>
+                </div>
+                <div class="card-footer">
+                  <span class="card-tag card-tag-elementary">Elementary</span>
+                  <span style="color: var(--dark-gray)">
+                    <i class="fas fa-star" style="color: var(--coral)"></i>
+                    Level 3
+                  </span>
+                </div>
+              </div>
+
+              <!-- Achievement Card -->
+              <div class="showcase-card">
+                <div class="card-header">
+                  <div
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      background: var(--gradient-secondary);
+                      position: relative;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        position: absolute;
+                        width: 100px;
+                        height: 100px;
+                        background: rgba(0, 0, 0, 0.1);
+                        top: -30px;
+                        right: -30px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        position: absolute;
+                        width: 80px;
+                        height: 80px;
+                        background: rgba(0, 0, 0, 0.1);
+                        bottom: -20px;
+                        left: 20px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                      "
+                    >
+                      <div
+                        style="
+                          width: 70px;
+                          height: 70px;
+                          background: rgba(255, 255, 255, 0.2);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        <i
+                          class="fas fa-trophy"
+                          style="color: white; font-size: 2rem"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">Achievement Card</h3>
+                  <p class="card-text">
+                    Highlights accomplishments with vibrant colors and clear
+                    status indicators for motivation and celebration.
+                  </p>
+                  <button class="swiss-button secondary">View Details</button>
+                </div>
+                <div class="card-footer">
+                  <span class="card-tag card-tag-complete">Complete</span>
+                  <span style="color: var(--dark-gray)">
+                    <i class="fas fa-trophy" style="color: #e8908a"></i>
+                    +50 Points
+                  </span>
+                </div>
+              </div>
+
+              <!-- Task Card -->
+              <div class="showcase-card">
+                <div class="card-header">
+                  <div
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      background: var(--gradient-success);
+                      position: relative;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        position: absolute;
+                        width: 100px;
+                        height: 100px;
+                        background: rgba(0, 0, 0, 0.1);
+                        top: -30px;
+                        right: -30px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        position: absolute;
+                        width: 60px;
+                        height: 60px;
+                        background: rgba(0, 0, 0, 0.1);
+                        bottom: -20px;
+                        left: 30px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                      "
+                    >
+                      <div
+                        style="
+                          width: 60px;
+                          height: 60px;
+                          background: rgba(255, 255, 255, 0.2);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        <i
+                          class="fas fa-tasks"
+                          style="color: white; font-size: 1.5rem"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">Task Card</h3>
+                  <p class="card-text">
+                    Presents assignments in a structured, actionable format with
+                    clear deadlines and requirements for students.
+                  </p>
+                  <button class="swiss-button success">Start Task</button>
+                </div>
+                <div class="card-footer">
+                  <span class="card-tag card-tag-math">Math</span>
+                  <span style="color: var(--dark-gray)">
+                    <i class="fas fa-clock" style="color: var(--dark-gray)"></i>
+                    20 min
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="component-group">
+          <h3 class="component-title">Badges</h3>
+          <p class="component-description">
+            Badges are visual rewards that celebrate student achievements,
+            creating motivation through recognition and gamification of the
+            learning experience, designed with Swiss clarity and purpose.
+          </p>
+
+          <div class="component-showcase">
+            <div class="badge-group">
+              <div class="badge-item">
+                <div class="badge-icon badge-gold">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="badge-title">Gold Star</div>
+                <div class="badge-description">Top achievement</div>
+              </div>
+
+              <div class="badge-item">
+                <div class="badge-icon badge-silver">
+                  <i class="fas fa-medal"></i>
+                </div>
+                <div class="badge-title">Scholar</div>
+                <div class="badge-description">Academic excellence</div>
+              </div>
+
+              <div class="badge-item">
+                <div class="badge-icon badge-bronze">
+                  <i class="fas fa-award"></i>
+                </div>
+                <div class="badge-title">Achiever</div>
+                <div class="badge-description">Goal completion</div>
+              </div>
+
+              <div class="badge-item">
+                <div class="badge-icon badge-blue">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="badge-title">Attendance</div>
+                <div class="badge-description">Perfect week</div>
+              </div>
+
+              <div class="badge-item">
+                <div class="badge-icon badge-purple">
+                  <i class="fas fa-brain"></i>
+                </div>
+                <div class="badge-title">Thinker</div>
+                <div class="badge-description">Problem solver</div>
+              </div>
+
+              <div class="badge-item">
+                <div
+                  class="badge-icon"
+                  style="background: var(--gradient-success)"
+                >
+                  <i class="fas fa-book-reader"></i>
+                </div>
+                <div class="badge-title">Bookworm</div>
+                <div class="badge-description">Reading progress</div>
+              </div>
+
+              <div class="badge-item">
+                <div
+                  class="badge-icon"
+                  style="background: var(--gradient-warning)"
+                >
+                  <i class="fas fa-calculator"></i>
+                </div>
+                <div class="badge-title">Math Whiz</div>
+                <div class="badge-description">Math excellence</div>
+              </div>
+
+              <div class="badge-item">
+                <div
+                  class="badge-icon"
+                  style="background: var(--gradient-primary)"
+                >
+                  <i class="fas fa-flask"></i>
+                </div>
+                <div class="badge-title">Scientist</div>
+                <div class="badge-description">Science explorer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Animation Section - Swiss style -->
+    <section class="animation-section" id="animations">
+      <div class="container">
+        <h2 class="section-title">Animations</h2>
+        <p class="section-subtitle">
+          Our animations enhance the user experience by providing feedback,
+          guiding attention, and adding delight, especially for younger
+          students.
+        </p>
+
+        <style>
+          /* Animation Section styles */
+          .animation-section {
+            padding: 5rem 0;
+            background-color: var(--bg-light-pink);
+          }
+
+          .animation-group {
+            background: var(--card-bg);
+            border-radius: 0;
+            padding: 2.5rem;
+            border: 1px solid var(--border-light);
+            margin-bottom: 3rem;
+          }
+
+          .animation-group-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+          }
+
+          .animation-group-title::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 0;
+          }
+
+          .animation-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+          }
+
+          .animation-card {
+            background-color: var(--light-gray);
+            border-radius: 0;
+            overflow: hidden;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 1px solid var(--border-light);
+          }
+
+          .animation-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+          }
+
+          .animation-demo {
+            width: 100%;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+            background-color: var(--card-bg);
+            border-radius: 0;
+            border: 1px solid var(--border-light);
+          }
+
+          .animation-description {
+            color: var(--dark-gray);
+          }
+
+          /* Animation-specific elements - Swiss style */
+          .confetti-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-color: transparent;
+          }
+
+          .confetti {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            opacity: 0;
+          }
+          .confetti.circle {
+            border-radius: 50%;
+          }
+          .confetti.square {
+            border-radius: 0;
+          }
+
+          .badge-animation-demo {
+            position: relative;
+            width: 120px;
+            height: 120px;
+          }
+
+          /* Badge animation elements */
+          .badge-animation-base {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%; /* Return to circular shape */
+            background: var(--gradient-primary);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+          }
+
+          .badge-animation-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110px;
+            height: 110px;
+            border-radius: 50%; /* Return to circular shape */
+            border: 3px solid var(--orange);
+            opacity: 0;
+          }
+
+          /* Loading Animation - Swiss style */
+          .loading-animation-demo {
+            position: relative;
+            width: 80px;
+            height: 80px;
+          }
+
+          .loading-dot {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%; /* Circular loading dots */
+
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+
+          .loading-dot-1 {
+            background-color: var(--orange);
+          }
+
+          .loading-dot-2 {
+            background-color: var(--teal);
+          }
+
+          .loading-dot-3 {
+            background-color: var(--blue);
+          }
+
+          .loading-dot-4 {
+            background-color: var(--slate);
+          }
+
+          /* Success Animation */
+          .success-animation-demo {
+            position: relative;
+            width: 100px;
+            height: 100px;
+          }
+
+          .success-circle {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--green);
+            border-radius: 50%; /* Return to circular shape */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .success-checkmark {
+            color: white;
+            font-size: 2rem;
+            opacity: 0;
+            transform: scale(0);
+          }
+
+          /* Trophy Animation */
+          .trophy-animation-demo {
+            position: relative;
+            width: 120px;
+            height: 120px;
+          }
+
+          /* Trophy animation */
+          .trophy-container {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-warning);
+            border-radius: 50%; /* Return to circular shape */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+          }
+
+          .trophy-star {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%; /* Circular stars */
+            background: #fff5a5;
+            opacity: 0;
+          }
+
+          /* Progress Animation */
+          .progress-container {
+            width: 80%;
+            height: 15px;
+            background-color: var(--light-gray);
+            border-radius: 0; /* Swiss style */
+            overflow: hidden;
+            margin: 0 auto;
+            border: 1px solid var(--border-light);
+          }
+
+          .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--gradient-success);
+            border-radius: 0;
+          }
+
+          .progress-text {
+            margin-top: 1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+          }
+
+          /* Animation demos */
+          .animation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+          }
+
+          .mojs-demo {
+            background-color: var(--card-bg);
+            border-radius: 0;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-light);
+            margin-bottom: 20px;
+          }
+
+          .mojs-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+          }
+
+          .mojs-description {
+            font-size: 14px;
+            color: var(--dark-gray);
+            margin-bottom: 20px;
+          }
+
+          .mojs-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 120px;
+          }
+
+          .animation-trigger {
+            margin-top: 15px;
+            padding: 8px 20px;
+            border-radius: 0; /* Swiss style */
+            background: var(--orange);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+          }
+
+          .animation-trigger:hover {
+            background: var(--coral);
+          }
+
+          .point-counter {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--orange);
+            position: relative;
+          }
+
+          .ring-animation-container,
+          .heart-animation-container {
+            width: 100%;
+            height: 150px;
+            position: relative;
+          }
+
+          /* Heart animation */
+          .heart-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 28px;
+            color: #ff5252;
+            transition: transform 0.3s ease;
+          }
+
+          .heart-button:hover {
+            transform: scale(1.1);
+          }
+
+          /* Footer */
+          .footer {
+            background-color: var(--black);
+            color: var(--white);
+            padding: 5rem 0 2rem;
+          }
+
+          .footer-content {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+          }
+
+          .footer-logo {
+            font-family: var(--heading-font);
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+          }
+
+          .footer-logo span {
+            color: var(--orange);
+          }
+
+          .footer-text {
+            color: var(--medium-gray);
+            max-width: 300px;
+          }
+
+          .footer-copyright {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            color: var(--medium-gray);
+            text-align: center;
+          }
+
+          /* Media queries */
+          @media (max-width: 768px) {
+            .hero-title {
+              font-size: 3rem;
+            }
+
+            .section-title {
+              font-size: 2rem;
+            }
+
+            .footer-content {
+              flex-direction: column;
+              gap: 2rem;
+            }
+          }
+        </style>
+
+        <div class="animation-group">
+          <h3 class="animation-group-title">Achievement Animations</h3>
+          <div class="animation-showcase">
+            <div class="animation-card">
+              <h4 class="animation-title">Badge Award</h4>
+              <div class="animation-demo">
+                <div class="badge-animation-demo" id="badge-animation">
+                  <div class="badge-animation-base">
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <div class="badge-animation-ring"></div>
+                </div>
+              </div>
+              <p class="animation-description">
+                Used when students earn new badges, creating an exciting moment
+                of recognition.
+              </p>
+            </div>
+
+            <div class="animation-card">
+              <h4 class="animation-title">Trophy Award</h4>
+              <div class="animation-demo">
+                <div class="trophy-animation-demo" id="trophy-animation">
+                  <div class="trophy-container">
+                    <i class="fas fa-trophy"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="animation-description">
+                Celebrates major achievements like completing all tasks in a
+                unit or reaching a significant milestone.
+              </p>
+            </div>
+
+            <div class="animation-card">
+              <h4 class="animation-title">Confetti Celebration</h4>
+              <div class="animation-demo">
+                <div
+                  id="confetti-animation"
+                  style="position: relative; width: 100%; height: 100%"
+                >
+                  <div class="confetti-container" id="confetti-container">
+                    <!-- Confetti elements will be added via JavaScript -->
+                  </div>
+                  <button class="animation-trigger" id="trigger-confetti">
+                    Celebrate!
+                  </button>
+                </div>
+              </div>
+              <p class="animation-description">
+                Makes special moments like level-ups and completed courses feel
+                truly rewarding and fun.
+                <strong>Click the button to try it!</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="animation-group">
+          <h3 class="animation-group-title">Status Animations</h3>
+          <div class="animation-showcase">
+            <div class="animation-card">
+              <h4 class="animation-title">Success Animation</h4>
+              <div class="animation-demo">
+                <div class="success-animation-demo" id="success-animation">
+                  <div class="success-circle">
+                    <i class="fas fa-check success-checkmark"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="animation-description">
+                Provides immediate positive feedback when tasks are completed
+                successfully.
+              </p>
+            </div>
+
+            <div class="animation-card">
+              <h4 class="animation-title">Loading Animation</h4>
+              <div class="animation-demo">
+                <div class="loading-animation-demo" id="loading-animation">
+                  <!-- Loading dots with distinct colors -->
+                  <div class="loading-dot loading-dot-1"></div>
+                  <div class="loading-dot loading-dot-2"></div>
+                  <div class="loading-dot loading-dot-3"></div>
+                  <div class="loading-dot loading-dot-4"></div>
+                </div>
+              </div>
+              <p class="animation-description">
+                Indicates that content is loading, maintaining engagement during
+                wait times.
+              </p>
+            </div>
+
+            <div class="animation-card">
+              <h4 class="animation-title">Progress Animation</h4>
+              <div class="animation-demo">
+                <div id="progress-animation" style="width: 100%">
+                  <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                  </div>
+                  <div class="progress-text" id="progress-text">
+                    0% Complete
+                  </div>
+                </div>
+              </div>
+              <p class="animation-description">
+                Visualizes progress through lessons or tasks, motivating
+                students to continue.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <h1>Animation Demos</h1>
+      <div class="animation-grid">
+        <!-- 1. Points Burst Animation -->
+        <div class="mojs-demo">
+          <div class="mojs-title">Points Burst</div>
+          <div class="mojs-description">
+            Celebrates earning points with an exciting burst animation
+          </div>
+          <div class="mojs-container">
+            <div class="ring-animation-container" id="ring-animation">
+              <div class="point-counter" id="point-counter">+25</div>
+            </div>
+          </div>
+          <button class="animation-trigger" id="ring-trigger">
+            Earn Points
+          </button>
+        </div>
+
+        <!-- 2. Heart Animation -->
+        <div class="mojs-demo">
+          <div class="mojs-title">Like Animation</div>
+          <div class="mojs-description">Heart animation for liking content</div>
+          <div class="mojs-container">
+            <div
+              class="heart-animation-container"
+              id="heart-animation-container"
+            >
+              <button class="heart-button" id="heart-button">❤️</button>
+            </div>
+          </div>
+          <div class="mojs-description">Click the heart</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div>
+            <div class="footer-logo">Univance<span>.</span></div>
+            <p class="footer-text">
+              A comprehensive visual language that brings our educational
+              platform to life.
+            </p>
+          </div>
+          <div>
+            <p style="color: var(--medium-gray)">Version 1.0</p>
+          </div>
+        </div>
+        <div class="footer-copyright">
+          &copy; 2025 Univance. All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if anime.js is loaded
+        const animeLoaded = typeof anime !== "undefined";
+        console.log("Anime.js loaded:", animeLoaded);
+
+        // Check if Mo.js is loaded (for information only, we'll use anime.js for animations)
+        const mojsLoaded = typeof mojs !== "undefined";
+        console.log("Mo.js loaded:", mojsLoaded);
+
+        // Set up simplified animations using anime.js
+        // These will work even if Mo.js fails to load
+
+        // Badge Award Animation
+        function animateBadge() {
+          if (!animeLoaded) return;
+
+          const badge = document.querySelector(
+            "#badge-animation .badge-animation-base"
+          );
+          const ring = document.querySelector(
+            "#badge-animation .badge-animation-ring"
+          );
+
+          if (!badge || !ring) return;
+
+          // Reset animation state
+          anime.set(badge, {
+            scale: 0,
+            rotate: -30,
+            opacity: 0,
+          });
+
+          anime.set(ring, {
+            scale: 0,
+            opacity: 0,
+          });
+
+          // Create badge animation
+          const badgeAnimation = anime.timeline({
+            easing: "easeOutElastic(1, .5)",
+            duration: 800,
+            loop: true,
+            autoplay: true,
+          });
+
+          badgeAnimation
+            .add({
+              targets: badge,
+              scale: [0, 1],
+              rotate: [-30, 0],
+              opacity: [0, 1],
+              duration: 800,
+            })
+            .add(
+              {
+                targets: ring,
+                scale: [0, 1.5],
+                opacity: [0, 0.7, 0],
+                duration: 1000,
+                easing: "easeOutCubic",
+              },
+              "-=400"
+            )
+            .add(
+              {
+                targets: badge,
+                scale: [1, 1.1, 1],
+                duration: 600,
+                easing: "easeInOutSine",
+              },
+              "+=200"
+            )
+            .add({
+              targets: badge,
+              scale: 0,
+              opacity: 0,
+              rotate: 30,
+              duration: 500,
+              easing: "easeInQuad",
+              delay: 500,
+            });
+        }
+
+        // Trophy Award Animation
+        function animateTrophy() {
+          if (!animeLoaded) return;
+
+          const trophy = document.querySelector(
+            "#trophy-animation .trophy-container"
+          );
+          if (!trophy) return;
+
+          // Reset animation state
+          anime.set(trophy, {
+            scale: 0,
+            opacity: 0,
+          });
+
+          // Create trophy animation
+          const trophyTimeline = anime.timeline({
+            easing: "easeOutElastic(1, .5)",
+            loop: true,
+            autoplay: true,
+          });
+
+          trophyTimeline
+            .add({
+              targets: trophy,
+              scale: [0, 1],
+              opacity: [0, 1],
+              duration: 800,
+            })
+            .add(
+              {
+                targets: trophy,
+                scale: [1, 1.1, 1],
+                duration: 1000,
+                easing: "easeInOutSine",
+              },
+              "+=500"
+            )
+            .add({
+              targets: trophy,
+              scale: [1, 0],
+              opacity: [1, 0],
+              duration: 500,
+              delay: 500,
+            });
+        }
+
+        // Confetti Animation (simplified)
+        function setupConfetti() {
+          if (!animeLoaded) return;
+
+          const container = document.getElementById("confetti-container");
+          const button = document.getElementById("trigger-confetti");
+
+          if (!container || !button) return;
+
+          // Create confetti elements
+          const colors = [
+            "#FF8DA1",
+            "#FFC2BA",
+            "#FF9CE9",
+            "#AD56C4",
+            "#FF6B85",
+            "#FFAD9F",
+            "#FF7DE0",
+            "#9548A8",
+          ];
+
+          for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement("div");
+            confetti.classList.add("confetti");
+
+            // Alternate between circles and squares for geometric variety
+            if (i % 2 === 0) {
+              confetti.classList.add("circle");
+            } else {
+              confetti.classList.add("square");
+            }
+
+            const randomColor =
+              colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.backgroundColor = randomColor;
+
+            const size = Math.floor(Math.random() * 8) + 5;
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+
+            const xPos = Math.random() * 100;
+            confetti.style.left = `${xPos}%`;
+            confetti.style.top = "-10px";
+
+            container.appendChild(confetti);
+          }
+
+          const confettiElements = document.querySelectorAll(".confetti");
+
+          // Reset confetti state
+          anime.set(confettiElements, {
+            opacity: 0,
+            top: "-10px",
+          });
+
+          // Add button click event
+          button.addEventListener("click", function () {
+            // Animate button press
+            anime({
+              targets: button,
+              scale: [1, 0.95, 1],
+              duration: 300,
+              easing: "easeInOutSine",
+            });
+
+            // Animate confetti
+            anime({
+              targets: confettiElements,
+              opacity: [0, 1, 0],
+              top: function () {
+                return anime.random(30, 180);
+              },
+              left: function (el) {
+                const currentLeft = parseFloat(el.style.left);
+                return `${currentLeft + anime.random(-15, 15)}%`;
+              },
+              delay: anime.stagger(20),
+              duration: 3000,
+              easing: "easeOutCubic",
+              rotate: function () {
+                return anime.random(-360, 360);
+              },
+            });
+          });
+        }
+
+        // Success Animation
+        function animateSuccess() {
+          if (!animeLoaded) return;
+
+          const circle = document.querySelector(
+            "#success-animation .success-circle"
+          );
+          const checkmark = document.querySelector(
+            "#success-animation .success-checkmark"
+          );
+
+          if (!circle || !checkmark) return;
+
+          // Reset animation state
+          anime.set([circle, checkmark], {
+            scale: 0,
+            opacity: 0,
+          });
+
+          // Create success animation
+          const successTimeline = anime.timeline({
+            easing: "easeOutQuart",
+            loop: true,
+            autoplay: true,
+          });
+
+          successTimeline
+            .add({
+              targets: circle,
+              scale: [0, 1],
+              opacity: [0, 1],
+              duration: 600,
+            })
+            .add(
+              {
+                targets: checkmark,
+                scale: [0, 1],
+                opacity: [0, 1],
+                duration: 500,
+              },
+              "-=200"
+            )
+            .add({
+              targets: [circle, checkmark],
+              scale: [1, 0],
+              opacity: [1, 0],
+              duration: 500,
+              delay: 1000,
+            });
+        }
+
+        // Loading Animation
+        function animateLoading() {
+          if (!animeLoaded) return;
+
+          const dots = document.querySelectorAll(".loading-dot");
+          if (!dots.length) return;
+
+          // Position dots in a square pattern for Swiss design
+          dots.forEach((dot, index) => {
+            let x = 0;
+            let y = 0;
+
+            switch (index) {
+              case 0:
+                x = -30;
+                y = -30;
+                break;
+              case 1:
+                x = 30;
+                y = -30;
+                break;
+              case 2:
+                x = -30;
+                y = 30;
+                break;
+              case 3:
+                x = 30;
+                y = 30;
+                break;
+            }
+
+            anime.set(dot, {
+              translateX: x,
+              translateY: y,
+              scale: 0,
+            });
+          });
+
+          // Create loading animation
+          anime({
+            targets: dots,
+            scale: [0, 1, 0],
+            opacity: [0, 1, 0],
+            easing: "easeInOutCubic",
+            duration: 1500,
+            delay: anime.stagger(250),
+            loop: true,
+            direction: "normal",
+          });
+        }
+
+        // Progress Animation
+        function animateProgress() {
+          if (!animeLoaded) return;
+
+          const progressBar = document.getElementById("progress-bar");
+          const progressText = document.getElementById("progress-text");
+
+          if (!progressBar || !progressText) return;
+
+          // Reset progress bar
+          anime.set(progressBar, {
+            width: "0%",
+          });
+
+          // Create progress animation
+          anime({
+            targets: progressBar,
+            width: "100%",
+            duration: 3000,
+            easing: "easeInOutQuad",
+            loop: true,
+            direction: "alternate",
+            update: function (anim) {
+              const width = Math.round(anim.progress);
+              progressText.textContent = `${width}% Complete`;
+            },
+          });
+        }
+
+        // Heart Animation
+        function setupHeartAnimation() {
+          if (!animeLoaded) return;
+
+          const heartButton = document.getElementById("heart-button");
+          if (!heartButton) return;
+
+          heartButton.addEventListener("click", function () {
+            // Animate heart
+            anime({
+              targets: heartButton,
+              scale: [1, 1.3, 1],
+              duration: 800,
+              easing: "easeOutElastic(1, .5)",
+            });
+          });
+        }
+
+        // Ring Trigger Animation
+        function setupRingTrigger() {
+          if (!animeLoaded) return;
+
+          const ringTrigger = document.getElementById("ring-trigger");
+          const pointCounter = document.getElementById("point-counter");
+
+          if (!ringTrigger || !pointCounter) return;
+
+          ringTrigger.addEventListener("click", function () {
+            // Animate button
+            anime({
+              targets: ringTrigger,
+              scale: [1, 0.95, 1],
+              duration: 300,
+              easing: "easeInOutSine",
+            });
+
+            // Animate counter
+            anime({
+              targets: pointCounter,
+              scale: [1, 1.3, 1],
+              duration: 800,
+              easing: "easeOutElastic(1, .5)",
+            });
+
+            // Count up
+            let count = 0;
+            const countUpInterval = setInterval(() => {
+              count++;
+              pointCounter.textContent = "+" + count;
+              if (count >= 25) clearInterval(countUpInterval);
+            }, 30);
+          });
+        }
+
+        // Initialize all animations
+        animateBadge();
+        animateTrophy();
+        setupConfetti();
+        animateSuccess();
+        animateLoading();
+        animateProgress();
+        setupHeartAnimation();
+        setupRingTrigger();
+
+        // Active nav links based on scroll position
+        const sections = document.querySelectorAll("section[id]");
+        const navLinks = document.querySelectorAll(".nav-link");
+
+        function highlightNavLinks() {
+          const scrollPosition = window.scrollY + 100;
+
+          sections.forEach((section) => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            const sectionId = section.getAttribute("id");
+
+            if (
+              scrollPosition >= sectionTop &&
+              scrollPosition < sectionTop + sectionHeight
+            ) {
+              navLinks.forEach((link) => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === `#${sectionId}`) {
+                  link.classList.add("active");
+                }
+              });
+            }
+          });
+        }
+
+        // Smooth scroll for nav links
+        navLinks.forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute("href");
+            const targetSection = document.querySelector(targetId);
+
+            window.scrollTo({
+              top: targetSection.offsetTop - 80,
+              behavior: "smooth",
+            });
+          });
+        });
+
+        window.addEventListener("scroll", highlightNavLinks);
+        highlightNavLinks();
+      });
+    </script>
+  </body>
+</html>

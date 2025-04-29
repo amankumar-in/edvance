@@ -54,6 +54,11 @@ const NOTIFICATION_SERVICE_URL =
     ? process.env.PRODUCTION_NOTIFICATION_SERVICE_URL
     : process.env.NOTIFICATION_SERVICE_URL;
 
+const ANALYTICS_SERVICE_URL =
+  NODE_ENV === "production"
+    ? process.env.PRODUCTION_ANALYTICS_SERVICE_URL
+    : process.env.ANALYTICS_SERVICE_URL;
+
 // Initialize express app
 const app = express();
 
@@ -91,6 +96,7 @@ console.log("TASK_SERVICE_URL:", TASK_SERVICE_URL);
 console.log("POINTS_SERVICE_URL:", POINTS_SERVICE_URL);
 console.log("REWARDS_SERVICE_URL:", REWARDS_SERVICE_URL);
 console.log("NOTIFICATION_SERVICE_URL:", NOTIFICATION_SERVICE_URL);
+console.log("ANALYTICS_SERVICE_URL:", ANALYTICS_SERVICE_URL);
 
 // Helper function for proxy configuration
 const createServiceProxy = (path, targetUrl) => {
@@ -143,6 +149,8 @@ createServiceProxy("/api/points", POINTS_SERVICE_URL);
 createServiceProxy("/api/rewards", REWARDS_SERVICE_URL);
 createServiceProxy("/api/notifications", NOTIFICATION_SERVICE_URL);
 createServiceProxy("/api/schools", USER_SERVICE_URL);
+// Configure analytics service routes
+createServiceProxy("/api/analytics", ANALYTICS_SERVICE_URL);
 
 // 404 Handler
 app.use((req, res) => {

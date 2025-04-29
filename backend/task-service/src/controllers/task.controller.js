@@ -91,7 +91,7 @@ const taskController = {
       try {
         // This would be the actual notification service URL in production
         const notificationServiceUrl =
-          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3005";
+          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
 
         await axios.post(`${notificationServiceUrl}/api/notifications`, {
           type: "task_assigned",
@@ -270,7 +270,7 @@ const taskController = {
       ) {
         try {
           const notificationServiceUrl =
-            process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3005";
+            process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
           await axios.post(`${notificationServiceUrl}/api/notifications`, {
             type: "task_updated",
             recipientId: task.assignedTo,
@@ -362,7 +362,7 @@ const taskController = {
       // Notify the student
       try {
         const notificationServiceUrl =
-          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3005";
+          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
         await axios.post(`${notificationServiceUrl}/api/notifications`, {
           type: "task_deleted",
           recipientId: task.assignedTo,
@@ -467,7 +467,7 @@ const taskController = {
         // Notify approver that task needs approval
         try {
           const notificationServiceUrl =
-            process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3005";
+            process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
 
           // Determine who should be notified based on approverType
           let recipientId;
@@ -605,7 +605,7 @@ const taskController = {
       // Send notification to student
       try {
         const notificationServiceUrl =
-          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3005";
+          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
         await axios.post(`${notificationServiceUrl}/api/notifications`, {
           type: action === "approve" ? "task_approved" : "task_rejected",
           recipientId: task.assignedTo,
@@ -995,7 +995,7 @@ const taskController = {
       // Notify relevant parties about the comment
       try {
         const notificationServiceUrl =
-          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3005";
+          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
 
         // If student comments, notify the approver/creator
         // If teacher/parent comments, notify the student

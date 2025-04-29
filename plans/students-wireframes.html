@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Combined Student Complete Wireframes - All Screens</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .screen-section {
+        background: white;
+        margin: 30px 0;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .screen-header {
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .screen-content {
+        display: flex;
+        gap: 30px;
+      }
+      .wireframe {
+        flex: 1;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 500px;
+        background: #f9f9f9;
+        position: relative;
+      }
+      .api-details {
+        flex: 1;
+      }
+      .component {
+        border: 1px dashed #999;
+        margin: 10px 0;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+      }
+      .nav-bar {
+        background: #333;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .button {
+        background: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        margin: 5px;
+        display: inline-block;
+        text-align: center;
+        cursor: pointer;
+      }
+      .button.secondary {
+        background: #f44336;
+      }
+      .button.primary {
+        background: #2196f3;
+      }
+      .input-field {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        background: white;
+      }
+      .api-call {
+        background: #e3f2fd;
+        padding: 10px;
+        border-left: 4px solid #2196f3;
+        margin: 10px 0;
+        font-family: monospace;
+      }
+      .modal {
+        border: 2px dashed #666;
+        padding: 20px;
+        margin: 10px 0;
+        background: #fff;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        display: none;
+      }
+      .modal.show {
+        display: block;
+      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 2px solid #ddd;
+        margin-bottom: 20px;
+      }
+      .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+      }
+      .tab.active {
+        background: #333;
+        color: white;
+      }
+      .header {
+        background: #2196f3;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 5px;
+      }
+      .footer {
+        background: #333;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        left: 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .stats-box {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .progress-bar {
+        background: #eee;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress-fill {
+        background: #4caf50;
+        height: 100%;
+        width: 60%;
+      }
+      .avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #ddd;
+        display: inline-block;
+      }
+      .badge-sm {
+        background: #2196f3;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 12px;
+      }
+      .notification-bell {
+        position: relative;
+        display: inline-block;
+      }
+      .notification-dot {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 10px;
+        height: 10px;
+        background: red;
+        border-radius: 50%;
+      }
+      .profile-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        margin: 10px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .profile-card:hover {
+        border-color: #2196f3;
+        transform: translateY(-5px);
+      }
+      .profile-card.selected {
+        border-color: #4caf50;
+        background: #f0fff4;
+      }
+      .error-message {
+        color: #f44336;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .success-message {
+        color: #4caf50;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .progress-steps {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+      .step {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+        position: relative;
+      }
+      .step.active {
+        background: #2196f3;
+        color: white;
+      }
+      .step.completed {
+        background: #4caf50;
+        color: white;
+      }
+      .step::after {
+        content: "";
+        position: absolute;
+        width: 50px;
+        height: 2px;
+        background: #ddd;
+        left: 30px;
+      }
+      .step:last-child::after {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Student Complete Wireframes - All Screens</h1>
+      <p>
+        Comprehensive visual documentation with streamlined authentication and
+        profile flow
+      </p>
+
+      <!-- 1. Profile Selection Screen (NEW) -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>1. Profile Selection Screen (First Screen)</h2>
+          <p>Entry point: Users select their profile type</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 30px">
+              <h1>Welcome to UNIVANCE</h1>
+              <p>Select your profile type to get started</p>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 50px;
+              "
+            >
+              <div class="profile-card selected">
+                <div style="font-size: 50px">👨‍🎓</div>
+                <h3>Student</h3>
+                <p>I want to earn scholarship points</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">👪</div>
+                <h3>Parent</h3>
+                <p>I want to manage my child's tasks</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">👩‍🏫</div>
+                <h3>Teacher</h3>
+                <p>I want to assign tasks to students</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">🏫</div>
+                <h3>School Admin</h3>
+                <p>I want to manage a school</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">🤝</div>
+                <h3>Social Worker</h3>
+                <p>I want to support students</p>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px">
+              <div class="button primary" style="width: 200px">Continue</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px">
+              Already have an account? <a href="#">Login</a>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Flow Logic</h3>
+            <div class="component">
+              <strong>Profile Selection:</strong>
+              <ul>
+                <li>First step in the process</li>
+                <li>Determines which fields to show in registration</li>
+                <li>Enables age validation for students</li>
+                <li>Sets expectations for required information</li>
+              </ul>
+            </div>
+            <h3>Navigation</h3>
+            <div class="component">
+              <strong>Based on Selection:</strong>
+              <ul>
+                <li>Student → Student Registration Form</li>
+                <li>Parent → Parent Registration Form</li>
+                <li>Teacher → Teacher Registration Form</li>
+                <li>Admin → Admin Registration Form</li>
+                <li>Social Worker → SW Registration Form</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Student Registration Screen (Streamlined) -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>2. Student Registration Screen (Streamlined)</h2>
+          <p>Combined account and profile creation for students</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="progress-steps">
+              <div class="step completed">1</div>
+              <div class="step active">2</div>
+              <div class="step">3</div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px">
+              <h1>Create Your Student Account</h1>
+              <p>Fill in your information to get started</p>
+            </div>
+
+            <div style="max-width: 400px; margin: 0 auto">
+              <!-- Account Information -->
+              <h3>Account Information</h3>
+              <div class="input-field">First Name</div>
+              <div class="input-field">Last Name</div>
+              <div class="input-field">Email Address</div>
+              <div class="input-field">Password</div>
+              <div class="input-field">Confirm Password</div>
+
+              <!-- Student Profile Information -->
+              <h3 style="margin-top: 30px">Student Profile</h3>
+              <div class="input-field">Date of Birth (mm/dd/yyyy)</div>
+              <div class="error-message" style="display: none">
+                You must be at least 13 years old to register
+              </div>
+
+              <select class="input-field">
+                <option value="">Select Grade Level</option>
+                <option>1st Grade</option>
+                <option>2nd Grade</option>
+                <option>3rd Grade</option>
+                <option>4th Grade</option>
+                <option>5th Grade</option>
+                <option>6th Grade</option>
+                <option>7th Grade</option>
+                <option>8th Grade</option>
+                <option>9th Grade</option>
+                <option>10th Grade</option>
+                <option>11th Grade</option>
+                <option>12th Grade</option>
+              </select>
+
+              <div style="margin: 20px 0">
+                <input type="checkbox" id="terms" />
+                <label for="terms"
+                  >I agree to the Terms and Privacy Policy</label
+                >
+              </div>
+
+              <div
+                class="button primary"
+                style="width: 100%; text-align: center"
+              >
+                Create Account
+              </div>
+            </div>
+
+            <!-- Under 13 Modal -->
+            <div class="modal" id="under13Modal">
+              <h3>Parent Verification Required</h3>
+              <p>
+                Because you're under 13, we need your parent's email to
+                continue.
+              </p>
+              <div class="input-field">Parent's Email Address</div>
+              <div style="display: flex; gap: 10px">
+                <div class="button primary">Continue</div>
+                <div class="button secondary">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/register<br />
+              Request: { email, password, firstName, lastName, roles:
+              ["student"] }<br />
+              Response: { user, accessToken, refreshToken }
+            </div>
+            <div class="api-call">
+              POST /api/students/profile<br />
+              Request: { grade, schoolId }<br />
+              Response: { student profile data }
+            </div>
+            <h3>Validation</h3>
+            <div class="component">
+              <strong>Age Check:</strong> Must be 13+ or require parent email<br />
+              <strong>Grade Level:</strong> Required field<br />
+              <strong>Password:</strong> Min 8 chars, 1 uppercase, 1 number
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Link Options Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>3. Link Options Screen (Optional)</h2>
+          <p>Connect with parent and/or school</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="progress-steps">
+              <div class="step completed">1</div>
+              <div class="step completed">2</div>
+              <div class="step active">3</div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px">
+              <h1>Connect Your Account</h1>
+              <p>Link with your parent or school (optional)</p>
+            </div>
+
+            <div style="max-width: 600px; margin: 0 auto">
+              <div style="display: flex; gap: 20px">
+                <!-- Parent Link Card -->
+                <div class="card" style="flex: 1">
+                  <h3>Link with Parent</h3>
+                  <p>Connect with your parent to receive tasks and rewards</p>
+                  <div class="input-field">Parent's Email Address</div>
+                  <div class="button primary">Send Request</div>
+                  <div style="text-align: center; margin: 20px 0">- OR -</div>
+                  <div class="input-field">Parent Link Code</div>
+                  <div class="button primary">Connect</div>
+                </div>
+
+                <!-- School Link Card -->
+                <div class="card" style="flex: 1">
+                  <h3>Link with School</h3>
+                  <p>Join your school or class to receive assignments</p>
+                  <div class="input-field">School/Class Code</div>
+                  <div class="button primary">Join</div>
+                </div>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0">
+                <div class="button" style="background: #666">Skip for Now</div>
+                <p style="font-size: 14px; color: #666">
+                  You can link accounts later from your profile
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/link-requests/parent<br />
+              POST /api/link-requests/school<br />
+              POST /api/students/link/parent<br />
+              POST /api/students/link/school
+            </div>
+            <h3>Flow</h3>
+            <div class="component">
+              Users can skip this step and link later from their profile
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Login Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>4. Login Screen (Common for All Users)</h2>
+          <p>Simple login for all profile types</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>UNIVANCE</h1>
+              <p>Welcome Back!</p>
+            </div>
+            <div style="max-width: 300px; margin: 50px auto">
+              <div class="input-field">Email Address</div>
+              <div class="input-field" type="password">Password</div>
+              <div style="text-align: right">
+                <a href="#" style="font-size: 14px">Forgot Password?</a>
+              </div>
+              <div
+                class="button primary"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Login
+              </div>
+              <div style="text-align: center; margin: 20px 0">
+                Or continue with
+              </div>
+              <div style="display: flex; gap: 10px">
+                <div class="button" style="flex: 1; background: #db4437">
+                  Google
+                </div>
+                <div class="button" style="flex: 1; background: #000">
+                  Apple
+                </div>
+              </div>
+              <div style="text-align: center; margin-top: 30px">
+                Don't have an account? <a href="#">Get Started</a>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/login<br />
+              Request: { email, password }<br />
+              Response: { accessToken, refreshToken, user }
+            </div>
+            <h3>Flow After Login</h3>
+            <div class="component">
+              <strong>System checks user profiles:</strong>
+              <ul>
+                <li>Single profile → Direct to dashboard</li>
+                <li>Multiple profiles → Show profile selector</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Profile Selector (When Multiple Profiles) -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>5. Profile Selector Screen</h2>
+          <p>Shown when user has multiple profiles</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>Welcome Back, Sarah</h1>
+              <p>Select which profile you'd like to use</p>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                margin-top: 50px;
+              "
+            >
+              <div class="profile-card">
+                <div style="font-size: 50px">👩‍🏫</div>
+                <h3>Teacher</h3>
+                <p>Lincoln Middle School</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">👪</div>
+                <h3>Parent</h3>
+                <p>2 Children</p>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Profile Detection</h3>
+            <div class="component">
+              <strong>API Calls:</strong>
+              <ul>
+                <li>GET /api/users/me</li>
+                <li>GET /api/students/me (if student)</li>
+                <li>GET /api/parents/me (if parent)</li>
+                <li>GET /api/teachers/me (if teacher)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Forgot Password Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>6. Forgot Password Screen</h2>
+          <p>Password reset request</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>Reset Password</h1>
+              <p>Enter your email to receive reset instructions</p>
+            </div>
+            <div style="max-width: 300px; margin: 50px auto">
+              <div class="input-field">Email Address</div>
+              <div
+                class="button"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Send Reset Link
+              </div>
+              <div style="text-align: center; margin-top: 30px">
+                Remember your password? <a href="#">Back to Login</a>
+              </div>
+            </div>
+            <div class="modal" id="emailSentModal">
+              <h3>Email Sent</h3>
+              <p>
+                If your email is registered, you'll receive password reset
+                instructions shortly.
+              </p>
+              <div class="button">OK</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/forgot-password<br />
+              Request: { email }<br />
+              Response: { success: true, message }
+            </div>
+            <h3>User Flow</h3>
+            <div class="component">
+              Always shows success message for security (even if email doesn't
+              exist)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Reset Password Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>7. Reset Password Screen</h2>
+          <p>Set new password (accessed via email link)</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>Create New Password</h1>
+            </div>
+            <div style="max-width: 300px; margin: 50px auto">
+              <div class="input-field" type="password">New Password</div>
+              <div class="input-field" type="password">
+                Confirm New Password
+              </div>
+              <div
+                class="button"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Reset Password
+              </div>
+            </div>
+            <div class="modal" id="resetSuccessModal">
+              <h3>Password Reset Successful</h3>
+              <p>
+                Your password has been reset. You can now login with your new
+                password.
+              </p>
+              <div class="button">Go to Login</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/reset-password<br />
+              Request: { email, token, newPassword }<br />
+              Response: { success: true, message }
+            </div>
+            <h3>Token Handling</h3>
+            <div class="component">
+              Token and email are extracted from URL parameters
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Dashboard Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>8. Dashboard Screen</h2>
+          <p>Main landing screen after login</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div class="avatar"></div>
+                <div>
+                  <div style="font-weight: bold">John Smith</div>
+                  <div style="font-size: 14px">Level 3</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 20px">
+                <div>
+                  <span style="font-size: 20px; font-weight: bold">350 SP</span>
+                </div>
+                <div class="notification-bell">
+                  🔔
+                  <div class="notification-dot"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <h3>Daily Check-in</h3>
+              <div class="card" style="text-align: center">
+                <div style="font-size: 24px">🎯</div>
+                <div style="font-weight: bold">Check in for today!</div>
+                <div style="color: #666">7 day streak! Keep it going!</div>
+                <div class="button" style="margin-top: 10px">Check In Now</div>
+              </div>
+
+              <h3>Today's Tasks</h3>
+              <div style="display: flex; gap: 10px; overflow-x: auto">
+                <div class="card" style="min-width: 200px">
+                  <div style="font-weight: bold">Math Homework</div>
+                  <div style="color: #666">Due in 2 hours</div>
+                  <div style="margin-top: 10px">
+                    <span class="badge-sm">+15 SP</span>
+                    <span class="badge-sm" style="background: #ff9800"
+                      >School</span
+                    >
+                  </div>
+                </div>
+                <div class="card" style="min-width: 200px">
+                  <div style="font-weight: bold">Clean Room</div>
+                  <div style="color: #666">Due by 8 PM</div>
+                  <div style="margin-top: 10px">
+                    <span class="badge-sm">+10 SP</span>
+                    <span class="badge-sm" style="background: #4caf50"
+                      >Home</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <h3>Recent Activity</h3>
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <div>Completed: Science Quiz</div>
+                  <div style="color: #4caf50">+20 SP</div>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <div>Badge Earned: 7-Day Streak!</div>
+                  <div style="color: #4caf50">+50 SP</div>
+                </div>
+                <div style="display: flex; justify-content: space-between">
+                  <div>Redeemed: Extra Screen Time</div>
+                  <div style="color: #f44336">-100 SP</div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="nav-bar"
+              style="position: fixed; bottom: 0; left: 0; right: 0"
+            >
+              <div style="display: flex; justify-content: space-around">
+                <div style="font-weight: bold">Home</div>
+                <div>Tasks</div>
+                <div>Rewards</div>
+                <div>Progress</div>
+                <div>Profile</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/users/me<br />
+              GET /api/students/me<br />
+              GET /api/points/accounts/student/{studentId}<br />
+              GET /api/tasks?assignedTo={studentId}&status=pending&limit=5<br />
+              GET /api/points/transactions/student/{studentId}?limit=3<br />
+              GET /api/attendance/{id}/summary<br />
+              GET /api/badges/timeline/{studentId}?limit=3
+            </div>
+            <h3>Interactions</h3>
+            <div class="component">
+              <strong>Check-in Button:</strong> POST /api/students/{id}/check-in
+            </div>
+            <div class="component">
+              <strong>Task Card Click:</strong> Navigate to Task Detail screen
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Tasks Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>9. Tasks Screen</h2>
+          <p>Complete task management interface</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Tasks</div>
+              </div>
+              <div>350 SP</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="tabs">
+                <div class="tab active">To Do</div>
+                <div class="tab">Pending</div>
+                <div class="tab">Completed</div>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-bottom: 20px">
+                <select class="input-field" style="flex: 1">
+                  <option>All Categories</option>
+                  <option>Academic</option>
+                  <option>Home</option>
+                  <option>Behavior</option>
+                </select>
+                <select class="input-field" style="flex: 1">
+                  <option>All Sources</option>
+                  <option>School</option>
+                  <option>Home</option>
+                </select>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">
+                      Math Homework - Chapter 5
+                    </div>
+                    <div style="color: #666">Due in 2 hours</div>
+                  </div>
+                  <div>
+                    <span class="badge-sm">+15 SP</span>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <span class="badge-sm" style="background: #ff9800"
+                    >School</span
+                  >
+                  <span class="badge-sm" style="background: #2196f3"
+                    >Academic</span
+                  >
+                </div>
+                <div class="button" style="margin-top: 10px">View Details</div>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">
+                      Practice Piano - 30 mins
+                    </div>
+                    <div style="color: #666">Due by 6 PM</div>
+                  </div>
+                  <div>
+                    <span class="badge-sm">+10 SP</span>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <span class="badge-sm" style="background: #4caf50">Home</span>
+                  <span class="badge-sm" style="background: #9c27b0"
+                    >Extracurricular</span
+                  >
+                </div>
+                <div class="button" style="margin-top: 10px">View Details</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/tasks?assignedTo={studentId}&status={tab}<br />
+              GET /api/tasks/categories/context/{context}<br />
+              GET /api/points/accounts/student/{studentId}/balance
+            </div>
+            <h3>Task States</h3>
+            <div class="component">
+              <strong>Pending:</strong> Tasks not yet completed<br />
+              <strong>Pending Approval:</strong> Tasks awaiting review<br />
+              <strong>Completed:</strong> Approved tasks
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Task Detail Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>10. Task Detail Screen</h2>
+          <p>Detailed view of a specific task</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Task Details</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div>
+                    <h2>Math Homework - Chapter 5</h2>
+                    <div style="color: #666">Due: Today at 5:00 PM</div>
+                  </div>
+                  <div class="badge-sm" style="font-size: 18px">+15 SP</div>
+                </div>
+
+                <div style="margin-top: 20px">
+                  <span class="badge-sm" style="background: #ff9800"
+                    >School</span
+                  >
+                  <span class="badge-sm" style="background: #2196f3"
+                    >Academic</span
+                  >
+                  <span class="badge-sm" style="background: #e91e63"
+                    >Medium</span
+                  >
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Description</h3>
+                <p>
+                  Complete all problems from pages 78-82 in your math textbook.
+                  Show your work for all problems and circle your final answers.
+                </p>
+              </div>
+
+              <div class="card">
+                <h3>Assigned By</h3>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <div class="avatar" style="width: 40px; height: 40px"></div>
+                  <div>
+                    <div style="font-weight: bold">Mrs. Johnson</div>
+                    <div style="font-size: 14px">Math Teacher</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Attachments</h3>
+                <div style="display: flex; gap: 10px">
+                  <div
+                    style="
+                      padding: 10px;
+                      background: #f5f5f5;
+                      border-radius: 5px;
+                    "
+                  >
+                    📄 worksheet.pdf
+                  </div>
+                  <div
+                    style="
+                      padding: 10px;
+                      background: #f5f5f5;
+                      border-radius: 5px;
+                    "
+                  >
+                    🔗 math-resources.com
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Comments</h3>
+                <div
+                  style="
+                    margin-bottom: 10px;
+                    padding: 10px;
+                    background: #f5f5f5;
+                    border-radius: 5px;
+                  "
+                >
+                  <div style="font-weight: bold">Mrs. Johnson</div>
+                  <div style="font-size: 12px; color: #666">2 hours ago</div>
+                  <div>Remember to show your work for all problems!</div>
+                </div>
+                <div class="input-field">Add a comment...</div>
+                <div class="button" style="width: auto; float: right">Send</div>
+              </div>
+
+              <div
+                class="button"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Mark as Complete
+              </div>
+            </div>
+
+            <!-- Task Completion Modal -->
+            <div class="modal" id="taskCompletionModal">
+              <h3>Complete Task</h3>
+              <div class="input-field" style="height: 100px">
+                Add a note about completion...
+              </div>
+              <div style="margin: 20px 0">
+                <div style="margin-bottom: 10px">Add Evidence:</div>
+                <div style="display: flex; gap: 10px">
+                  <div class="button" style="background: #666">📷 Photo</div>
+                  <div class="button" style="background: #666">📄 File</div>
+                  <div class="button" style="background: #666">📝 Text</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px">
+                <div class="button">Submit</div>
+                <div class="button secondary">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/tasks/{id}<br />
+              POST /api/tasks/{id}/comments<br />
+              POST /api/tasks/{id}/complete
+            </div>
+            <h3>Task Completion</h3>
+            <div class="component">
+              <strong>Evidence Options:</strong> Photo, File, Text
+            </div>
+            <div class="component">
+              <strong>After Submit:</strong> Task status changes to
+              pending_approval
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. Rewards Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>11. Rewards Screen</h2>
+          <p>Reward browsing and redemption</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">Rewards</div>
+              <div>350 SP</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="stats-box" style="margin-bottom: 20px">
+                <div style="font-size: 24px; font-weight: bold">350 SP</div>
+                <div>Available Points</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 70%"></div>
+                </div>
+                <div style="font-size: 12px">150 points to next level</div>
+              </div>
+
+              <div class="tabs">
+                <div class="tab active">Family</div>
+                <div class="tab">School</div>
+                <div class="tab">Sponsors</div>
+              </div>
+
+              <div class="grid">
+                <div class="card" style="text-align: center">
+                  <div
+                    style="height: 100px; background: #eee; margin-bottom: 10px"
+                  ></div>
+                  <div style="font-weight: bold">Extra Screen Time</div>
+                  <div style="color: #666">30 minutes</div>
+                  <div style="margin: 10px 0; font-weight: bold">100 SP</div>
+                  <div class="button">Redeem</div>
+                </div>
+                <div class="card" style="text-align: center">
+                  <div
+                    style="height: 100px; background: #eee; margin-bottom: 10px"
+                  ></div>
+                  <div style="font-weight: bold">Choose Dinner</div>
+                  <div style="color: #666">One dinner choice</div>
+                  <div style="margin: 10px 0; font-weight: bold">150 SP</div>
+                  <div class="button">Redeem</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/rewards?category={selected}<br />
+              GET /api/rewards/categories<br />
+              GET /api/points/accounts/student/{studentId}/balance<br />
+              GET /api/points/accounts/student/{studentId}/level
+            </div>
+            <h3>Reward Categories</h3>
+            <div class="component">
+              <strong>Family:</strong> Created by parents<br />
+              <strong>School:</strong> Created by school/teachers<br />
+              <strong>Sponsor:</strong> External rewards
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Reward Detail Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>12. Reward Detail Screen</h2>
+          <p>Detailed view of a specific reward</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Reward Details</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div style="text-align: center">
+                <div
+                  style="
+                    width: 100%;
+                    height: 200px;
+                    background: #eee;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                  "
+                ></div>
+                <h2>Extra Screen Time</h2>
+                <div style="font-size: 24px; font-weight: bold; color: #4caf50">
+                  100 SP
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Description</h3>
+                <p>
+                  Get an additional 30 minutes of screen time for gaming,
+                  movies, or TV shows. This reward can be used on weekends or
+                  after completing all homework.
+                </p>
+              </div>
+
+              <div class="card">
+                <h3>Details</h3>
+                <div style="margin-bottom: 10px">
+                  <div style="font-weight: bold">Category</div>
+                  <div>Family Privilege</div>
+                </div>
+                <div style="margin-bottom: 10px">
+                  <div style="font-weight: bold">Provided By</div>
+                  <div>Parents</div>
+                </div>
+                <div style="margin-bottom: 10px">
+                  <div style="font-weight: bold">Availability</div>
+                  <div>Unlimited</div>
+                </div>
+                <div>
+                  <div style="font-weight: bold">Expires</div>
+                  <div>Never</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Redemption Instructions</h3>
+                <p>
+                  Show the redemption code to your parent. They will approve the
+                  extra screen time and mark it as fulfilled in the app.
+                </p>
+              </div>
+
+              <div
+                class="button"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Redeem for 100 SP
+              </div>
+            </div>
+
+            <!-- Redemption Modal -->
+            <div class="modal" id="redemptionModal">
+              <h3>Confirm Redemption</h3>
+              <div style="text-align: center">
+                <div style="font-weight: bold; font-size: 18px">
+                  Extra Screen Time
+                </div>
+                <div style="margin: 10px 0">30 minutes</div>
+                <div style="font-size: 14px">Cost: 100 SP</div>
+                <div style="font-size: 14px">Your balance: 350 SP</div>
+                <div style="font-size: 14px">Remaining: 250 SP</div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button" style="flex: 1">Confirm</div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/rewards/{id}<br />
+              GET /api/rewards/{id}/check-eligibility<br />
+              POST /api/rewards/redemptions/{id}/redeem
+            </div>
+            <h3>Eligibility Check</h3>
+            <div class="component">
+              <strong>Points Check:</strong> Student has enough SP<br />
+              <strong>Availability:</strong> Reward is active and in stock<br />
+              <strong>Expiration:</strong> Reward not expired
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13. My Redemptions Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>13. My Redemptions Screen</h2>
+          <p>History of redeemed rewards</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">My Redemptions</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="tabs">
+                <div class="tab active">Pending</div>
+                <div class="tab">Fulfilled</div>
+                <div class="tab">All</div>
+              </div>
+
+              <!-- Pending Redemption -->
+              <div class="card">
+                <div style="display: flex; gap: 15px">
+                  <div
+                    style="
+                      width: 80px;
+                      height: 80px;
+                      background: #eee;
+                      border-radius: 5px;
+                    "
+                  ></div>
+                  <div style="flex: 1">
+                    <div style="font-weight: bold">Extra Screen Time</div>
+                    <div style="font-size: 14px; color: #666">
+                      Redeemed: April 21, 2025
+                    </div>
+                    <div style="font-size: 14px; color: #f44336">
+                      Cost: -100 SP
+                    </div>
+                    <div class="badge-sm" style="background: #ff9800">
+                      Pending
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    margin-top: 10px;
+                    padding: 10px;
+                    background: #f5f5f5;
+                    border-radius: 5px;
+                  "
+                >
+                  <div style="font-weight: bold">
+                    Redemption Code: RDM-X7Y2Z9
+                  </div>
+                  <div style="font-size: 12px">
+                    Show this code to your parent
+                  </div>
+                </div>
+                <div class="button secondary" style="margin-top: 10px">
+                  Cancel
+                </div>
+              </div>
+
+              <!-- Fulfilled Redemption -->
+              <div class="card">
+                <div style="display: flex; gap: 15px">
+                  <div
+                    style="
+                      width: 80px;
+                      height: 80px;
+                      background: #eee;
+                      border-radius: 5px;
+                    "
+                  ></div>
+                  <div style="flex: 1">
+                    <div style="font-weight: bold">Choose Dinner</div>
+                    <div style="font-size: 14px; color: #666">
+                      Redeemed: April 15, 2025
+                    </div>
+                    <div style="font-size: 14px; color: #f44336">
+                      Cost: -150 SP
+                    </div>
+                    <div class="badge-sm" style="background: #4caf50">
+                      Fulfilled
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    margin-top: 10px;
+                    padding: 10px;
+                    background: #f5f5f5;
+                    border-radius: 5px;
+                  "
+                >
+                  <div style="font-size: 14px">
+                    Fulfilled on: April 15, 2025
+                  </div>
+                  <div style="font-size: 12px">By: Mom</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/rewards/redemptions?studentId={studentId}<br />
+              GET /api/rewards/redemptions/{id}<br />
+              POST /api/rewards/redemptions/{id}/cancel
+            </div>
+            <h3>Redemption States</h3>
+            <div class="component">
+              <strong>Pending:</strong> Awaiting fulfillment<br />
+              <strong>Fulfilled:</strong> Completed successfully<br />
+              <strong>Canceled:</strong> Canceled by user/system<br />
+              <strong>Expired:</strong> Time limit exceeded
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 14. Progress Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>14. Progress Screen</h2>
+          <p>Student's performance and achievements</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">My Progress</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card" style="text-align: center">
+                <div style="font-size: 48px">3</div>
+                <div style="font-weight: bold">Level 3: Developing Scholar</div>
+                <div class="progress-bar" style="margin: 20px 0">
+                  <div class="progress-fill" style="width: 70%"></div>
+                </div>
+                <div>350/500 points to Level 4</div>
+              </div>
+
+              <div class="grid" style="margin: 20px 0">
+                <div class="stats-box">
+                  <div style="font-size: 24px; font-weight: bold">1,250</div>
+                  <div>Total Points Earned</div>
+                </div>
+                <div class="stats-box">
+                  <div style="font-size: 24px; font-weight: bold">900</div>
+                  <div>Points Spent</div>
+                </div>
+                <div class="stats-box">
+                  <div style="font-size: 24px; font-weight: bold">85%</div>
+                  <div>Completion Rate</div>
+                </div>
+                <div class="stats-box">
+                  <div style="font-size: 24px; font-weight: bold">7</div>
+                  <div>Day Streak</div>
+                </div>
+              </div>
+
+              <h3>Points Breakdown</h3>
+              <div class="card">
+                <div
+                  style="
+                    height: 200px;
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  Pie Chart: Points by Category
+                </div>
+              </div>
+
+              <h3>Time Series Analysis</h3>
+              <div class="card">
+                <div
+                  style="
+                    height: 200px;
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  Line Chart: Points Over Time
+                </div>
+              </div>
+
+              <h3>My Badges</h3>
+              <div class="grid">
+                <div class="card" style="text-align: center">
+                  <div style="font-size: 40px">🏅</div>
+                  <div style="font-weight: bold">7-Day Streak</div>
+                  <div style="font-size: 12px">+50 SP</div>
+                </div>
+                <div class="card" style="text-align: center">
+                  <div style="font-size: 40px">📚</div>
+                  <div style="font-weight: bold">Study Star</div>
+                  <div style="font-size: 12px">+25 SP</div>
+                </div>
+                <div class="card" style="text-align: center">
+                  <div style="font-size: 40px">🌟</div>
+                  <div style="font-weight: bold">Level 3</div>
+                  <div style="font-size: 12px">+100 SP</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/students/{id}/level<br />
+              GET /api/points/accounts/student/{studentId}<br />
+              GET /api/students/{id}/badges<br />
+              GET /api/badges/timeline/{studentId}<br />
+              GET /api/tasks/student/{studentId}/summary<br />
+              GET
+              /api/points/transactions/analysis/categories?studentId={studentId}<br />
+              GET
+              /api/points/transactions/visualization/timeseries?studentId={studentId}<br />
+              GET /api/points/configuration/levels
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 15. Badge Collections Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>15. Badge Collections Screen</h2>
+          <p>View all badge collections and progress</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Badge Collections</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <!-- Attendance Collection -->
+              <div class="card">
+                <h3>Attendance Badges</h3>
+                <div class="progress-bar" style="margin: 10px 0">
+                  <div class="progress-fill" style="width: 60%"></div>
+                </div>
+                <div style="font-size: 14px; color: #666">
+                  3/5 badges earned
+                </div>
+
+                <div class="grid" style="margin-top: 20px">
+                  <div style="text-align: center">
+                    <div style="font-size: 40px">🏅</div>
+                    <div style="font-size: 12px">First Check-in</div>
+                    <div style="font-size: 10px; color: #4caf50">✓ Earned</div>
+                  </div>
+                  <div style="text-align: center">
+                    <div style="font-size: 40px">⭐</div>
+                    <div style="font-size: 12px">7-Day Streak</div>
+                    <div style="font-size: 10px; color: #4caf50">✓ Earned</div>
+                  </div>
+                  <div style="text-align: center">
+                    <div style="font-size: 40px">🌟</div>
+                    <div style="font-size: 12px">30-Day Streak</div>
+                    <div style="font-size: 10px; color: #4caf50">✓ Earned</div>
+                  </div>
+                  <div style="text-align: center; opacity: 0.5">
+                    <div style="font-size: 40px">🏆</div>
+                    <div style="font-size: 12px">60-Day Streak</div>
+                    <div style="font-size: 10px; color: #999">23 days left</div>
+                  </div>
+                  <div style="text-align: center; opacity: 0.5">
+                    <div style="font-size: 40px">👑</div>
+                    <div style="font-size: 12px">Perfect Term</div>
+                    <div style="font-size: 10px; color: #999">Locked</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Academic Collection -->
+              <div class="card">
+                <h3>Academic Excellence</h3>
+                <div class="progress-bar" style="margin: 10px 0">
+                  <div class="progress-fill" style="width: 25%"></div>
+                </div>
+                <div style="font-size: 14px; color: #666">
+                  1/4 badges earned
+                </div>
+
+                <div class="grid" style="margin-top: 20px">
+                  <div style="text-align: center">
+                    <div style="font-size: 40px">📚</div>
+                    <div style="font-size: 12px">Study Star</div>
+                    <div style="font-size: 10px; color: #4caf50">✓ Earned</div>
+                  </div>
+                  <div style="text-align: center; opacity: 0.5">
+                    <div style="font-size: 40px">🎯</div>
+                    <div style="font-size: 12px">Perfect Score</div>
+                    <div style="font-size: 10px; color: #999">
+                      100% on 5 tasks
+                    </div>
+                  </div>
+                  <!-- More academic badges... -->
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/badges/collections<br />
+              GET /api/students/{id}/badges<br />
+              GET /api/badges<br />
+              GET /api/badges/{id}
+            </div>
+            <h3>Badge Types</h3>
+            <div class="component">
+              <strong>Attendance:</strong> Based on check-ins<br />
+              <strong>Academic:</strong> Task completion<br />
+              <strong>Behavior:</strong> Positive actions<br />
+              <strong>Special:</strong> Achievements
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 16. Point Transaction History Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>16. Point Transaction History Screen</h2>
+          <p>Complete history of earned and spent points</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Point History</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card" style="background: #f5f5f5">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-size: 14px">Current Balance</div>
+                    <div style="font-size: 24px; font-weight: bold">350 SP</div>
+                  </div>
+                  <div style="text-align: right">
+                    <div style="font-size: 14px">This Month</div>
+                    <div style="font-size: 18px; color: #4caf50">+180 SP</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filter Options -->
+              <div style="display: flex; gap: 10px; margin: 20px 0">
+                <select class="input-field" style="flex: 1">
+                  <option>All Types</option>
+                  <option>Earned</option>
+                  <option>Spent</option>
+                </select>
+                <select class="input-field" style="flex: 1">
+                  <option>This Week</option>
+                  <option>This Month</option>
+                  <option>Last 3 Months</option>
+                </select>
+              </div>
+
+              <!-- Transaction List -->
+              <div style="margin-bottom: 10px; font-weight: bold">Today</div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Task Completed</div>
+                    <div style="font-size: 14px; color: #666">
+                      Math Homework
+                    </div>
+                    <div style="font-size: 12px; color: #999">10:30 AM</div>
+                  </div>
+                  <div style="color: #4caf50; font-weight: bold">+15 SP</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Daily Check-in</div>
+                    <div style="font-size: 14px; color: #666">Attendance</div>
+                    <div style="font-size: 12px; color: #999">8:15 AM</div>
+                  </div>
+                  <div style="color: #4caf50; font-weight: bold">+5 SP</div>
+                </div>
+              </div>
+
+              <div style="margin: 10px 0; font-weight: bold">Yesterday</div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Reward Redeemed</div>
+                    <div style="font-size: 14px; color: #666">
+                      Extra Screen Time
+                    </div>
+                    <div style="font-size: 12px; color: #999">3:45 PM</div>
+                  </div>
+                  <div style="color: #f44336; font-weight: bold">-100 SP</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Badge Earned</div>
+                    <div style="font-size: 14px; color: #666">7-Day Streak</div>
+                    <div style="font-size: 12px; color: #999">9:00 AM</div>
+                  </div>
+                  <div style="color: #4caf50; font-weight: bold">+50 SP</div>
+                </div>
+              </div>
+
+              <div
+                class="button"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Load More
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/points/accounts/student/{studentId}/history<br />
+              GET /api/points/transactions/student/{studentId}<br />
+              GET /api/points/transactions/student/{studentId}/summary
+            </div>
+            <h3>Transaction Types</h3>
+            <div class="component">
+              <strong>Earned:</strong> Tasks, attendance, badges<br />
+              <strong>Spent:</strong> Reward redemptions<br />
+              <strong>Adjusted:</strong> Manual adjustments
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 17. Profile Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>17. Profile Screen</h2>
+          <p>Personal information and settings</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">Profile</div>
+              <div class="button" style="background: #f44336">Logout</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div style="text-align: center; margin: 20px 0">
+                <div
+                  class="avatar"
+                  style="width: 100px; height: 100px; margin: 0 auto"
+                ></div>
+                <div class="button" style="margin-top: 10px">Change Photo</div>
+              </div>
+
+              <div class="card">
+                <h3>Personal Information</h3>
+                <div class="input-field">First Name: John</div>
+                <div class="input-field">Last Name: Smith</div>
+                <div class="input-field">Email: john.smith@email.com</div>
+                <div class="input-field">Phone: (Optional)</div>
+                <div class="input-field">Date of Birth: 01/15/2010</div>
+                <div class="input-field">Grade: 8</div>
+                <div class="button" style="margin-top: 10px">Save Changes</div>
+              </div>
+
+              <div class="card">
+                <h3>Connected Accounts</h3>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <div>Parent: Mary Smith</div>
+                  <div style="color: #4caf50">✓ Connected</div>
+                </div>
+                <div style="display: flex; justify-content: space-between">
+                  <div>School: Lincoln Middle School</div>
+                  <div style="color: #4caf50">✓ Connected</div>
+                </div>
+                <div class="button" style="margin-top: 10px">
+                  Manage Connections
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Security</h3>
+                <div class="button">Change Password</div>
+              </div>
+            </div>
+
+            <!-- Change Password Modal -->
+            <div class="modal" id="changePasswordModal">
+              <h3>Change Password</h3>
+              <div class="input-field" type="password">Current Password</div>
+              <div class="input-field" type="password">New Password</div>
+              <div class="input-field" type="password">
+                Confirm New Password
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button" style="flex: 1">Save</div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/users/me<br />
+              GET /api/students/me<br />
+              PUT /api/users/me<br />
+              PUT /api/students/{id}<br />
+              POST /api/users/me/avatar<br />
+              PUT /api/users/me/password<br />
+              POST /api/auth/logout<br />
+              DELETE /api/students/{id}/parent/{parentId}
+            </div>
+            <h3>Logout Confirmation</h3>
+            <div class="component">
+              Modal: "Are you sure you want to logout?"<br />
+              - Yes Button<br />
+              - No Button
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 18. Link Requests Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>18. Link Requests Screen</h2>
+          <p>Connect with parents and schools</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">Connect Accounts</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card">
+                <h3>Link with Parent</h3>
+                <div style="margin-bottom: 20px">
+                  <div class="input-field">Parent's Email Address</div>
+                  <div class="button">Send Request</div>
+                </div>
+                <div style="text-align: center; margin: 20px 0">- OR -</div>
+                <div>
+                  <div class="input-field">Parent Link Code</div>
+                  <div class="button">Link with Code</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Link with School</h3>
+                <div class="input-field">School/Class Join Code</div>
+                <div class="button">Join School</div>
+              </div>
+
+              <div class="card">
+                <h3>Pending Requests</h3>
+                <div
+                  style="
+                    padding: 10px;
+                    background: #f5f5f5;
+                    border-radius: 5px;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <div style="display: flex; justify-content: space-between">
+                    <div>
+                      <div style="font-weight: bold">
+                        Parent: mary@email.com
+                      </div>
+                      <div style="font-size: 12px">Sent 2 days ago</div>
+                    </div>
+                    <div class="button secondary" style="font-size: 12px">
+                      Cancel
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="padding: 10px; background: #f5f5f5; border-radius: 5px"
+                >
+                  <div style="display: flex; justify-content: space-between">
+                    <div>
+                      <div style="font-weight: bold">School: Lincoln MS</div>
+                      <div style="font-size: 12px">Code: ABC123</div>
+                    </div>
+                    <div class="button secondary" style="font-size: 12px">
+                      Cancel
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div class="modal" id="linkSuccessModal">
+              <h3>Success!</h3>
+              <p>You have successfully linked with [Parent/School Name]</p>
+              <div class="button">OK</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/link-requests/parent<br />
+              POST /api/link-requests/school<br />
+              POST /api/students/link/parent<br />
+              POST /api/students/link/school<br />
+              POST /api/students/request-parent<br />
+              POST /api/students/request-school<br />
+              GET /api/link-requests/pending<br />
+              DELETE /api/link-requests/{requestId}
+            </div>
+            <h3>Cancel Confirmation</h3>
+            <div class="component">
+              Modal: "Are you sure you want to cancel this request?"<br />
+              - Yes, Cancel Button<br />
+              - No, Keep Button
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 19. Attendance Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>19. Attendance Screen</h2>
+          <p>Daily check-in and attendance history</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">Attendance</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card" style="text-align: center">
+                <div style="font-size: 48px">📅</div>
+                <div style="font-size: 24px; font-weight: bold">
+                  Check In Today
+                </div>
+                <div style="margin: 10px 0">April 22, 2025</div>
+                <div style="margin-bottom: 20px">
+                  Earn 5 SP for daily check-in!
+                </div>
+                <div class="button">Check In Now</div>
+              </div>
+
+              <div class="grid" style="margin: 20px 0">
+                <div class="stats-box">
+                  <div style="font-size: 24px; font-weight: bold">7</div>
+                  <div>Current Streak</div>
+                </div>
+                <div class="stats-box">
+                  <div style="font-size: 24px; font-weight: bold">14</div>
+                  <div>Longest Streak</div>
+                </div>
+                <div class="stats-box">
+                  <div style="font-size: 24px; font-weight: bold">92%</div>
+                  <div>Attendance Rate</div>
+                </div>
+              </div>
+
+              <h3>This Month</h3>
+              <div class="card">
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    gap: 5px;
+                    text-align: center;
+                  "
+                >
+                  <div>S</div>
+                  <div>M</div>
+                  <div>T</div>
+                  <div>W</div>
+                  <div>T</div>
+                  <div>F</div>
+                  <div>S</div>
+                  <!-- Calendar days here -->
+                  <div
+                    style="
+                      padding: 10px;
+                      background: #4caf50;
+                      color: white;
+                      border-radius: 50%;
+                    "
+                  >
+                    1
+                  </div>
+                  <div
+                    style="
+                      padding: 10px;
+                      background: #4caf50;
+                      color: white;
+                      border-radius: 50%;
+                    "
+                  >
+                    2
+                  </div>
+                  <div
+                    style="
+                      padding: 10px;
+                      background: #f44336;
+                      color: white;
+                      border-radius: 50%;
+                    "
+                  >
+                    3
+                  </div>
+                  <!-- More calendar days... -->
+                </div>
+                <div
+                  style="
+                    margin-top: 20px;
+                    display: flex;
+                    gap: 20px;
+                    justify-content: center;
+                  "
+                >
+                  <div>
+                    <span
+                      style="
+                        display: inline-block;
+                        width: 10px;
+                        height: 10px;
+                        background: #4caf50;
+                        border-radius: 50%;
+                      "
+                    ></span>
+                    Present
+                  </div>
+                  <div>
+                    <span
+                      style="
+                        display: inline-block;
+                        width: 10px;
+                        height: 10px;
+                        background: #f44336;
+                        border-radius: 50%;
+                      "
+                    ></span>
+                    Absent
+                  </div>
+                  <div>
+                    <span
+                      style="
+                        display: inline-block;
+                        width: 10px;
+                        height: 10px;
+                        background: #ff9800;
+                        border-radius: 50%;
+                      "
+                    ></span>
+                    Tardy
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Check-in Success Modal -->
+            <div class="modal" id="checkinSuccessModal">
+              <h3>Check-in Successful!</h3>
+              <div style="text-align: center">
+                <div style="font-size: 48px">🎉</div>
+                <div style="font-size: 18px; font-weight: bold; margin: 10px 0">
+                  +5 SP
+                </div>
+                <div>Current Streak: 8 days!</div>
+              </div>
+              <div class="button" style="margin-top: 20px">Great!</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/attendance/{id}/summary<br />
+              POST /api/students/{id}/check-in<br />
+              GET
+              /api/attendance/{id}?startDate={monthStart}&endDate={monthEnd}<br />
+              GET /api/students/{id}/attendance
+            </div>
+            <h3>Check-in Rules</h3>
+            <div class="component">
+              <strong>Daily Limit:</strong> One check-in per day<br />
+              <strong>Time Window:</strong> 6AM - 10AM<br />
+              <strong>Points:</strong> 5 SP per check-in + bonus for streaks
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 20. Notifications Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>20. Notifications Screen</h2>
+          <p>All notifications and updates</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Notifications</div>
+              </div>
+              <div
+                class="button"
+                style="background: transparent; color: #2196f3"
+              >
+                Mark All Read
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <!-- Unread Notification -->
+              <div class="card" style="border-left: 4px solid #2196f3">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Task Approved!</div>
+                    <div style="font-size: 14px; color: #666">
+                      Your "Math Homework" task was approved
+                    </div>
+                    <div style="font-size: 12px; color: #999">
+                      5 minutes ago
+                    </div>
+                  </div>
+                  <div style="color: #4caf50">+15 SP</div>
+                </div>
+              </div>
+
+              <!-- Read Notification -->
+              <div class="card" style="opacity: 0.8">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">New Badge Earned</div>
+                    <div style="font-size: 14px; color: #666">
+                      You earned the "7-Day Streak" badge!
+                    </div>
+                    <div style="font-size: 12px; color: #999">2 hours ago</div>
+                  </div>
+                  <div style="color: #4caf50">+50 SP</div>
+                </div>
+              </div>
+
+              <div class="card" style="opacity: 0.8">
+                <div>
+                  <div style="font-weight: bold">New Task Assigned</div>
+                  <div style="font-size: 14px; color: #666">
+                    Science Project due next week
+                  </div>
+                  <div style="font-size: 12px; color: #999">1 day ago</div>
+                </div>
+              </div>
+
+              <div class="card" style="opacity: 0.8">
+                <div>
+                  <div style="font-weight: bold">Level Up!</div>
+                  <div style="font-size: 14px; color: #666">
+                    You've reached Level 4: Advanced Scholar
+                  </div>
+                  <div style="font-size: 12px; color: #999">2 days ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/notifications<br />
+              PUT /api/notifications/{id}/read<br />
+              PUT /api/notifications/read-all
+            </div>
+            <h3>Notification Types</h3>
+            <div class="component">
+              <strong>Task Assigned:</strong> New task created<br />
+              <strong>Task Completed:</strong> Task status change<br />
+              <strong>Approval Needed:</strong> Action required<br />
+              <strong>Points Earned:</strong> Points awarded<br />
+              <strong>Level Up:</strong> Level change<br />
+              <strong>Badge Earned:</strong> New badge
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common Error States -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>Common Error States</h2>
+          <p>Error handling across all screens</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="modal show">
+              <h3>Network Error</h3>
+              <p>
+                Unable to connect to server. Please check your internet
+                connection.
+              </p>
+              <div style="display: flex; gap: 10px">
+                <div class="button">Retry</div>
+                <div class="button secondary">Cancel</div>
+              </div>
+            </div>
+
+            <div class="modal" style="top: 70%">
+              <h3>Session Expired</h3>
+              <p>Your session has expired. Please login again.</p>
+              <div class="button">Login</div>
+            </div>
+
+            <div class="modal" style="top: 90%">
+              <h3>Error</h3>
+              <p>{Error message from server}</p>
+              <div class="button">OK</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Error Handling</h3>
+            <div class="api-call">
+              When 401 error occurs:<br />
+              POST /api/auth/refresh-token<br />
+              Request: { refreshToken }<br />
+              Response: New access token
+            </div>
+            <h3>Common Error Codes</h3>
+            <div class="component">
+              <strong>400:</strong> Bad Request<br />
+              <strong>401:</strong> Unauthorized<br />
+              <strong>403:</strong> Forbidden<br />
+              <strong>404:</strong> Not Found<br />
+              <strong>500:</strong> Server Error
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen-section" style="background: #2196f3; color: white">
+        <h2>API Coverage Verification</h2>
+        <p>✓ All 53 student-accessible APIs are mapped to specific screens</p>
+        <p>✓ Profile selection and validation happens before registration</p>
+        <p>✓ Account and profile creation are streamlined in one flow</p>
+        <p>✓ Age validation is enforced for students (13+)</p>
+        <p>✓ Multiple profile support is handled with profile selector</p>
+      </div>
+    </div>
+
+    <div class="footer" style="position: relative; margin-top: 50px">
+      <p>Student Website Complete Wireframes with API Mapping</p>
+      <p>Total Screens: 20 Main Screens + Error States</p>
+      <p>All 53 Student APIs Mapped and Visualized</p>
+    </div>
+  </body>
+</html>

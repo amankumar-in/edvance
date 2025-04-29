@@ -1,0 +1,3164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>School Admin Complete Wireframes - All Screens</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .screen-section {
+        background: white;
+        margin: 30px 0;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .screen-header {
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .screen-content {
+        display: flex;
+        gap: 30px;
+      }
+      .wireframe {
+        flex: 1;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 500px;
+        background: #f9f9f9;
+        position: relative;
+      }
+      .api-details {
+        flex: 1;
+      }
+      .component {
+        border: 1px dashed #999;
+        margin: 10px 0;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+      }
+      .nav-bar {
+        background: #333;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .button {
+        background: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        margin: 5px;
+        display: inline-block;
+        text-align: center;
+        cursor: pointer;
+      }
+      .button.secondary {
+        background: #f44336;
+      }
+      .button.primary {
+        background: #2196f3;
+      }
+      .input-field {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        background: white;
+      }
+      .api-call {
+        background: #e3f2fd;
+        padding: 10px;
+        border-left: 4px solid #2196f3;
+        margin: 10px 0;
+        font-family: monospace;
+      }
+      .modal {
+        border: 2px dashed #666;
+        padding: 20px;
+        margin: 10px 0;
+        background: #fff;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        display: none;
+      }
+      .modal.show {
+        display: block;
+      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 2px solid #ddd;
+        margin-bottom: 20px;
+      }
+      .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+      }
+      .tab.active {
+        background: #333;
+        color: white;
+      }
+      .header {
+        background: #3f51b5;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 5px;
+      }
+      .footer {
+        background: #333;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        left: 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .stats-box {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .progress-bar {
+        background: #eee;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress-fill {
+        background: #4caf50;
+        height: 100%;
+        width: 60%;
+      }
+      .avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #ddd;
+        display: inline-block;
+      }
+      .badge-sm {
+        background: #2196f3;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 12px;
+      }
+      .notification-bell {
+        position: relative;
+        display: inline-block;
+      }
+      .notification-dot {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 10px;
+        height: 10px;
+        background: red;
+        border-radius: 50%;
+      }
+      .profile-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        margin: 10px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .profile-card:hover {
+        border-color: #3f51b5;
+        transform: translateY(-5px);
+      }
+      .profile-card.selected {
+        border-color: #3f51b5;
+        background: #e8eaf6;
+      }
+      .error-message {
+        color: #f44336;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .success-message {
+        color: #4caf50;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .progress-steps {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+      .step {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+        position: relative;
+      }
+      .step.active {
+        background: #3f51b5;
+        color: white;
+      }
+      .step.completed {
+        background: #4caf50;
+        color: white;
+      }
+      .step::after {
+        content: "";
+        position: absolute;
+        width: 50px;
+        height: 2px;
+        background: #ddd;
+        left: 30px;
+      }
+      .step:last-child::after {
+        display: none;
+      }
+      .teacher-checkbox {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin: 5px 0;
+      }
+      .teacher-checkbox input {
+        margin-right: 10px;
+      }
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+      }
+      .status-dot.active {
+        background: #4caf50;
+      }
+      .status-dot.inactive {
+        background: #f44336;
+      }
+      .status-dot.pending {
+        background: #ff9800;
+      }
+      .sidebar {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+        width: 250px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>School Admin Complete Wireframes - All Screens</h1>
+      <p>
+        Comprehensive visual documentation with API mapping for school
+        administrator interface
+      </p>
+
+      <!-- 1. Profile Selection Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>1. Profile Selection Screen (First Screen)</h2>
+          <p>Entry point: Users select their profile type</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 30px">
+              <h1>Welcome to UNIVANCE</h1>
+              <p>Select your profile type to get started</p>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 50px;
+              "
+            >
+              <div class="profile-card">
+                <div style="font-size: 50px">👨‍🎓</div>
+                <h3>Student</h3>
+                <p>I want to earn scholarship points</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">👪</div>
+                <h3>Parent</h3>
+                <p>I want to manage my child's tasks</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">👩‍🏫</div>
+                <h3>Teacher</h3>
+                <p>I want to assign tasks to students</p>
+              </div>
+              <div class="profile-card selected">
+                <div style="font-size: 50px">🏫</div>
+                <h3>School Admin</h3>
+                <p>I want to manage a school</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">🤝</div>
+                <h3>Social Worker</h3>
+                <p>I want to support students</p>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px">
+              <div class="button primary" style="width: 200px">Continue</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px">
+              Already have an account? <a href="#">Login</a>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Flow Logic</h3>
+            <div class="component">
+              <strong>Profile Selection:</strong>
+              <ul>
+                <li>First step in the process</li>
+                <li>Determines which fields to show in registration</li>
+                <li>Sets expectations for required information</li>
+                <li>
+                  School Admin selection will flow to school registration form
+                </li>
+              </ul>
+            </div>
+            <h3>Navigation</h3>
+            <div class="component">
+              <strong>Based on Selection:</strong>
+              <ul>
+                <li>Student → Student Registration Form</li>
+                <li>Parent → Parent Registration Form</li>
+                <li>Teacher → Teacher Registration Form</li>
+                <li>Admin → School Admin Registration Form</li>
+                <li>Social Worker → SW Registration Form</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. School Registration Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>2. School Registration Screen</h2>
+          <p>Initial registration for school administrators</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="progress-steps">
+              <div class="step completed">1</div>
+              <div class="step active">2</div>
+              <div class="step">3</div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px">
+              <h1>Create Your School Admin Account</h1>
+              <p>Fill in your information to get started</p>
+            </div>
+
+            <div style="max-width: 400px; margin: 0 auto">
+              <!-- Account Information -->
+              <h3>Account Information</h3>
+              <div class="input-field">First Name</div>
+              <div class="input-field">Last Name</div>
+              <div class="input-field">Email Address</div>
+              <div class="input-field">Password</div>
+              <div class="input-field">Confirm Password</div>
+
+              <!-- Basic Admin Info -->
+              <h3 style="margin-top: 30px">Administrator Information</h3>
+              <div class="input-field">Job Title</div>
+              <div class="input-field">Phone Number</div>
+              <div class="input-field">Department (Optional)</div>
+
+              <div style="margin: 20px 0">
+                <input type="checkbox" id="terms" />
+                <label for="terms"
+                  >I agree to the Terms and Privacy Policy</label
+                >
+              </div>
+
+              <div
+                class="button primary"
+                style="width: 100%; text-align: center"
+              >
+                Create Account
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/register<br />
+              Request: { email, password, firstName, lastName, roles:
+              ["schoolAdmin"], jobTitle, phoneNumber, department }<br />
+              Response: { user, accessToken, refreshToken }
+            </div>
+            <h3>Validation</h3>
+            <div class="component">
+              <strong>Password:</strong> Min 8 chars, 1 uppercase, 1 number<br />
+              <strong>Email:</strong> Must be valid format<br />
+              <strong>Required fields:</strong> First name, last name, email,
+              password, job title, phone number
+            </div>
+            <h3>Next Step</h3>
+            <div class="component">
+              After successful registration, users will proceed to the School
+              Profile Setup screen
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. School Profile Setup -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>3. School Profile Setup</h2>
+          <p>Complete school information and details</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="progress-steps">
+              <div class="step completed">1</div>
+              <div class="step completed">2</div>
+              <div class="step active">3</div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px">
+              <h1>Set Up Your School Profile</h1>
+              <p>Add details about your educational institution</p>
+            </div>
+
+            <div style="max-width: 500px; margin: 0 auto">
+              <div class="card">
+                <h3>School Information</h3>
+                <div class="input-field">School Name</div>
+                <div class="input-field">School ID/Code (if applicable)</div>
+                <div class="input-field">
+                  School Type
+                  <select class="input-field" style="margin-top: 5px">
+                    <option>Select school type</option>
+                    <option>Elementary School</option>
+                    <option>Middle School</option>
+                    <option>High School</option>
+                    <option>K-12 School</option>
+                    <option>Charter School</option>
+                    <option>Private School</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>School Contact Information</h3>
+                <div class="input-field">Street Address</div>
+                <div class="input-field">City</div>
+                <div class="input-field">State/Province</div>
+                <div class="input-field">Postal Code</div>
+                <div class="input-field">Country</div>
+                <div class="input-field">Main Phone Number</div>
+                <div class="input-field">School Email</div>
+                <div class="input-field">School Website (Optional)</div>
+              </div>
+
+              <div class="card">
+                <h3>School Details</h3>
+                <div class="input-field">School District</div>
+                <div class="input-field">Number of Students (approximate)</div>
+                <div class="input-field">Number of Teachers (approximate)</div>
+                <div class="input-field">
+                  Grade Levels
+                  <div style="margin: 10px 0">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+                      <div class="badge-sm" style="background: #3f51b5">
+                        Grade 6
+                      </div>
+                      <div class="badge-sm" style="background: #3f51b5">
+                        Grade 7
+                      </div>
+                      <div class="badge-sm" style="background: #3f51b5">
+                        Grade 8
+                      </div>
+                      <div class="badge-sm" style="background: #666">
+                        + Add Grade Level
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="button primary"
+                  style="width: 100%; text-align: center; margin-top: 20px"
+                >
+                  Complete Profile
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/schools<br />
+              Request: { name, schoolCode, type, address, city, state,
+              postalCode, country, phone, email, website, district,
+              studentCount, teacherCount, gradeLevels }<br />
+              Response: { school data }
+            </div>
+            <h3>Validation</h3>
+            <div class="component">
+              <strong>Required fields:</strong> School name, school type,
+              address information, contact information, grade levels<br />
+              <strong>Optional fields:</strong> School code, website, district
+            </div>
+            <h3>School Setup</h3>
+            <div class="component">
+              School administrators must provide basic information about their
+              institution:<br />
+              - School details (name, type, etc.)<br />
+              - Contact information<br />
+              - School demographics (students, teachers, grades)<br />
+              - This information is used throughout the platform
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Login Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>4. Login Screen (Common for All Users)</h2>
+          <p>Simple login for all profile types</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>UNIVANCE</h1>
+              <p>Welcome Back!</p>
+            </div>
+            <div style="max-width: 300px; margin: 50px auto">
+              <div class="input-field">Email Address</div>
+              <div class="input-field" type="password">Password</div>
+              <div style="text-align: right">
+                <a href="#" style="font-size: 14px">Forgot Password?</a>
+              </div>
+              <div
+                class="button primary"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Login
+              </div>
+              <div style="text-align: center; margin: 20px 0">
+                Or continue with
+              </div>
+              <div style="display: flex; gap: 10px">
+                <div class="button" style="flex: 1; background: #db4437">
+                  Google
+                </div>
+                <div class="button" style="flex: 1; background: #000">
+                  Apple
+                </div>
+              </div>
+              <div style="text-align: center; margin-top: 30px">
+                Don't have an account? <a href="#">Get Started</a>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/login<br />
+              Request: { email, password }<br />
+              Response: { accessToken, refreshToken, user }
+            </div>
+            <h3>Flow After Login</h3>
+            <div class="component">
+              <strong>System checks user profiles:</strong>
+              <ul>
+                <li>If has schoolAdmin role → Redirect to School Dashboard</li>
+                <li>Multiple roles → Show profile selector</li>
+              </ul>
+            </div>
+            <h3>Token Management</h3>
+            <div class="component">
+              Store tokens securely for future API calls:<br />
+              - Access token in memory<br />
+              - Refresh token in secure storage
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Profile Selector (When Multiple Profiles) -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>5. Profile Selector Screen</h2>
+          <p>Shown when user has multiple profiles</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>Welcome Back, Michael</h1>
+              <p>Select which profile you'd like to use</p>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                margin-top: 50px;
+              "
+            >
+              <div class="profile-card selected">
+                <div style="font-size: 50px">🏫</div>
+                <h3>School Admin</h3>
+                <p>Lincoln Middle School</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">👩‍🏫</div>
+                <h3>Teacher</h3>
+                <p>Science Department</p>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px">
+              <div class="button primary">Continue as School Admin</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Profile Detection</h3>
+            <div class="component">
+              <strong>API Calls:</strong>
+              <ul>
+                <li>GET /api/users/me</li>
+                <li>GET /api/schools/admin/me (if school admin)</li>
+                <li>GET /api/teachers/me (if teacher)</li>
+              </ul>
+            </div>
+            <h3>Profile Selection</h3>
+            <div class="component">
+              Based on user choice, app will load appropriate dashboard:<br />
+              - School Admin profile → School Dashboard<br />
+              - Teacher profile → Teacher Dashboard
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. School Dashboard -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>6. School Dashboard</h2>
+          <p>Main landing screen after login</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div class="avatar"></div>
+                <div>
+                  <div style="font-weight: bold">Michael Thompson</div>
+                  <div style="font-size: 14px">
+                    Principal, Lincoln Middle School
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 20px">
+                <div class="notification-bell">
+                  🔔
+                  <div class="notification-dot"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  Dashboard
+                </div>
+                <div style="margin-bottom: 10px">School Profile</div>
+                <div style="margin-bottom: 10px">Teachers</div>
+                <div style="margin-bottom: 10px">Students</div>
+                <div style="margin-bottom: 10px">Classes</div>
+                <div style="margin-bottom: 10px">Analytics</div>
+                <div style="margin-bottom: 10px">Point System</div>
+                <div style="margin-bottom: 10px">Settings</div>
+              </div>
+
+              <div style="flex: 1">
+                <h2>School Dashboard</h2>
+
+                <div class="grid" style="margin-bottom: 20px">
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">42</div>
+                    <div>Teachers</div>
+                  </div>
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">854</div>
+                    <div>Students</div>
+                  </div>
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">36</div>
+                    <div>Classes</div>
+                  </div>
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">93%</div>
+                    <div>Attendance Today</div>
+                  </div>
+                </div>
+
+                <h3>Quick Actions</h3>
+                <div class="grid" style="margin-bottom: 20px">
+                  <div class="card" style="text-align: center">
+                    <div style="font-size: 36px">👩‍🏫</div>
+                    <div style="margin: 10px 0; font-weight: bold">
+                      Manage Teachers
+                    </div>
+                    <div class="button primary" style="width: 100%">View</div>
+                  </div>
+                  <div class="card" style="text-align: center">
+                    <div style="font-size: 36px">👨‍🎓</div>
+                    <div style="margin: 10px 0; font-weight: bold">
+                      Manage Students
+                    </div>
+                    <div class="button primary" style="width: 100%">View</div>
+                  </div>
+                  <div class="card" style="text-align: center">
+                    <div style="font-size: 36px">📊</div>
+                    <div style="margin: 10px 0; font-weight: bold">
+                      Analytics
+                    </div>
+                    <div class="button primary" style="width: 100%">View</div>
+                  </div>
+                  <div class="card" style="text-align: center">
+                    <div style="font-size: 36px">⚙️</div>
+                    <div style="margin: 10px 0; font-weight: bold">
+                      Settings
+                    </div>
+                    <div class="button primary" style="width: 100%">View</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 20px">
+                  <div style="flex: 1">
+                    <h3>Teacher Join Requests</h3>
+                    <div class="card">
+                      <div
+                        style="
+                          margin-bottom: 10px;
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <div>Sarah Johnson submitted a join request</div>
+                        <div>3 mins ago</div>
+                      </div>
+                      <div
+                        style="
+                          margin-bottom: 10px;
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <div>Robert Williams submitted a join request</div>
+                        <div>2 hours ago</div>
+                      </div>
+                      <div
+                        style="
+                          margin-bottom: 0;
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <div>Emma Davis submitted a join request</div>
+                        <div>Yesterday</div>
+                      </div>
+                      <div
+                        class="button primary"
+                        style="margin-top: 10px; width: 100%"
+                      >
+                        View All Requests
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="flex: 1">
+                    <h3>Recent Activity</h3>
+                    <div class="card">
+                      <div
+                        style="
+                          margin-bottom: 10px;
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <div>You added new teacher Jane Smith</div>
+                        <div>1 hour ago</div>
+                      </div>
+                      <div
+                        style="
+                          margin-bottom: 10px;
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <div>You updated school profile information</div>
+                        <div>3 hours ago</div>
+                      </div>
+                      <div
+                        style="
+                          margin-bottom: 0;
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <div>You approved 5 teacher join requests</div>
+                        <div>Yesterday</div>
+                      </div>
+                      <div
+                        class="button primary"
+                        style="margin-top: 10px; width: 100%"
+                      >
+                        View All Activity
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/users/me<br />
+              GET /api/schools/admin/me<br />
+              GET /api/schools/{id}/summary<br />
+              GET /api/schools/{id}/teachers/join-requests<br />
+              GET /api/schools/{id}/activity-log<br />
+              GET /api/schools/{id}/stats
+            </div>
+            <h3>Dashboard Components</h3>
+            <div class="component">
+              <strong>School Summary:</strong> Key statistics about teachers,
+              students, classes<br />
+              <strong>Quick Actions:</strong> Shortcuts to commonly used
+              sections<br />
+              <strong>Teacher Join Requests:</strong> Pending teacher
+              registration approvals<br />
+              <strong>Recent Activity:</strong> Latest actions performed by the
+              admin
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. School Profile Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>7. School Profile Screen</h2>
+          <p>View and edit school information</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div style="font-weight: bold">School Profile</div>
+              </div>
+              <div class="button primary">Edit Profile</div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px">Dashboard</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  School Profile
+                </div>
+                <div style="margin-bottom: 10px">Teachers</div>
+                <div style="margin-bottom: 10px">Students</div>
+                <div style="margin-bottom: 10px">Classes</div>
+                <div style="margin-bottom: 10px">Analytics</div>
+                <div style="margin-bottom: 10px">Point System</div>
+                <div style="margin-bottom: 10px">Settings</div>
+              </div>
+
+              <div style="flex: 1">
+                <div style="text-align: center; margin-bottom: 30px">
+                  <div
+                    style="
+                      width: 120px;
+                      height: 120px;
+                      background: #ddd;
+                      border-radius: 50%;
+                      margin: 0 auto;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 36px;
+                    "
+                  >
+                    🏫
+                  </div>
+                  <h2 style="margin-top: 10px">Lincoln Middle School</h2>
+                  <div>Springfield School District</div>
+                </div>
+
+                <div class="tabs">
+                  <div class="tab active">General Info</div>
+                  <div class="tab">Contact Info</div>
+                  <div class="tab">Academic Info</div>
+                  <div class="tab">Administrative Info</div>
+                </div>
+
+                <div class="card">
+                  <h3>School Information</h3>
+                  <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">School Name</div>
+                      <div>Lincoln Middle School</div>
+                    </div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">School ID/Code</div>
+                      <div>LMS-12345</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">School Type</div>
+                      <div>Middle School</div>
+                    </div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">School District</div>
+                      <div>Springfield School District</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Year Established</div>
+                      <div>1985</div>
+                    </div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">School Status</div>
+                      <div><span class="status-dot active"></span> Active</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-weight: bold">School Description</div>
+                    <div style="margin-top: 5px">
+                      Lincoln Middle School is a vibrant educational institution
+                      dedicated to fostering academic excellence and personal
+                      growth for students in grades 6-8. Our school offers a
+                      comprehensive curriculum with a focus on STEM education.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <h3>School Metrics</h3>
+                  <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Number of Students</div>
+                      <div>854</div>
+                    </div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Number of Teachers</div>
+                      <div>42</div>
+                    </div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Number of Classes</div>
+                      <div>36</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Student-Teacher Ratio</div>
+                      <div>20:1</div>
+                    </div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">
+                        Average Attendance Rate
+                      </div>
+                      <div>95%</div>
+                    </div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">
+                        Average Points per Student
+                      </div>
+                      <div>320 SP</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <h3>School Invite Codes</h3>
+                  <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Teacher Invite Code</div>
+                      <div
+                        style="display: flex; gap: 10px; align-items: center"
+                      >
+                        <div
+                          style="
+                            flex: 1;
+                            background: #f5f5f5;
+                            padding: 10px;
+                            border-radius: 5px;
+                          "
+                        >
+                          TEACH-LMS-4678
+                        </div>
+                        <div
+                          class="button"
+                          style="font-size: 12px; padding: 5px 10px"
+                        >
+                          Copy
+                        </div>
+                        <div
+                          class="button"
+                          style="font-size: 12px; padding: 5px 10px"
+                        >
+                          Regenerate
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 20px">
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Admin Invite Code</div>
+                      <div
+                        style="display: flex; gap: 10px; align-items: center"
+                      >
+                        <div
+                          style="
+                            flex: 1;
+                            background: #f5f5f5;
+                            padding: 10px;
+                            border-radius: 5px;
+                          "
+                        >
+                          ADMIN-LMS-9432
+                        </div>
+                        <div
+                          class="button"
+                          style="font-size: 12px; padding: 5px 10px"
+                        >
+                          Copy
+                        </div>
+                        <div
+                          class="button"
+                          style="font-size: 12px; padding: 5px 10px"
+                        >
+                          Regenerate
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit School Profile Modal -->
+            <div class="modal" id="editSchoolProfileModal">
+              <h3>Edit School Profile</h3>
+              <div class="tabs" style="border-bottom: 1px solid #ddd">
+                <div class="tab active">General Info</div>
+                <div class="tab">Contact Info</div>
+                <div class="tab">Academic Info</div>
+                <div class="tab">Administrative Info</div>
+              </div>
+              <div style="margin-top: 15px">
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    School Name
+                  </div>
+                  <div class="input-field">Lincoln Middle School</div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    School ID/Code
+                  </div>
+                  <div class="input-field">LMS-12345</div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    School Type
+                  </div>
+                  <select class="input-field">
+                    <option>Middle School</option>
+                    <option>Elementary School</option>
+                    <option>High School</option>
+                    <option>K-12 School</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    School Description
+                  </div>
+                  <textarea class="input-field" style="height: 100px">
+Lincoln Middle School is a vibrant educational institution dedicated to fostering academic excellence and personal growth for students in grades 6-8. Our school offers a comprehensive curriculum with a focus on STEM education.
+                  </textarea>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">Save Changes</div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/schools/{id}<br />
+              PUT /api/schools/{id}<br />
+              POST /api/schools/{id}/logo<br />
+              GET /api/schools/{id}/stats<br />
+              POST /api/schools/{id}/invite-codes/teacher (regenerate teacher
+              code)<br />
+              POST /api/schools/{id}/invite-codes/admin (regenerate admin code)
+            </div>
+            <h3>Profile Management</h3>
+            <div class="component">
+              School administrators can update their school's:<br />
+              <ul>
+                <li>Basic information (name, code, type, description)</li>
+                <li>Contact information (address, phone, email)</li>
+                <li>Academic information (grades, offerings)</li>
+                <li>Administrative information (personnel)</li>
+              </ul>
+            </div>
+            <h3>Invite Codes</h3>
+            <div class="component">
+              Schools generate unique invite codes for:<br />
+              <ul>
+                <li>Teacher registration (shared with teachers to join)</li>
+                <li>Admin registration (restricted, for additional admins)</li>
+              </ul>
+              Codes can be regenerated for security reasons.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Teacher Management Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>8. Teacher Management Screen</h2>
+          <p>View and manage all teachers in the school</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div style="font-weight: bold">Teachers</div>
+              </div>
+              <div class="button primary">+ Add Teacher</div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px">Dashboard</div>
+                <div style="margin-bottom: 10px">School Profile</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  Teachers
+                </div>
+                <div style="margin-bottom: 10px">Students</div>
+                <div style="margin-bottom: 10px">Classes</div>
+                <div style="margin-bottom: 10px">Analytics</div>
+                <div style="margin-bottom: 10px">Point System</div>
+                <div style="margin-bottom: 10px">Settings</div>
+              </div>
+
+              <div style="flex: 1">
+                <div class="tabs">
+                  <div class="tab active">Active Teachers</div>
+                  <div class="tab">Join Requests</div>
+                  <div class="tab">Inactive Teachers</div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin: 20px 0">
+                  <div
+                    class="input-field"
+                    style="flex: 1"
+                    placeholder="Search teachers..."
+                  ></div>
+                  <select class="input-field" style="width: 180px">
+                    <option>All Departments</option>
+                    <option>Mathematics</option>
+                    <option>Science</option>
+                    <option>English</option>
+                    <option>Social Studies</option>
+                  </select>
+                  <select class="input-field" style="width: 150px">
+                    <option>Sort by Name</option>
+                    <option>Sort by Recent</option>
+                    <option>Sort by Classes</option>
+                  </select>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Mrs. Johnson</div>
+                      <div style="font-size: 14px">Mathematics Teacher</div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #3f51b5">
+                          5 Classes
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          150 Students
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Permissions
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Mr. Williams</div>
+                      <div style="font-size: 14px">Science Teacher</div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #3f51b5">
+                          4 Classes
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          120 Students
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Permissions
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Ms. Davis</div>
+                      <div style="font-size: 14px">English Teacher</div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #3f51b5">
+                          3 Classes
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          90 Students
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Permissions
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Mr. Miller</div>
+                      <div style="font-size: 14px">Social Studies Teacher</div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #3f51b5">
+                          4 Classes
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          110 Students
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Permissions
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 20px; text-align: center">
+                  <div class="button">Load More</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Teacher Modal -->
+            <div class="modal" id="addTeacherModal">
+              <h3>Add Teacher</h3>
+              <div class="tabs" style="border-bottom: 1px solid #ddd">
+                <div class="tab active">Send Invite</div>
+                <div class="tab">Manual Add</div>
+              </div>
+              <div style="margin-top: 15px">
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Teacher's Email
+                  </div>
+                  <div
+                    class="input-field"
+                    placeholder="Enter email address"
+                  ></div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Department
+                  </div>
+                  <select class="input-field">
+                    <option>Select department</option>
+                    <option>Mathematics</option>
+                    <option>Science</option>
+                    <option>English</option>
+                    <option>Social Studies</option>
+                    <option>Art & Music</option>
+                    <option>Physical Education</option>
+                    <option>Special Education</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">Role</div>
+                  <select class="input-field">
+                    <option>Teacher</option>
+                    <option>Department Head</option>
+                    <option>Teaching Assistant</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Personal Message (Optional)
+                  </div>
+                  <textarea
+                    class="input-field"
+                    style="height: 100px"
+                    placeholder="Add a personal message to the invitation email..."
+                  ></textarea>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">
+                  Send Invitation
+                </div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+
+            <!-- Join Requests Tab Content -->
+            <div style="display: none">
+              <div class="card" style="padding: 15px; margin-bottom: 15px">
+                <div style="display: flex; gap: 15px; align-items: center">
+                  <div class="avatar" style="width: 50px; height: 50px"></div>
+                  <div style="flex: 1">
+                    <div style="font-weight: bold">Sarah Johnson</div>
+                    <div style="font-size: 14px">sarah.johnson@email.com</div>
+                    <div style="font-size: 14px; margin-top: 5px">
+                      <strong>Requested:</strong> April 23, 2025 (3 mins ago)
+                    </div>
+                    <div style="font-size: 14px">
+                      <strong>Subjects:</strong> Mathematics, Computer Science
+                    </div>
+                  </div>
+                  <div>
+                    <div class="button primary" style="font-size: 12px">
+                      Approve
+                    </div>
+                    <div class="button secondary" style="font-size: 12px">
+                      Decline
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/schools/{id}/teachers<br />
+              GET /api/schools/{id}/teachers/join-requests<br />
+              POST /api/schools/{id}/teachers/invite<br />
+              POST /api/schools/{id}/teachers (manual add)<br />
+              PUT /api/schools/{id}/teachers/{teacherId}<br />
+              PUT /api/schools/{id}/teachers/{teacherId}/status<br />
+              POST
+              /api/schools/{id}/teachers/join-requests/{requestId}/approve<br />
+              POST /api/schools/{id}/teachers/join-requests/{requestId}/reject
+            </div>
+            <h3>Teacher Management</h3>
+            <div class="component">
+              School administrators can:<br />
+              <ul>
+                <li>View all teachers and their basic information</li>
+                <li>Add new teachers via email invitation</li>
+                <li>Manually add teachers to the system</li>
+                <li>Edit teacher information and permissions</li>
+                <li>Approve or reject teacher join requests</li>
+                <li>Deactivate teacher accounts when needed</li>
+              </ul>
+            </div>
+            <h3>Teacher Statuses</h3>
+            <div class="component">
+              <strong>Active:</strong> Currently teaching<br />
+              <strong>Inactive:</strong> Account deactivated<br />
+              <strong>Pending:</strong> Awaiting approval
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Student Management Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>9. Student Management Screen</h2>
+          <p>View and manage students in the school</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div style="font-weight: bold">Students</div>
+              </div>
+              <div class="button primary">+ Add Student</div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px">Dashboard</div>
+                <div style="margin-bottom: 10px">School Profile</div>
+                <div style="margin-bottom: 10px">Teachers</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  Students
+                </div>
+                <div style="margin-bottom: 10px">Classes</div>
+                <div style="margin-bottom: 10px">Analytics</div>
+                <div style="margin-bottom: 10px">Point System</div>
+                <div style="margin-bottom: 10px">Settings</div>
+              </div>
+
+              <div style="flex: 1">
+                <div style="display: flex; gap: 15px; margin-bottom: 20px">
+                  <div
+                    class="input-field"
+                    style="flex: 1"
+                    placeholder="Search students..."
+                  ></div>
+                  <select class="input-field" style="width: 150px">
+                    <option>All Grades</option>
+                    <option>Grade 6</option>
+                    <option>Grade 7</option>
+                    <option>Grade 8</option>
+                  </select>
+                  <select class="input-field" style="width: 150px">
+                    <option>Sort by Name</option>
+                    <option>Sort by Grade</option>
+                    <option>Sort by Points</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 20px">
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">854</div>
+                    <div>Total Students</div>
+                  </div>
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">93%</div>
+                    <div>Today's Attendance</div>
+                  </div>
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">320</div>
+                    <div>Avg. Points</div>
+                  </div>
+                </div>
+
+                <div class="tabs">
+                  <div class="tab active">All Students</div>
+                  <div class="tab">Grade 6</div>
+                  <div class="tab">Grade 7</div>
+                  <div class="tab">Grade 8</div>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Sarah Smith</div>
+                      <div style="font-size: 14px">
+                        Grade 6 • Student ID: S12345
+                      </div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #4caf50">
+                          Level 4
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          350 Points
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Student
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Michael Chen</div>
+                      <div style="font-size: 14px">
+                        Grade 7 • Student ID: S12367
+                      </div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #4caf50">
+                          Level 3
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          325 Points
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Student
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Emily Johnson</div>
+                      <div style="font-size: 14px">
+                        Grade 6 • Student ID: S12389
+                      </div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #4caf50">
+                          Level 3
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          275 Points
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Student
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="padding: 15px; margin-bottom: 15px">
+                  <div style="display: flex; gap: 15px; align-items: center">
+                    <div class="avatar" style="width: 50px; height: 50px"></div>
+                    <div style="flex: 1">
+                      <div style="font-weight: bold">Jacob Williams</div>
+                      <div style="font-size: 14px">
+                        Grade 8 • Student ID: S12401
+                      </div>
+                      <div style="display: flex; gap: 10px; margin-top: 5px">
+                        <div class="badge-sm" style="background: #4caf50">
+                          Level 3
+                        </div>
+                        <div class="badge-sm" style="background: #ff9800">
+                          310 Points
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="button" style="font-size: 12px">
+                        View Profile
+                      </div>
+                      <div class="button primary" style="font-size: 12px">
+                        Edit Student
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 20px; text-align: center">
+                  <div class="button">Load More</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Student Modal -->
+            <div class="modal" id="addStudentModal">
+              <h3>Add New Student</h3>
+              <div class="tabs" style="border-bottom: 1px solid #ddd">
+                <div class="tab active">Single Student</div>
+                <div class="tab">Bulk Import</div>
+              </div>
+              <div style="margin-top: 15px">
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    First Name
+                  </div>
+                  <div class="input-field"></div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Last Name
+                  </div>
+                  <div class="input-field"></div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Student ID (Optional)
+                  </div>
+                  <div class="input-field"></div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Grade Level
+                  </div>
+                  <select class="input-field">
+                    <option>Select grade level</option>
+                    <option>Grade 6</option>
+                    <option>Grade 7</option>
+                    <option>Grade 8</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Parent/Guardian Email (Optional)
+                  </div>
+                  <div class="input-field"></div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">Add Student</div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/schools/{id}/students<br />
+              GET /api/schools/{id}/students/stats<br />
+              POST /api/schools/{id}/students (add student)<br />
+              POST /api/schools/{id}/students/bulk (bulk import)<br />
+              GET /api/students/{studentId}<br />
+              PUT /api/students/{studentId}<br />
+              GET /api/points/accounts/student/{studentId}
+            </div>
+            <h3>Student Management</h3>
+            <div class="component">
+              School administrators can:<br />
+              <ul>
+                <li>View all students and their basic information</li>
+                <li>Add new students individually</li>
+                <li>Import students in bulk via CSV/Excel</li>
+                <li>Edit student information and contact details</li>
+                <li>View student performance and points</li>
+                <li>Filter students by grade level</li>
+              </ul>
+            </div>
+            <h3>Student Points</h3>
+            <div class="component">
+              Platform automatically tracks student performance:<br />
+              <ul>
+                <li>Points earned through tasks</li>
+                <li>Points earned through attendance</li>
+                <li>Level progression based on points</li>
+                <li>Badges and achievements</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Class Management Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>10. Class Management Screen</h2>
+          <p>Manage all classes in the school</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div style="font-weight: bold">Classes</div>
+              </div>
+              <div class="button primary">+ Create Class</div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px">Dashboard</div>
+                <div style="margin-bottom: 10px">School Profile</div>
+                <div style="margin-bottom: 10px">Teachers</div>
+                <div style="margin-bottom: 10px">Students</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  Classes
+                </div>
+                <div style="margin-bottom: 10px">Analytics</div>
+                <div style="margin-bottom: 10px">Point System</div>
+                <div style="margin-bottom: 10px">Settings</div>
+              </div>
+
+              <div style="flex: 1">
+                <div style="display: flex; gap: 15px; margin-bottom: 20px">
+                  <div
+                    class="input-field"
+                    style="flex: 1"
+                    placeholder="Search classes..."
+                  ></div>
+                  <select class="input-field" style="width: 150px">
+                    <option>All Grades</option>
+                    <option>Grade 6</option>
+                    <option>Grade 7</option>
+                    <option>Grade 8</option>
+                  </select>
+                  <select class="input-field" style="width: 150px">
+                    <option>All Subjects</option>
+                    <option>Mathematics</option>
+                    <option>Science</option>
+                    <option>English</option>
+                    <option>Social Studies</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 20px">
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">36</div>
+                    <div>Total Classes</div>
+                  </div>
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">12</div>
+                    <div>Grade 6 Classes</div>
+                  </div>
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">12</div>
+                    <div>Grade 7 Classes</div>
+                  </div>
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">12</div>
+                    <div>Grade 8 Classes</div>
+                  </div>
+                </div>
+
+                <div class="grid">
+                  <div class="card">
+                    <div style="font-weight: bold; font-size: 18px">
+                      Math 101
+                    </div>
+                    <div style="color: #666">Grade 6</div>
+                    <div style="margin: 10px 0">
+                      <span class="badge-sm">25 Students</span>
+                      <span class="badge-sm" style="background: #4caf50"
+                        >Active</span
+                      >
+                    </div>
+                    <div style="color: #666; font-size: 14px">
+                      Teacher: Mrs. Johnson
+                    </div>
+                    <div style="display: flex; margin-top: 10px">
+                      <div class="button primary" style="flex: 1">
+                        View Class
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div style="font-weight: bold; font-size: 18px">
+                      Math 202
+                    </div>
+                    <div style="color: #666">Grade 7</div>
+                    <div style="margin: 10px 0">
+                      <span class="badge-sm">28 Students</span>
+                      <span class="badge-sm" style="background: #4caf50"
+                        >Active</span
+                      >
+                    </div>
+                    <div style="color: #666; font-size: 14px">
+                      Teacher: Mrs. Johnson
+                    </div>
+                    <div style="display: flex; margin-top: 10px">
+                      <div class="button primary" style="flex: 1">
+                        View Class
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div style="font-weight: bold; font-size: 18px">
+                      Science 101
+                    </div>
+                    <div style="color: #666">Grade 6</div>
+                    <div style="margin: 10px 0">
+                      <span class="badge-sm">24 Students</span>
+                      <span class="badge-sm" style="background: #4caf50"
+                        >Active</span
+                      >
+                    </div>
+                    <div style="color: #666; font-size: 14px">
+                      Teacher: Mr. Williams
+                    </div>
+                    <div style="display: flex; margin-top: 10px">
+                      <div class="button primary" style="flex: 1">
+                        View Class
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div style="font-weight: bold; font-size: 18px">
+                      Science 202
+                    </div>
+                    <div style="color: #666">Grade 7</div>
+                    <div style="margin: 10px 0">
+                      <span class="badge-sm">26 Students</span>
+                      <span class="badge-sm" style="background: #4caf50"
+                        >Active</span
+                      >
+                    </div>
+                    <div style="color: #666; font-size: 14px">
+                      Teacher: Mr. Williams
+                    </div>
+                    <div style="display: flex; margin-top: 10px">
+                      <div class="button primary" style="flex: 1">
+                        View Class
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div style="font-weight: bold; font-size: 18px">
+                      English 101
+                    </div>
+                    <div style="color: #666">Grade 6</div>
+                    <div style="margin: 10px 0">
+                      <span class="badge-sm">26 Students</span>
+                      <span class="badge-sm" style="background: #4caf50"
+                        >Active</span
+                      >
+                    </div>
+                    <div style="color: #666; font-size: 14px">
+                      Teacher: Ms. Davis
+                    </div>
+                    <div style="display: flex; margin-top: 10px">
+                      <div class="button primary" style="flex: 1">
+                        View Class
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div style="font-weight: bold; font-size: 18px">
+                      English 202
+                    </div>
+                    <div style="color: #666">Grade 7</div>
+                    <div style="margin: 10px 0">
+                      <span class="badge-sm">27 Students</span>
+                      <span class="badge-sm" style="background: #4caf50"
+                        >Active</span
+                      >
+                    </div>
+                    <div style="color: #666; font-size: 14px">
+                      Teacher: Ms. Davis
+                    </div>
+                    <div style="display: flex; margin-top: 10px">
+                      <div class="button primary" style="flex: 1">
+                        View Class
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 20px; text-align: center">
+                  <div class="button">Load More</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Create Class Modal -->
+            <div class="modal" id="createClassModal">
+              <h3>Create New Class</h3>
+              <div style="margin-top: 15px">
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Class Name
+                  </div>
+                  <div class="input-field"></div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Subject
+                  </div>
+                  <select class="input-field">
+                    <option>Select Subject</option>
+                    <option>Mathematics</option>
+                    <option>Science</option>
+                    <option>English</option>
+                    <option>Social Studies</option>
+                    <option>Art & Music</option>
+                    <option>Physical Education</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Grade Level
+                  </div>
+                  <select class="input-field">
+                    <option>Select Grade Level</option>
+                    <option>Grade 6</option>
+                    <option>Grade 7</option>
+                    <option>Grade 8</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Teacher
+                  </div>
+                  <select class="input-field">
+                    <option>Select Teacher</option>
+                    <option>Mrs. Johnson (Mathematics)</option>
+                    <option>Mr. Williams (Science)</option>
+                    <option>Ms. Davis (English)</option>
+                    <option>Mr. Miller (Social Studies)</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <div style="font-weight: bold; margin-bottom: 5px">
+                    Room Number (Optional)
+                  </div>
+                  <div class="input-field"></div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">Create Class</div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/schools/{id}/classes<br />
+              GET /api/schools/{id}/classes/stats<br />
+              POST /api/classes (create new class)<br />
+              GET /api/classes/{classId}<br />
+              PUT /api/classes/{classId}<br />
+              GET /api/schools/{id}/teachers (for teacher selection)<br />
+              POST /api/classes/{classId}/students (add students to class)
+            </div>
+            <h3>Class Management</h3>
+            <div class="component">
+              School administrators can:<br />
+              <ul>
+                <li>View all classes and their basic information</li>
+                <li>Create new classes</li>
+                <li>Assign teachers to classes</li>
+                <li>Assign students to classes</li>
+                <li>Edit class details</li>
+                <li>View class performance metrics</li>
+              </ul>
+            </div>
+            <h3>Class Creation</h3>
+            <div class="component">
+              <strong>Required fields:</strong>
+              <ul>
+                <li>Class name</li>
+                <li>Subject</li>
+                <li>Grade level</li>
+                <li>Teacher assignment</li>
+              </ul>
+              <strong>Optional fields:</strong>
+              <ul>
+                <li>Room number</li>
+                <li>Schedule information</li>
+                <li>Class description</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. School Analytics Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>11. School Analytics Screen</h2>
+          <p>View comprehensive school performance analytics</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div style="font-weight: bold">Analytics</div>
+              </div>
+              <div class="button primary">Export Report</div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px">Dashboard</div>
+                <div style="margin-bottom: 10px">School Profile</div>
+                <div style="margin-bottom: 10px">Teachers</div>
+                <div style="margin-bottom: 10px">Students</div>
+                <div style="margin-bottom: 10px">Classes</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  Analytics
+                </div>
+                <div style="margin-bottom: 10px">Point System</div>
+                <div style="margin-bottom: 10px">Settings</div>
+              </div>
+
+              <div style="flex: 1">
+                <div style="display: flex; gap: 20px; margin-bottom: 20px">
+                  <div style="flex: 1">
+                    <div style="font-weight: bold">Date Range</div>
+                    <div style="display: flex; gap: 10px">
+                      <div
+                        class="input-field"
+                        type="date"
+                        value="2025-03-01"
+                        style="flex: 1"
+                      ></div>
+                      <div style="align-self: center">to</div>
+                      <div
+                        class="input-field"
+                        type="date"
+                        value="2025-04-23"
+                        style="flex: 1"
+                      ></div>
+                    </div>
+                  </div>
+                  <div style="flex: 1">
+                    <div style="font-weight: bold">Report Type</div>
+                    <select class="input-field">
+                      <option>School Overview</option>
+                      <option>Attendance Analysis</option>
+                      <option>Point Economy</option>
+                      <option>Task Performance</option>
+                      <option>Grade Level Comparison</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="tabs">
+                  <div class="tab active">Overview</div>
+                  <div class="tab">Attendance</div>
+                  <div class="tab">Points</div>
+                  <div class="tab">Tasks</div>
+                  <div class="tab">Grades</div>
+                </div>
+
+                <div class="grid" style="margin-bottom: 20px">
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">93%</div>
+                    <div>Average Attendance</div>
+                  </div>
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">87%</div>
+                    <div>Task Completion</div>
+                  </div>
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">15,400</div>
+                    <div>Total Points Awarded</div>
+                  </div>
+                  <div class="stats-box">
+                    <div style="font-size: 24px; font-weight: bold">42</div>
+                    <div>High Performing Students</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 20px; margin-bottom: 20px">
+                  <div style="flex: 1">
+                    <h3>Attendance by Grade Level</h3>
+                    <div
+                      class="card"
+                      style="
+                        height: 250px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      [Bar chart showing attendance rates by grade level]
+                    </div>
+                  </div>
+                  <div style="flex: 1">
+                    <h3>Points Distributed by Category</h3>
+                    <div
+                      class="card"
+                      style="
+                        height: 250px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      [Pie chart showing points distributed by category]
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 20px; margin-bottom: 20px">
+                  <div style="flex: 1">
+                    <h3>Task Completion Trends</h3>
+                    <div
+                      class="card"
+                      style="
+                        height: 250px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      [Line chart showing task completion trends over time]
+                    </div>
+                  </div>
+                  <div style="flex: 1">
+                    <h3>Top Performing Classes</h3>
+                    <div class="card" style="height: 250px; overflow-y: auto">
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 10px;
+                          font-weight: bold;
+                        "
+                      >
+                        <div>Class</div>
+                        <div>Teacher</div>
+                        <div>Completion</div>
+                        <div>Avg. Points</div>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        <div>Math 101</div>
+                        <div>Mrs. Johnson</div>
+                        <div>95%</div>
+                        <div>350</div>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        <div>Science 202</div>
+                        <div>Mr. Williams</div>
+                        <div>92%</div>
+                        <div>320</div>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        <div>English 101</div>
+                        <div>Ms. Davis</div>
+                        <div>90%</div>
+                        <div>315</div>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        <div>Math 202</div>
+                        <div>Mrs. Johnson</div>
+                        <div>88%</div>
+                        <div>305</div>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        <div>Social 101</div>
+                        <div>Mr. Miller</div>
+                        <div>87%</div>
+                        <div>295</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <h3>Key Insights & Recommendations</h3>
+                  <div style="margin-bottom: 10px">
+                    <strong>Attendance:</strong> Overall attendance has improved
+                    by 3% compared to last month.
+                  </div>
+                  <div style="margin-bottom: 10px">
+                    <strong>Task Completion:</strong> Grade 7 classes are
+                    showing the highest task completion rates.
+                  </div>
+                  <div style="margin-bottom: 10px">
+                    <strong>Points Distribution:</strong> Homework assignments
+                    are generating the most points, followed by attendance and
+                    quizzes.
+                  </div>
+                  <div style="margin-bottom: 10px">
+                    <strong>Recommendations:</strong>
+                    <ul>
+                      <li>
+                        Consider additional support for Grade 8 classes, which
+                        show lower completion rates
+                      </li>
+                      <li>
+                        Review the points allocation for projects, which has
+                        lower engagement
+                      </li>
+                      <li>
+                        Explore what makes Math 101 particularly successful in
+                        student engagement
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/analytics/schools/{id}<br />
+              GET /api/analytics/schools/{id}/attendance<br />
+              GET /api/analytics/schools/{id}/points<br />
+              GET /api/analytics/schools/{id}/tasks<br />
+              GET /api/analytics/schools/{id}/grades<br />
+              GET /api/analytics/schools/{id}/classes/rankings<br />
+              GET /api/analytics/schools/{id}/insights
+            </div>
+            <h3>Analytics Types</h3>
+            <div class="component">
+              School administrators can view various analytics:<br />
+              <ul>
+                <li>Overview: High-level school performance metrics</li>
+                <li>
+                  Attendance: Detailed attendance analysis by grade, class, and
+                  time period
+                </li>
+                <li>
+                  Points: Analysis of points economy, distribution, and trends
+                </li>
+                <li>
+                  Tasks: Task completion rates, popular task types, challenging
+                  tasks
+                </li>
+                <li>Grades: Academic performance comparisons and trends</li>
+              </ul>
+            </div>
+            <h3>Export Options</h3>
+            <div class="component">
+              Reports can be exported in various formats:<br />
+              <ul>
+                <li>PDF (for sharing with stakeholders)</li>
+                <li>CSV (for further analysis)</li>
+                <li>Excel (for detailed data manipulation)</li>
+                <li>Email (send to district administration)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Point System Configuration Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>12. Point System Configuration Screen</h2>
+          <p>Customize the school's point rewards system</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div style="font-weight: bold">Point System</div>
+              </div>
+              <div class="button primary">Save Changes</div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px">Dashboard</div>
+                <div style="margin-bottom: 10px">School Profile</div>
+                <div style="margin-bottom: 10px">Teachers</div>
+                <div style="margin-bottom: 10px">Students</div>
+                <div style="margin-bottom: 10px">Classes</div>
+                <div style="margin-bottom: 10px">Analytics</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  Point System
+                </div>
+                <div style="margin-bottom: 10px">Settings</div>
+              </div>
+
+              <div style="flex: 1">
+                <div class="tabs">
+                  <div class="tab active">Point Values</div>
+                  <div class="tab">Level Configuration</div>
+                  <div class="tab">Badges & Rewards</div>
+                  <div class="tab">Redemption Options</div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px">
+                  <h3>Task Point Values</h3>
+                  <p>
+                    Configure the default point values for different task types.
+                  </p>
+
+                  <div style="margin-top: 15px">
+                    <h4>Homework</h4>
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Easy
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="5"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Medium
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="10"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Hard
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="15"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h4>Quizzes</h4>
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Short Quiz
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="15"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Standard Quiz
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="20"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Long Quiz
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="25"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h4>Projects & Tests</h4>
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Small Project
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="25"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Major Project
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="50"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Test
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="40"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px">
+                  <h3>Attendance Point Values</h3>
+                  <p>
+                    Configure point values for daily attendance and streaks.
+                  </p>
+
+                  <div style="margin-top: 15px">
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Daily Attendance
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="5"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          5-Day Streak Bonus
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="10"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          10-Day Streak Bonus
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="25"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px">
+                  <h3>Discretionary Point Values</h3>
+                  <p>
+                    Configure point values that teachers can award for special
+                    achievements.
+                  </p>
+
+                  <div style="margin-top: 15px">
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px">
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Class Participation
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="5"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Helping Others
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="10"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-weight: bold; margin-bottom: 5px">
+                          Exceptional Work
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            class="input-field"
+                            type="number"
+                            value="15"
+                            style="width: 80px"
+                          ></div>
+                          <div>SP</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="button">+ Add New Category</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Level Configuration Tab Content (hidden) -->
+            <div style="display: none">
+              <div class="card" style="margin-bottom: 20px">
+                <h3>Student Level Progression</h3>
+                <p>Configure the points required to reach each level.</p>
+
+                <div style="margin-top: 15px">
+                  <div
+                    style="
+                      display: flex;
+                      margin-bottom: 10px;
+                      font-weight: bold;
+                    "
+                  >
+                    <div style="flex: 1">Level</div>
+                    <div style="flex: 1">Points Required</div>
+                    <div style="flex: 1">Badge</div>
+                    <div style="flex: 1">Actions</div>
+                  </div>
+
+                  <div
+                    style="
+                      display: flex;
+                      margin-bottom: 10px;
+                      align-items: center;
+                    "
+                  >
+                    <div style="flex: 1">Level 1</div>
+                    <div style="flex: 1">0 SP</div>
+                    <div style="flex: 1">Beginner</div>
+                    <div style="flex: 1">
+                      <div class="button" style="font-size: 12px">Edit</div>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      display: flex;
+                      margin-bottom: 10px;
+                      align-items: center;
+                    "
+                  >
+                    <div style="flex: 1">Level 2</div>
+                    <div style="flex: 1">100 SP</div>
+                    <div style="flex: 1">Scholar</div>
+                    <div style="flex: 1">
+                      <div class="button" style="font-size: 12px">Edit</div>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      display: flex;
+                      margin-bottom: 10px;
+                      align-items: center;
+                    "
+                  >
+                    <div style="flex: 1">Level 3</div>
+                    <div style="flex: 1">250 SP</div>
+                    <div style="flex: 1">Academic</div>
+                    <div style="flex: 1">
+                      <div class="button" style="font-size: 12px">Edit</div>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      display: flex;
+                      margin-bottom: 10px;
+                      align-items: center;
+                    "
+                  >
+                    <div style="flex: 1">Level 4</div>
+                    <div style="flex: 1">500 SP</div>
+                    <div style="flex: 1">Honor Student</div>
+                    <div style="flex: 1">
+                      <div class="button" style="font-size: 12px">Edit</div>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      display: flex;
+                      margin-bottom: 10px;
+                      align-items: center;
+                    "
+                  >
+                    <div style="flex: 1">Level 5</div>
+                    <div style="flex: 1">1000 SP</div>
+                    <div style="flex: 1">Dean's List</div>
+                    <div style="flex: 1">
+                      <div class="button" style="font-size: 12px">Edit</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="button">+ Add New Level</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/schools/{id}/points/configuration<br />
+              PUT /api/schools/{id}/points/configuration<br />
+              GET /api/schools/{id}/points/levels<br />
+              PUT /api/schools/{id}/points/levels<br />
+              GET /api/schools/{id}/badges<br />
+              PUT /api/schools/{id}/badges<br />
+              GET /api/schools/{id}/rewards<br />
+              PUT /api/schools/{id}/rewards
+            </div>
+            <h3>Point System Configuration</h3>
+            <div class="component">
+              School administrators can customize:<br />
+              <ul>
+                <li>Point values for different task types and difficulties</li>
+                <li>Attendance point values and streak bonuses</li>
+                <li>Points for teacher discretionary awards</li>
+                <li>Level progression requirements</li>
+                <li>Badges and achievements</li>
+                <li>Point redemption options</li>
+              </ul>
+            </div>
+            <h3>Best Practices</h3>
+            <div class="component">
+              <strong>Balanced Economy:</strong> Ensure point values are
+              proportional to effort required<br />
+              <strong>Steady Progression:</strong> Create attainable levels with
+              reasonable gaps<br />
+              <strong>Multiple Pathways:</strong> Allow students to earn points
+              through various activities<br />
+              <strong>Meaningful Rewards:</strong> Ensure redemption options are
+              motivating and appropriate
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13. System Settings Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>13. System Settings Screen</h2>
+          <p>Configure system-wide settings for the school</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div style="font-weight: bold">Settings</div>
+              </div>
+              <div class="button primary">Save Changes</div>
+            </div>
+
+            <div style="padding: 20px; display: flex; gap: 20px">
+              <div class="sidebar">
+                <div style="font-weight: bold; margin-bottom: 20px">Menu</div>
+                <div style="margin-bottom: 10px">Dashboard</div>
+                <div style="margin-bottom: 10px">School Profile</div>
+                <div style="margin-bottom: 10px">Teachers</div>
+                <div style="margin-bottom: 10px">Students</div>
+                <div style="margin-bottom: 10px">Classes</div>
+                <div style="margin-bottom: 10px">Analytics</div>
+                <div style="margin-bottom: 10px">Point System</div>
+                <div style="margin-bottom: 10px; font-weight: bold">
+                  Settings
+                </div>
+              </div>
+
+              <div style="flex: 1">
+                <div class="tabs">
+                  <div class="tab active">General</div>
+                  <div class="tab">Notifications</div>
+                  <div class="tab">Security</div>
+                  <div class="tab">Permissions</div>
+                  <div class="tab">Integration</div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px">
+                  <h3>Academic Calendar</h3>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      Current School Year
+                    </div>
+                    <div style="display: flex; gap: 15px">
+                      <div class="input-field" style="flex: 1">2024-2025</div>
+                      <div
+                        style="
+                          display: flex;
+                          flex-direction: column;
+                          justify-content: center;
+                        "
+                      >
+                        <div style="font-size: 12px; color: #666">
+                          Format: YYYY-YYYY
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      School Year Start Date
+                    </div>
+                    <div
+                      class="input-field"
+                      type="date"
+                      value="2024-09-01"
+                    ></div>
+                  </div>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      School Year End Date
+                    </div>
+                    <div
+                      class="input-field"
+                      type="date"
+                      value="2025-06-15"
+                    ></div>
+                  </div>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      Current Semester/Term
+                    </div>
+                    <select class="input-field">
+                      <option>Spring Semester</option>
+                      <option>Fall Semester</option>
+                      <option>Summer Term</option>
+                      <option>Quarter 1</option>
+                      <option>Quarter 2</option>
+                      <option>Quarter 3</option>
+                      <option>Quarter 4</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px">
+                  <h3>System Configuration</h3>
+                  <div style="margin-bottom: 15px">
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      <input type="checkbox" id="require_approval" checked />
+                      <label for="require_approval"
+                        >Require admin approval for teacher registrations</label
+                      >
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      <input
+                        type="checkbox"
+                        id="require_parent_verification"
+                        checked
+                      />
+                      <label for="require_parent_verification"
+                        >Require parent account verification</label
+                      >
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      <input
+                        type="checkbox"
+                        id="allow_teacher_points"
+                        checked
+                      />
+                      <label for="allow_teacher_points"
+                        >Allow teachers to award discretionary points</label
+                      >
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      <input type="checkbox" id="track_attendance" checked />
+                      <label for="track_attendance"
+                        >Track daily attendance</label
+                      >
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <input type="checkbox" id="enable_analytics" checked />
+                      <label for="enable_analytics"
+                        >Enable school analytics features</label
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px">
+                  <h3>Email Settings</h3>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      School Email Contact
+                    </div>
+                    <div class="input-field">admin@lincolnms.edu</div>
+                  </div>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      Email Signature
+                    </div>
+                    <textarea class="input-field" style="height: 100px">
+Lincoln Middle School
+123 Education Drive
+Springfield, IL 62701
+(555) 123-4567
+www.lincolnms.edu
+                    </textarea>
+                  </div>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      Email Notification Templates
+                    </div>
+                    <select class="input-field">
+                      <option>Select template to edit</option>
+                      <option>Teacher Welcome Email</option>
+                      <option>Student Welcome Email</option>
+                      <option>Parent Welcome Email</option>
+                      <option>Password Reset Email</option>
+                      <option>Point Award Notification</option>
+                      <option>Level Up Notification</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <h3>Appearance</h3>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      School Colors
+                    </div>
+                    <div style="display: flex; gap: 15px">
+                      <div style="flex: 1">
+                        <div style="font-size: 14px; margin-bottom: 5px">
+                          Primary Color
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            style="
+                              width: 30px;
+                              height: 30px;
+                              background: #3f51b5;
+                              border-radius: 5px;
+                            "
+                          ></div>
+                          <div class="input-field">#3f51b5</div>
+                        </div>
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-size: 14px; margin-bottom: 5px">
+                          Secondary Color
+                        </div>
+                        <div
+                          style="display: flex; gap: 10px; align-items: center"
+                        >
+                          <div
+                            style="
+                              width: 30px;
+                              height: 30px;
+                              background: #ff9800;
+                              border-radius: 5px;
+                            "
+                          ></div>
+                          <div class="input-field">#ff9800</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-bottom: 15px">
+                    <div style="font-weight: bold; margin-bottom: 5px">
+                      School Logo
+                    </div>
+                    <div style="display: flex; gap: 15px">
+                      <div
+                        style="
+                          width: 100px;
+                          height: 100px;
+                          background: #f5f5f5;
+                          border: 1px dashed #999;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        Logo
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          flex-direction: column;
+                          justify-content: center;
+                        "
+                      >
+                        <div class="button">Upload New Logo</div>
+                        <div
+                          style="font-size: 12px; color: #666; margin-top: 5px"
+                        >
+                          Recommended size: 200x200px, PNG or SVG format
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/schools/{id}/settings<br />
+              PUT /api/schools/{id}/settings<br />
+              GET /api/schools/{id}/notifications/settings<br />
+              PUT /api/schools/{id}/notifications/settings<br />
+              GET /api/schools/{id}/security/settings<br />
+              PUT /api/schools/{id}/security/settings<br />
+              GET /api/schools/{id}/permissions<br />
+              PUT /api/schools/{id}/permissions<br />
+              POST /api/schools/{id}/logo<br />
+              GET /api/schools/{id}/email-templates<br />
+              PUT /api/schools/{id}/email-templates/{templateId}
+            </div>
+            <h3>System Settings</h3>
+            <div class="component">
+              School administrators can configure system-wide settings:<br />
+              <ul>
+                <li>Academic calendar configuration</li>
+                <li>System behavior and feature toggles</li>
+                <li>Email settings and notification templates</li>
+                <li>School branding and appearance settings</li>
+                <li>Security policies and access controls</li>
+                <li>Integration with other school systems</li>
+              </ul>
+            </div>
+            <h3>Security & Permissions</h3>
+            <div class="component">
+              <strong>Access Control:</strong> Define what different user roles
+              can access<br />
+              <strong>Password Policies:</strong> Configure password
+              requirements<br />
+              <strong>Session Management:</strong> Configure timeout settings<br />
+              <strong>Two-Factor Authentication:</strong> Enable/disable
+              additional security
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

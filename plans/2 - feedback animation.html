@@ -1,0 +1,2526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Univance Animation Library</title>
+    <!-- Font Awesome for Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Google Fonts - Nunito, Open Sans, Quicksand -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Animation libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+      /* Reset and base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        /* Primary Colors - UPDATED */
+        --orange: #ff8da1; /* Hydrangea Pink (was #ffc067) */
+        --teal: #ffc2ba; /* Blush Peach (was #66f4ff) */
+        --blue: #ff9ce9; /* Light Lavender (was #66c4ff) */
+        --slate: #ad56c4; /* Deep Purple (was #7d99aa) */
+
+        /* Secondary Colors - UPDATED */
+        --coral: #ff6b85; /* Darker pink (was #ff8a5b) */
+        --yellow: #ffad9f; /* Darker peach (was #ffdc5b) */
+        --green: #ff7de0; /* Darker lavender (was #64e291) */
+        --purple: #9548a8; /* Darker purple (was #9b81e5) */
+
+        /* Background colors - ADDED */
+        --bg-light-pink: #fff1f3;
+        --bg-light-peach: #fff6f5;
+        --bg-light-lavender: #fff5fc;
+        --bg-light-purple: #f9f0fc;
+
+        /* Neutrals - unchanged */
+        --white: #ffffff;
+        --light-gray: #f5f7fa;
+        --medium-gray: #cdd5df;
+        --dark-gray: #526d82;
+        --black: #2d3748;
+
+        /* Gradients - UPDATED */
+        --gradient-primary: linear-gradient(
+          135deg,
+          var(--orange) 0%,
+          var(--coral) 100%
+        );
+        --gradient-secondary: linear-gradient(
+          135deg,
+          var(--teal) 0%,
+          var(--blue) 100%
+        );
+        --gradient-success: linear-gradient(
+          135deg,
+          var(--green) 0%,
+          #ff62d8 100%
+        );
+        --gradient-warning: linear-gradient(
+          135deg,
+          var(--yellow) 0%,
+          var(--orange) 100%
+        );
+        --gradient-purple: linear-gradient(
+          135deg,
+          var(--purple) 0%,
+          #8a40a0 100%
+        );
+        --gradient-danger: linear-gradient(135deg, #ff5252 0%, #ff1a1a 100%);
+
+        /* Fonts - unchanged */
+        --heading-font: "Nunito", sans-serif;
+        --body-font: "Open Sans", sans-serif;
+        --display-font: "Quicksand", sans-serif;
+      }
+
+      body {
+        font-family: var(--body-font);
+        color: var(--black);
+        background-color: var(--light-gray);
+        line-height: 1.6;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: var(--heading-font);
+        font-weight: 700;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      header {
+        background-color: var(--white);
+        padding: 1.5rem 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      .logo {
+        font-family: var(--heading-font);
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--black);
+        text-decoration: none;
+      }
+
+      .logo span {
+        color: var(--orange);
+      }
+
+      /* Navigation */
+      .nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .nav-link {
+        color: var(--dark-gray);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--orange);
+      }
+
+      .page-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        display: inline-block;
+      }
+
+      .page-title::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -0.5rem;
+        width: 50px;
+        height: 4px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+      }
+
+      .page-subtitle {
+        color: var(--dark-gray);
+        font-size: 1.25rem;
+        margin-bottom: 3rem;
+        max-width: 800px;
+      }
+
+      /* Section styles */
+      .section {
+        margin-bottom: 4rem;
+        padding-top: 2rem;
+      }
+
+      .section-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        position: relative;
+        display: inline-block;
+      }
+
+      .section-title::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -0.5rem;
+        width: 40px;
+        height: 3px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+      }
+
+      .section-subtitle {
+        color: var(--dark-gray);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        max-width: 800px;
+      }
+
+      /* Animation grid */
+      .animation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      /* Animation card */
+      .animation-card {
+        background-color: var(--white);
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--light-gray);
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .card-description {
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+      }
+
+      .animation-container {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background-color: var(--light-gray);
+        padding: 1rem;
+      }
+
+      .animation-trigger {
+        position: absolute;
+        bottom: 1rem;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        background: var(--gradient-primary);
+        color: white;
+        font-family: var(--heading-font);
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+
+      .animation-trigger:hover {
+        transform: translateY(-2px);
+      }
+
+      /* Context examples */
+      .context-section {
+        margin-top: 4rem;
+      }
+
+      .context-title {
+        font-size: 1.75rem;
+        margin-bottom: 2rem;
+      }
+
+      .mockup-container {
+        background-color: var(--white);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-top: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .mockup-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .mockup-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--gradient-primary);
+        color: white;
+        font-family: var(--heading-font);
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        margin-right: 1rem;
+        margin-bottom: 1rem;
+      }
+      .mockup-navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background-color: var(--white);
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+      }
+
+      .mockup-logo {
+        font-family: var(--heading-font);
+        font-weight: 800;
+        font-size: 1.5rem;
+      }
+
+      .mockup-nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .mockup-link {
+        color: var(--dark-gray);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .mockup-card {
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        background-color: var(--light-gray);
+        margin-bottom: 1rem;
+      }
+
+      .mockup-card-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .mockup-card-content {
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-gray);
+      }
+
+      .mockup-form {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--medium-gray);
+        border-radius: 0.25rem;
+        font-family: var(--body-font);
+      }
+
+      .form-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--gradient-primary);
+        color: white;
+        font-family: var(--heading-font);
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+      }
+
+      /* FEEDBACK ANIMATION STYLES */
+
+      /* 1. Task Completion Animation */
+      .success-checkmark {
+        width: 80px;
+        height: 80px;
+        background-color: var(--green);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      /* 2. Error Feedback Animation */
+      .error-feedback {
+        width: 80px;
+        height: 80px;
+        background-color: #ff5252;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        opacity: 0;
+      }
+
+      /* 3. Points Earned Animation */
+      .points-container {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .points-value {
+        font-family: var(--heading-font);
+        font-weight: 800;
+        font-size: 2rem;
+        color: var(--orange);
+        position: relative;
+        z-index: 2;
+        opacity: 0;
+      }
+
+      /* 4. Achievement Badge Animation */
+      .achievement-badge {
+        width: 80px;
+        height: 80px;
+        background: var(--gradient-warning);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      /* 5. Celebration Confetti Animation */
+      .confetti-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: var(--yellow);
+        opacity: 0;
+      }
+
+      /* 6. Notification Animation */
+      .notification-bell {
+        font-size: 2rem;
+        color: var(--dark-gray);
+        cursor: pointer;
+        position: relative;
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 20px;
+        height: 20px;
+        background: var(--coral);
+        border-radius: 50%;
+        color: white;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      /* 9. Enhanced Level Up Animation */
+      .level-up-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .level-up-badges {
+        display: flex;
+        position: relative;
+      }
+
+      .level-badge {
+        width: 60px;
+        height: 60px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--heading-font);
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: white;
+        position: relative;
+        z-index: 1;
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      .level-badge.new {
+        background: var(--gradient-purple);
+        margin-left: -10px;
+      }
+
+      .level-up-text {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--purple);
+        margin-top: 1rem;
+        opacity: 0;
+      }
+
+      .level-star {
+        position: absolute;
+        font-size: 1.5rem;
+        color: var(--yellow);
+        opacity: 0;
+      }
+
+      .level-glow {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(149, 72, 168, 0.3) 0%,
+          rgba(149, 72, 168, 0) 70%
+        );
+        z-index: 0;
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      /* 10. Rating Feedback Animation */
+      .rating-container {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .rating-star {
+        font-size: 2rem;
+        color: var(--medium-gray);
+        cursor: pointer;
+      }
+
+      .rating-star.active {
+        color: var(--yellow);
+      }
+      /* LOADING ANIMATION STYLES */
+
+      /* 1. Wave Loader */
+      .wave-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 40px;
+        width: 60px;
+      }
+
+      .wave-bar {
+        width: 4px;
+        height: 100%;
+        margin: 0 2px;
+        border-radius: 2px;
+        background-color: var(--teal);
+        transform-origin: bottom;
+        opacity: 0;
+      }
+
+      /* 2. Sunrise Loader */
+      .sunrise-loader {
+        width: 40px;
+        height: 40px;
+        position: relative;
+      }
+
+      .sunrise-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: var(--light-gray);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .sunrise-fill {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 0%;
+        background: var(--yellow);
+        border-radius: 50%;
+        transform-origin: bottom center;
+      }
+
+      /* 3. Beach Ball Spinner */
+      .beach-ball-spinner {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: conic-gradient(
+          var(--orange) 0deg 90deg,
+          var(--teal) 90deg 180deg,
+          var(--green) 180deg 270deg,
+          var(--purple) 270deg 360deg
+        );
+        position: relative;
+        transform: scale(0);
+      }
+
+      /* 4. Tidal Progress Bar */
+      .tidal-progress {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background-color: var(--light-gray);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .tidal-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;
+        background: var(--gradient-secondary);
+      }
+
+      .tidal-wave {
+        position: absolute;
+        top: 0;
+        width: 200%;
+        height: 100%;
+        background: var(--teal);
+        opacity: 0.3;
+        border-radius: 50%;
+      }
+
+      /* 5. Gradient Dot Pulse */
+      .dot-pulse-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .dot-pulse {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        opacity: 0;
+      }
+
+      .dot-1 {
+        background-color: var(--orange);
+      }
+      .dot-2 {
+        background-color: var(--teal);
+      }
+      .dot-3 {
+        background-color: var(--green);
+      }
+
+      /* 7. Upload Progress */
+      .upload-progress {
+        width: 80%;
+        height: 10px;
+        background-color: var(--light-gray);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 0;
+        background: var(--gradient-success);
+      }
+
+      /* 8. Heart Animation */
+      .heart-container {
+        font-size: 2rem;
+        color: #e74c3c;
+        cursor: pointer;
+        opacity: 0.5;
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 3rem;
+        padding: 2rem 0;
+        background-color: var(--white);
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+      }
+
+      /* Utility classes */
+      .mb-5 {
+        margin-bottom: 5rem;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <a href="#" class="logo">Univance<span>.</span></a>
+        <nav class="nav">
+          <a href="#feedback-animations" class="nav-link"
+            >Feedback Animations</a
+          >
+          <a href="#loading-animations" class="nav-link">Loading Animations</a>
+          <a href="#implementation" class="nav-link">Implementation Examples</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <h1 class="page-title">Univance Animation Library</h1>
+      <p class="page-subtitle">
+        A collection of micro-animations to enhance user experience by providing
+        visual feedback, guiding attention, and adding delight to interactions.
+      </p>
+
+      <!-- FEEDBACK ANIMATIONS SECTION -->
+      <section id="feedback-animations" class="section">
+        <h2 class="section-title">Feedback Animations</h2>
+        <p class="section-subtitle">
+          Animations that provide immediate visual feedback to user actions and
+          achievements.
+        </p>
+
+        <div class="animation-grid">
+          <!-- 1. Task Completion Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Task Completion</h3>
+              <p class="card-description">
+                Confirms when a task has been successfully completed
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="success-checkmark" id="success-checkmark">
+                <i class="fas fa-check"></i>
+              </div>
+              <button class="animation-trigger" id="trigger-success">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Error Feedback Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Error Feedback</h3>
+              <p class="card-description">
+                Alerts users when an action has failed
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="error-feedback" id="error-feedback">
+                <i class="fas fa-times"></i>
+              </div>
+              <button class="animation-trigger" id="trigger-error">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Points Earned Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Points Earned</h3>
+              <p class="card-description">
+                Celebrates earning points with a burst effect
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="points-container" id="points-container">
+                <div class="points-value" id="points-value">+25</div>
+              </div>
+              <button class="animation-trigger" id="trigger-points">
+                Run Animation
+              </button>
+            </div>
+          </div>
+          <!-- 4. Achievement Badge Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Achievement Badge</h3>
+              <p class="card-description">
+                Celebrates earning a new badge or achievement
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="achievement-badge" id="achievement-badge">
+                <i class="fas fa-trophy"></i>
+              </div>
+              <button class="animation-trigger" id="trigger-achievement">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. Celebration Confetti Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Celebration Confetti</h3>
+              <p class="card-description">
+                Adds excitement to major achievements
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="confetti-container" id="confetti-container"></div>
+              <div
+                id="celebration-target"
+                style="font-size: 2rem; color: var(--orange)"
+              >
+                🎉
+              </div>
+              <button class="animation-trigger" id="trigger-confetti">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 6. Notification Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Notification Alert</h3>
+              <p class="card-description">Alerts users to new notifications</p>
+            </div>
+            <div class="animation-container">
+              <div class="notification-bell" id="notification-bell">
+                <i class="fas fa-bell"></i>
+                <div class="notification-badge" id="notification-badge">3</div>
+              </div>
+              <button class="animation-trigger" id="trigger-notification">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 7. Heart Like Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Heart Like Animation</h3>
+              <p class="card-description">
+                Provides feedback when liking content
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="heart-container" id="heart-container">
+                <i class="fas fa-heart"></i>
+              </div>
+              <button class="animation-trigger" id="trigger-heart">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 8. Upload Progress Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Upload Progress</h3>
+              <p class="card-description">Shows progress during file uploads</p>
+            </div>
+            <div class="animation-container">
+              <div class="upload-progress" id="upload-progress">
+                <div class="progress-bar" id="progress-bar"></div>
+              </div>
+              <button class="animation-trigger" id="trigger-upload">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 9. Level Up Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Level Up</h3>
+              <p class="card-description">
+                Celebrates when a student advances to a new level
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="level-up-container" id="level-up-container">
+                <div class="level-glow"></div>
+                <div class="level-up-badges">
+                  <div class="level-badge old">4</div>
+                  <div class="level-badge new">5</div>
+                </div>
+                <div class="level-up-text">Level Up!</div>
+              </div>
+              <button class="animation-trigger" id="trigger-level-up">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 10. Rating Feedback Animation -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Rating Feedback</h3>
+              <p class="card-description">
+                Animates star ratings when users provide feedback
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="rating-container" id="rating-container">
+                <div class="rating-star" id="star-1">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="rating-star" id="star-2">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="rating-star" id="star-3">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="rating-star" id="star-4">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="rating-star" id="star-5">
+                  <i class="fas fa-star"></i>
+                </div>
+              </div>
+              <button class="animation-trigger" id="trigger-rating">
+                Run Animation
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOADING ANIMATIONS SECTION -->
+      <section id="loading-animations" class="section">
+        <h2 class="section-title">Loading Animations</h2>
+        <p class="section-subtitle">
+          Small, versatile loading indicators that can be easily integrated into
+          various parts of the Univance platform.
+        </p>
+
+        <div class="animation-grid">
+          <!-- 1. Wave Loading Bar -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Wave Loader</h3>
+              <p class="card-description">
+                Animated bars that mimic ocean waves, perfect for inline loading
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="wave-loader" id="wave-loader">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+              </div>
+              <button class="animation-trigger" id="trigger-wave-loader">
+                Run Animation
+              </button>
+            </div>
+          </div>
+          <!-- 2. Sunrise Loader -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Sunrise Loader</h3>
+              <p class="card-description">
+                Sunrise-inspired circular progress indicator
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="sunrise-loader" id="sunrise-loader">
+                <div class="sunrise-circle">
+                  <div class="sunrise-fill"></div>
+                </div>
+              </div>
+              <button class="animation-trigger" id="trigger-sunrise-loader">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Beach Ball Spinner -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Beach Ball Spinner</h3>
+              <p class="card-description">
+                Colorful spinner with brand colors arranged like a beach ball
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="beach-ball-spinner" id="beach-ball-spinner"></div>
+              <button class="animation-trigger" id="trigger-beach-ball">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Tidal Progress Bar -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Tidal Progress Bar</h3>
+              <p class="card-description">
+                Progress bar with wave-like filling effect
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="tidal-progress" id="tidal-progress">
+                <div class="tidal-fill"></div>
+                <div class="tidal-wave"></div>
+              </div>
+              <button class="animation-trigger" id="trigger-tidal">
+                Run Animation
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. Gradient Dot Pulse -->
+          <div class="animation-card">
+            <div class="card-header">
+              <h3 class="card-title">Gradient Dot Pulse</h3>
+              <p class="card-description">
+                Simple animated dots using the brand color palette
+              </p>
+            </div>
+            <div class="animation-container">
+              <div class="dot-pulse-container" id="dot-pulse-container">
+                <div class="dot-pulse dot-1"></div>
+                <div class="dot-pulse dot-2"></div>
+                <div class="dot-pulse dot-3"></div>
+              </div>
+              <button class="animation-trigger" id="trigger-dots">
+                Run Animation
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- IMPLEMENTATION EXAMPLES SECTION -->
+      <section id="implementation" class="section">
+        <h2 class="section-title">Implementation Examples</h2>
+        <p class="section-subtitle">
+          Real-world examples of how to integrate these animations into the
+          Univance platform interface.
+        </p>
+
+        <!-- Button Loading Example -->
+        <div class="mockup-container">
+          <h3 class="mockup-title">Button Loading States</h3>
+          <button class="mockup-button" id="submit-button">Submit</button>
+          <button
+            class="mockup-button"
+            id="loading-button"
+            style="display: none"
+          >
+            <div
+              class="wave-loader"
+              id="button-wave-loader"
+              style="height: 20px; width: 40px"
+            >
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+            Loading
+          </button>
+          <button class="mockup-button" id="beach-ball-button">
+            <div
+              class="beach-ball-spinner"
+              id="button-beach-ball"
+              style="width: 20px; height: 20px"
+            ></div>
+            Processing
+          </button>
+        </div>
+
+        <!-- Feedback Implementation Example -->
+        <div class="mockup-container">
+          <h3 class="mockup-title">Task Completion Feedback</h3>
+          <div style="display: flex; gap: 1rem; margin-bottom: 1rem">
+            <div
+              style="
+                flex: 1;
+                padding: 1rem;
+                background-color: var(--light-gray);
+                border-radius: 0.5rem;
+                display: flex;
+                align-items: center;
+              "
+            >
+              <input
+                type="checkbox"
+                id="task-checkbox"
+                style="margin-right: 0.5rem"
+              />
+              <label for="task-checkbox">Complete Math Assignment</label>
+            </div>
+            <div
+              style="
+                flex: 1;
+                padding: 1rem;
+                background-color: var(--light-gray);
+                border-radius: 0.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+              "
+            >
+              <span>Points Earned Today</span>
+              <span id="point-value">50</span>
+            </div>
+          </div>
+          <div
+            style="
+              margin-top: 1rem;
+              text-align: center;
+              height: 80px;
+              position: relative;
+            "
+          >
+            <div
+              id="task-success"
+              style="
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                display: none;
+              "
+            >
+              <div
+                class="success-checkmark"
+                style="opacity: 1; transform: scale(1)"
+              >
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+            <div
+              id="point-earned"
+              style="
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                display: none;
+              "
+            >
+              <div class="points-container">
+                <div class="points-value" style="opacity: 1">+10</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page Loading Example -->
+        <div class="mockup-container">
+          <h3 class="mockup-title">Page Loading State</h3>
+          <div class="mockup-navbar">
+            <div class="mockup-logo">
+              Univance<span style="color: var(--orange)">.</span>
+            </div>
+            <div class="mockup-nav">
+              <a href="#" class="mockup-link">Dashboard</a>
+              <a href="#" class="mockup-link">Tasks</a>
+              <a href="#" class="mockup-link">Rewards</a>
+              <a href="#" class="mockup-link">Profile</a>
+            </div>
+          </div>
+
+          <div class="mockup-card">
+            <h4 class="mockup-card-title">Student Dashboard</h4>
+            <div class="mockup-card-content" id="dashboard-content">
+              <div
+                class="tidal-progress"
+                id="page-tidal-loader"
+                style="width: 80%"
+              >
+                <div class="tidal-fill"></div>
+                <div class="tidal-wave"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Submission Example -->
+        <div class="mockup-container">
+          <h3 class="mockup-title">Form Submission</h3>
+          <div class="mockup-form">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter username"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                placeholder="Enter password"
+              />
+            </div>
+            <button class="form-button" id="form-button">Login</button>
+            <button
+              class="form-button"
+              id="form-loading-button"
+              style="display: none"
+            >
+              <div
+                class="sunrise-loader"
+                id="form-sunrise-loader"
+                style="width: 20px; height: 20px"
+              >
+                <div class="sunrise-circle">
+                  <div class="sunrise-fill"></div>
+                </div>
+              </div>
+              Logging in...
+            </button>
+          </div>
+        </div>
+
+        <!-- Level Up Implementation Example -->
+        <div class="mockup-container">
+          <h3 class="mockup-title">Achievement Notification</h3>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 1rem;
+            "
+          >
+            <div style="font-weight: 600">Student: Alex Johnson</div>
+            <div>
+              <span id="current-level">Level: 4</span>
+              <div
+                class="notification-bell"
+                id="demo-notification-bell"
+                style="
+                  display: inline-block;
+                  font-size: 1.5rem;
+                  margin-left: 1rem;
+                  cursor: pointer;
+                "
+              >
+                <i class="fas fa-bell"></i>
+                <div
+                  class="notification-badge"
+                  id="demo-notification-badge"
+                  style="width: 15px; height: 15px; font-size: 0.6rem"
+                >
+                  1
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              border: 1px solid var(--medium-gray);
+              border-radius: 0.5rem;
+              padding: 1rem;
+              margin-bottom: 1rem;
+            "
+          >
+            <div
+              id="level-up-message"
+              style="text-align: center; display: none"
+            >
+              <div class="level-up-container" style="height: 120px">
+                <div
+                  class="level-glow"
+                  style="opacity: 0.7; transform: scale(1.5)"
+                ></div>
+                <div class="level-up-badges">
+                  <div
+                    class="level-badge old"
+                    style="opacity: 1; transform: scale(1)"
+                  >
+                    4
+                  </div>
+                  <div
+                    class="level-badge new"
+                    style="opacity: 1; transform: scale(1)"
+                  >
+                    5
+                  </div>
+                </div>
+                <div class="level-up-text" style="opacity: 1">
+                  Congratulations! You've reached Level 5!
+                </div>
+              </div>
+            </div>
+            <div id="default-message">
+              <p style="text-align: center; color: var(--dark-gray)">
+                Complete more tasks to level up!
+              </p>
+            </div>
+          </div>
+          <button class="mockup-button" id="demo-level-up">
+            Simulate Level Up
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <p>&copy; 2025 Univance. All rights reserved.</p>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if anime.js is loaded
+        if (typeof anime === "undefined") {
+          console.error(
+            "Anime.js is not loaded. Animations may not work properly."
+          );
+          return;
+        }
+
+        // Highlight active section in navigation
+        const navLinks = document.querySelectorAll(".nav-link");
+        const sections = document.querySelectorAll("section");
+
+        function updateActiveLink() {
+          const scrollPosition = window.scrollY;
+
+          sections.forEach((section, index) => {
+            const sectionTop = section.offsetTop - 100;
+            const sectionBottom = sectionTop + section.offsetHeight;
+
+            if (
+              scrollPosition >= sectionTop &&
+              scrollPosition < sectionBottom
+            ) {
+              navLinks.forEach((link) => link.classList.remove("active"));
+              navLinks[index].classList.add("active");
+            }
+          });
+        }
+
+        window.addEventListener("scroll", updateActiveLink);
+        updateActiveLink();
+
+        // ===== FEEDBACK ANIMATIONS =====
+
+        // 1. Task Completion Animation
+        const successTrigger = document.getElementById("trigger-success");
+        const successCheckmark = document.getElementById("success-checkmark");
+
+        successTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(successCheckmark, {
+            opacity: 0,
+            scale: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: successTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Success animation
+          anime
+            .timeline({
+              easing: "easeOutBack",
+            })
+            .add({
+              targets: successCheckmark,
+              opacity: [0, 1],
+              scale: [0, 1],
+              duration: 600,
+              delay: 200,
+            })
+            .add({
+              targets: successCheckmark,
+              scale: [1, 1.1, 1],
+              duration: 400,
+              easing: "easeInOutSine",
+            })
+            .add({
+              targets: successCheckmark,
+              opacity: [1, 0],
+              scale: [1, 0],
+              duration: 400,
+              delay: 1000,
+              easing: "easeInBack",
+            });
+        });
+        // 2. Error Feedback Animation
+        const errorTrigger = document.getElementById("trigger-error");
+        const errorFeedback = document.getElementById("error-feedback");
+
+        errorTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(errorFeedback, {
+            opacity: 0,
+            scale: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: errorTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Error animation
+          anime
+            .timeline({
+              easing: "easeOutBack",
+            })
+            .add({
+              targets: errorFeedback,
+              opacity: [0, 1],
+              scale: [0, 1],
+              duration: 400,
+            })
+            .add({
+              targets: errorFeedback,
+              translateX: [
+                { value: -10, duration: 100, delay: 0 },
+                { value: 10, duration: 100, delay: 0 },
+                { value: -8, duration: 100, delay: 0 },
+                { value: 8, duration: 100, delay: 0 },
+                { value: -5, duration: 100, delay: 0 },
+                { value: 5, duration: 100, delay: 0 },
+                { value: 0, duration: 100, delay: 0 },
+              ],
+              duration: 700,
+            })
+            .add({
+              targets: errorFeedback,
+              opacity: [1, 0],
+              scale: [1, 0],
+              duration: 400,
+              delay: 1000,
+              easing: "easeInBack",
+            });
+        });
+
+        // 3. Points Earned Animation
+        const pointsTrigger = document.getElementById("trigger-points");
+        const pointsContainer = document.getElementById("points-container");
+        const pointsValue = document.getElementById("points-value");
+
+        pointsTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(pointsValue, {
+            opacity: 0,
+            scale: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: pointsTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Create particle elements
+          pointsContainer
+            .querySelectorAll(".points-particle")
+            .forEach((el) => el.remove());
+
+          const colors = ["#FF8DA1", "#FFC2BA", "#FF9CE9", "#AD56C4"];
+          for (let i = 0; i < 12; i++) {
+            const particle = document.createElement("div");
+            particle.classList.add("points-particle");
+            particle.style.position = "absolute";
+            particle.style.width = "8px";
+            particle.style.height = "8px";
+            particle.style.borderRadius = "50%";
+            particle.style.backgroundColor = colors[i % colors.length];
+            particle.style.opacity = "0";
+            particle.style.top = "50%";
+            particle.style.left = "50%";
+            particle.style.transform = "translate(-50%, -50%)";
+            pointsContainer.appendChild(particle);
+          }
+
+          const particles =
+            pointsContainer.querySelectorAll(".points-particle");
+
+          // Points animation
+          anime
+            .timeline({
+              easing: "easeOutBack",
+            })
+            .add({
+              targets: pointsValue,
+              opacity: [0, 1],
+              scale: [0, 1],
+              duration: 600,
+            })
+            .add(
+              {
+                targets: particles,
+                opacity: [0, 1, 0],
+                translateX: () => anime.random(-50, 50),
+                translateY: () => anime.random(-50, 50),
+                scale: [0, 1],
+                duration: 1000,
+                delay: anime.stagger(30),
+                easing: "easeOutExpo",
+              },
+              "-=300"
+            )
+            .add({
+              targets: pointsValue,
+              opacity: [1, 0],
+              scale: [1, 0],
+              duration: 400,
+              delay: 1500,
+              easing: "easeInBack",
+            });
+        });
+
+        // 4. Achievement Badge Animation
+        const achievementTrigger = document.getElementById(
+          "trigger-achievement"
+        );
+        const achievementBadge = document.getElementById("achievement-badge");
+
+        achievementTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(achievementBadge, {
+            opacity: 0,
+            scale: 0,
+            rotate: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: achievementTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+          // Achievement animation
+          anime
+            .timeline({
+              easing: "easeOutElastic(1, .6)",
+            })
+            .add({
+              targets: achievementBadge,
+              opacity: [0, 1],
+              scale: [0, 1],
+              rotate: [-30, 0],
+              duration: 1000,
+            })
+            .add({
+              targets: achievementBadge,
+              scale: [1, 1.1, 1],
+              duration: 800,
+              easing: "easeInOutSine",
+            })
+            .add({
+              targets: achievementBadge,
+              opacity: [1, 0],
+              scale: [1, 0],
+              rotate: [0, 30],
+              duration: 600,
+              delay: 1000,
+              easing: "easeInBack",
+            });
+        });
+
+        // 5. Celebration Confetti Animation
+        const confettiTrigger = document.getElementById("trigger-confetti");
+        const confettiContainer = document.getElementById("confetti-container");
+        const celebrationTarget = document.getElementById("celebration-target");
+
+        // Create confetti elements
+        function createConfetti() {
+          confettiContainer.innerHTML = "";
+
+          const colors = [
+            "#FF8DA1",
+            "#FFC2BA",
+            "#FF6B85",
+            "#FFAD9F",
+            "#FF7DE0",
+            "#9548A8",
+          ];
+
+          for (let i = 0; i < 40; i++) {
+            const confetti = document.createElement("div");
+            confetti.classList.add("confetti");
+
+            const randomColor =
+              colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.backgroundColor = randomColor;
+
+            const size = Math.floor(Math.random() * 8) + 5;
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            confetti.style.borderRadius = Math.random() > 0.5 ? "50%" : "0";
+
+            const xPos = Math.random() * 100;
+            confetti.style.left = `${xPos}%`;
+            confetti.style.top = "50%";
+
+            confettiContainer.appendChild(confetti);
+          }
+        }
+
+        confettiTrigger.addEventListener("click", function () {
+          createConfetti();
+
+          const confettiElements =
+            confettiContainer.querySelectorAll(".confetti");
+
+          // Reset to initial state
+          anime.set(confettiElements, {
+            opacity: 0,
+            translateY: 0,
+          });
+
+          anime.set(celebrationTarget, {
+            scale: 1,
+          });
+
+          // Button press animation
+          anime({
+            targets: confettiTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Target bounce animation
+          anime({
+            targets: celebrationTarget,
+            scale: [1, 1.3, 1],
+            duration: 800,
+            easing: "easeOutElastic(1, .5)",
+          });
+
+          // Confetti animation
+          anime({
+            targets: confettiElements,
+            opacity: [0, 1, 0],
+            translateY: [0, (el, i) => -anime.random(50, 150)],
+            translateX: (el, i) => {
+              const currentLeft = parseFloat(el.style.left);
+              return anime.random(-30, 30);
+            },
+            scale: (el, i) => anime.random(0.5, 1.5),
+            rotate: () => anime.random(-360, 360),
+            delay: anime.stagger(10),
+            duration: 1500,
+            easing: "easeOutCubic",
+          });
+        });
+
+        // 6. Notification Animation
+        const notificationTrigger = document.getElementById(
+          "trigger-notification"
+        );
+        const notificationBell = document.getElementById("notification-bell");
+        const notificationBadge = document.getElementById("notification-badge");
+
+        notificationTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(notificationBadge, {
+            opacity: 0,
+            scale: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: notificationTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Notification animation
+          anime
+            .timeline({
+              easing: "easeOutElastic(1, .5)",
+            })
+            .add({
+              targets: notificationBell,
+              rotateZ: [0, -15, 15, -8, 8, 0],
+              duration: 1000,
+            })
+            .add(
+              {
+                targets: notificationBadge,
+                opacity: [0, 1],
+                scale: [0, 1],
+                duration: 600,
+              },
+              "-=400"
+            )
+            .add({
+              targets: notificationBadge,
+              scale: [1, 1.2, 1],
+              duration: 500,
+              easing: "easeInOutSine",
+            })
+            .add({
+              targets: [notificationBadge, notificationBell],
+              opacity: function (el) {
+                return el === notificationBell ? 1 : 0;
+              },
+              scale: function (el) {
+                return el === notificationBell ? 1 : 0;
+              },
+              duration: 400,
+              delay: 2000,
+              easing: "easeInQuad",
+            });
+        });
+
+        // 7. Heart Animation
+        const heartTrigger = document.getElementById("trigger-heart");
+        const heartContainer = document.getElementById("heart-container");
+
+        heartTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(heartContainer, {
+            scale: 1,
+            opacity: 0.5,
+          });
+
+          // Button press animation
+          anime({
+            targets: heartTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Heart animation
+          anime
+            .timeline({
+              easing: "easeOutElastic(1, .5)",
+            })
+            .add({
+              targets: heartContainer,
+              scale: [1, 1.3, 1],
+              opacity: [0.5, 1, 1],
+              color: ["#e74c3c", "#e74c3c"],
+              duration: 800,
+            })
+            .add({
+              targets: heartContainer,
+              opacity: [1, 0.5],
+              delay: 1500,
+              duration: 500,
+              easing: "easeInOutSine",
+            });
+        });
+
+        // 8. Upload Progress Animation
+        const uploadTrigger = document.getElementById("trigger-upload");
+        const progressBar = document.getElementById("progress-bar");
+
+        uploadTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(progressBar, {
+            width: "0%",
+          });
+
+          // Button press animation
+          anime({
+            targets: uploadTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Upload progress animation
+          anime({
+            targets: progressBar,
+            width: ["0%", "100%"],
+            duration: 3000,
+            easing: "easeInOutQuad",
+            complete: function () {
+              // Add success flash
+              anime({
+                targets: progressBar,
+                backgroundColor: [
+                  { value: "#FF7DE0", duration: 200 },
+                  { value: "rgba(255, 125, 224, 0.5)", duration: 200 },
+                  { value: "#FF7DE0", duration: 200 },
+                ],
+                delay: 300,
+              });
+
+              // Reset after delay
+              setTimeout(() => {
+                anime({
+                  targets: progressBar,
+                  width: "0%",
+                  duration: 500,
+                  easing: "easeInOutQuad",
+                  delay: 1000,
+                });
+              }, 1500);
+            },
+          });
+        });
+
+        // 9. Level Up Animation
+        const levelUpTrigger = document.getElementById("trigger-level-up");
+        const levelUpContainer = document.getElementById("level-up-container");
+        const oldLevelBadge =
+          levelUpContainer.querySelector(".level-badge.old");
+        const newLevelBadge =
+          levelUpContainer.querySelector(".level-badge.new");
+        const levelUpText = levelUpContainer.querySelector(".level-up-text");
+        const levelGlow = levelUpContainer.querySelector(".level-glow");
+        // Create stars for the effect
+        function createLevelUpStars() {
+          // Remove existing stars
+          levelUpContainer
+            .querySelectorAll(".level-star")
+            .forEach((star) => star.remove());
+
+          // Create new stars
+          for (let i = 0; i < 10; i++) {
+            const star = document.createElement("div");
+            star.classList.add("level-star");
+            star.innerHTML = "★";
+            star.style.position = "absolute";
+            star.style.top = "50%";
+            star.style.left = "50%";
+            star.style.fontSize = `${10 + Math.random() * 15}px`;
+            star.style.transform = "translate(-50%, -50%)";
+            star.style.opacity = "0";
+            levelUpContainer.appendChild(star);
+          }
+
+          return levelUpContainer.querySelectorAll(".level-star");
+        }
+
+        levelUpTrigger.addEventListener("click", function () {
+          const stars = createLevelUpStars();
+
+          // Reset to initial state
+          anime.set([oldLevelBadge, newLevelBadge], {
+            opacity: 0,
+            scale: 0,
+          });
+
+          anime.set(levelUpText, {
+            opacity: 0,
+            translateY: 20,
+          });
+
+          anime.set(levelGlow, {
+            opacity: 0,
+            scale: 0,
+          });
+
+          anime.set(stars, {
+            opacity: 0,
+            translateX: 0,
+            translateY: 0,
+            scale: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: levelUpTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Level up animation sequence
+          const levelUpTimeline = anime.timeline({
+            easing: "easeOutQuad",
+          });
+
+          // Show old level first
+          levelUpTimeline.add({
+            targets: oldLevelBadge,
+            opacity: [0, 1],
+            scale: [0, 1],
+            duration: 600,
+            easing: "easeOutBack",
+          });
+
+          // Add glow effect
+          levelUpTimeline.add(
+            {
+              targets: levelGlow,
+              opacity: [0, 0.7],
+              scale: [0, 1.5],
+              duration: 800,
+            },
+            "-=200"
+          );
+
+          // Show the new level badge
+          levelUpTimeline.add(
+            {
+              targets: newLevelBadge,
+              opacity: [0, 1],
+              scale: [0, 1],
+              duration: 800,
+              easing: "easeOutElastic(1, 0.5)",
+            },
+            "+=400"
+          );
+
+          // Add level up text
+          levelUpTimeline.add(
+            {
+              targets: levelUpText,
+              opacity: [0, 1],
+              translateY: [20, 0],
+              duration: 500,
+            },
+            "-=400"
+          );
+
+          // Star burst animation
+          levelUpTimeline.add(
+            {
+              targets: stars,
+              opacity: [0, 1, 0],
+              scale: [0, 1],
+              translateX: () => anime.random(-80, 80),
+              translateY: () => anime.random(-80, 80),
+              rotate: () => anime.random(-180, 180),
+              duration: 1500,
+              delay: anime.stagger(50),
+              easing: "easeOutCubic",
+            },
+            "-=300"
+          );
+
+          // Pulse the new level badge
+          levelUpTimeline.add(
+            {
+              targets: newLevelBadge,
+              scale: [1, 1.2, 1],
+              duration: 600,
+              easing: "easeInOutQuad",
+            },
+            "-=1200"
+          );
+
+          // Fade out everything at the end
+          levelUpTimeline.add({
+            targets: [oldLevelBadge, newLevelBadge, levelUpText, levelGlow],
+            opacity: 0,
+            scale: 0,
+            duration: 600,
+            delay: 1500,
+            easing: "easeInQuad",
+          });
+        });
+
+        // 10. Rating Feedback Animation
+        const ratingTrigger = document.getElementById("trigger-rating");
+        const ratingStars = document.querySelectorAll(".rating-star");
+
+        ratingTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          ratingStars.forEach((star) => {
+            star.classList.remove("active");
+          });
+
+          // Button press animation
+          anime({
+            targets: ratingTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Rating animation
+          anime
+            .timeline({
+              easing: "easeOutElastic(1, .5)",
+            })
+            .add({
+              targets: ratingStars,
+              scale: [0.8, 1.2, 1],
+              opacity: [0.5, 1],
+              delay: anime.stagger(150),
+              duration: 600,
+              begin: function (anim) {
+                // Add active class as stars animate
+                anim.animatables.forEach((animatable, i) => {
+                  setTimeout(() => {
+                    animatable.target.classList.add("active");
+                  }, i * 150);
+                });
+              },
+            })
+            .add({
+              targets: ratingStars,
+              scale: [1, 1.1, 1],
+              delay: anime.stagger(50, { start: 1000 }),
+              duration: 300,
+            })
+            .add({
+              targets: ratingStars,
+              scale: 1,
+              opacity: [1, 0.5],
+              delay: 2000,
+              duration: 500,
+              complete: function () {
+                ratingStars.forEach((star) => {
+                  star.classList.remove("active");
+                });
+              },
+            });
+        });
+
+        // ===== LOADING ANIMATIONS =====
+
+        // 1. Wave Loader Animation
+        const waveTrigger = document.getElementById("trigger-wave-loader");
+        const waveBars = document.querySelectorAll("#wave-loader .wave-bar");
+
+        waveTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(waveBars, {
+            scaleY: 1,
+            opacity: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: waveTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Wave loader animation
+          anime({
+            targets: waveBars,
+            scaleY: [
+              { value: 0.4, duration: 300, easing: "easeOutQuad" },
+              { value: 1, duration: 300, easing: "easeInQuad" },
+            ],
+            opacity: [0, 1],
+            delay: anime.stagger(100),
+            loop: 3,
+            easing: "easeInOutSine",
+            complete: function () {
+              anime({
+                targets: waveBars,
+                opacity: 0,
+                duration: 300,
+              });
+            },
+          });
+        });
+
+        // 2. Sunrise Loader Animation
+        const sunriseTrigger = document.getElementById(
+          "trigger-sunrise-loader"
+        );
+        const sunriseFill = document.querySelector(
+          "#sunrise-loader .sunrise-fill"
+        );
+
+        sunriseTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(sunriseFill, {
+            height: "0%",
+            translateY: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: sunriseTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Sunrise loader animation
+          anime
+            .timeline({
+              easing: "easeInOutQuad",
+            })
+            .add({
+              targets: sunriseFill,
+              height: "100%",
+              duration: 1500,
+            })
+            .add({
+              targets: sunriseFill,
+              translateY: "-200%",
+              duration: 1000,
+              delay: 300,
+            })
+            .add({
+              targets: sunriseFill,
+              opacity: [1, 0],
+              duration: 300,
+            });
+        });
+
+        // 3. Beach Ball Spinner Animation
+        const beachBallTrigger = document.getElementById("trigger-beach-ball");
+        const beachBallSpinner = document.getElementById("beach-ball-spinner");
+
+        beachBallTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(beachBallSpinner, {
+            rotate: 0,
+            scale: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: beachBallTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Beach ball spinner animation
+          anime
+            .timeline({
+              easing: "easeOutElastic(1, .6)",
+            })
+            .add({
+              targets: beachBallSpinner,
+              scale: [0, 1],
+              duration: 800,
+            })
+            .add({
+              targets: beachBallSpinner,
+              rotate: 720,
+              duration: 4000,
+              easing: "linear",
+            })
+            .add({
+              targets: beachBallSpinner,
+              scale: [1, 0],
+              duration: 500,
+              easing: "easeInBack",
+            });
+        });
+
+        // 4. Tidal Progress Bar Animation
+        const tidalTrigger = document.getElementById("trigger-tidal");
+        const tidalFill = document.querySelector("#tidal-progress .tidal-fill");
+        const tidalWave = document.querySelector("#tidal-progress .tidal-wave");
+
+        tidalTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(tidalFill, {
+            width: "0%",
+          });
+
+          anime.set(tidalWave, {
+            translateX: "-100%",
+          });
+
+          // Button press animation
+          anime({
+            targets: tidalTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Tidal progress animation
+          anime({
+            targets: tidalFill,
+            width: "100%",
+            duration: 3000,
+            easing: "easeInOutSine",
+          });
+
+          anime({
+            targets: tidalWave,
+            translateX: "100%",
+            duration: 3000,
+            loop: 3,
+            easing: "linear",
+          });
+        });
+
+        // 5. Gradient Dot Pulse Animation
+        const dotsTrigger = document.getElementById("trigger-dots");
+        const dots = document.querySelectorAll(
+          "#dot-pulse-container .dot-pulse"
+        );
+
+        dotsTrigger.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(dots, {
+            scale: 0,
+            opacity: 0,
+          });
+
+          // Button press animation
+          anime({
+            targets: dotsTrigger,
+            scale: [1, 0.95, 1],
+            duration: 300,
+            easing: "easeInOutSine",
+          });
+
+          // Dot pulse animation
+          anime({
+            targets: dots,
+            scale: [0, 1.2, 0],
+            opacity: [0, 1, 0],
+            delay: anime.stagger(200),
+            loop: 3,
+            duration: 1200,
+            easing: "easeInOutSine",
+          });
+        });
+
+        // ===== IMPLEMENTATION EXAMPLES =====
+
+        // Button Loading Demo
+        const submitButton = document.getElementById("submit-button");
+        const loadingButton = document.getElementById("loading-button");
+        const buttonWaveBars = document.querySelectorAll(
+          "#button-wave-loader .wave-bar"
+        );
+
+        submitButton.addEventListener("click", function () {
+          submitButton.style.display = "none";
+          loadingButton.style.display = "inline-flex";
+
+          // Animate the wave loader in the button
+          anime({
+            targets: buttonWaveBars,
+            scaleY: [
+              { value: 0.4, duration: 300, easing: "easeOutQuad" },
+              { value: 1, duration: 300, easing: "easeInQuad" },
+            ],
+            opacity: [0, 1],
+            delay: anime.stagger(100),
+            loop: true,
+            easing: "easeInOutSine",
+          });
+
+          // Reset after 3 seconds
+          setTimeout(() => {
+            submitButton.style.display = "inline-flex";
+            loadingButton.style.display = "none";
+            anime.remove(buttonWaveBars);
+          }, 3000);
+        });
+
+        // Beach Ball Button Demo
+        const beachBallButton = document.getElementById("beach-ball-button");
+        const buttonBeachBall = document.getElementById("button-beach-ball");
+
+        beachBallButton.addEventListener("click", function () {
+          // Reset and start spinning
+          anime.set(buttonBeachBall, {
+            scale: 1,
+            rotate: 0,
+          });
+
+          anime({
+            targets: buttonBeachBall,
+            rotate: 720,
+            duration: 3000,
+            easing: "linear",
+          });
+        });
+
+        // Task Completion Demo
+        const taskCheckbox = document.getElementById("task-checkbox");
+        const taskSuccess = document.getElementById("task-success");
+        const pointEarned = document.getElementById("point-earned");
+        const pointValue = document.getElementById("point-value");
+
+        taskCheckbox.addEventListener("change", function () {
+          if (this.checked) {
+            // Show success checkmark
+            taskSuccess.style.display = "block";
+
+            // Animate checkmark
+            anime({
+              targets: taskSuccess.querySelector(".success-checkmark"),
+              scale: [0, 1.2, 1],
+              duration: 800,
+              easing: "easeOutElastic(1, 0.5)",
+            });
+
+            // After success, show points
+            setTimeout(() => {
+              taskSuccess.style.display = "none";
+              pointEarned.style.display = "block";
+
+              // Animate points
+              anime({
+                targets: pointEarned.querySelector(".points-value"),
+                scale: [0, 1.3, 1],
+                opacity: [0, 1],
+                duration: 800,
+                easing: "easeOutElastic(1, 0.5)",
+              });
+
+              // Update total points
+              setTimeout(() => {
+                pointValue.textContent = "60";
+                anime({
+                  targets: pointValue,
+                  scale: [1, 1.2, 1],
+                  duration: 400,
+                  easing: "easeInOutSine",
+                });
+
+                // Reset
+                setTimeout(() => {
+                  pointEarned.style.display = "none";
+                  taskCheckbox.checked = false;
+                }, 2000);
+              }, 1000);
+            }, 1500);
+          }
+        });
+
+        // Page Loading Demo
+        const pageTidalLoader = document.getElementById("page-tidal-loader");
+        const pageTidalFill = pageTidalLoader.querySelector(".tidal-fill");
+        const pageTidalWave = pageTidalLoader.querySelector(".tidal-wave");
+        const dashboardContent = document.getElementById("dashboard-content");
+
+        // Simulate page loading when clicking anywhere on the dashboard card
+        dashboardContent.addEventListener("click", function () {
+          // Reset to initial state
+          anime.set(pageTidalFill, {
+            width: "0%",
+          });
+
+          anime.set(pageTidalWave, {
+            translateX: "-100%",
+          });
+
+          // Show loader
+          pageTidalLoader.style.display = "block";
+
+          // Animate loader
+          anime({
+            targets: pageTidalFill,
+            width: "100%",
+            duration: 3000,
+            easing: "easeInOutSine",
+            complete: function () {
+              // Hide loader after completion
+              setTimeout(() => {
+                pageTidalLoader.style.display = "none";
+              }, 300);
+            },
+          });
+
+          anime({
+            targets: pageTidalWave,
+            translateX: "100%",
+            duration: 3000,
+            loop: 3,
+            easing: "linear",
+          });
+        });
+
+        // Form Submission Demo
+        const formButton = document.getElementById("form-button");
+        const formLoadingButton = document.getElementById(
+          "form-loading-button"
+        );
+        const formSunriseFill = document.querySelector(
+          "#form-sunrise-loader .sunrise-fill"
+        );
+
+        formButton.addEventListener("click", function () {
+          // Hide normal button, show loading button
+          formButton.style.display = "none";
+          formLoadingButton.style.display = "flex";
+
+          // Reset and animate sunrise loader
+          anime.set(formSunriseFill, {
+            height: "0%",
+            translateY: 0,
+          });
+
+          // Loop the animation
+          const sunriseAnimation = anime({
+            targets: formSunriseFill,
+            height: "100%",
+            duration: 1500,
+            direction: "alternate",
+            loop: true,
+            easing: "easeInOutSine",
+          });
+
+          // Reset after 3 seconds
+          setTimeout(() => {
+            formButton.style.display = "flex";
+            formLoadingButton.style.display = "none";
+            anime.remove(formSunriseFill);
+          }, 3000);
+        });
+
+        // Level Up Demo
+        const demoLevelUpBtn = document.getElementById("demo-level-up");
+        const levelUpMessage = document.getElementById("level-up-message");
+        const defaultMessage = document.getElementById("default-message");
+        const currentLevel = document.getElementById("current-level");
+        const demoNotificationBell = document.getElementById(
+          "demo-notification-bell"
+        );
+        const demoNotificationBadge = document.getElementById(
+          "demo-notification-badge"
+        );
+
+        demoLevelUpBtn.addEventListener("click", function () {
+          // Hide default message, show level up
+          defaultMessage.style.display = "none";
+          levelUpMessage.style.display = "block";
+
+          // Animate notification bell
+          anime({
+            targets: demoNotificationBell,
+            rotateZ: [0, -15, 15, -8, 8, 0],
+            duration: 1000,
+          });
+
+          anime({
+            targets: demoNotificationBadge,
+            scale: [0, 1.2, 1],
+            opacity: [0, 1],
+            duration: 600,
+          });
+
+          // Update level display
+          setTimeout(() => {
+            currentLevel.textContent = "Level: 5";
+            anime({
+              targets: currentLevel,
+              scale: [1, 1.2, 1],
+              duration: 600,
+              easing: "easeInOutSine",
+            });
+          }, 2000);
+
+          // Reset after delay
+          setTimeout(() => {
+            levelUpMessage.style.display = "none";
+            defaultMessage.style.display = "block";
+
+            anime({
+              targets: demoNotificationBadge,
+              scale: [1, 0],
+              opacity: [1, 0],
+              duration: 300,
+            });
+          }, 5000);
+        });
+      });
+    </script>
+  </body>
+</html>

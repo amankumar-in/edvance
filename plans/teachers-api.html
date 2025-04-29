@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher API Mapping and Screen Flow</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .api-section {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .service-header {
+        background: #9c27b0;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+      .api-item {
+        display: grid;
+        grid-template-columns: 300px 200px 1fr 200px;
+        gap: 20px;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        align-items: center;
+      }
+      .api-item:last-child {
+        border-bottom: none;
+      }
+      .method {
+        background: #4caf50;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 3px;
+        display: inline-block;
+        font-size: 12px;
+        margin-right: 10px;
+      }
+      .method.post {
+        background: #2196f3;
+      }
+      .method.put {
+        background: #ff9800;
+      }
+      .method.delete {
+        background: #f44336;
+      }
+      .screen-tag {
+        background: #e0e0e0;
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 12px;
+        margin: 2px;
+        display: inline-block;
+      }
+      .status {
+        text-align: center;
+      }
+      .status.mapped {
+        color: #4caf50;
+      }
+      .status.missing {
+        color: #f44336;
+      }
+      .summary {
+        background: #333;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+      .screen-flow {
+        margin-top: 40px;
+      }
+      .flow-section {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 10px;
+      }
+      .flow-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+      }
+      .flow-item {
+        margin: 10px 0;
+        padding: 10px;
+        background: #f9f9f9;
+        border-left: 4px solid #9c27b0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Teacher API Mapping and Screen Flow</h1>
+      <p>
+        Complete mapping of all APIs accessible to teachers across all
+        microservices
+      </p>
+
+      <div class="summary">
+        <h2>API Summary</h2>
+        <p>Total Teacher-Accessible APIs: 62</p>
+        <p>Authentication Service: 6 APIs</p>
+        <p>User Service: 4 APIs</p>
+        <p>Teacher Service: 5 APIs</p>
+        <p>Class Management: 8 APIs</p>
+        <p>Attendance Service: 5 APIs</p>
+        <p>Task Service: 13 APIs</p>
+        <p>Points Service: 7 APIs</p>
+        <p>Student Management: 7 APIs</p>
+        <p>School Management: 3 APIs</p>
+        <p>Analytics Service: 4 APIs</p>
+      </div>
+
+      <div class="summary" style="background: #f44336">
+        <h2>⚠️ Important: Common Authentication System</h2>
+        <p>
+          The Univance app uses a SINGLE registration and login system for ALL
+          user types:
+        </p>
+        <ul style="list-style-type: none; padding-left: 0">
+          <li>
+            ✦ Role is selected during registration (student, parent, teacher,
+            school_admin, social_worker)
+          </li>
+          <li>✦ Same login screen for all users (email/password only)</li>
+          <li>
+            ✦ After login, system checks user roles and routes to appropriate
+            dashboard
+          </li>
+          <li>
+            ✦ Register endpoint includes roles parameter to specify user type
+          </li>
+          <li>
+            ✦ Teacher-specific screens only appear after user logs in with
+            teacher role
+          </li>
+        </ul>
+      </div>
+
+      <div class="summary" style="background: #4caf50">
+        <h2>✅ Role Validation: During Profile Creation</h2>
+        <p>
+          Role validation occurs at the profile creation stage, not during
+          registration:
+        </p>
+        <ul style="list-style-type: none; padding-left: 0">
+          <li>
+            ✦ <strong>Teacher:</strong> POST /teachers/profile - Requires valid
+            schoolId and subjectsTaught
+          </li>
+          <li>
+            ✦ School validation is required - teachers must be associated with a
+            valid school
+          </li>
+          <li>
+            ✦ Teacher creation can be initiated by school admin (via POST
+            /schools/teachers) or self-initiated
+          </li>
+        </ul>
+        <p>
+          Users cannot access teacher-specific features without creating a valid
+          teacher profile!
+        </p>
+      </div>
+
+      <div class="flow-section">
+        <div class="flow-title">Profile Creation Flow (Role Validation)</div>
+        <div class="flow-item">
+          <strong>Teacher Profile Requirements</strong>
+          <ul>
+            <li>Valid schoolId (must exist in system)</li>
+            <li>Subjects taught (array of subject names)</li>
+            <li>
+              School admin approval may be required based on configuration
+            </li>
+          </ul>
+        </div>
+        <div class="flow-item">
+          <strong>School Onboarding Options</strong>
+          <ul>
+            <li>
+              School admin invites teacher via email (POST /schools/teachers)
+            </li>
+            <li>
+              Teacher registers with teacher role, then creates profile with
+              schoolId
+            </li>
+            <li>School verification required in either scenario</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Authentication Service APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Authentication Service APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/auth/register</div>
+          <div>Register new user</div>
+          <div>Creates new teacher account</div>
+          <div><span class="screen-tag">Register Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/auth/login</div>
+          <div>User login</div>
+          <div>Authenticate and get tokens</div>
+          <div><span class="screen-tag">Login Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/auth/refresh-token</div>
+          <div>Refresh access token</div>
+          <div>Get new access token</div>
+          <div><span class="screen-tag">Background Service</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/auth/forgot-password</div>
+          <div>Request password reset</div>
+          <div>Send reset instructions</div>
+          <div><span class="screen-tag">Forgot Password Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/auth/reset-password</div>
+          <div>Reset password</div>
+          <div>Set new password</div>
+          <div><span class="screen-tag">Reset Password Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/auth/logout</div>
+          <div>Logout user</div>
+          <div>Invalidate tokens</div>
+          <div><span class="screen-tag">Profile Screen</span></div>
+        </div>
+      </div>
+
+      <!-- User Service APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>User Service APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/users/me</div>
+          <div>Get current user</div>
+          <div>Retrieve user profile data</div>
+          <div>
+            <span class="screen-tag">Profile Screen</span
+            ><span class="screen-tag">Dashboard</span>
+          </div>
+        </div>
+        <div class="api-item">
+          <div><span class="method put">PUT</span>/users/me</div>
+          <div>Update user profile</div>
+          <div>Update basic user info</div>
+          <div><span class="screen-tag">Profile Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method put">PUT</span>/users/me/password</div>
+          <div>Change password</div>
+          <div>Update account password</div>
+          <div><span class="screen-tag">Profile Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/users/me/avatar</div>
+          <div>Upload avatar</div>
+          <div>Set profile picture</div>
+          <div><span class="screen-tag">Profile Screen</span></div>
+        </div>
+      </div>
+
+      <!-- Teacher Service APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Teacher Service APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/teachers/me</div>
+          <div>Get teacher profile</div>
+          <div>Get teacher-specific data</div>
+          <div>
+            <span class="screen-tag">Dashboard</span
+            ><span class="screen-tag">Profile Screen</span>
+          </div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/teachers/me/classes</div>
+          <div>Get teacher's classes</div>
+          <div>List all assigned classes</div>
+          <div>
+            <span class="screen-tag">Dashboard</span
+            ><span class="screen-tag">Classes Screen</span>
+          </div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/teachers/profile</div>
+          <div>Create teacher profile</div>
+          <div>Initial profile setup</div>
+          <div><span class="screen-tag">Onboarding Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method put">PUT</span>/teachers/{id}</div>
+          <div>Update teacher profile</div>
+          <div>Update subjects taught</div>
+          <div><span class="screen-tag">Profile Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/teachers/{id}</div>
+          <div>Get teacher by ID</div>
+          <div>View specific teacher</div>
+          <div><span class="screen-tag">Teacher Detail</span></div>
+        </div>
+      </div>
+
+      <!-- Class Management APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Class Management APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/classes/classes</div>
+          <div>Create new class</div>
+          <div>Add new class to teacher</div>
+          <div><span class="screen-tag">Create Class Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/classes/classes/{id}</div>
+          <div>Get class details</div>
+          <div>View class information</div>
+          <div><span class="screen-tag">Class Detail Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method put">PUT</span>/classes/classes/{id}</div>
+          <div>Update class</div>
+          <div>Edit class information</div>
+          <div><span class="screen-tag">Edit Class Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method delete">DELETE</span>/classes/classes/{id}
+          </div>
+          <div>Delete class</div>
+          <div>Remove class</div>
+          <div><span class="screen-tag">Class Management</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method">GET</span>/classes/classes/{id}/students
+          </div>
+          <div>Get class students</div>
+          <div>List students in class</div>
+          <div><span class="screen-tag">Class Roster Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method post">POST</span>/classes/classes/{id}/students
+          </div>
+          <div>Add student to class</div>
+          <div>Enroll student in class</div>
+          <div><span class="screen-tag">Class Roster Screen</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method post">POST</span>/classes/classes/{id}/join-code
+          </div>
+          <div>Generate join code</div>
+          <div>Create new join code</div>
+          <div><span class="screen-tag">Class Settings</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method delete">DELETE</span
+            >/classes/classes/{id}/students/{studentId}
+          </div>
+          <div>Remove student</div>
+          <div>Unenroll student</div>
+          <div><span class="screen-tag">Class Roster</span></div>
+        </div>
+      </div>
+
+      <!-- Attendance APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Attendance Service APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/attendance</div>
+          <div>Get attendance records</div>
+          <div>List attendance history</div>
+          <div><span class="screen-tag">Attendance Report</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/attendance</div>
+          <div>Record attendance</div>
+          <div>Mark student attendance</div>
+          <div><span class="screen-tag">Attendance Tracker</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/attendance/today</div>
+          <div>Get today's attendance</div>
+          <div>Check class attendance</div>
+          <div><span class="screen-tag">Attendance Tracker</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/attendance/bulk</div>
+          <div>Record bulk attendance</div>
+          <div>Mark multiple students</div>
+          <div><span class="screen-tag">Attendance Tracker</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/attendance/report</div>
+          <div>Generate report</div>
+          <div>Attendance analytics</div>
+          <div><span class="screen-tag">Attendance Report</span></div>
+        </div>
+      </div>
+
+      <!-- Task Management APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Task Management APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/tasks</div>
+          <div>Get all tasks</div>
+          <div>List assigned tasks</div>
+          <div><span class="screen-tag">Assignment Manager</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/tasks</div>
+          <div>Create new task</div>
+          <div>Assign task to students</div>
+          <div><span class="screen-tag">Create Assignment</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/tasks/{id}</div>
+          <div>Get task details</div>
+          <div>View specific task</div>
+          <div><span class="screen-tag">Assignment Detail</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method put">PUT</span>/tasks/{id}</div>
+          <div>Update task</div>
+          <div>Edit assignment</div>
+          <div><span class="screen-tag">Edit Assignment</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method delete">DELETE</span>/tasks/{id}</div>
+          <div>Delete task</div>
+          <div>Remove assignment</div>
+          <div><span class="screen-tag">Assignment Manager</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/tasks/{id}/review</div>
+          <div>Approve/Reject task</div>
+          <div>Review completed task</div>
+          <div><span class="screen-tag">Grade Assignments</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/tasks/templates</div>
+          <div>Get task templates</div>
+          <div>List available templates</div>
+          <div><span class="screen-tag">Assignment Manager</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/tasks/templates</div>
+          <div>Create task template</div>
+          <div>Make reusable template</div>
+          <div><span class="screen-tag">Create Template</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/tasks/templates/{id}</div>
+          <div>Get template details</div>
+          <div>View specific template</div>
+          <div><span class="screen-tag">Template Detail</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method post">POST</span>/tasks/templates/{id}/use
+          </div>
+          <div>Use template</div>
+          <div>Create task from template</div>
+          <div><span class="screen-tag">Create Assignment</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/tasks/{id}/comments</div>
+          <div>Add task comment</div>
+          <div>Comment on assignment</div>
+          <div><span class="screen-tag">Assignment Detail</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/tasks/categories</div>
+          <div>Get task categories</div>
+          <div>List available categories</div>
+          <div><span class="screen-tag">Create Assignment</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/tasks/stats/analytics</div>
+          <div>Get task statistics</div>
+          <div>Assignment analytics</div>
+          <div><span class="screen-tag">Class Analytics</span></div>
+        </div>
+      </div>
+
+      <!-- Points Service APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Points Service APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method post">POST</span>/points/transactions</div>
+          <div>Create transaction</div>
+          <div>Award points to student</div>
+          <div><span class="screen-tag">Points Manager</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method">GET</span>/points/accounts/student/{studentId}
+          </div>
+          <div>Get student account</div>
+          <div>View student points</div>
+          <div><span class="screen-tag">Student Progress</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method">GET</span
+            >/points/accounts/student/{studentId}/balance
+          </div>
+          <div>Get point balance</div>
+          <div>View current balance</div>
+          <div><span class="screen-tag">Student Progress</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method">GET</span
+            >/points/transactions/student/{studentId}
+          </div>
+          <div>Get transactions</div>
+          <div>View student history</div>
+          <div><span class="screen-tag">Student Progress</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/points/configuration/active</div>
+          <div>Get point configuration</div>
+          <div>View point system rules</div>
+          <div><span class="screen-tag">Points Manager</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method post">POST</span
+            >/points/transactions/{transactionId}/reverse
+          </div>
+          <div>Reverse transaction</div>
+          <div>Undo point award</div>
+          <div><span class="screen-tag">Points Manager</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method">GET</span
+            >/points/transactions/analysis/categories
+          </div>
+          <div>Analyze by category</div>
+          <div>Category breakdown</div>
+          <div><span class="screen-tag">Class Analytics</span></div>
+        </div>
+      </div>
+
+      <!-- Student Management APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Student Management APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/search/students</div>
+          <div>Search for students</div>
+          <div>Find students by filters</div>
+          <div><span class="screen-tag">Student Directory</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/students/{id}</div>
+          <div>Get student by ID</div>
+          <div>View student details</div>
+          <div><span class="screen-tag">Student Profile</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/students/{id}/badges</div>
+          <div>Get student badges</div>
+          <div>View earned badges</div>
+          <div><span class="screen-tag">Student Progress</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/students/{id}/attendance</div>
+          <div>Get attendance</div>
+          <div>View attendance history</div>
+          <div><span class="screen-tag">Student Progress</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/students/{id}/level</div>
+          <div>Get level info</div>
+          <div>View student level</div>
+          <div><span class="screen-tag">Student Progress</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method">GET</span>/classes/classes/{id}/join-requests
+          </div>
+          <div>Get join requests</div>
+          <div>Pending student requests</div>
+          <div><span class="screen-tag">Class Requests</span></div>
+        </div>
+        <div class="api-item">
+          <div>
+            <span class="method post">POST</span
+            >/classes/classes/{id}/join-requests/{requestId}
+          </div>
+          <div>Respond to request</div>
+          <div>Approve/reject join</div>
+          <div><span class="screen-tag">Class Requests</span></div>
+        </div>
+      </div>
+
+      <!-- School Management APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>School Management APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/schools/me</div>
+          <div>Get teacher's school</div>
+          <div>View school details</div>
+          <div><span class="screen-tag">School Info</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/schools/me/teachers</div>
+          <div>Get school teachers</div>
+          <div>View teacher colleagues</div>
+          <div><span class="screen-tag">School Directory</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/schools/me/classes</div>
+          <div>Get school classes</div>
+          <div>View all school classes</div>
+          <div><span class="screen-tag">School Directory</span></div>
+        </div>
+      </div>
+
+      <!-- Analytics APIs -->
+      <div class="api-section">
+        <div class="service-header">
+          <h2>Analytics APIs</h2>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/analytics/classes/{id}</div>
+          <div>Get class analytics</div>
+          <div>Class performance data</div>
+          <div><span class="screen-tag">Class Analytics</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/analytics/students/{id}</div>
+          <div>Get student analytics</div>
+          <div>Individual performance</div>
+          <div><span class="screen-tag">Student Progress</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/analytics/rewards</div>
+          <div>Get rewards analytics</div>
+          <div>Reward usage stats</div>
+          <div><span class="screen-tag">Rewards Analytics</span></div>
+        </div>
+        <div class="api-item">
+          <div><span class="method">GET</span>/analytics/points</div>
+          <div>Get points analytics</div>
+          <div>Points economy data</div>
+          <div><span class="screen-tag">Points Analytics</span></div>
+        </div>
+      </div>
+
+      <!-- Screen Flow Documentation -->
+      <div class="screen-flow">
+        <h1>Teacher Screen Flow</h1>
+
+        <div class="flow-section">
+          <div class="flow-title">
+            1. Common Authentication Flow (All Users)
+          </div>
+          <div class="flow-item">
+            <strong>1.1 Login Screen (Common)</strong>
+            <ul>
+              <li>API: POST /auth/login (email/password only)</li>
+              <li>
+                After login, system checks user roles and routes to appropriate
+                dashboard
+              </li>
+              <li>Navigation: To appropriate dashboard based on role(s)</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>1.2 Role Selection Screen (During Registration)</strong>
+            <ul>
+              <li>
+                User selects: Student, Parent, Teacher, School Admin, or Social
+                Worker
+              </li>
+              <li>
+                This selection is passed to POST /auth/register as roles array
+              </li>
+              <li>Navigation: To Common Register Screen</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>1.3 Register Screen (Common with Role Selected)</strong>
+            <ul>
+              <li>API: POST /auth/register (with selected role in request)</li>
+              <li>
+                Navigation: To Role-Specific Onboarding (Teacher: Profile
+                Creation)
+              </li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>1.4 Forgot Password Screen (Common)</strong>
+            <ul>
+              <li>API: POST /auth/forgot-password</li>
+              <li>Navigation: Back to Login</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>1.5 Reset Password Screen (Common)</strong>
+            <ul>
+              <li>API: POST /auth/reset-password</li>
+              <li>Navigation: To Login</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">
+            2. Teacher Flow (After Selecting Teacher Profile)
+          </div>
+          <div class="flow-item">
+            <strong>2.1 Teacher Profile Creation</strong>
+            <ul>
+              <li>
+                Reached after selecting "I am a Teacher" and completing
+                registration
+              </li>
+              <li>API: POST /teachers/profile</li>
+              <li>Required fields: schoolId, subjectsTaught</li>
+              <li>Navigation: To Teacher Dashboard</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>2.2 School Verification</strong>
+            <ul>
+              <li>
+                When teacher creates profile with schoolId, it must be verified
+              </li>
+              <li>
+                School admin may need to approve teacher (system configuration)
+              </li>
+              <li>
+                Alternatively, teacher may be pre-added by school admin (POST
+                /schools/teachers)
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">3. Main App Screens</div>
+          <div class="flow-item">
+            <strong>3.1 Dashboard</strong>
+            <ul>
+              <li>
+                APIs: GET /users/me, GET /teachers/me, GET /teachers/me/classes
+              </li>
+              <li>Shows today's classes, pending tasks, student check-ins</li>
+              <li>Navigation: Main hub to all teacher features</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.2 Class Management</strong>
+            <ul>
+              <li>
+                APIs: GET /teachers/me/classes, POST /classes/classes (create
+                new)
+              </li>
+              <li>List of all classes taught by the teacher</li>
+              <li>Navigation: To Class Detail Screen</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.3 Class Detail Screen</strong>
+            <ul>
+              <li>
+                APIs: GET /classes/classes/{id}, PUT /classes/classes/{id}
+                (edit), DELETE /classes/classes/{id} (remove)
+              </li>
+              <li>Detailed view of a specific class</li>
+              <li>
+                Navigation: To Class Roster, Attendance Tracker, Assignment
+                Manager
+              </li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.4 Class Roster Screen</strong>
+            <ul>
+              <li>
+                APIs: GET /classes/classes/{id}/students, POST
+                /classes/classes/{id}/students (add student), DELETE
+                /classes/classes/{id}/students/{studentId} (remove student)
+              </li>
+              <li>Manage students enrolled in the class</li>
+              <li>Navigation: To Student Progress</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.5 Class Settings</strong>
+            <ul>
+              <li>
+                APIs: PUT /classes/classes/{id} (update), POST
+                /classes/classes/{id}/join-code (generate code)
+              </li>
+              <li>Configure class settings, generate join codes</li>
+              <li>Navigation: Back to Class Detail</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.6 Class Requests</strong>
+            <ul>
+              <li>
+                APIs: GET /classes/classes/{id}/join-requests, POST
+                /classes/classes/{id}/join-requests/{requestId} (approve/reject)
+              </li>
+              <li>Manage pending student join requests</li>
+              <li>Navigation: Back to Class Roster</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.7 Attendance Tracker</strong>
+            <ul>
+              <li>
+                APIs: GET /attendance/today, POST /attendance (single student),
+                POST /attendance/bulk (multiple students)
+              </li>
+              <li>Take daily attendance for classes</li>
+              <li>Navigation: To Attendance Report</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.8 Attendance Report</strong>
+            <ul>
+              <li>
+                APIs: GET /attendance (with filters), GET /attendance/report
+                (analytics)
+              </li>
+              <li>View attendance patterns and reports</li>
+              <li>Navigation: Back to Attendance Tracker</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.9 Assignment Manager</strong>
+            <ul>
+              <li>
+                APIs: GET /tasks (by class), POST /tasks (create new), GET
+                /tasks/templates (use templates)
+              </li>
+              <li>Create and manage class assignments</li>
+              <li>Navigation: To Assignment Detail, Grade Assignments</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.10 Create Assignment</strong>
+            <ul>
+              <li>
+                APIs: POST /tasks (new task), GET /tasks/categories, POST
+                /tasks/templates/{id}/use (from template)
+              </li>
+              <li>Create new assignments for students</li>
+              <li>Navigation: Back to Assignment Manager</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.11 Assignment Detail</strong>
+            <ul>
+              <li>
+                APIs: GET /tasks/{id}, PUT /tasks/{id} (edit), DELETE
+                /tasks/{id} (remove), POST /tasks/{id}/comments
+              </li>
+              <li>View and manage a specific assignment</li>
+              <li>Navigation: To Grade Assignments</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.12 Grade Assignments</strong>
+            <ul>
+              <li>
+                APIs: GET /tasks (pending review), POST /tasks/{id}/review
+                (approve/reject), GET /points/configuration/active
+              </li>
+              <li>Review and grade completed assignments</li>
+              <li>Navigation: Back to Assignment Manager</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.13 Template Management</strong>
+            <ul>
+              <li>
+                APIs: GET /tasks/templates, POST /tasks/templates (create), GET
+                /tasks/templates/{id} (view details)
+              </li>
+              <li>Create and manage reusable assignment templates</li>
+              <li>Navigation: Back to Assignment Manager</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.14 Points Manager</strong>
+            <ul>
+              <li>
+                APIs: POST /points/transactions (award points), GET
+                /points/configuration/active, POST
+                /points/transactions/{transactionId}/reverse
+              </li>
+              <li>Award points manually to students</li>
+              <li>Navigation: Back to Class Roster or Student Progress</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.15 Student Directory</strong>
+            <ul>
+              <li>
+                APIs: GET /search/students (with filters), GET
+                /schools/me/students
+              </li>
+              <li>Search and browse students in school</li>
+              <li>Navigation: To Student Profile</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.16 Student Profile</strong>
+            <ul>
+              <li>APIs: GET /students/{id}</li>
+              <li>View specific student profile</li>
+              <li>Navigation: To Student Progress</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.17 Student Progress</strong>
+            <ul>
+              <li>
+                APIs: GET /students/{id}/level, GET
+                /points/accounts/student/{studentId}, GET /students/{id}/badges,
+                GET /analytics/students/{id}, GET
+                /points/transactions/student/{studentId}
+              </li>
+              <li>Detailed academic progress for a student</li>
+              <li>Navigation: Back to Student Profile or Class Roster</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.18 Class Analytics</strong>
+            <ul>
+              <li>
+                APIs: GET /analytics/classes/{id}, GET
+                /points/transactions/analysis/categories, GET
+                /tasks/stats/analytics
+              </li>
+              <li>Performance analytics for entire class</li>
+              <li>Navigation: Back to Class Detail</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.19 School Directory</strong>
+            <ul>
+              <li>
+                APIs: GET /schools/me, GET /schools/me/teachers, GET
+                /schools/me/classes
+              </li>
+              <li>Browse school information</li>
+              <li>Navigation: Back to Dashboard</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.20 Profile Screen</strong>
+            <ul>
+              <li>
+                APIs: GET /users/me, GET /teachers/me, PUT /users/me, PUT
+                /teachers/{id}, POST /users/me/avatar, PUT /users/me/password,
+                POST /auth/logout
+              </li>
+              <li>Manage teacher profile settings</li>
+              <li>Navigation: Back to Dashboard</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>3.21 Additional Analytics</strong>
+            <ul>
+              <li>APIs: GET /analytics/rewards, GET /analytics/points</li>
+              <li>Advanced analytics for rewards and points usage</li>
+              <li>Navigation: Back to Dashboard</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">4. Common Components</div>
+          <div class="flow-item">
+            <strong>4.1 Header Component</strong>
+            <ul>
+              <li>Shows teacher name, school, and navigation options</li>
+              <li>No specific API calls - uses cached profile data</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>4.2 Navigation Bar</strong>
+            <ul>
+              <li>No API calls - static navigation</li>
+              <li>
+                Links to: Dashboard, Classes, Attendance, Assignments,
+                Analytics, Profile
+              </li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>4.3 Background Services</strong>
+            <ul>
+              <li>API: POST /auth/refresh-token (token management)</li>
+              <li>Handles automatic token refresh when 401 errors occur</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">5. API Coverage Verification</div>
+          <div class="flow-item">
+            <strong>✅ All Teacher APIs Mapped to Screens</strong>
+            <ul>
+              <li>Total APIs: 62</li>
+              <li>All mapped to appropriate screens</li>
+              <li>No APIs are missing from the flow</li>
+            </ul>
+          </div>
+          <div class="flow-item">
+            <strong>✅ All Critical Flows Covered</strong>
+            <ul>
+              <li>Authentication and profile creation</li>
+              <li>Class creation and management</li>
+              <li>Attendance tracking</li>
+              <li>Assignment creation and grading</li>
+              <li>Student progress monitoring</li>
+              <li>Analytics and reporting</li>
+              <li>School directory access</li>
+              <li>Points and rewards management</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <footer
+        style="
+          margin-top: 40px;
+          padding: 20px;
+          background: #333;
+          color: white;
+          text-align: center;
+        "
+      >
+        <p>Teacher API Mapping Complete - All 62 APIs Mapped to Screens</p>
+        <p>
+          Every API has been accounted for and mapped to appropriate screens
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

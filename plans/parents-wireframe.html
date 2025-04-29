@@ -1,0 +1,2948 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Combined Parent Complete Wireframes - All Screens</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .screen-section {
+        background: white;
+        margin: 30px 0;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .screen-header {
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .screen-content {
+        display: flex;
+        gap: 30px;
+      }
+      .wireframe {
+        flex: 1;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 500px;
+        background: #f9f9f9;
+        position: relative;
+      }
+      .api-details {
+        flex: 1;
+      }
+      .component {
+        border: 1px dashed #999;
+        margin: 10px 0;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+      }
+      .nav-bar {
+        background: #333;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .button {
+        background: #ff8a65;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        margin: 5px;
+        display: inline-block;
+        text-align: center;
+        cursor: pointer;
+      }
+      .button.secondary {
+        background: #f44336;
+      }
+      .button.primary {
+        background: #ff8a65;
+      }
+      .input-field {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        background: white;
+      }
+      .api-call {
+        background: #fff3e0;
+        padding: 10px;
+        border-left: 4px solid #ff8a65;
+        margin: 10px 0;
+        font-family: monospace;
+      }
+      .modal {
+        border: 2px dashed #666;
+        padding: 20px;
+        margin: 10px 0;
+        background: #fff;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        display: none;
+      }
+      .modal.show {
+        display: block;
+      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 2px solid #ddd;
+        margin-bottom: 20px;
+      }
+      .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+      }
+      .tab.active {
+        background: #333;
+        color: white;
+      }
+      .header {
+        background: #ff8a65;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 5px;
+      }
+      .footer {
+        background: #333;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        left: 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .stats-box {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .progress-bar {
+        background: #eee;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress-fill {
+        background: #4caf50;
+        height: 100%;
+        width: 60%;
+      }
+      .avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #ddd;
+        display: inline-block;
+      }
+      .badge-sm {
+        background: #ff8a65;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 12px;
+      }
+      .notification-bell {
+        position: relative;
+        display: inline-block;
+      }
+      .notification-dot {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 10px;
+        height: 10px;
+        background: red;
+        border-radius: 50%;
+      }
+      .profile-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        margin: 10px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .profile-card:hover {
+        border-color: #ff8a65;
+        transform: translateY(-5px);
+      }
+      .profile-card.selected {
+        border-color: #ff8a65;
+        background: #fff3e0;
+      }
+      .error-message {
+        color: #f44336;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .success-message {
+        color: #4caf50;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .progress-steps {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+      .step {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+        position: relative;
+      }
+      .step.active {
+        background: #ff8a65;
+        color: white;
+      }
+      .step.completed {
+        background: #4caf50;
+        color: white;
+      }
+      .step::after {
+        content: "";
+        position: absolute;
+        width: 50px;
+        height: 2px;
+        background: #ddd;
+        left: 30px;
+      }
+      .step:last-child::after {
+        display: none;
+      }
+      .child-card {
+        display: flex;
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        align-items: center;
+      }
+      .child-info {
+        margin-left: 15px;
+        flex: 1;
+      }
+      .awaiting {
+        color: #f57c00;
+        font-weight: bold;
+      }
+      .completed {
+        color: #4caf50;
+        font-weight: bold;
+      }
+      .canceled {
+        color: #f44336;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Parent Complete Wireframes - All Screens</h1>
+      <p>
+        Comprehensive visual documentation with streamlined authentication and
+        profile flow
+      </p>
+
+      <!-- 1. Profile Selection Screen (NEW) -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>1. Profile Selection Screen (First Screen)</h2>
+          <p>Entry point: Users select their profile type</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 30px">
+              <h1>Welcome to UNIVANCE</h1>
+              <p>Select your profile type to get started</p>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 50px;
+              "
+            >
+              <div class="profile-card">
+                <div style="font-size: 50px">👨‍🎓</div>
+                <h3>Student</h3>
+                <p>I want to earn scholarship points</p>
+              </div>
+              <div class="profile-card selected">
+                <div style="font-size: 50px">👪</div>
+                <h3>Parent</h3>
+                <p>I want to manage my child's tasks</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">👩‍🏫</div>
+                <h3>Teacher</h3>
+                <p>I want to assign tasks to students</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">🏫</div>
+                <h3>School Admin</h3>
+                <p>I want to manage a school</p>
+              </div>
+              <div class="profile-card">
+                <div style="font-size: 50px">🤝</div>
+                <h3>Social Worker</h3>
+                <p>I want to support students</p>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px">
+              <div class="button primary" style="width: 200px">Continue</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px">
+              Already have an account? <a href="#">Login</a>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Flow Logic</h3>
+            <div class="component">
+              <strong>Profile Selection:</strong>
+              <ul>
+                <li>First step in the process</li>
+                <li>Determines which fields to show in registration</li>
+                <li>Sets expectations for required information</li>
+                <li>Parent role selected will be passed to registration</li>
+              </ul>
+            </div>
+            <h3>Navigation</h3>
+            <div class="component">
+              <strong>Based on Selection:</strong>
+              <ul>
+                <li>Student → Student Registration Form</li>
+                <li>Parent → Parent Registration Form</li>
+                <li>Teacher → Teacher Registration Form</li>
+                <li>Admin → Admin Registration Form</li>
+                <li>Social Worker → SW Registration Form</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Parent Registration Screen (Streamlined) -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>2. Parent Registration Screen (Streamlined)</h2>
+          <p>Combined account and profile creation for parents</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="progress-steps">
+              <div class="step completed">1</div>
+              <div class="step active">2</div>
+              <div class="step">3</div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px">
+              <h1>Create Your Parent Account</h1>
+              <p>Fill in your information to get started</p>
+            </div>
+
+            <div style="max-width: 400px; margin: 0 auto">
+              <!-- Account Information -->
+              <h3>Account Information</h3>
+              <div class="input-field">First Name</div>
+              <div class="input-field">Last Name</div>
+              <div class="input-field">Email Address</div>
+              <div class="input-field">Password</div>
+              <div class="input-field">Confirm Password</div>
+
+              <!-- Parent Profile Information -->
+              <h3 style="margin-top: 30px">Parent Profile</h3>
+              <div class="input-field">Phone Number (Optional)</div>
+
+              <div style="margin: 20px 0">
+                <input type="checkbox" id="terms" />
+                <label for="terms"
+                  >I agree to the Terms and Privacy Policy</label
+                >
+              </div>
+
+              <div
+                class="button primary"
+                style="width: 100%; text-align: center"
+              >
+                Create Account
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/register<br />
+              Request: { email, password, firstName, lastName, roles: ["parent"]
+              }<br />
+              Response: { user, accessToken, refreshToken }
+            </div>
+            <div class="api-call">
+              POST /api/parents/profile<br />
+              Request: { phoneNumber }<br />
+              Response: { parent profile data }
+            </div>
+            <h3>Validation</h3>
+            <div class="component">
+              <strong>Email:</strong> Valid format & unique in system<br />
+              <strong>Password:</strong> Min 8 chars, 1 uppercase, 1 number
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Add/Link Child Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>3. Add/Link Child Screen</h2>
+          <p>Connect with children to manage their tasks</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="progress-steps">
+              <div class="step completed">1</div>
+              <div class="step completed">2</div>
+              <div class="step active">3</div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px">
+              <h1>Add Your Children</h1>
+              <p>
+                Connect with your children to manage their tasks and rewards
+              </p>
+            </div>
+
+            <div style="max-width: 600px; margin: 0 auto">
+              <div class="tabs">
+                <div class="tab active">Create New</div>
+                <div class="tab">Link Existing</div>
+              </div>
+
+              <!-- Create New Tab Content -->
+              <div style="margin-top: 20px">
+                <h3>Create a New Child Account</h3>
+                <div class="input-field">Child's First Name</div>
+                <div class="input-field">Child's Last Name</div>
+                <div class="input-field">Child's Age</div>
+                <select class="input-field">
+                  <option value="">Select Grade Level</option>
+                  <option>1st Grade</option>
+                  <option>2nd Grade</option>
+                  <option>3rd Grade</option>
+                  <option>4th Grade</option>
+                  <option>5th Grade</option>
+                  <option>6th Grade</option>
+                  <option>7th Grade</option>
+                  <option>8th Grade</option>
+                  <option>9th Grade</option>
+                  <option>10th Grade</option>
+                  <option>11th Grade</option>
+                  <option>12th Grade</option>
+                </select>
+                <div
+                  class="button primary"
+                  style="width: 100%; margin-top: 20px"
+                >
+                  Add Child
+                </div>
+              </div>
+
+              <!-- Link Existing Content (hidden) -->
+              <div style="display: none; margin-top: 20px">
+                <h3>Link with Existing Child Account</h3>
+                <div class="input-field">Child's Email Address</div>
+                <div
+                  class="button primary"
+                  style="width: 100%; margin-top: 20px"
+                >
+                  Send Link Request
+                </div>
+
+                <div style="text-align: center; margin: 20px 0">- OR -</div>
+
+                <h3>Generate Link Code</h3>
+                <p>
+                  Generate a code that your child can enter in their account
+                </p>
+                <div class="button primary" style="width: 100%">
+                  Generate Link Code
+                </div>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0">
+                <div class="button" style="background: #666">Skip for Now</div>
+                <p style="font-size: 14px; color: #666">
+                  You can add children later from your profile
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/parents/children<br />
+              Request: { childName, childAge, grade }<br />
+              Response: { child data }
+            </div>
+            <div class="api-call">
+              POST /api/parents/link-code<br />
+              Response: { linkCode }
+            </div>
+            <h3>Flow</h3>
+            <div class="component">
+              <strong>Create New:</strong> Creates a child account linked to
+              parent<br />
+              <strong>Link Existing:</strong> Connects to already registered
+              child<br />
+              <strong>Generate Code:</strong> Gives code for child to enter
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Login Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>4. Login Screen (Common for All Users)</h2>
+          <p>Simple login for all profile types</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>UNIVANCE</h1>
+              <p>Welcome Back!</p>
+            </div>
+            <div style="max-width: 300px; margin: 50px auto">
+              <div class="input-field">Email Address</div>
+              <div class="input-field" type="password">Password</div>
+              <div style="text-align: right">
+                <a href="#" style="font-size: 14px">Forgot Password?</a>
+              </div>
+              <div
+                class="button primary"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Login
+              </div>
+              <div style="text-align: center; margin: 20px 0">
+                Or continue with
+              </div>
+              <div style="display: flex; gap: 10px">
+                <div class="button" style="flex: 1; background: #db4437">
+                  Google
+                </div>
+                <div class="button" style="flex: 1; background: #000">
+                  Apple
+                </div>
+              </div>
+              <div style="text-align: center; margin-top: 30px">
+                Don't have an account? <a href="#">Get Started</a>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/login<br />
+              Request: { email, password }<br />
+              Response: { accessToken, refreshToken, user }
+            </div>
+            <h3>Flow After Login</h3>
+            <div class="component">
+              <strong>System checks user profiles:</strong>
+              <ul>
+                <li>Single profile → Direct to dashboard</li>
+                <li>Multiple profiles → Show profile selector</li>
+                <li>Parent profile → Redirect to Parent Dashboard</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Profile Selector (When Multiple Profiles) -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>5. Profile Selector Screen</h2>
+          <p>Shown when user has multiple profiles</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>Welcome Back, Sarah</h1>
+              <p>Select which profile you'd like to use</p>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                margin-top: 50px;
+              "
+            >
+              <div class="profile-card">
+                <div style="font-size: 50px">👩‍🏫</div>
+                <h3>Teacher</h3>
+                <p>Lincoln Middle School</p>
+              </div>
+              <div class="profile-card selected">
+                <div style="font-size: 50px">👪</div>
+                <h3>Parent</h3>
+                <p>2 Children</p>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Profile Detection</h3>
+            <div class="component">
+              <strong>API Calls:</strong>
+              <ul>
+                <li>GET /api/users/me</li>
+                <li>GET /api/parents/me (if parent)</li>
+                <li>GET /api/teachers/me (if teacher)</li>
+                <li>GET /api/schools/me (if school admin)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Forgot Password Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>6. Forgot Password Screen</h2>
+          <p>Password reset request</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>Reset Password</h1>
+              <p>Enter your email to receive reset instructions</p>
+            </div>
+            <div style="max-width: 300px; margin: 50px auto">
+              <div class="input-field">Email Address</div>
+              <div
+                class="button"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Send Reset Link
+              </div>
+              <div style="text-align: center; margin-top: 30px">
+                Remember your password? <a href="#">Back to Login</a>
+              </div>
+            </div>
+            <div class="modal" id="emailSentModal">
+              <h3>Email Sent</h3>
+              <p>
+                If your email is registered, you'll receive password reset
+                instructions shortly.
+              </p>
+              <div class="button">OK</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/forgot-password<br />
+              Request: { email }<br />
+              Response: { success: true, message }
+            </div>
+            <h3>User Flow</h3>
+            <div class="component">
+              Always shows success message for security (even if email doesn't
+              exist)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Reset Password Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>7. Reset Password Screen</h2>
+          <p>Set new password (accessed via email link)</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div style="text-align: center; margin-top: 50px">
+              <h1>Create New Password</h1>
+            </div>
+            <div style="max-width: 300px; margin: 50px auto">
+              <div class="input-field" type="password">New Password</div>
+              <div class="input-field" type="password">
+                Confirm New Password
+              </div>
+              <div
+                class="button"
+                style="width: 100%; text-align: center; margin-top: 20px"
+              >
+                Reset Password
+              </div>
+            </div>
+            <div class="modal" id="resetSuccessModal">
+              <h3>Password Reset Successful</h3>
+              <p>
+                Your password has been reset. You can now login with your new
+                password.
+              </p>
+              <div class="button">Go to Login</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/auth/reset-password<br />
+              Request: { email, token, newPassword }<br />
+              Response: { success: true, message }
+            </div>
+            <h3>Token Handling</h3>
+            <div class="component">
+              Token and email are extracted from URL parameters
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Dashboard Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>8. Dashboard Screen</h2>
+          <p>Main landing screen after login</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div class="avatar"></div>
+                <div>
+                  <div style="font-weight: bold">Mary Smith</div>
+                  <div style="font-size: 14px">Parent</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 20px">
+                <div class="notification-bell">
+                  🔔
+                  <div class="notification-dot"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <h3>My Children</h3>
+              <div style="display: flex; gap: 15px; overflow-x: auto">
+                <div class="child-card">
+                  <div class="avatar"></div>
+                  <div class="child-info">
+                    <div style="font-weight: bold">John Smith</div>
+                    <div>Grade 8</div>
+                    <div style="color: #ff8a65">350 SP</div>
+                  </div>
+                </div>
+                <div class="child-card">
+                  <div class="avatar"></div>
+                  <div class="child-info">
+                    <div style="font-weight: bold">Emily Smith</div>
+                    <div>Grade 5</div>
+                    <div style="color: #ff8a65">230 SP</div>
+                  </div>
+                </div>
+              </div>
+
+              <h3>Tasks Awaiting Approval</h3>
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Clean Room</div>
+                    <div style="font-size: 14px; color: #666">John Smith</div>
+                  </div>
+                  <div>
+                    <span class="badge-sm">+10 SP</span>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="button">Review</div>
+                </div>
+              </div>
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Math Homework</div>
+                    <div style="font-size: 14px; color: #666">Emily Smith</div>
+                  </div>
+                  <div>
+                    <span class="badge-sm">+15 SP</span>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="button">Review</div>
+                </div>
+              </div>
+
+              <h3>Pending Reward Redemptions</h3>
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Movie Night</div>
+                    <div style="font-size: 14px; color: #666">Emily Smith</div>
+                  </div>
+                  <div>
+                    <span class="badge-sm" style="background: #f44336"
+                      >-100 SP</span
+                    >
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="button">Fulfill</div>
+                </div>
+              </div>
+
+              <h3>Quick Actions</h3>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px">
+                <div class="button">Add Task</div>
+                <div class="button">Create Reward</div>
+                <div class="button">Add Child</div>
+                <div class="button">View Analytics</div>
+              </div>
+            </div>
+
+            <div
+              class="nav-bar"
+              style="position: fixed; bottom: 0; left: 0; right: 0"
+            >
+              <div style="display: flex; justify-content: space-around">
+                <div style="font-weight: bold">Home</div>
+                <div>Children</div>
+                <div>Tasks</div>
+                <div>Rewards</div>
+                <div>Profile</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/users/me<br />
+              GET /api/parents/me<br />
+              GET /api/parents/me/children<br />
+              GET /api/tasks?status=pending_approval<br />
+              GET /api/rewards/redemptions?status=pending
+            </div>
+            <h3>Interactions</h3>
+            <div class="component">
+              <strong>Review Button:</strong> Navigate to Task Approval
+              screen<br />
+              <strong>Fulfill Button:</strong> Navigate to Redemption Detail
+              screen<br />
+              <strong>Child Card Click:</strong> Navigate to Child Detail screen
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Children List Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>9. Children List Screen</h2>
+          <p>View and manage all children</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">My Children</div>
+              </div>
+              <div class="button">Add Child</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="child-card">
+                <div class="avatar"></div>
+                <div class="child-info">
+                  <div style="font-weight: bold">John Smith</div>
+                  <div>Grade 8</div>
+                  <div style="color: #ff8a65">350 SP</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                  <div class="badge-sm" style="background: #4caf50">
+                    5 Tasks
+                  </div>
+                  <div class="badge-sm" style="background: #f44336">
+                    2 Pending
+                  </div>
+                </div>
+              </div>
+
+              <div class="child-card">
+                <div class="avatar"></div>
+                <div class="child-info">
+                  <div style="font-weight: bold">Emily Smith</div>
+                  <div>Grade 5</div>
+                  <div style="color: #ff8a65">230 SP</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                  <div class="badge-sm" style="background: #4caf50">
+                    3 Tasks
+                  </div>
+                  <div class="badge-sm" style="background: #f44336">
+                    1 Pending
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: 20px; text-align: center">
+                <div class="button">Manage Child Connections</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/parents/me/children<br />
+              GET /api/tasks?assignedTo={childId}&status=pending<br />
+              GET /api/tasks?assignedTo={childId}&status=pending_approval
+            </div>
+            <h3>Interactions</h3>
+            <div class="component">
+              <strong>Child Card Click:</strong> Navigate to Child Detail
+              Screen<br />
+              <strong>Add Child Button:</strong> Navigate to Add Child Screen<br />
+              <strong>Manage Connections:</strong> Navigate to Child Management
+              Screen
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Child Detail Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>10. Child Detail Screen</h2>
+          <p>Detailed view of a specific child</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Child Details</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div style="text-align: center; margin-bottom: 20px">
+                <div class="avatar" style="width: 80px; height: 80px"></div>
+                <h2>John Smith</h2>
+                <div>Grade 8 • Level 3: Developing Scholar</div>
+                <div style="font-size: 24px; color: #ff8a65; font-weight: bold">
+                  350 SP
+                </div>
+              </div>
+
+              <div class="stats-box" style="margin-bottom: 20px">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 5px;
+                  "
+                >
+                  <div>Current Level:</div>
+                  <div>Level 3</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 70%"></div>
+                </div>
+                <div style="font-size: 12px">150 points to next level</div>
+              </div>
+
+              <div class="tabs">
+                <div class="tab active">Tasks</div>
+                <div class="tab">Rewards</div>
+                <div class="tab">Progress</div>
+              </div>
+
+              <!-- Tasks Tab Content -->
+              <div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 10px 0;
+                  "
+                >
+                  <h3>Assigned Tasks</h3>
+                  <div class="button">Add Task</div>
+                </div>
+
+                <div class="card">
+                  <div style="display: flex; justify-content: space-between">
+                    <div>
+                      <div style="font-weight: bold">Clean Room</div>
+                      <div style="font-size: 14px; color: #666">Due Today</div>
+                    </div>
+                    <div>
+                      <span class="badge-sm">+10 SP</span>
+                    </div>
+                  </div>
+                  <div
+                    style="margin-top: 10px; font-size: 14px; color: #f57c00"
+                  >
+                    Pending Approval
+                  </div>
+                  <div style="margin-top: 5px">
+                    <div class="button">Review</div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div style="display: flex; justify-content: space-between">
+                    <div>
+                      <div style="font-weight: bold">Homework</div>
+                      <div style="font-size: 14px; color: #666">
+                        Due Tomorrow
+                      </div>
+                    </div>
+                    <div>
+                      <span class="badge-sm">+15 SP</span>
+                    </div>
+                  </div>
+                  <div style="margin-top: 10px; font-size: 14px; color: #666">
+                    Pending
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/parents/children/{id}<br />
+              GET /api/points/accounts/student/{studentId}<br />
+              GET /api/points/accounts/student/{studentId}/balance<br />
+              GET /api/tasks?assignedTo={childId}<br />
+              GET /api/rewards?creatorId={parentId}
+            </div>
+            <h3>Tab Navigation</h3>
+            <div class="component">
+              <strong>Tasks Tab:</strong> Shows assigned tasks<br />
+              <strong>Rewards Tab:</strong> Shows available rewards<br />
+              <strong>Progress Tab:</strong> Shows analytics and points history
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. Tasks Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>11. Tasks Screen</h2>
+          <p>Manage all tasks for children</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">Tasks</div>
+              <div class="button">Add Task</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="tabs">
+                <div class="tab active">Pending Approval</div>
+                <div class="tab">Active Tasks</div>
+                <div class="tab">Completed</div>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin: 20px 0">
+                <select class="input-field" style="flex: 1">
+                  <option>All Children</option>
+                  <option>John Smith</option>
+                  <option>Emily Smith</option>
+                </select>
+                <select class="input-field" style="flex: 1">
+                  <option>All Categories</option>
+                  <option>Home</option>
+                  <option>Academic</option>
+                  <option>Behavior</option>
+                </select>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Clean Room</div>
+                    <div style="font-size: 14px; color: #666">John Smith</div>
+                  </div>
+                  <div>
+                    <span class="badge-sm">+10 SP</span>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <span class="badge-sm" style="background: #4caf50">Home</span>
+                  <span class="badge-sm" style="background: #f57c00"
+                    >Awaiting Approval</span
+                  >
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="button">Review</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Math Homework</div>
+                    <div style="font-size: 14px; color: #666">Emily Smith</div>
+                  </div>
+                  <div>
+                    <span class="badge-sm">+15 SP</span>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <span class="badge-sm" style="background: #2196f3"
+                    >Academic</span
+                  >
+                  <span class="badge-sm" style="background: #f57c00"
+                    >Awaiting Approval</span
+                  >
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="button">Review</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/tasks?createdBy={parentId}&status={tab}<br />
+              GET /api/parents/me/children<br />
+              GET /api/tasks/categories
+            </div>
+            <h3>Task Filters</h3>
+            <div class="component">
+              <strong>Status Tabs:</strong>
+              <ul>
+                <li>Pending Approval: Tasks awaiting parent review</li>
+                <li>Active Tasks: Assigned but not yet completed</li>
+                <li>Completed: Approved and finished tasks</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Create Task Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>12. Create Task Screen</h2>
+          <p>Create a new task for a child</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Create Task</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="tabs">
+                <div class="tab active">Custom Task</div>
+                <div class="tab">From Template</div>
+              </div>
+
+              <div style="max-width: 500px; margin: 20px auto">
+                <h3>Task Details</h3>
+                <div class="input-field">Task Title</div>
+                <textarea class="input-field" style="height: 100px">
+Description...</textarea
+                >
+
+                <div style="margin: 15px 0">
+                  <label>Assign To</label>
+                  <select class="input-field">
+                    <option>Select Child</option>
+                    <option>John Smith</option>
+                    <option>Emily Smith</option>
+                  </select>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <label>Category</label>
+                  <select class="input-field">
+                    <option>Select Category</option>
+                    <option>Home</option>
+                    <option>Academic</option>
+                    <option>Behavior</option>
+                    <option>Extracurricular</option>
+                  </select>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <label>Due Date</label>
+                  <div class="input-field">MM/DD/YYYY</div>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <label>Points Value</label>
+                  <div class="input-field">15</div>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <input type="checkbox" id="recurring" />
+                  <label for="recurring">Recurring Task</label>
+                </div>
+
+                <div
+                  style="
+                    display: none;
+                    margin: 15px 0;
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    border-radius: 8px;
+                  "
+                >
+                  <label>Frequency</label>
+                  <select class="input-field">
+                    <option>Daily</option>
+                    <option>Weekly</option>
+                    <option>Monthly</option>
+                  </select>
+
+                  <div>
+                    <label>Days of Week</label>
+                    <div style="display: flex; gap: 5px; margin-top: 5px">
+                      <div
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 50%;
+                          background: #eee;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        M
+                      </div>
+                      <div
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 50%;
+                          background: #eee;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        T
+                      </div>
+                      <div
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 50%;
+                          background: #ff8a65;
+                          color: white;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        W
+                      </div>
+                      <div
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 50%;
+                          background: #eee;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        T
+                      </div>
+                      <div
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 50%;
+                          background: #ff8a65;
+                          color: white;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        F
+                      </div>
+                      <div
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 50%;
+                          background: #eee;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        S
+                      </div>
+                      <div
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 50%;
+                          background: #eee;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        S
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <label>Attachments (Optional)</label>
+                  <div class="button" style="width: auto; background: #666">
+                    + Add File
+                  </div>
+                </div>
+
+                <div style="margin-top: 30px">
+                  <div class="button primary" style="width: 100%">
+                    Create Task
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/tasks<br />
+              Request: { title, description, category, subCategory, pointValue,
+              assignedTo, dueDate, isRecurring, recurringSchedule,
+              requiresApproval }<br />
+              Response: { task data }
+            </div>
+            <div class="api-call">
+              GET /api/tasks/templates<br />
+              GET /api/tasks/categories<br />
+              GET /api/parents/me/children
+            </div>
+            <h3>Template Usage</h3>
+            <div class="component">
+              <strong>From Template Tab:</strong> Shows pre-defined task
+              templates<br />
+              <strong>Templates API:</strong> GET /api/tasks/templates<br />
+              <strong>Create from Template:</strong> POST
+              /api/tasks/templates/{id}/use
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13. Task Detail Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>13. Task Detail Screen</h2>
+          <p>Detailed view of a specific task</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Task Details</div>
+              </div>
+              <div>
+                <div
+                  class="button"
+                  style="background: transparent; border: 1px solid white"
+                >
+                  Edit
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div>
+                    <h2>Clean Room</h2>
+                    <div style="font-size: 14px; color: #666">
+                      Assigned to: John Smith
+                    </div>
+                  </div>
+                  <div style="text-align: right">
+                    <div
+                      class="badge-sm"
+                      style="font-size: 16px; padding: 5px 10px"
+                    >
+                      +10 SP
+                    </div>
+                    <div
+                      style="font-size: 14px; color: #f57c00; margin-top: 5px"
+                    >
+                      Awaiting Approval
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-top: 15px">
+                  <span class="badge-sm" style="background: #4caf50">Home</span>
+                  <span class="badge-sm" style="background: #e91e63"
+                    >Medium</span
+                  >
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Description</h3>
+                <p>
+                  Clean your room thoroughly, including making your bed,
+                  organizing your desk, and picking up all items from the floor.
+                  Vacuum the carpet when finished.
+                </p>
+              </div>
+
+              <div class="card">
+                <h3>Due Date</h3>
+                <div>Today by 5:00 PM</div>
+                <div style="margin-top: 10px; font-size: 14px">
+                  <span style="color: #4caf50">✓</span> Recurring: Every
+                  Wednesday and Friday
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Completion Evidence</h3>
+                <div style="display: flex; gap: 10px; margin-top: 10px">
+                  <div
+                    style="
+                      width: 100px;
+                      height: 100px;
+                      background: #eee;
+                      border-radius: 5px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    📷 Photo
+                  </div>
+                </div>
+                <div
+                  style="
+                    margin-top: 10px;
+                    padding: 10px;
+                    background: #f5f5f5;
+                    border-radius: 5px;
+                  "
+                >
+                  <div style="font-weight: bold">John's Note:</div>
+                  <div>I cleaned everything and vacuumed too!</div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">Approve</div>
+                <div class="button secondary" style="flex: 1">Reject</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/tasks/{id}<br />
+              PUT /api/tasks/{id} (for edit)<br />
+              DELETE /api/tasks/{id} (for delete)<br />
+              POST /api/tasks/{id}/review
+            </div>
+            <h3>Task Approval</h3>
+            <div class="component">
+              <strong>Approve Button:</strong> POST /api/tasks/{id}/review with
+              action=approve<br />
+              <strong>Reject Button:</strong> POST /api/tasks/{id}/review with
+              action=reject<br />
+              <strong>After Approval:</strong> Points automatically awarded to
+              child
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 14. Task Approval Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>14. Task Approval Screen</h2>
+          <p>Review and approve a completed task</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Task Review</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div>
+                    <h2>Clean Room</h2>
+                    <div style="font-size: 14px; color: #666">
+                      Completed by: John Smith
+                    </div>
+                    <div style="font-size: 14px; color: #666">
+                      Completed on: April 22, 2025 at 3:45 PM
+                    </div>
+                  </div>
+                  <div style="text-align: right">
+                    <div
+                      class="badge-sm"
+                      style="font-size: 16px; padding: 5px 10px"
+                    >
+                      +10 SP
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Completion Evidence</h3>
+                <div style="display: flex; gap: 10px; margin-top: 10px">
+                  <div
+                    style="
+                      width: 100px;
+                      height: 100px;
+                      background: #eee;
+                      border-radius: 5px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    📷 Photo 1
+                  </div>
+                  <div
+                    style="
+                      width: 100px;
+                      height: 100px;
+                      background: #eee;
+                      border-radius: 5px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    📷 Photo 2
+                  </div>
+                </div>
+                <div
+                  style="
+                    margin-top: 10px;
+                    padding: 10px;
+                    background: #f5f5f5;
+                    border-radius: 5px;
+                  "
+                >
+                  <div style="font-weight: bold">John's Note:</div>
+                  <div>I cleaned everything and vacuumed too!</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Your Feedback</h3>
+                <textarea class="input-field" style="height: 100px">
+Add feedback for the child here...</textarea
+                >
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">Approve Task</div>
+                <div class="button secondary" style="flex: 1">Reject Task</div>
+              </div>
+            </div>
+
+            <!-- Approval Success Modal -->
+            <div class="modal" id="approvalSuccessModal">
+              <h3>Task Approved!</h3>
+              <div style="text-align: center">
+                <div style="font-size: 48px">🎉</div>
+                <div style="font-size: 18px; font-weight: bold; margin: 10px 0">
+                  +10 SP awarded to John
+                </div>
+              </div>
+              <div class="button" style="margin-top: 20px; width: 100%">
+                Done
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/tasks/{id}<br />
+              POST /api/tasks/{id}/review<br />
+              Request: { action: "approve/reject", feedback }<br />
+              Response: { updated task, pointTransaction }
+            </div>
+            <h3>Points Processing</h3>
+            <div class="component">
+              <strong>After Approval:</strong> The points service automatically
+              creates a point transaction<br />
+              <strong>Points Flow:</strong> Task approval → Points transaction →
+              Balance update<br />
+              <strong>Rejection:</strong> No points awarded, task returns to
+              pending state
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 15. Rewards Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>15. Rewards Screen</h2>
+          <p>Manage rewards available to children</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">Rewards</div>
+              <div class="button">Create Reward</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="tabs">
+                <div class="tab active">My Rewards</div>
+                <div class="tab">Redemptions</div>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin: 20px 0">
+                <select class="input-field" style="flex: 1">
+                  <option>All Categories</option>
+                  <option>Privileges</option>
+                  <option>Items</option>
+                  <option>Experiences</option>
+                </select>
+                <select class="input-field" style="flex: 1">
+                  <option>Any Points</option>
+                  <option>Under 50 SP</option>
+                  <option>50-100 SP</option>
+                  <option>Over 100 SP</option>
+                </select>
+              </div>
+
+              <div class="grid">
+                <div class="card" style="text-align: center">
+                  <div
+                    style="height: 100px; background: #eee; margin-bottom: 10px"
+                  ></div>
+                  <div style="font-weight: bold">Extra Screen Time</div>
+                  <div style="color: #666">30 minutes</div>
+                  <div style="margin: 10px 0; font-weight: bold">100 SP</div>
+                  <div class="button">Edit</div>
+                </div>
+
+                <div class="card" style="text-align: center">
+                  <div
+                    style="height: 100px; background: #eee; margin-bottom: 10px"
+                  ></div>
+                  <div style="font-weight: bold">Choose Dinner</div>
+                  <div style="color: #666">One dinner choice</div>
+                  <div style="margin: 10px 0; font-weight: bold">150 SP</div>
+                  <div class="button">Edit</div>
+                </div>
+
+                <div class="card" style="text-align: center">
+                  <div
+                    style="height: 100px; background: #eee; margin-bottom: 10px"
+                  ></div>
+                  <div style="font-weight: bold">Movie Night</div>
+                  <div style="color: #666">Family movie pick</div>
+                  <div style="margin: 10px 0; font-weight: bold">200 SP</div>
+                  <div class="button">Edit</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/rewards?creatorType=parent&creatorId={parentId}<br />
+              GET /api/rewards/categories<br />
+              GET /api/rewards/redemptions
+            </div>
+            <h3>Reward Management</h3>
+            <div class="component">
+              <strong>My Rewards Tab:</strong> Shows rewards created by
+              parent<br />
+              <strong>Redemptions Tab:</strong> Shows redemption requests from
+              children<br />
+              <strong>Create Button:</strong> Navigate to Create Reward
+              screen<br />
+              <strong>Edit Button:</strong> Navigate to Edit Reward screen
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 16. Create Reward Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>16. Create Reward Screen</h2>
+          <p>Create a new reward for children</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Create Reward</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div style="max-width: 500px; margin: 0 auto">
+                <h3>Reward Details</h3>
+                <div class="input-field">Reward Title</div>
+                <textarea class="input-field" style="height: 100px">
+Description...</textarea
+                >
+
+                <div style="margin: 15px 0">
+                  <label>Category</label>
+                  <select class="input-field">
+                    <option>Select Category</option>
+                    <option>Privilege</option>
+                    <option>Item</option>
+                    <option>Experience</option>
+                    <option>Digital</option>
+                  </select>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <label>Points Cost</label>
+                  <div class="input-field">100</div>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <input type="checkbox" id="limited" />
+                  <label for="limited">Limited Quantity</label>
+
+                  <div style="display: none; margin-top: 10px">
+                    <label>Quantity</label>
+                    <div class="input-field">5</div>
+                  </div>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <input type="checkbox" id="expiry" />
+                  <label for="expiry">Set Expiration Date</label>
+
+                  <div style="display: none; margin-top: 10px">
+                    <label>Expiry Date</label>
+                    <div class="input-field">MM/DD/YYYY</div>
+                  </div>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <label>Reward Image (Optional)</label>
+                  <div class="button" style="width: auto; background: #666">
+                    + Upload Image
+                  </div>
+                </div>
+
+                <div style="margin: 15px 0">
+                  <label>Redemption Instructions</label>
+                  <textarea class="input-field" style="height: 80px">
+Instructions for how to redeem this reward...</textarea
+                  >
+                </div>
+
+                <div style="margin-top: 30px">
+                  <div class="button primary" style="width: 100%">
+                    Create Reward
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              POST /api/rewards<br />
+              Request: { title, description, category, subcategory, pointsCost,
+              limitedQuantity, quantity, expiryDate, image,
+              redemptionInstructions }<br />
+              Response: { reward data }
+            </div>
+            <div class="api-call">GET /api/rewards/categories</div>
+            <h3>Category Types</h3>
+            <div class="component">
+              <strong>Privilege:</strong> Special permissions (screen time,
+              staying up late)<br />
+              <strong>Item:</strong> Physical items to purchase<br />
+              <strong>Experience:</strong> Special activities (movie night,
+              trip)<br />
+              <strong>Digital:</strong> Online content, game time, etc.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 17. Reward Detail Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>17. Reward Detail Screen</h2>
+          <p>Detailed view of a specific reward</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Reward Details</div>
+              </div>
+              <div>
+                <div
+                  class="button"
+                  style="background: transparent; border: 1px solid white"
+                >
+                  Edit
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div style="text-align: center">
+                <div
+                  style="
+                    width: 100%;
+                    height: 200px;
+                    background: #eee;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                  "
+                ></div>
+                <h2>Extra Screen Time</h2>
+                <div style="font-size: 24px; font-weight: bold; color: #ff8a65">
+                  100 SP
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Description</h3>
+                <p>
+                  Get an additional 30 minutes of screen time for gaming,
+                  movies, or TV shows. This reward can be used on weekends or
+                  after completing all homework.
+                </p>
+              </div>
+
+              <div class="card">
+                <h3>Details</h3>
+                <div style="margin-bottom: 10px">
+                  <div style="font-weight: bold">Category</div>
+                  <div>Family Privilege</div>
+                </div>
+                <div style="margin-bottom: 10px">
+                  <div style="font-weight: bold">Availability</div>
+                  <div>Unlimited</div>
+                </div>
+                <div>
+                  <div style="font-weight: bold">Created</div>
+                  <div>April 15, 2025</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Redemption Instructions</h3>
+                <p>
+                  When your child redeems this reward, you'll receive a
+                  notification. Approve the request and allow the extra screen
+                  time only after all homework is completed.
+                </p>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">Edit Reward</div>
+                <div class="button secondary" style="flex: 1">
+                  Delete Reward
+                </div>
+              </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal" id="deleteConfirmModal">
+              <h3>Confirm Deletion</h3>
+              <p>
+                Are you sure you want to delete this reward? This action cannot
+                be undone.
+              </p>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button secondary" style="flex: 1">Yes, Delete</div>
+                <div class="button" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/rewards/{id}<br />
+              PUT /api/rewards/{id} (for edit)<br />
+              DELETE /api/rewards/{id} (for delete)
+            </div>
+            <h3>Redemption Flow</h3>
+            <div class="component">
+              <strong>Redemption Process:</strong><br />
+              1. Child redeems the reward in their app<br />
+              2. Parent receives notification<br />
+              3. Parent fulfills the reward<br />
+              4. Points are deducted from child's account
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 18. Redemptions Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>18. Redemptions Screen</h2>
+          <p>Manage reward redemption requests</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Redemptions</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="tabs">
+                <div class="tab active">Pending</div>
+                <div class="tab">Fulfilled</div>
+                <div class="tab">All</div>
+              </div>
+
+              <!-- Pending Redemption -->
+              <div class="card">
+                <div style="display: flex; gap: 15px">
+                  <div
+                    style="
+                      width: 80px;
+                      height: 80px;
+                      background: #eee;
+                      border-radius: 5px;
+                    "
+                  ></div>
+                  <div style="flex: 1">
+                    <div style="font-weight: bold">Movie Night</div>
+                    <div style="font-size: 14px; color: #666">
+                      Requested by: Emily Smith
+                    </div>
+                    <div style="font-size: 14px; color: #666">
+                      Redeemed: April 21, 2025
+                    </div>
+                    <div style="font-size: 14px; color: #f44336">
+                      Cost: 100 SP
+                    </div>
+                    <div class="badge-sm" style="background: #ff9800">
+                      Pending
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="button">Fulfill Reward</div>
+                </div>
+              </div>
+
+              <!-- Another Pending Redemption -->
+              <div class="card">
+                <div style="display: flex; gap: 15px">
+                  <div
+                    style="
+                      width: 80px;
+                      height: 80px;
+                      background: #eee;
+                      border-radius: 5px;
+                    "
+                  ></div>
+                  <div style="flex: 1">
+                    <div style="font-weight: bold">Extra Screen Time</div>
+                    <div style="font-size: 14px; color: #666">
+                      Requested by: John Smith
+                    </div>
+                    <div style="font-size: 14px; color: #666">
+                      Redeemed: April 20, 2025
+                    </div>
+                    <div style="font-size: 14px; color: #f44336">
+                      Cost: 100 SP
+                    </div>
+                    <div class="badge-sm" style="background: #ff9800">
+                      Pending
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="button">Fulfill Reward</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/rewards/redemptions?status={tab}<br />
+              PUT /api/rewards/redemptions/{id}/fulfill
+            </div>
+            <h3>Redemption States</h3>
+            <div class="component">
+              <strong>Pending:</strong> Waiting for fulfillment<br />
+              <strong>Fulfilled:</strong> Completed successfully<br />
+              <strong>Cancelled:</strong> Cancelled by parent or child
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 19. Analytics Dashboard -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>19. Analytics Dashboard</h2>
+          <p>Performance data for children</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Analytics</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 20px;
+                "
+              >
+                <h3>Performance Analytics</h3>
+                <select class="input-field" style="width: auto">
+                  <option>John Smith</option>
+                  <option>Emily Smith</option>
+                </select>
+              </div>
+
+              <div class="card" style="text-align: center">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">1,250</div>
+                    <div>Total Points Earned</div>
+                  </div>
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">900</div>
+                    <div>Points Spent</div>
+                  </div>
+                  <div class="stats-box" style="flex: 1">
+                    <div style="font-size: 24px; font-weight: bold">350</div>
+                    <div>Current Balance</div>
+                  </div>
+                </div>
+                <div style="font-weight: bold">Level 3: Developing Scholar</div>
+                <div class="progress-bar" style="margin: 15px 0">
+                  <div class="progress-fill" style="width: 70%"></div>
+                </div>
+                <div>350/500 points to Level 4</div>
+              </div>
+
+              <h3>Points Breakdown</h3>
+              <div class="card">
+                <div
+                  style="
+                    height: 200px;
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  Pie Chart: Points by Category
+                </div>
+              </div>
+
+              <h3>Time Series Analysis</h3>
+              <div class="card">
+                <div
+                  style="
+                    height: 200px;
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  Line Chart: Points Over Time
+                </div>
+              </div>
+
+              <h3>Task Completion Rate</h3>
+              <div class="card">
+                <div
+                  style="
+                    height: 200px;
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  Bar Chart: Task Completion by Category
+                </div>
+              </div>
+
+              <div style="margin-top: 20px">
+                <div class="button">View Points History</div>
+                <div class="button">Download Report</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/points/accounts/student/{studentId}<br />
+              GET
+              /api/points/transactions/analysis/categories?studentId={studentId}<br />
+              GET
+              /api/points/transactions/visualization/timeseries?studentId={studentId}<br />
+              GET /api/points/accounts/student/{studentId}/level<br />
+              GET /api/parents/me/children
+            </div>
+            <h3>Child Selection</h3>
+            <div class="component">
+              <strong>Child Selector:</strong> Change the child to view
+              different analytics<br />
+              <strong>View History Button:</strong> Navigate to Points History
+              screen<br />
+              <strong>Download Button:</strong> Generate and download PDF report
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 20. Points History Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>20. Points History Screen</h2>
+          <p>Transaction history for a child</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Points History</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 20px;
+                "
+              >
+                <h3>John Smith's Points History</h3>
+                <div class="button">Award Points</div>
+              </div>
+
+              <div class="card" style="background: #f5f5f5">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-size: 14px">Current Balance</div>
+                    <div style="font-size: 24px; font-weight: bold">350 SP</div>
+                  </div>
+                  <div style="text-align: right">
+                    <div style="font-size: 14px">This Month</div>
+                    <div style="font-size: 18px; color: #4caf50">+180 SP</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filter Options -->
+              <div style="display: flex; gap: 10px; margin: 20px 0">
+                <select class="input-field" style="flex: 1">
+                  <option>All Types</option>
+                  <option>Earned</option>
+                  <option>Spent</option>
+                </select>
+                <select class="input-field" style="flex: 1">
+                  <option>This Week</option>
+                  <option>This Month</option>
+                  <option>Last 3 Months</option>
+                </select>
+              </div>
+
+              <!-- Transaction List -->
+              <div style="margin-bottom: 10px; font-weight: bold">Today</div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Task Completed</div>
+                    <div style="font-size: 14px; color: #666">Clean Room</div>
+                    <div style="font-size: 12px; color: #999">10:30 AM</div>
+                  </div>
+                  <div style="color: #4caf50; font-weight: bold">+10 SP</div>
+                </div>
+              </div>
+
+              <div style="margin: 10px 0; font-weight: bold">Yesterday</div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Reward Redeemed</div>
+                    <div style="font-size: 14px; color: #666">
+                      Extra Screen Time
+                    </div>
+                    <div style="font-size: 12px; color: #999">3:45 PM</div>
+                  </div>
+                  <div style="color: #f44336; font-weight: bold">-100 SP</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Manual Adjustment</div>
+                    <div style="font-size: 14px; color: #666">Bonus points</div>
+                    <div style="font-size: 12px; color: #999">9:00 AM</div>
+                  </div>
+                  <div style="color: #4caf50; font-weight: bold">+50 SP</div>
+                </div>
+              </div>
+
+              <div style="margin-top: 20px; text-align: center">
+                <div class="button">Load More</div>
+              </div>
+            </div>
+
+            <!-- Manual Award Points Modal -->
+            <div class="modal" id="awardPointsModal">
+              <h3>Award Points</h3>
+              <div style="margin: 15px 0">
+                <label>Points Amount</label>
+                <div class="input-field">25</div>
+              </div>
+              <div style="margin: 15px 0">
+                <label>Reason</label>
+                <div class="input-field">Helping with groceries</div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button primary" style="flex: 1">Award Points</div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/points/accounts/student/{studentId}/history<br />
+              GET /api/points/transactions/student/{studentId}<br />
+              POST /api/points/transactions (for manual award)
+            </div>
+            <h3>Manual Point Adjustment</h3>
+            <div class="component">
+              <strong>Award Points Button:</strong> Opens modal to manually add
+              points<br />
+              <strong>Manual Transaction:</strong> POST /api/points/transactions
+              with source=manual_adjustment<br />
+              <strong>Transaction Types:</strong> earned, spent, adjusted
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 21. Profile Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>21. Profile Screen</h2>
+          <p>Personal information and settings</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="font-weight: bold">Profile</div>
+              <div class="button" style="background: #f44336">Logout</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div style="text-align: center; margin: 20px 0">
+                <div
+                  class="avatar"
+                  style="width: 100px; height: 100px; margin: 0 auto"
+                ></div>
+                <div class="button" style="margin-top: 10px">Change Photo</div>
+              </div>
+
+              <div class="card">
+                <h3>Personal Information</h3>
+                <div class="input-field">First Name: Mary</div>
+                <div class="input-field">Last Name: Smith</div>
+                <div class="input-field">Email: mary.smith@email.com</div>
+                <div class="input-field">Phone: (555) 123-4567</div>
+                <div class="button" style="margin-top: 10px">Save Changes</div>
+              </div>
+
+              <div class="card">
+                <h3>Children</h3>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <div>John Smith (Grade 8)</div>
+                  <div style="color: #4caf50">✓ Connected</div>
+                </div>
+                <div style="display: flex; justify-content: space-between">
+                  <div>Emily Smith (Grade 5)</div>
+                  <div style="color: #4caf50">✓ Connected</div>
+                </div>
+                <div class="button" style="margin-top: 10px">
+                  Manage Children
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Security</h3>
+                <div class="button">Change Password</div>
+              </div>
+
+              <div class="card">
+                <h3>Pending Link Requests</h3>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <div>Alex Johnson (Grade 6)</div>
+                  <div style="display: flex; gap: 5px">
+                    <div
+                      class="button"
+                      style="
+                        padding: 5px 10px;
+                        background: #4caf50;
+                        font-size: 12px;
+                      "
+                    >
+                      Accept
+                    </div>
+                    <div
+                      class="button"
+                      style="
+                        padding: 5px 10px;
+                        background: #f44336;
+                        font-size: 12px;
+                      "
+                    >
+                      Reject
+                    </div>
+                  </div>
+                </div>
+                <div class="button" style="margin-top: 10px">
+                  View All Requests
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Preferences</h3>
+                <div style="margin: 10px 0">
+                  <input type="checkbox" id="notifications" checked />
+                  <label for="notifications">Enable Push Notifications</label>
+                </div>
+                <div>
+                  <input type="checkbox" id="emails" checked />
+                  <label for="emails">Receive Email Updates</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Change Password Modal -->
+            <div class="modal" id="changePasswordModal">
+              <h3>Change Password</h3>
+              <div class="input-field" type="password">Current Password</div>
+              <div class="input-field" type="password">New Password</div>
+              <div class="input-field" type="password">
+                Confirm New Password
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button" style="flex: 1">Save</div>
+                <div class="button secondary" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/users/me<br />
+              GET /api/parents/me<br />
+              GET /api/parents/me/children<br />
+              GET /api/parents/link-requests<br />
+              PUT /api/users/me<br />
+              POST /api/users/me/avatar<br />
+              PUT /api/users/me/password<br />
+              POST /api/auth/logout<br />
+              POST /api/parents/link-requests/{requestId}
+            </div>
+            <h3>Link Request Handling</h3>
+            <div class="component">
+              <strong>Accept Button:</strong> POST
+              /api/parents/link-requests/{requestId} with action=approve<br />
+              <strong>Reject Button:</strong> POST
+              /api/parents/link-requests/{requestId} with action=reject<br />
+              <strong>View All:</strong> Navigate to Link Requests screen
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 22. Child Management Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>22. Child Management Screen</h2>
+          <p>Manage child connections</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Manage Children</div>
+              </div>
+              <div class="button">Add Child</div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 15px">
+                    <div class="avatar"></div>
+                    <div>
+                      <div style="font-weight: bold">John Smith</div>
+                      <div style="font-size: 14px">Grade 8</div>
+                      <div style="font-size: 14px; color: #ff8a65">350 SP</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="button secondary">Remove</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 15px">
+                    <div class="avatar"></div>
+                    <div>
+                      <div style="font-weight: bold">Emily Smith</div>
+                      <div style="font-size: 14px">Grade 5</div>
+                      <div style="font-size: 14px; color: #ff8a65">230 SP</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="button secondary">Remove</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Link with Existing Child</h3>
+                <div style="max-width: 400px">
+                  <div class="input-field">Child's Email Address</div>
+                  <div class="button">Send Link Request</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Generate Link Code</h3>
+                <p>
+                  Generate a code that your child can enter in their account
+                </p>
+                <div style="max-width: 400px">
+                  <div class="button">Generate New Link Code</div>
+                </div>
+                <div
+                  style="
+                    margin-top: 15px;
+                    background: #f5f5f5;
+                    padding: 15px;
+                    border-radius: 8px;
+                    max-width: 400px;
+                  "
+                >
+                  <div style="font-weight: bold">Current Link Code:</div>
+                  <div
+                    style="font-size: 24px; text-align: center; margin: 10px 0"
+                  >
+                    ABC123
+                  </div>
+                  <div style="font-size: 12px">
+                    This code expires in 48 hours
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Remove Confirmation Modal -->
+            <div class="modal" id="removeConfirmModal">
+              <h3>Remove Child</h3>
+              <p>
+                Are you sure you want to remove your connection with John Smith?
+                This will not delete their account, but you will no longer be
+                able to manage their tasks or rewards.
+              </p>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button secondary" style="flex: 1">Yes, Remove</div>
+                <div class="button" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/parents/me/children<br />
+              DELETE /api/parents/children/{childId}<br />
+              POST /api/parents/children<br />
+              POST /api/parents/link-code
+            </div>
+            <h3>Connection Methods</h3>
+            <div class="component">
+              <strong>Email Invitation:</strong> Send link request to existing
+              child account<br />
+              <strong>Link Code:</strong> Generate code for child to enter in
+              their app<br />
+              <strong>Remove Child:</strong> DELETE
+              /api/parents/children/{childId}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 23. Notifications Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>23. Notifications Screen</h2>
+          <p>All notifications and updates</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Notifications</div>
+              </div>
+              <div
+                class="button"
+                style="background: transparent; color: #ff8a65"
+              >
+                Mark All Read
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <!-- Unread Notification -->
+              <div class="card" style="border-left: 4px solid #ff8a65">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Task Completed!</div>
+                    <div style="font-size: 14px; color: #666">
+                      John has completed "Clean Room" and is awaiting approval
+                    </div>
+                    <div style="font-size: 12px; color: #999">
+                      5 minutes ago
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      class="button"
+                      style="font-size: 12px; padding: 5px 10px"
+                    >
+                      Review
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Unread Notification -->
+              <div class="card" style="border-left: 4px solid #ff8a65">
+                <div style="display: flex; justify-content: space-between">
+                  <div>
+                    <div style="font-weight: bold">Reward Redeemed!</div>
+                    <div style="font-size: 14px; color: #666">
+                      Emily has redeemed "Movie Night" reward
+                    </div>
+                    <div style="font-size: 12px; color: #999">
+                      30 minutes ago
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      class="button"
+                      style="font-size: 12px; padding: 5px 10px"
+                    >
+                      Fulfill
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Read Notification -->
+              <div class="card" style="opacity: 0.8">
+                <div>
+                  <div style="font-weight: bold">Link Request</div>
+                  <div style="font-size: 14px; color: #666">
+                    Alex Johnson has requested to link their account
+                  </div>
+                  <div style="font-size: 12px; color: #999">1 day ago</div>
+                </div>
+              </div>
+
+              <!-- Read Notification -->
+              <div class="card" style="opacity: 0.8">
+                <div>
+                  <div style="font-weight: bold">Level Up!</div>
+                  <div style="font-size: 14px; color: #666">
+                    John has reached Level 3: Developing Scholar
+                  </div>
+                  <div style="font-size: 12px; color: #999">2 days ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/notifications<br />
+              PUT /api/notifications/{id}/read<br />
+              PUT /api/notifications/read-all
+            </div>
+            <h3>Notification Types</h3>
+            <div class="component">
+              <strong>Task Completed:</strong> Child completed a task<br />
+              <strong>Reward Redeemed:</strong> Child redeemed a reward<br />
+              <strong>Link Request:</strong> Child requested to link<br />
+              <strong>Level Up:</strong> Child reached new level<br />
+              <strong
+                >Each notification may have different action buttons</strong
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 24. Link Requests Screen -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>24. Link Requests Screen</h2>
+          <p>Manage pending link requests from children</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="header">
+              <div style="display: flex; align-items: center; gap: 15px">
+                <div>&lt; Back</div>
+                <div style="font-weight: bold">Link Requests</div>
+              </div>
+            </div>
+
+            <div style="padding: 20px">
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div>
+                    <div style="font-weight: bold">Alex Johnson</div>
+                    <div style="font-size: 14px; color: #666">Grade 6</div>
+                    <div style="font-size: 14px; color: #666">
+                      Requested: April 21, 2025
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 10px">
+                    <div class="button" style="background: #4caf50">Accept</div>
+                    <div class="button" style="background: #f44336">Reject</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div>
+                    <div style="font-weight: bold">Sarah Williams</div>
+                    <div style="font-size: 14px; color: #666">Grade 7</div>
+                    <div style="font-size: 14px; color: #666">
+                      Requested: April 20, 2025
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 10px">
+                    <div class="button" style="background: #4caf50">Accept</div>
+                    <div class="button" style="background: #f44336">Reject</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3>Generate Link Code</h3>
+                <p>
+                  Generate a code that your child can enter in their account
+                </p>
+                <div style="max-width: 400px">
+                  <div class="button">Generate New Link Code</div>
+                </div>
+                <div
+                  style="
+                    margin-top: 15px;
+                    background: #f5f5f5;
+                    padding: 15px;
+                    border-radius: 8px;
+                    max-width: 400px;
+                  "
+                >
+                  <div style="font-weight: bold">Current Link Code:</div>
+                  <div
+                    style="font-size: 24px; text-align: center; margin: 10px 0"
+                  >
+                    ABC123
+                  </div>
+                  <div style="font-size: 12px">
+                    This code expires in 48 hours
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Request Confirmation Modal -->
+            <div class="modal" id="acceptConfirmModal">
+              <h3>Accept Link Request</h3>
+              <p>
+                Are you sure you want to accept the link request from Alex
+                Johnson? This will allow you to manage their tasks and rewards.
+              </p>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <div class="button" style="flex: 1; background: #4caf50">
+                  Yes, Accept
+                </div>
+                <div class="button" style="flex: 1">Cancel</div>
+              </div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>API Calls</h3>
+            <div class="api-call">
+              GET /api/parents/link-requests<br />
+              POST /api/parents/link-requests/{requestId}<br />
+              POST /api/parents/link-code
+            </div>
+            <h3>Link Request Flow</h3>
+            <div class="component">
+              <strong>Accept Request:</strong> POST
+              /api/parents/link-requests/{requestId} with action=approve<br />
+              <strong>Reject Request:</strong> POST
+              /api/parents/link-requests/{requestId} with action=reject<br />
+              <strong>After Acceptance:</strong> Child account is linked to
+              parent
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common Error States -->
+      <div class="screen-section">
+        <div class="screen-header">
+          <h2>Common Error States</h2>
+          <p>Error handling across all screens</p>
+        </div>
+        <div class="screen-content">
+          <div class="wireframe">
+            <div class="modal show">
+              <h3>Network Error</h3>
+              <p>
+                Unable to connect to server. Please check your internet
+                connection.
+              </p>
+              <div style="display: flex; gap: 10px">
+                <div class="button">Retry</div>
+                <div class="button secondary">Cancel</div>
+              </div>
+            </div>
+
+            <div class="modal" style="top: 70%">
+              <h3>Session Expired</h3>
+              <p>Your session has expired. Please login again.</p>
+              <div class="button">Login</div>
+            </div>
+
+            <div class="modal" style="top: 90%">
+              <h3>Error</h3>
+              <p>{Error message from server}</p>
+              <div class="button">OK</div>
+            </div>
+          </div>
+          <div class="api-details">
+            <h3>Error Handling</h3>
+            <div class="api-call">
+              When 401 error occurs:<br />
+              POST /api/auth/refresh-token<br />
+              Request: { refreshToken }<br />
+              Response: New access token
+            </div>
+            <h3>Common Error Codes</h3>
+            <div class="component">
+              <strong>400:</strong> Bad Request<br />
+              <strong>401:</strong> Unauthorized<br />
+              <strong>403:</strong> Forbidden<br />
+              <strong>404:</strong> Not Found<br />
+              <strong>500:</strong> Server Error
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen-section" style="background: #ff8a65; color: white">
+        <h2>API Coverage Verification</h2>
+        <p>✓ All 47 parent-accessible APIs are mapped to specific screens</p>
+        <p>✓ Profile selection and validation happens before registration</p>
+        <p>✓ Account and profile creation are streamlined in one flow</p>
+        <p>✓ Child management provides multiple link methods</p>
+        <p>✓ Multiple profile support is handled with profile selector</p>
+      </div>
+    </div>
+
+    <div class="footer" style="position: relative; margin-top: 50px">
+      <p>Parent Website Complete Wireframes with API Mapping</p>
+      <p>Total Screens: 24 Main Screens + Error States</p>
+      <p>All 47 Parent APIs Mapped and Visualized</p>
+    </div>
+  </body>
+</html>

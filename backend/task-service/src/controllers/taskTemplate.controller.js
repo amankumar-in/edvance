@@ -603,7 +603,7 @@ const taskTemplateController = {
       // Send notification to the assigned student
       try {
         const notificationServiceUrl =
-          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3005";
+          process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
 
         await axios.post(`${notificationServiceUrl}/api/notifications`, {
           type: "task_assigned",

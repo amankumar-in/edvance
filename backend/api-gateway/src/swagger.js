@@ -16,7 +16,7 @@ const swaggerDefinition = {
       description: "Local API Gateway server",
     },
     {
-      url: "https://api.univance.com/api",
+      url: "https://api.coinsforcollege.org/api",
       description: "Production API Gateway server",
     },
   ],
@@ -42,9 +42,12 @@ const options = {
   apis: [
     path.join(__dirname, "../../auth-service/src/routes/*.js"),
     path.join(__dirname, "../../user-service/src/routes/*.js"),
-    path.join(__dirname, "../../points-service/src/routes/*.js"),
-    path.join(__dirname, "../../notification-service/src/routes/*.js"),
     path.join(__dirname, "../../task-service/src/routes/*.js"),
+    path.join(__dirname, "../../rewards-service/src/routes/*.js"),
+    path.join(__dirname, "../../points-service/src/routes/*.js"),
+    path.join(__dirname, "../../analytics-service/src/routes/*.js"),
+    path.join(__dirname, "../../notification-service/src/routes/*.js"),
+
     // Add additional service route patterns here as needed
   ],
 };

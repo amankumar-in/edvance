@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Univance Complete Style Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables */
+    :root {
+      /* Primary Colors */
+      --pink: #FF8DA1; /* Hydrangea Pink */
+      --peach: #FFC2BA; /* Blush Peach */
+      --lavender: #FF9CE9; /* Light Lavender */
+      --purple: #AD56C4; /* Deep Purple */
+
+      /* Secondary Colors */
+      --dark-pink: #FF6B85; /* Deeper Pink */
+      --dark-peach: #FFAD9F; /* Deeper Peach */
+      --dark-lavender: #FF7DE0; /* Deeper Lavender */
+      --dark-purple: #9548A8; /* Deeper Purple */
+
+      /* Background Colors */
+      --bg-light-pink: #FFF1F3;
+      --bg-light-peach: #FFF6F5;
+      --bg-light-lavender: #FFF5FC;
+      --bg-light-purple: #F9F0FC;
+
+      /* Neutrals */
+      --white: #FFFFFF;
+      --light-gray: #F5F7FA;
+      --medium-gray: #CDD5DF;
+      --dark-gray: #526D82;
+      --black: #2D3748;
+
+      /* Card Backgrounds */
+      --card-bg: #F9F9F9;
+      --card-alt-bg: #F1F1F1;
+
+      /* Borders (use sparingly) */
+      --border-light: #E0E0E0;
+      --border-medium: #D0D0D0;
+      --border-dark: #B0B0B0;
+
+      /* Gradients */
+      --gradient-primary: linear-gradient(135deg, #FF8DA1 0%, #FF6B85 100%);
+      --gradient-secondary: linear-gradient(135deg, #FFC2BA 0%, #FF9CE9 100%);
+      --gradient-success: linear-gradient(135deg, #FF7DE0 0%, #FF62D8 100%);
+      --gradient-warning: linear-gradient(135deg, #FFAD9F 0%, #FF8DA1 100%);
+      --gradient-purple: linear-gradient(135deg, #9548A8 0%, #8A40A0 100%);
+      --gradient-danger: linear-gradient(135deg, #FF5252 0%, #FF1A1A 100%);
+
+      /* Fonts */
+      --heading-font: "Nunito", sans-serif;
+      --body-font: "Open Sans", sans-serif;
+      --display-font: "Quicksand", sans-serif;
+    }
+
+    /* Base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--body-font);
+      color: var(--black);
+      background-color: var(--white);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--heading-font);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 60px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    h3 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    p {
+      margin-bottom: 20px;
+    }
+
+    section {
+      margin-bottom: 60px;
+    }
+
+    /* Color swatches */
+    .colors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .color-swatch {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .color-box {
+      height: 120px;
+      width: 100%;
+      border: 1px solid var(--border-light);
+      margin-bottom: 15px;
+    }
+
+    .color-name {
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .color-value {
+      font-family: monospace;
+      color: var(--dark-gray);
+    }
+
+    /* Gradient swatches */
+    .gradient-swatch {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .gradient-box {
+      height: 150px;
+      width: 100%;
+      border: 1px solid var(--border-light);
+      margin-bottom: 15px;
+    }
+
+    .gradient-name {
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .gradient-value {
+      font-family: monospace;
+      color: var(--dark-gray);
+      line-height: 1.5;
+    }
+
+    /* Typography */
+    .font-family {
+      margin-bottom: 40px;
+      padding: 20px;
+      border: 1px solid var(--border-light);
+      background-color: var(--white);
+    }
+
+    .font-name {
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .font-sample {
+      font-size: 24px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: var(--light-gray);
+    }
+
+    .font-weights {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .weight-sample {
+      padding: 10px;
+      background-color: var(--light-gray);
+    }
+
+    .weight-name {
+      font-size: 14px;
+      color: var(--dark-gray);
+      margin-bottom: 8px;
+    }
+
+    .usage-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .usage-list {
+      list-style-type: none;
+    }
+
+    .usage-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .usage-list li:last-child {
+      border-bottom: none;
+    }
+
+    /* Design principles */
+    .principles-list {
+      list-style-type: none;
+    }
+
+    .principles-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .principles-list li:last-child {
+      border-bottom: none;
+    }
+
+    /* Code blocks */
+    .code-block {
+      background-color: var(--light-gray);
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid var(--border-light);
+      overflow-x: auto;
+      font-family: monospace;
+      white-space: pre;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Univance Style Guide</h1>
+
+    <section id="introduction">
+      <p>This style guide defines the visual language for the Univance educational platform. It provides guidelines for colors, typography, and design principles to ensure consistency across all interfaces.</p>
+    </section>
+
+    <section id="colors">
+      <h2>Color Palette</h2>
+      
+      <h3>Primary Colors</h3>
+      <div class="colors-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FF8DA1;"></div>
+          <div class="color-name">Hydrangea Pink</div>
+          <div class="color-value">var(--pink) <br>#FF8DA1</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FFC2BA;"></div>
+          <div class="color-name">Blush Peach</div>
+          <div class="color-value">var(--peach) <br>#FFC2BA</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FF9CE9;"></div>
+          <div class="color-name">Light Lavender</div>
+          <div class="color-value">var(--lavender) <br>#FF9CE9</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #AD56C4;"></div>
+          <div class="color-name">Deep Purple</div>
+          <div class="color-value">var(--purple) <br>#AD56C4</div>
+        </div>
+      </div>
+      
+      <h3>Secondary Colors</h3>
+      <div class="colors-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FF6B85;"></div>
+          <div class="color-name">Deeper Pink</div>
+          <div class="color-value">var(--dark-pink) <br>#FF6B85</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FFAD9F;"></div>
+          <div class="color-name">Deeper Peach</div>
+          <div class="color-value">var(--dark-peach) <br>#FFAD9F</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FF7DE0;"></div>
+          <div class="color-name">Deeper Lavender</div>
+          <div class="color-value">var(--dark-lavender) <br>#FF7DE0</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #9548A8;"></div>
+          <div class="color-name">Deeper Purple</div>
+          <div class="color-value">var(--dark-purple) <br>#9548A8</div>
+        </div>
+      </div>
+      
+      <h3>Background Colors</h3>
+      <div class="colors-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FFF1F3;"></div>
+          <div class="color-name">Light Pink Background</div>
+          <div class="color-value">var(--bg-light-pink) <br>#FFF1F3</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FFF6F5;"></div>
+          <div class="color-name">Light Peach Background</div>
+          <div class="color-value">var(--bg-light-peach) <br>#FFF6F5</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FFF5FC;"></div>
+          <div class="color-name">Light Lavender Background</div>
+          <div class="color-value">var(--bg-light-lavender) <br>#FFF5FC</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #F9F0FC;"></div>
+          <div class="color-name">Light Purple Background</div>
+          <div class="color-value">var(--bg-light-purple) <br>#F9F0FC</div>
+        </div>
+      </div>
+      
+      <h3>Neutrals</h3>
+      <div class="colors-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #FFFFFF; border: 1px solid #E0E0E0;"></div>
+          <div class="color-name">White</div>
+          <div class="color-value">var(--white) <br>#FFFFFF</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #F5F7FA;"></div>
+          <div class="color-name">Light Gray</div>
+          <div class="color-value">var(--light-gray) <br>#F5F7FA</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #CDD5DF;"></div>
+          <div class="color-name">Medium Gray</div>
+          <div class="color-value">var(--medium-gray) <br>#CDD5DF</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #526D82;"></div>
+          <div class="color-name">Dark Gray</div>
+          <div class="color-value">var(--dark-gray) <br>#526D82</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #2D3748;"></div>
+          <div class="color-name">Black</div>
+          <div class="color-value">var(--black) <br>#2D3748</div>
+        </div>
+      </div>
+      
+      <h3>Card Background Colors</h3>
+      <div class="colors-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #F9F9F9;"></div>
+          <div class="color-name">Card Background</div>
+          <div class="color-value">var(--card-bg) <br>#F9F9F9</div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background-color: #F1F1F1;"></div>
+          <div class="color-name">Alternative Card Background</div>
+          <div class="color-value">var(--card-alt-bg) <br>#F1F1F1</div>
+        </div>
+      </div>
+      
+      
+    </section>
+
+    <section id="gradients">
+      <h2>Gradients</h2>
+      <div class="colors-grid">
+        <div class="gradient-swatch">
+          <div class="gradient-box" style="background: linear-gradient(135deg, #FF8DA1 0%, #FF6B85 100%);"></div>
+          <div class="gradient-name">Primary Gradient</div>
+          <div class="gradient-value">var(--gradient-primary)<br>Pink #FF8DA1 → Deeper Pink #FF6B85</div>
+        </div>
+        
+        <div class="gradient-swatch">
+          <div class="gradient-box" style="background: linear-gradient(135deg, #FFC2BA 0%, #FF9CE9 100%);"></div>
+          <div class="gradient-name">Secondary Gradient</div>
+          <div class="gradient-value">var(--gradient-secondary)<br>Peach #FFC2BA → Lavender #FF9CE9</div>
+        </div>
+        
+        <div class="gradient-swatch">
+          <div class="gradient-box" style="background: linear-gradient(135deg, #FF7DE0 0%, #FF62D8 100%);"></div>
+          <div class="gradient-name">Success Gradient</div>
+          <div class="gradient-value">var(--gradient-success)<br>Lavender #FF7DE0 → #FF62D8</div>
+        </div>
+        
+        <div class="gradient-swatch">
+          <div class="gradient-box" style="background: linear-gradient(135deg, #FFAD9F 0%, #FF8DA1 100%);"></div>
+          <div class="gradient-name">Warning Gradient</div>
+          <div class="gradient-value">var(--gradient-warning)<br>Peach #FFAD9F → Pink #FF8DA1</div>
+        </div>
+        
+        <div class="gradient-swatch">
+          <div class="gradient-box" style="background: linear-gradient(135deg, #9548A8 0%, #8A40A0 100%);"></div>
+          <div class="gradient-name">Purple Gradient</div>
+          <div class="gradient-value">var(--gradient-purple)<br>Purple #9548A8 → Deeper Purple #8A40A0</div>
+        </div>
+        
+        <div class="gradient-swatch">
+          <div class="gradient-box" style="background: linear-gradient(135deg, #FF5252 0%, #FF1A1A 100%);"></div>
+          <div class="gradient-name">Danger Gradient</div>
+          <div class="gradient-value">var(--gradient-danger)<br>Red #FF5252 → Deeper Red #FF1A1A</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="typography">
+      <h2>Typography</h2>
+      
+      <div class="font-family">
+        <div class="font-name">Nunito (Heading Font)</div>
+        <div class="font-sample" style="font-family: 'Nunito', sans-serif;">
+          The quick brown fox jumps over the lazy dog.
+        </div>
+        <div class="font-weights">
+          <div class="weight-sample">
+            <div class="weight-name">Regular (400)</div>
+            <div style="font-family: 'Nunito', sans-serif; font-weight: 400;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">Medium (500)</div>
+            <div style="font-family: 'Nunito', sans-serif; font-weight: 500;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">SemiBold (600)</div>
+            <div style="font-family: 'Nunito', sans-serif; font-weight: 600;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">Bold (700)</div>
+            <div style="font-family: 'Nunito', sans-serif; font-weight: 700;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">ExtraBold (800)</div>
+            <div style="font-family: 'Nunito', sans-serif; font-weight: 800;">AaBbCc123</div>
+          </div>
+        </div>
+        <div class="font-usage">
+          <div class="usage-title">Usage Guidelines</div>
+          <ul class="usage-list">
+            <li>All headings (h1, h2, h3, h4, h5, h6)</li>
+            <li>Navigation elements</li>
+            <li>Button text</li>
+            <li>Important callouts and labels</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="font-family">
+        <div class="font-name">Open Sans (Body Font)</div>
+        <div class="font-sample" style="font-family: 'Open Sans', sans-serif;">
+          The quick brown fox jumps over the lazy dog.
+        </div>
+        <div class="font-weights">
+          <div class="weight-sample">
+            <div class="weight-name">Regular (400)</div>
+            <div style="font-family: 'Open Sans', sans-serif; font-weight: 400;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">Medium (500)</div>
+            <div style="font-family: 'Open Sans', sans-serif; font-weight: 500;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">SemiBold (600)</div>
+            <div style="font-family: 'Open Sans', sans-serif; font-weight: 600;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">Bold (700)</div>
+            <div style="font-family: 'Open Sans', sans-serif; font-weight: 700;">AaBbCc123</div>
+          </div>
+        </div>
+        <div class="font-usage">
+          <div class="usage-title">Usage Guidelines</div>
+          <ul class="usage-list">
+            <li>Body text</li>
+            <li>Form elements</li>
+            <li>Secondary interface elements</li>
+            <li>Tables and data displays</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="font-family">
+        <div class="font-name">Quicksand (Display Font)</div>
+        <div class="font-sample" style="font-family: 'Quicksand', sans-serif;">
+          The quick brown fox jumps over the lazy dog.
+        </div>
+        <div class="font-weights">
+          <div class="weight-sample">
+            <div class="weight-name">Regular (400)</div>
+            <div style="font-family: 'Quicksand', sans-serif; font-weight: 400;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">Medium (500)</div>
+            <div style="font-family: 'Quicksand', sans-serif; font-weight: 500;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">SemiBold (600)</div>
+            <div style="font-family: 'Quicksand', sans-serif; font-weight: 600;">AaBbCc123</div>
+          </div>
+          <div class="weight-sample">
+            <div class="weight-name">Bold (700)</div>
+            <div style="font-family: 'Quicksand', sans-serif; font-weight: 700;">AaBbCc123</div>
+          </div>
+        </div>
+        <div class="font-usage">
+          <div class="usage-title">Usage Guidelines</div>
+          <ul class="usage-list">
+            <li>Display text for younger student interfaces</li>
+            <li>Playful elements, achievements, and celebrations</li>
+            <li>Special announcements</li>
+            <li>Elementary grade-level learning materials</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="design-principles">
+      <h2>Design Principles</h2>
+      <ul class="principles-list">
+        <li><strong>No shadows</strong> - Use background colors instead of shadows for depth and separation</li>
+        <li><strong>Flat design</strong> - Clean, flat surfaces without 3D effects</li>
+        <li><strong>Slightly rounded corners</strong> - Use border-radius for friendly aesthetic</li>
+        <li><strong>Structured grid</strong> - Consistent alignment and spacing</li>
+        <li><strong>Purposeful color</strong> - Colors have specific meanings and functions</li>
+        <li><strong>Typography hierarchy</strong> - Clear distinction between heading, body, and display text</li>
+        <li><strong>White space</strong> - Generous use of white space for clarity</li>
+        <li><strong>Minimal decoration</strong> - Visual elements serve a purpose</li>
+        <li><strong>Use Images</strong> - Use pictures and vector artowrk more than icons</li>
+      </ul>
+    </section>
+
+    <section id="css-implementation">
+      <h2>CSS Implementation</h2>
+      
+      <h3>CSS Variables</h3>
+      <div class="code-block">
+:root {
+  /* Primary Colors */
+  --pink: #FF8DA1; /* Hydrangea Pink */
+  --peach: #FFC2BA; /* Blush Peach */
+  --lavender: #FF9CE9; /* Light Lavender */
+  --purple: #AD56C4; /* Deep Purple */
+
+  /* Secondary Colors */
+  --dark-pink: #FF6B85; /* Deeper Pink */
+  --dark-peach: #FFAD9F; /* Deeper Peach */
+  --dark-lavender: #FF7DE0; /* Deeper Lavender */
+  --dark-purple: #9548A8; /* Deeper Purple */
+
+  /* Background Colors */
+  --bg-light-pink: #FFF1F3;
+  --bg-light-peach: #FFF6F5;
+  --bg-light-lavender: #FFF5FC;
+  --bg-light-purple: #F9F0FC;
+
+  /* Neutrals */
+  --white: #FFFFFF;
+  --light-gray: #F5F7FA;
+  --medium-gray: #CDD5DF;
+  --dark-gray: #526D82;
+  --black: #2D3748;
+
+  /* Card Backgrounds */
+  --card-bg: #F9F9F9;
+  --card-alt-bg: #F1F1F1;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #FF8DA1 0%, #FF6B85 100%);
+  --gradient-secondary: linear-gradient(135deg, #FFC2BA 0%, #FF9CE9 100%);
+  --gradient-success: linear-gradient(135deg, #FF7DE0 0%, #FF62D8 100%);
+  --gradient-warning: linear-gradient(135deg, #FFAD9F 0%, #FF8DA1 100%);
+  --gradient-purple: linear-gradient(135deg, #9548A8 0%, #8A40A0 100%);
+  --gradient-danger: linear-gradient(135deg, #FF5252 0%, #FF1A1A 100%);
+
+  /* Fonts */
+  --heading-font: "Nunito", sans-serif;
+  --body-font: "Open Sans", sans-serif;
+  --display-font: "Quicksand", sans-serif;
+}
+      </div>
+    </section>
+  </div>
+</body>
+</html>

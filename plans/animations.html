@@ -1,0 +1,4690 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Univance Animation Library</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/@mojs/core@0.288.2/build/mo.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vivus/0.4.6/vivus.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-javascript.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+    <style>
+      /* Variables */
+      :root {
+        /* Primary Colors */
+        --orange: #ffc067;
+        --teal: #66f4ff;
+        --blue: #66c4ff;
+        --slate: #7d99aa;
+
+        /* Secondary Colors */
+        --coral: #ff8a5b;
+        --yellow: #ffdc5b;
+        --green: #64e291;
+        --purple: #9b81e5;
+
+        /* Neutrals */
+        --white: #ffffff;
+        --light-gray: #f5f7fa;
+        --medium-gray: #cdd5df;
+        --dark-gray: #526d82;
+        --black: #2d3748;
+
+        /* Gradients */
+        --gradient-primary: linear-gradient(
+          135deg,
+          var(--orange) 0%,
+          var(--coral) 100%
+        );
+        --gradient-secondary: linear-gradient(
+          135deg,
+          var(--teal) 0%,
+          var(--blue) 100%
+        );
+        --gradient-success: linear-gradient(
+          135deg,
+          var(--green) 0%,
+          #3acd91 100%
+        );
+        --gradient-warning: linear-gradient(
+          135deg,
+          var(--yellow) 0%,
+          var(--orange) 100%
+        );
+        --gradient-purple: linear-gradient(
+          135deg,
+          var(--purple) 0%,
+          #7b64e0 100%
+        );
+        --gradient-danger: linear-gradient(135deg, #ff5252 0%, #ff1a1a 100%);
+
+        /* Fonts */
+        --heading-font: "Nunito", sans-serif;
+        --body-font: "Open Sans", sans-serif;
+        --display-font: "Quicksand", sans-serif;
+      }
+
+      /* Base Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 80px;
+      }
+
+      body {
+        font-family: var(--body-font);
+        color: var(--black);
+        background-color: var(--light-gray);
+        line-height: 1.6;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-family: var(--heading-font);
+        font-weight: 700;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      .header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 15px 0;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-family: var(--heading-font);
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--black);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo span {
+        color: var(--orange);
+      }
+
+      .nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .nav-link {
+        color: var(--dark-gray);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s;
+        position: relative;
+      }
+
+      .nav-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -3px;
+        left: 0;
+        background: var(--gradient-primary);
+        transition: width 0.3s;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--orange);
+      }
+
+      .nav-link:hover::after,
+      .nav-link.active::after {
+        width: 100%;
+      }
+
+      /* Hero */
+      .hero {
+        background: linear-gradient(135deg, rgba(255, 192, 103, 0.05) 0%, rgba(102, 244, 255, 0.05) 100%);
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        position: relative;
+      }
+
+      .hero h1::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100px;
+        height: 4px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+        color: var(--dark-gray);
+        max-width: 700px;
+        margin-bottom: 2rem;
+      }
+
+      /* Shape decorations for hero */
+      .shape {
+        position: absolute;
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        opacity: 0.1;
+      }
+
+      .shape-1 {
+        width: 300px;
+        height: 300px;
+        background-color: var(--orange);
+        top: -100px;
+        right: -100px;
+      }
+
+      .shape-2 {
+        width: 200px;
+        height: 200px;
+        background-color: var(--teal);
+        bottom: -70px;
+        left: 10%;
+      }
+
+      /* Main Content */
+      .section {
+        padding: 80px 0;
+      }
+
+      .section-header {
+        margin-bottom: 60px;
+        text-align: center;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--black);
+      }
+
+      .section-description {
+        color: var(--dark-gray);
+        font-size: 1.1rem;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      /* Categories */
+      .animation-category {
+        margin-bottom: 100px;
+      }
+
+      .category-header {
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .category-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--gradient-primary);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .category-title {
+        font-size: 2rem;
+        position: relative;
+        padding-bottom: 10px;
+      }
+
+      .category-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+      }
+
+      /* Animation Grid */
+      .animation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 30px;
+      }
+
+      /* Animation Card */
+      .animation-card {
+        background-color: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .animation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--light-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .library-badge {
+        background-color: var(--light-gray);
+        color: var(--dark-gray);
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+
+      .library-gsap {
+        background-color: rgba(136, 213, 38, 0.15);
+        color: #6cac0e;
+      }
+
+      .library-anime {
+        background-color: rgba(252, 77, 80, 0.15);
+        color: #e5383b;
+      }
+
+      .library-mo {
+        background-color: rgba(155, 129, 229, 0.15);
+        color: #7b64e0;
+      }
+
+      .library-lottie {
+        background-color: rgba(255, 220, 91, 0.15);
+        color: #e6ac00;
+      }
+
+      .library-aos {
+        background-color: rgba(102, 196, 255, 0.15);
+        color: #0090e6;
+      }
+
+      .library-vivus {
+        background-color: rgba(100, 226, 145, 0.15);
+        color: #3acd91;
+      }
+
+      .library-three {
+        background-color: rgba(0, 0, 0, 0.1);
+        color: #333333;
+      }
+
+      .card-body {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .animation-demo {
+        background-color: var(--light-gray);
+        border-radius: 8px;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .animation-description {
+        color: var(--dark-gray);
+        margin-bottom: 10px;
+      }
+
+      .animation-trigger {
+        align-self: flex-start;
+        padding: 8px 16px;
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-family: var(--heading-font);
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .animation-trigger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(255, 138, 91, 0.3);
+      }
+
+      .animation-trigger:active {
+        transform: translateY(0);
+      }
+
+      /* Code Block */
+      .code-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .code-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        background-color: #282c34;
+        border-radius: 8px;
+      }
+
+      .code-container.open {
+        max-height: 500px;
+        margin-top: 15px;
+      }
+
+      pre {
+        margin: 0;
+      }
+
+      pre code {
+        padding: 16px;
+        font-size: 0.9rem;
+      }
+
+      /* Animation-specific elements */
+      .feedback-animation {
+        font-size: 4rem;
+        color: var(--orange);
+        opacity: 0;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 10px;
+        background-color: var(--medium-gray);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .progress-indicator {
+        height: 100%;
+        width: 0;
+        background: var(--gradient-primary);
+        border-radius: 5px;
+      }
+
+      .counter {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--orange);
+        font-family: var(--heading-font);
+      }
+
+      .particles-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .particle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .achievement-badge {
+        width: 100px;
+        height: 100px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        position: relative;
+      }
+
+      .achievement-badge::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border-radius: 50%;
+        background: transparent;
+        border: 2px solid var(--orange);
+        opacity: 0;
+      }
+
+      /* Button animations */
+      .ripple-button {
+        position: relative;
+        padding: 12px 24px;
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-family: var(--heading-font);
+        font-weight: 600;
+        cursor: pointer;
+        overflow: hidden;
+      }
+
+      .ripple {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.4);
+        pointer-events: none;
+      }
+
+      /* Hover Effects */
+      .hover-card {
+        width: 200px;
+        height: 120px;
+        background: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        position: relative;
+        cursor: pointer;
+        overflow: hidden;
+      }
+
+      .hover-icon {
+        font-size: 2rem;
+        color: var(--dark-gray);
+        transition: transform 0.3s, color 0.3s;
+      }
+
+      .hover-text {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 12px;
+        background: var(--gradient-primary);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        transform: translateY(100%);
+        transition: transform 0.3s;
+      }
+
+      /* SVG animations */
+      .svg-container {
+        width: 80%;
+        max-width: 150px;
+      }
+
+      /* Check animation */
+      .check-container {
+        width: 80px;
+        height: 80px;
+        background-color: var(--light-gray);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .check-circle {
+        width: 60px;
+        height: 60px;
+        background-color: var(--green);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      .check-icon {
+        color: white;
+        font-size: 1.8rem;
+        opacity: 0;
+      }
+
+      /* Loading animation */
+      .loading-spinner {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .loading-circle {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255, 192, 103, 0.2);
+        border-top: 4px solid var(--orange);
+        border-radius: 50%;
+      }
+
+      .loading-dot {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .dot-1 { background-color: var(--orange); }
+      .dot-2 { background-color: var(--teal); }
+      .dot-3 { background-color: var(--green); }
+      .dot-4 { background-color: var(--purple); }
+
+      /* Scroll animations */
+      .scroll-item {
+        opacity: 0;
+      }
+
+      /* Attention animation */
+      .attention-container {
+        position: relative;
+        width: 200px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .attention-button {
+        padding: 10px 20px;
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-family: var(--heading-font);
+        font-weight: 600;
+      }
+
+      .attention-indicator {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: var(--orange);
+        border-radius: 50%;
+        top: 20px;
+        right: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        opacity: 0;
+      }
+
+      /* Confetti animation */
+      .confetti-piece {
+        position: absolute;
+        width: 8px;
+        height: 16px;
+        background-color: var(--orange);
+        top: 0;
+        opacity: 0;
+      }
+
+      /* 3D Card */
+      .card-3d-container {
+        perspective: 1000px;
+        width: 200px;
+        height: 120px;
+      }
+
+      .card-3d {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transition: transform 0.3s;
+        transform-style: preserve-3d;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+
+      .card-3d-front,
+      .card-3d-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+      }
+
+      .card-3d-front {
+        background: var(--gradient-primary);
+        color: white;
+      }
+
+      .card-3d-back {
+        background: var(--gradient-secondary);
+        color: var(--black);
+        transform: rotateY(180deg);
+      }
+
+      /* Draggable element */
+      .draggable-container {
+        width: 100%;
+        height: 100px;
+        background-color: var(--light-gray);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        position: relative;
+      }
+
+      .draggable-element {
+        width: 60px;
+        height: 60px;
+        background: var(--gradient-primary);
+        border-radius: 8px;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      /* Three.js container */
+      .three-container {
+        width: 100%;
+        height: 200px;
+      }
+
+      /* Footer */
+      .footer {
+        background-color: var(--black);
+        color: white;
+        padding: 50px 0;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 30px;
+      }
+
+      .footer-logo {
+        font-family: var(--heading-font);
+        font-weight: 800;
+        font-size: 1.5rem;
+      }
+
+      .footer-logo span {
+        color: var(--orange);
+      }
+
+      .footer-text {
+        max-width: 400px;
+        color: var(--medium-gray);
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 20px;
+      }
+
+      .footer-link {
+        color: var(--medium-gray);
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      .footer-link:hover {
+        color: var(--orange);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .animation-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        .hero p {
+          font-size: 1rem;
+        }
+
+        .footer-content {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container header-content">
+        <a href="#" class="logo">Univance<span>.</span></a>
+        <nav class="nav">
+          <a href="#feedback" class="nav-link">Feedback</a>
+          <a href="#engagement" class="nav-link">Engagement</a>
+          <a href="#progress" class="nav-link">Progress</a>
+          <a href="#achievement" class="nav-link">Achievement</a>
+          <a href="#attention" class="nav-link">Attention</a>
+          <a href="#transitions" class="nav-link">Transitions</a>
+          <a href="#interactive" class="nav-link">Interactive</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="container">
+        <h1>Animation Library</h1>
+        <p>A comprehensive collection of micro-animations designed for the Univance educational platform, enhancing user experience through meaningful motion and visual feedback.</p>
+        <p>
+          <strong>Libraries used:</strong> GSAP, Anime.js, Mo.js, Lottie, AOS, Vivus, Three.js
+        </p>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Feedback Animations -->
+      <section id="feedback" class="section">
+        <div class="container">
+          <div class="animation-category">
+            <div class="category-header">
+              <div class="category-icon" style="background: var(--gradient-success)">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <h2 class="category-title">Feedback Animations</h2>
+            </div>
+            <p class="animation-description">
+              Feedback animations provide immediate visual confirmation for user actions, helping students understand the results of their interactions.
+            </p>
+            
+            <div class="animation-grid">
+              <!-- Success Animation -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Success Check</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="check-container" id="success-check">
+                      <div class="check-circle">
+                        <i class="fas fa-check check-icon"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Use this animation to indicate a successful action like submitting a correct answer or completing a task.
+                  </div>
+                  <button class="animation-trigger" id="success-trigger">Show Success</button>
+                  
+                  <div class="code-toggle" id="success-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="success-code-container">
+                    <pre><code class="language-javascript">
+// Success animation with GSAP
+function playSuccessAnimation() {
+  // Reset animation
+  gsap.set("#success-check .check-circle", { scale: 0, opacity: 0 });
+  gsap.set("#success-check .check-icon", { opacity: 0 });
+  
+  // Create animation timeline
+  const tl = gsap.timeline();
+  
+  tl.to("#success-check .check-circle", {
+    scale: 1,
+    opacity: 1,
+    duration: 0.5,
+    ease: "back.out(1.7)"
+  })
+  .to("#success-check .check-icon", {
+    opacity: 1,
+    duration: 0.3,
+    ease: "power2.out"
+  })
+  .to("#success-check .check-circle", {
+    scale: 0,
+    opacity: 0,
+    duration: 0.5,
+    delay: 1,
+    ease: "power2.in"
+  }, "+=0.5");
+  
+  // Play the animation
+  tl.play();
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Error Animation -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Error Shake</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="error-container">
+                      <i class="fas fa-times-circle feedback-animation" id="error-icon" style="color: #ff5252;"></i>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    This animation helps indicate errors or incorrect answers with a gentle shake effect to draw attention.
+                  </div>
+                  <button class="animation-trigger" id="error-trigger">Show Error</button>
+                  
+                  <div class="code-toggle" id="error-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="error-code-container">
+                    <pre><code class="language-javascript">
+// Error animation with Anime.js
+function playErrorAnimation() {
+  // Reset animation
+  anime.set('#error-icon', {
+    opacity: 0,
+    translateX: 0
+  });
+  
+  // Create the animation
+  const errorAnimation = anime.timeline({
+    duration: 400,
+    easing: 'easeInOutSine'
+  });
+  
+  errorAnimation
+    .add({
+      targets: '#error-icon',
+      opacity: 1,
+      duration: 200
+    })
+    .add({
+      targets: '#error-icon',
+      translateX: [
+        { value: -10, duration: 100, delay: 0 },
+        { value: 10, duration: 100 },
+        { value: -5, duration: 100 },
+        { value: 5, duration: 100 },
+        { value: 0, duration: 100 }
+      ]
+    })
+    .add({
+      targets: '#error-icon',
+      opacity: 0,
+      delay: 1000,
+      duration: 200
+    });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Loading Animation -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Loading Spinner</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="loading-spinner" id="loading-spinner">
+                      <div class="loading-circle"></div>
+                      <div class="loading-dot dot-1"></div>
+                      <div class="loading-dot dot-2"></div>
+                      <div class="loading-dot dot-3"></div>
+                      <div class="loading-dot dot-4"></div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Indicates that content is loading or an action is being processed. Great for maintaining user engagement during wait times.
+                  </div>
+                  <button class="animation-trigger" id="loading-trigger">Show Loading</button>
+                  
+                  <div class="code-toggle" id="loading-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="loading-code-container">
+                    <pre><code class="language-javascript">
+// Loading animation with GSAP
+function playLoadingAnimation() {
+  // Reset animations
+  gsap.killTweensOf("#loading-spinner .loading-circle");
+  gsap.killTweensOf("#loading-spinner .loading-dot");
+  
+  // Set initial positions for dots
+  gsap.set("#loading-spinner .loading-dot", { opacity: 0 });
+  
+  // Animate the circle
+  gsap.to("#loading-spinner .loading-circle", {
+    rotation: 360,
+    duration: 1.5,
+    repeat: 3,
+    ease: "linear"
+  });
+  
+  // Position and animate the dots
+  const dots = document.querySelectorAll("#loading-spinner .loading-dot");
+  dots.forEach((dot, index) => {
+    const angle = (index / dots.length) * Math.PI * 2;
+    const radius = 30;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    
+    gsap.set(dot, { x, y });
+    
+    gsap.to(dot, {
+      opacity: 1,
+      delay: index * 0.15,
+      duration: 0.3
+    });
+    
+    gsap.to(dot, {
+      opacity: 0,
+      delay: 0.3 + index * 0.15 + 4,
+      duration: 0.3
+    });
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Form Field Validation -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Form Validation</h3>
+                  <span class="library-badge library-mo">Mo.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="form-validation-demo">
+                      <input type="text" id="validation-input" placeholder="Type something..." style="padding: 10px; border-radius: 6px; border: 2px solid var(--medium-gray); width: 200px; font-family: var(--body-font);">
+                      <div id="validation-result"></div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Provides immediate feedback on form field validation. Helps guide students through data entry with clear visual cues.
+                  </div>
+                  <button class="animation-trigger" id="validation-trigger">Validate Input</button>
+                  
+                  <div class="code-toggle" id="validation-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="validation-code-container">
+                    <pre><code class="language-javascript">
+// Form validation animation with Mo.js
+function playValidationAnimation() {
+  const input = document.getElementById('validation-input');
+  const value = input.value.trim();
+  const resultElement = document.getElementById('validation-result');
+  
+  // Clear previous result
+  resultElement.innerHTML = '';
+  
+  if (value.length > 0) {
+    // Success animation
+    const successIcon = document.createElement('i');
+    successIcon.className = 'fas fa-check-circle';
+    successIcon.style.color = 'var(--green)';
+    successIcon.style.fontSize = '1.5rem';
+    successIcon.style.marginLeft = '10px';
+    successIcon.style.opacity = '0';
+    resultElement.appendChild(successIcon);
+    
+    // Create burst animation
+    const burst = new mojs.Burst({
+      parent: successIcon,
+      radius: { 0: 50 },
+      count: 8,
+      children: {
+        shape: 'circle',
+        fill: ['var(--green)', 'var(--teal)'],
+        scale: { 1: 0 },
+        radius: 10,
+        duration: 500,
+        easing: 'quad.out'
+      }
+    });
+    
+    // Show the icon with animation
+    anime({
+      targets: successIcon,
+      opacity: 1,
+      duration: 300,
+      easing: 'easeOutCubic'
+    });
+    
+    // Play burst animation
+    burst.play();
+    
+    // Change input border
+    anime({
+      targets: input,
+      borderColor: 'var(--green)',
+      duration: 300
+    });
+  } else {
+    // Error animation
+    const errorIcon = document.createElement('i');
+    errorIcon.className = 'fas fa-times-circle';
+    errorIcon.style.color = '#ff5252';
+    errorIcon.style.fontSize = '1.5rem';
+    errorIcon.style.marginLeft = '10px';
+    errorIcon.style.opacity = '0';
+    resultElement.appendChild(errorIcon);
+    
+    // Show the icon with animation
+    anime({
+      targets: errorIcon,
+      opacity: 1,
+      duration: 300,
+      easing: 'easeOutCubic'
+    });
+    
+    // Shake animation for input
+    anime({
+      targets: input,
+      translateX: [
+        { value: -5, duration: 100 },
+        { value: 5, duration: 100 },
+        { value: -3, duration: 100 },
+        { value: 3, duration: 100 },
+        { value: 0, duration: 100 }
+      ],
+      borderColor: '#ff5252',
+      duration: 500
+    });
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Interactive Game Animation -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Game Animation</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="game-container" style="position: relative; width: 100%; height: 150px; background-color: var(--light-gray); border-radius: 8px; overflow: hidden;">
+                      <div id="game-character" style="position: absolute; bottom: 10px; left: 20px; width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="fas fa-smile"></i>
+                      </div>
+                      <div id="game-obstacle" style="position: absolute; bottom: 10px; right: -50px; width: 30px; height: 30px; background: var(--dark-gray); border-radius: 8px;"></div>
+                      <div id="game-score" style="position: absolute; top: 10px; right: 10px; font-weight: 700; color: var(--dark-gray);">Score: 0</div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Creates simple interactive game animations to make learning more engaging through gamification.
+                  </div>
+                  <button class="animation-trigger" id="game-trigger">Start Game</button>
+                  
+                  <div class="code-toggle" id="game-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="game-code-container">
+                    <pre><code class="language-javascript">
+// Simple game animation with GSAP
+let gameRunning = false;
+let gameScore = 0;
+let jumpInProgress = false;
+let obstacleAnimation;
+
+function startGame() {
+  if (gameRunning) return;
+  
+  // Reset game state
+  gameRunning = true;
+  gameScore = 0;
+  document.getElementById('game-score').textContent = 'Score: 0';
+  
+  // Position elements
+  gsap.set('#game-character', { y: 0 });
+  gsap.set('#game-obstacle', { x: 0, right: -50 });
+  
+  // Start obstacle animation
+  animateObstacle();
+  
+  // Add jump event listener
+  document.getElementById('game-container').addEventListener('click', jumpCharacter);
+  
+  // Start score counter
+  const scoreInterval = setInterval(() => {
+    if (!gameRunning) {
+      clearInterval(scoreInterval);
+      return;
+    }
+    
+    gameScore++;
+    document.getElementById('game-score').textContent = `Score: ${gameScore}`;
+  }, 100);
+}
+
+function animateObstacle() {
+  // Get container width
+  const containerWidth = document.getElementById('game-container').clientWidth;
+  
+  // Animate obstacle from right to left
+  obstacleAnimation = gsap.to('#game-obstacle', {
+    x: -containerWidth - 50,
+    duration: 2 - Math.min(gameScore / 100, 1.5), // Speed increases with score
+    ease: 'none',
+    onComplete: function() {
+      if (gameRunning) {
+        // Reset position and run again
+        gsap.set('#game-obstacle', { x: 0 });
+        animateObstacle();
+      }
+    },
+    onUpdate: checkCollision
+  });
+}
+
+function jumpCharacter() {
+  if (jumpInProgress || !gameRunning) return;
+  
+  jumpInProgress = true;
+  
+  // Jump animation
+  gsap.to('#game-character', {
+    y: -60,
+    duration: 0.4,
+    ease: 'power2.out',
+    onComplete: function() {
+      // Fall down
+      gsap.to('#game-character', {
+        y: 0,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: function() {
+          jumpInProgress = false;
+        }
+      });
+    }
+  });
+}
+
+function checkCollision() {
+  const character = document.getElementById('game-character');
+  const obstacle = document.getElementById('game-obstacle');
+  
+  // Get element positions
+  const characterRect = character.getBoundingClientRect();
+  const obstacleRect = obstacle.getBoundingClientRect();
+  
+  // Check for collision
+  if (
+    characterRect.right > obstacleRect.left &&
+    characterRect.left < obstacleRect.right &&
+    characterRect.bottom > obstacleRect.top &&
+    characterRect.top < obstacleRect.bottom
+  ) {
+    endGame();
+  }
+}
+
+function endGame() {
+  gameRunning = false;
+  
+  // Stop obstacle animation
+  if (obstacleAnimation) {
+    obstacleAnimation.kill();
+  }
+  
+  // Flash character red
+  gsap.to('#game-character', {
+    backgroundColor: '#ff5252',
+    duration: 0.2,
+    yoyo: true,
+    repeat: 3
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-content">
+            <div>
+              <div class="footer-logo">Univance<span>.</span></div>
+              <p class="footer-text">Animation Library &amp; Micro-Interactions for the Univance Educational Platform</p>
+            </div>
+            <div class="footer-links">
+              <a href="#feedback" class="footer-link">Feedback</a>
+              <a href="#engagement" class="footer-link">Engagement</a>
+              <a href="#progress" class="footer-link">Progress</a>
+              <a href="#achievement" class="footer-link">Achievement</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Initialize all animations and event listeners -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS for scroll animations
+        AOS.init({
+          duration: 800,
+          easing: 'ease-out-cubic',
+          once: false,
+          offset: 50
+        });
+        
+        // Check if all libraries loaded correctly
+        const librariesLoaded = {
+          gsap: typeof gsap !== 'undefined',
+          anime: typeof anime !== 'undefined',
+          mojs: typeof mojs !== 'undefined',
+          vivus: typeof Vivus !== 'undefined',
+          three: typeof THREE !== 'undefined',
+          lottie: typeof lottie !== 'undefined'
+        };
+        
+        console.log('Libraries loaded:', librariesLoaded);
+        
+        // Initialize Lottie animations
+        if (librariesLoaded.lottie) {
+          const trophyAnimation = lottie.loadAnimation({
+            container: document.getElementById('trophy-lottie'),
+            renderer: 'svg',
+            loop: false,
+            autoplay: false,
+            path: 'https://assets2.lottiefiles.com/packages/lf20_ydo1amjm.json'
+          });
+        }
+        
+        // Initialize Three.js scene if available
+        if (librariesLoaded.three && document.getElementById('three-container')) {
+          initThreeScene();
+        }
+        
+        // Initialize draggable elements if GSAP Draggable is available
+        if (librariesLoaded.gsap && typeof Draggable !== 'undefined') {
+          initDraggable();
+        }
+        
+        // Initialize all other interactive elements
+        initCodeToggles();
+        initParticlePlayground();
+        
+        // Add event listeners to all animation triggers
+        document.querySelectorAll('.animation-trigger').forEach(button => {
+          button.addEventListener('click', function() {
+            // Add button press animation
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              this.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Trigger the specific animation based on button ID
+            const id = this.id;
+            
+            switch (id) {
+              case 'success-trigger':
+                playSuccessAnimation();
+                break;
+              case 'error-trigger':
+                playErrorAnimation();
+                break;
+              case 'loading-trigger':
+                playLoadingAnimation();
+                break;
+              case 'validation-trigger':
+                playValidationAnimation();
+                break;
+              case 'svg-trigger':
+                playSvgAnimation();
+                break;
+              case 'pulse-trigger':
+                playPulseAnimation();
+                break;
+              case 'progress-trigger':
+                playProgressAnimation();
+                break;
+              case 'counter-trigger':
+                playCounterAnimation();
+                break;
+              case 'step-trigger':
+                advanceStepProgress();
+                break;
+              case 'level-trigger':
+                playLevelUpAnimation();
+                break;
+              case 'badge-trigger':
+                playBadgeAnimation();
+                break;
+              case 'confetti-trigger':
+                playConfettiAnimation();
+                break;
+              case 'stars-trigger':
+                playStarRatingAnimation();
+                break;
+              case 'trophy-trigger':
+                playTrophyAnimation();
+                break;
+              case 'highlight-trigger':
+                playHighlightAnimation();
+                break;
+              case 'notification-trigger':
+                playNotificationAnimation();
+                break;
+              case 'spotlight-trigger':
+                playSpotlightAnimation();
+                break;
+              case 'hint-trigger':
+                playHintAnimation();
+                break;
+              case 'fade-trigger':
+                playFadeTransition();
+                break;
+              case 'slide-trigger':
+                playSlideTransition();
+                break;
+              case 'zoom-trigger':
+                playZoomTransition();
+                break;
+              case 'scroll-trigger':
+                resetScrollReveal();
+                break;
+              case 'flip-trigger':
+                flipCard();
+                break;
+              case 'draggable-reset':
+                resetDraggable();
+                break;
+              case 'three-trigger':
+                animateThreeObject();
+                break;
+              case 'game-trigger':
+                startGame();
+                break;
+            }
+          });
+        });
+        
+        // Add active class to navigation links on scroll
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section[id]');
+        
+        window.addEventListener('scroll', () => {
+          let current = '';
+          
+          sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            
+            if (window.pageYOffset >= sectionTop - 200) {
+              current = section.getAttribute('id');
+            }
+          });
+          
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').substring(1) === current) {
+              link.classList.add('active');
+            }
+          });
+        });
+      });
+      
+      // ===== Animation Functions =====
+      
+      // Success Animation
+      function playSuccessAnimation() {
+        // Reset animation
+        gsap.set("#success-check .check-circle", { scale: 0, opacity: 0 });
+        gsap.set("#success-check .check-icon", { opacity: 0 });
+        
+        // Create animation timeline
+        const tl = gsap.timeline();
+        
+        tl.to("#success-check .check-circle", {
+          scale: 1,
+          opacity: 1,
+          duration: 0.5,
+          ease: "back.out(1.7)"
+        })
+        .to("#success-check .check-icon", {
+          opacity: 1,
+          duration: 0.3,
+          ease: "power2.out"
+        })
+        .to("#success-check .check-circle", {
+          scale: 0,
+          opacity: 0,
+          duration: 0.5,
+          delay: 1,
+          ease: "power2.in"
+        }, "+=0.5");
+      }
+      
+      // Error Animation
+      function playErrorAnimation() {
+        // Reset animation
+        anime.set('#error-icon', {
+          opacity: 0,
+          translateX: 0
+        });
+        
+        // Create the animation
+        const errorAnimation = anime.timeline({
+          duration: 400,
+          easing: 'easeInOutSine'
+        });
+        
+        errorAnimation
+          .add({
+            targets: '#error-icon',
+            opacity: 1,
+            duration: 200
+          })
+          .add({
+            targets: '#error-icon',
+            translateX: [
+              { value: -10, duration: 100, delay: 0 },
+              { value: 10, duration: 100 },
+              { value: -5, duration: 100 },
+              { value: 5, duration: 100 },
+              { value: 0, duration: 100 }
+            ]
+          })
+          .add({
+            targets: '#error-icon',
+            opacity: 0,
+            delay: 1000,
+            duration: 200
+          });
+      }
+      
+      // Loading Animation
+      function playLoadingAnimation() {
+        // Reset animations
+        gsap.killTweensOf("#loading-spinner .loading-circle");
+        gsap.killTweensOf("#loading-spinner .loading-dot");
+        
+        // Set initial positions for dots
+        gsap.set("#loading-spinner .loading-dot", { opacity: 0 });
+        
+        // Animate the circle
+        gsap.to("#loading-spinner .loading-circle", {
+          rotation: 360,
+          duration: 1.5,
+          repeat: 3,
+          ease: "linear"
+        });
+        
+        // Position and animate the dots
+        const dots = document.querySelectorAll("#loading-spinner .loading-dot");
+        dots.forEach((dot, index) => {
+          const angle = (index / dots.length) * Math.PI * 2;
+          const radius = 30;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          
+          gsap.set(dot, { x, y });
+          
+          gsap.to(dot, {
+            opacity: 1,
+            delay: index * 0.15,
+            duration: 0.3
+          });
+          
+          gsap.to(dot, {
+            opacity: 0,
+            delay: 0.3 + index * 0.15 + 4,
+            duration: 0.3
+          });
+        });
+      }
+      
+      // Form Validation Animation
+      function playValidationAnimation() {
+        const input = document.getElementById('validation-input');
+        const value = input.value.trim();
+        const resultElement = document.getElementById('validation-result');
+        
+        // Clear previous result
+        resultElement.innerHTML = '';
+        
+        if (value.length > 0) {
+          // Success animation
+          const successIcon = document.createElement('i');
+          successIcon.className = 'fas fa-check-circle';
+          successIcon.style.color = 'var(--green)';
+          successIcon.style.fontSize = '1.5rem';
+          successIcon.style.marginLeft = '10px';
+          successIcon.style.opacity = '0';
+          resultElement.appendChild(successIcon);
+          
+          // Create burst animation if mojs is available
+          if (typeof mojs !== 'undefined') {
+            const burst = new mojs.Burst({
+              parent: successIcon,
+              radius: { 0: 50 },
+              count: 8,
+              children: {
+                shape: 'circle',
+                fill: ['var(--green)', 'var(--teal)'],
+                scale: { 1: 0 },
+                radius: 10,
+                duration: 500,
+                easing: 'quad.out'
+              }
+            });
+            
+            // Play burst animation
+            burst.play();
+          }
+          
+          // Show the icon with animation
+          anime({
+            targets: successIcon,
+            opacity: 1,
+            duration: 300,
+            easing: 'easeOutCubic'
+          });
+          
+          // Change input border
+          anime({
+            targets: input,
+            borderColor: 'var(--green)',
+            duration: 300
+          });
+        } else {
+          // Error animation
+          const errorIcon = document.createElement('i');
+          errorIcon.className = 'fas fa-times-circle';
+          errorIcon.style.color = '#ff5252';
+          errorIcon.style.fontSize = '1.5rem';
+          errorIcon.style.marginLeft = '10px';
+          errorIcon.style.opacity = '0';
+          resultElement.appendChild(errorIcon);
+          
+          // Show the icon with animation
+          anime({
+            targets: errorIcon,
+            opacity: 1,
+            duration: 300,
+            easing: 'easeOutCubic'
+          });
+          
+          // Shake animation for input
+          anime({
+            targets: input,
+            translateX: [
+              { value: -5, duration: 100 },
+              { value: 5, duration: 100 },
+              { value: -3, duration: 100 },
+              { value: 3, duration: 100 },
+              { value: 0, duration: 100 }
+            ],
+            borderColor: '#ff5252',
+            duration: 500
+          });
+        }
+      }
+      
+      // SVG Drawing Animation
+      function playSvgAnimation() {
+        // Create new Vivus instance if available
+        if (typeof Vivus !== 'undefined') {
+          new Vivus('my-svg', {
+            duration: 100,
+            type: 'sync',
+            start: 'autostart',
+            animTimingFunction: Vivus.EASE_OUT
+          });
+        }
+      }
+      
+      // Pulse Animation
+      function playPulseAnimation() {
+        // Reset animation
+        anime.set('#pulse-circle', {
+          scale: 0,
+          opacity: 0
+        });
+        
+        // Create the animation
+        const pulseAnimation = anime.timeline({
+          duration: 1000,
+          easing: 'easeOutQuad'
+        });
+        
+        pulseAnimation
+          .add({
+            targets: '#pulse-icon',
+            scale: [1, 1.1, 1],
+            duration: 600
+          })
+          .add({
+            targets: '#pulse-circle',
+            scale: [0, 1.5],
+            opacity: [0.7, 0],
+            duration: 800
+          }, '-=400')
+          .add({
+            targets: '#pulse-circle',
+            scale: [0, 1.5],
+            opacity: [0.7, 0],
+            duration: 800
+          }, '-=400');
+      }
+      
+      // Progress Bar Animation
+      function playProgressAnimation() {
+        // Reset progress
+        gsap.set("#progress-indicator", { width: "0%" });
+        gsap.set("#progress-percentage", { innerText: "0%" });
+        
+        // Animate to random percentage
+        const targetProgress = Math.floor(Math.random() * 100) + 1;
+        
+        gsap.to("#progress-indicator", {
+          width: targetProgress + "%",
+          duration: 1.5,
+          ease: "power2.inOut"
+        });
+        
+        // Update percentage text
+        let currentProgress = 0;
+        const progressText = document.getElementById("progress-percentage");
+        
+        gsap.to(progressText, {
+          duration: 1.5,
+          ease: "power2.inOut",
+          onUpdate: function() {
+            currentProgress = Math.round(targetProgress * this.progress());
+            progressText.innerText = currentProgress + "%";
+          }
+        });
+      }
+      
+      // Number Counter Animation
+      function playCounterAnimation() {
+        // Reset counter
+        document.getElementById('number-counter').textContent = '0';
+        
+        // Generate random target number (25-250)
+        const targetNumber = Math.floor(Math.random() * 226) + 25;
+        
+        // Create counter object
+        let obj = { count: 0 };
+        const counterElement = document.getElementById('number-counter');
+        
+        // Animate the counter
+        anime({
+          targets: obj,
+          count: targetNumber,
+          round: 1, // Round to whole numbers
+          easing: 'easeOutExpo',
+          duration: 2000,
+          update: function() {
+            counterElement.innerHTML = obj.count;
+          }
+        });
+        
+        // Add bounce animation to counter
+        anime({
+          targets: '#number-counter',
+          scale: [1, 1.1, 1],
+          duration: 800,
+          easing: 'easeOutElastic(1, 0.5)'
+        });
+      }
+      
+      // Step Progress Animation
+      let currentStep = 0;
+      
+      function advanceStepProgress() {
+        if (currentStep >= 4) {
+          // Reset all steps
+          currentStep = 0;
+          gsap.set('#step-progress .step-circle', {
+            backgroundColor: 'var(--medium-gray)'
+          });
+          gsap.set('#step-progress .step-line', {
+            backgroundColor: 'var(--medium-gray)'
+          });
+          return;
+        }
+        
+        // Advance to next step
+        currentStep++;
+        
+        // Get all step circles and lines
+        const circles = document.querySelectorAll('#step-progress .step-circle');
+        const lines = document.querySelectorAll('#step-progress .step-line');
+        
+        // Animate current step circle
+        gsap.to(circles[currentStep - 1], {
+          backgroundColor: 'var(--orange)',
+          scale: [1, 1.2, 1],
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        });
+        
+        // Animate previous line
+        if (currentStep > 1) {
+          gsap.to(lines[currentStep - 2], {
+            backgroundColor: 'var(--orange)',
+            duration: 0.3,
+            ease: 'power1.out'
+          });
+        }
+      }
+      
+      // Level Up Animation
+      function playLevelUpAnimation() {
+        // Reset animation
+        gsap.set('#level-text', { opacity: 0, scale: 0.5 });
+        gsap.set('#level-number', { opacity: 0, y: 30 });
+        
+        // Generate random level number (2-10)
+        const newLevel = Math.floor(Math.random() * 9) + 2;
+        document.getElementById('level-number').innerText = `Level ${newLevel}`;
+        
+        // Create animation timeline
+        const tl = gsap.timeline();
+        
+        // Animate text elements
+        tl.to('#level-text', {
+          opacity: 1,
+          scale: 1,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        })
+        .to('#level-number', {
+          opacity: 1,
+          y: 0,
+          duration: 0.4,
+          ease: 'power2.out'
+        }, '-=0.2')
+        .to('#level-text, #level-number', {
+          opacity: 0,
+          scale: 1.2,
+          duration: 0.4,
+          ease: 'power2.in',
+          delay: 1.5
+        });
+        
+        // Create particle effect
+        const particlesContainer = document.getElementById('level-particles');
+        particlesContainer.innerHTML = ''; // Clear any previous particles
+        
+        const colors = ['var(--orange)', 'var(--yellow)', 'var(--coral)', 'var(--teal)'];
+        
+        // Create particles
+        for (let i = 0; i < 30; i++) {
+          const particle = document.createElement('div');
+          particle.classList.add('particle');
+          particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          particlesContainer.appendChild(particle);
+          
+          // Set starting position
+          gsap.set(particle, {
+            x: '50%',
+            y: '50%',
+            scale: 0
+          });
+          
+          // Animate particles
+          gsap.to(particle, {
+            x: `${Math.random() * 100}%`,
+            y: `${Math.random() * 100}%`,
+            scale: Math.random() * 0.8 + 0.2,
+            opacity: 0,
+            duration: Math.random() * 1 + 1,
+            delay: Math.random() * 0.5,
+            ease: 'power2.out'
+          });
+        }
+      }
+      
+      // Initialize code toggles for all animations
+      function initCodeToggles() {
+        document.querySelectorAll('.code-toggle').forEach(toggle => {
+          const containerId = toggle.id.replace('-toggle', '-container');
+          const container = document.getElementById(containerId);
+          
+          toggle.addEventListener('click', () => {
+            container.classList.toggle('open');
+            const icon = toggle.querySelector('i');
+            
+            if (container.classList.contains('open')) {
+              toggle.querySelector('span').textContent = 'Hide Code';
+              icon.className = 'fas fa-chevron-up';
+            } else {
+              toggle.querySelector('span').textContent = 'View Code';
+              icon.className = 'fas fa-code';
+            }
+          });
+        });
+      }
+      
+      // Badge Award Animation
+      function playBadgeAnimation() {
+        // Reset animation state
+        gsap.set('#achievement-badge', {
+          scale: 0,
+          rotation: -30,
+          opacity: 0
+        });
+        
+        gsap.set('#achievement-badge::before', {
+          scale: 0,
+          opacity: 0
+        });
+        
+        // Create badge animation
+        const tl = gsap.timeline();
+        
+        tl.to('#achievement-badge', {
+          scale: 1,
+          rotation: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: 'back.out(1.7)'
+        })
+        .to('#achievement-badge::before', {
+          scale: 1.1,
+          opacity: 0.8,
+          duration: 0.5,
+          ease: 'power2.out'
+        }, '-=0.3')
+        .to('#achievement-badge::before', {
+          scale: 1.5,
+          opacity: 0,
+          duration: 1,
+          ease: 'power2.out'
+        })
+        .to('#achievement-badge', {
+          y: -20,
+          yoyo: true,
+          repeat: 1,
+          duration: 0.4,
+          ease: 'power2.inOut'
+        }, '-=1.3')
+        .to('#achievement-badge', {
+          scale: 0,
+          opacity: 0,
+          rotation: 30,
+          duration: 0.5,
+          delay: 0.5,
+          ease: 'power2.in'
+        });
+        
+        // Create particle effect if badge container exists
+        const badgeContainer = document.getElementById('badge-award-container');
+        if (badgeContainer) {
+          const particlesContainer = document.createElement('div');
+          particlesContainer.classList.add('particles-container');
+          badgeContainer.appendChild(particlesContainer);
+          
+          const colors = ['var(--orange)', 'var(--yellow)', 'var(--coral)'];
+          
+          // Create particles
+          for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            particlesContainer.appendChild(particle);
+            
+            // Set starting position at the center
+            gsap.set(particle, {
+              x: '50%',
+              y: '50%',
+              scale: 0
+            });
+            
+            // Animate particles outward
+            gsap.to(particle, {
+              x: `${25 + Math.random() * 50}%`,
+              y: `${25 + Math.random() * 50}%`,
+              scale: Math.random() * 0.7 + 0.3,
+              opacity: 0,
+              duration: Math.random() * 1 + 0.5,
+              delay: 0.3 + Math.random() * 0.3,
+              ease: 'power2.out',
+              onComplete: function() {
+                particle.remove();
+              }
+            });
+          }
+        }
+      }
+      
+      // Confetti Celebration Animation
+      function playConfettiAnimation() {
+        // Reset and show text
+        const celebrationText = document.getElementById('celebration-text');
+        gsap.set(celebrationText, { opacity: 0, scale: 0.8 });
+        gsap.to(celebrationText, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        });
+        
+        // Hide text after delay
+        gsap.to(celebrationText, {
+          opacity: 0,
+          scale: 1.2,
+          duration: 0.5,
+          delay: 2.5,
+          ease: 'power2.in'
+        });
+        
+        // Create confetti with Mo.js if available
+        const container = document.getElementById('confetti-container');
+        
+        if (typeof mojs !== 'undefined' && container) {
+          // Create burst animation
+          const burst1 = new mojs.Burst({
+            parent: container,
+            left: '30%',
+            top: '40%',
+            radius: { 0: 100 },
+            count: 10,
+            children: {
+              shape: ['circle', 'rect'],
+              points: 5,
+              fill: ['var(--orange)', 'var(--teal)', 'var(--yellow)', 'var(--green)'],
+              radius: { 10: 0 },
+              angle: { 0: 90 },
+              duration: 2000,
+              delay: 'stagger(0, 100)'
+            }
+          });
+          
+          const burst2 = new mojs.Burst({
+            parent: container,
+            left: '70%',
+            top: '40%',
+            radius: { 0: 100 },
+            count: 10,
+            children: {
+              shape: ['circle', 'rect'],
+              points: 5,
+              fill: ['var(--coral)', 'var(--purple)', 'var(--blue)', 'var(--yellow)'],
+              radius: { 10: 0 },
+              angle: { 0: -90 },
+              duration: 2000,
+              delay: 'stagger(0, 100)'
+            }
+          });
+          
+          // Play burst animations
+          burst1.play();
+          burst2.play();
+        }
+        
+        // Create falling confetti pieces
+        for (let i = 0; i < 60; i++) {
+          const piece = document.createElement('div');
+          piece.classList.add('confetti-piece');
+          
+          // Randomize confetti colors
+          const colors = ['var(--orange)', 'var(--teal)', 'var(--yellow)', 'var(--green)', 'var(--coral)', 'var(--purple)'];
+          piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          
+          // Randomize confetti size
+          const width = Math.random() * 10 + 5;
+          const height = Math.random() * 10 + 5;
+          piece.style.width = `${width}px`;
+          piece.style.height = `${height}px`;
+          
+          // Randomize shape
+          piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+          
+          // Add to container if it exists
+          if (container) {
+            container.appendChild(piece);
+            
+            // Set initial position at the top of container
+            const startX = Math.random() * 100;
+            gsap.set(piece, {
+              x: `${startX}%`,
+              y: '-20px',
+              rotation: Math.random() * 360,
+              opacity: 0
+            });
+            
+            // Animate falling
+            gsap.to(piece, {
+              x: `${startX - 20 + Math.random() * 40}%`,
+              y: '120%',
+              rotation: `+=${Math.random() * 360}`,
+              opacity: [0, 1, 0],
+              duration: Math.random() * 2 + 1,
+              delay: Math.random() * 0.5,
+              ease: 'power1.out',
+              onComplete: function() {
+                piece.remove();
+              }
+            });
+          }
+        }
+      }
+      
+      // Star Rating Animation
+      function playStarRatingAnimation() {
+        // Reset all stars
+        const stars = document.querySelectorAll('#star-rating i');
+        stars.forEach(star => {
+          star.className = 'far fa-star';
+          star.style.color = 'var(--medium-gray)';
+        });
+        
+        // Generate random rating (1-5)
+        const rating = Math.floor(Math.random() * 5) + 1;
+        
+        // Animate stars one by one
+        for (let i = 0; i < rating; i++) {
+          // Create animation timeline
+          anime.timeline({ easing: 'easeOutElastic(1, .8)' })
+            .add({
+              targets: stars[i],
+              scale: [1, 1.5, 1],
+              duration: 600,
+              delay: i * 150,
+              update: function(anim) {
+                // Change to solid star partway through animation
+                if (anim.progress > 30) {
+                  stars[i].className = 'fas fa-star';
+                  stars[i].style.color = 'var(--yellow)';
+                }
+              }
+            });
+        }
+      }
+      
+      // Trophy Animation
+      function playTrophyAnimation() {
+        const trophyElement = document.getElementById('trophy-lottie');
+        if (trophyElement && window.lottie) {
+          const animation = lottie.getRegisteredAnimations().find(
+            anim => anim.wrapper === trophyElement
+          );
+          
+          if (animation) {
+            animation.goToAndPlay(0, true);
+          }
+        }
+      }
+      
+      // Highlight Effect Animation
+      function playHighlightAnimation() {
+        // Reset animation
+        gsap.set('#highlight-outline', { opacity: 0 });
+        
+        // Create highlight animation
+        const tl = gsap.timeline({
+          repeat: 2,
+          repeatDelay: 0.3
+        });
+        
+        tl.to('#highlight-outline', {
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power1.out'
+        })
+        .to('#highlight-outline', {
+          opacity: 0,
+          duration: 0.3,
+          ease: 'power1.in'
+        });
+        
+        // Add element pop animation
+        gsap.to('#highlight-element', {
+          scale: 1.05,
+          boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
+          duration: 0.3,
+          yoyo: true,
+          repeat: 2,
+          ease: 'power1.inOut'
+        });
+      }
+      
+      // Notification Dot Animation
+      function playNotificationAnimation() {
+        // Reset animation
+        anime.set('#notification-dot', {
+          scale: 0,
+          opacity: 0
+        });
+        
+        // Random count (1-9)
+        const count = Math.floor(Math.random() * 9) + 1;
+        document.getElementById('notification-dot').textContent = count;
+        
+        // Create animation
+        anime.timeline({
+          easing: 'easeOutElastic(1, .6)'
+        })
+        .add({
+          targets: '#notification-dot',
+          scale: [0, 1],
+          opacity: 1,
+          duration: 800
+        })
+        .add({
+          targets: '#notification-dot',
+          scale: [1, 1.2, 1],
+          duration: 500,
+          delay: 500
+        })
+        .add({
+          targets: '#notification-dot',
+          scale: 0,
+          opacity: 0,
+          duration: 300,
+          delay: 1500,
+          easing: 'easeInQuad'
+        });
+      }
+      
+      // Focus Spotlight Animation
+      function playSpotlightAnimation() {
+        // Reset animation
+        gsap.set('#spotlight-overlay', { opacity: 0 });
+        gsap.set('.spotlight-item', { 
+          zIndex: 0,
+          boxShadow: 'none',
+          backgroundColor: 'var(--medium-gray)'
+        });
+        
+        // Get random item to spotlight
+        const spotlightItems = document.querySelectorAll('.spotlight-item');
+        const randomIndex = Math.floor(Math.random() * spotlightItems.length);
+        const targetItem = spotlightItems[randomIndex];
+        
+        // Create spotlight animation
+        const tl = gsap.timeline();
+        
+        tl.to('#spotlight-overlay', {
+          opacity: 0.7,
+          duration: 0.5,
+          ease: 'power2.out'
+        })
+        .set(targetItem, {
+          zIndex: 10,
+          boxShadow: '0 0 0 4px var(--orange)',
+          backgroundColor: 'white'
+        }, 0)
+        .to(targetItem, {
+          scale: 1.1,
+          duration: 0.5,
+          yoyo: true,
+          repeat: 1,
+          ease: 'power2.inOut'
+        }, 0)
+        .to('#spotlight-overlay', {
+          opacity: 0,
+          duration: 0.5,
+          delay: 1.5,
+          ease: 'power2.in'
+        })
+        .to(targetItem, {
+          scale: 1,
+          backgroundColor: 'var(--medium-gray)',
+          boxShadow: 'none',
+          clearProps: 'zIndex',
+          duration: 0.5
+        }, '-=0.5');
+      }
+      
+      // Hint Pointer Animation
+      function playHintAnimation() {
+        // Reset animation
+        anime.set('#hint-pointer', {
+          opacity: 0,
+          translateX: 20
+        });
+        
+        // Create hint animation
+        anime.timeline({
+          easing: 'easeOutQuad'
+        })
+        .add({
+          targets: '#hint-pointer',
+          opacity: 1,
+          translateX: 0,
+          duration: 500
+        })
+        .add({
+          targets: '#hint-pointer',
+          translateX: -10,
+          duration: 600,
+          direction: 'alternate',
+          easing: 'easeInOutSine',
+          loop: 2
+        })
+        .add({
+          targets: '#hint-pointer',
+          opacity: 0,
+          translateX: -20,
+          duration: 500,
+          easing: 'easeInQuad'
+        });
+        
+        // Also highlight the button
+        anime({
+          targets: '#hint-button',
+          backgroundColor: 'var(--orange)',
+          color: 'white',
+          duration: 500,
+          direction: 'alternate',
+          delay: 1000,
+          endDelay: 500,
+          easing: 'easeInOutQuad',
+          loop: 1
+        });
+      }
+      
+      // Fade Transition
+      let currentContent = 1;
+      
+      function playFadeTransition() {
+        // Determine which content to show
+        const fadeFrom = currentContent === 1 ? '#fade-content-1' : '#fade-content-2';
+        const fadeTo = currentContent === 1 ? '#fade-content-2' : '#fade-content-1';
+        
+        // Fade out current content
+        gsap.to(fadeFrom, {
+          opacity: 0,
+          duration: 0.5,
+          ease: 'power1.out'
+        });
+        
+        // Fade in new content
+        gsap.to(fadeTo, {
+          opacity: 1,
+          duration: 0.5,
+          delay: 0.3,
+          ease: 'power1.in'
+        });
+        
+        // Toggle current content
+        currentContent = currentContent === 1 ? 2 : 1;
+      }
+      
+      // Slide Transition
+      let slidePosition = 1;
+      
+      function playSlideTransition() {
+        // Determine slide direction
+        if (slidePosition === 1) {
+          // Slide to second content
+          gsap.to('#slide-content-1', {
+            x: '-100%',
+            duration: 0.6,
+            ease: 'power2.inOut'
+          });
+          
+          gsap.to('#slide-content-2', {
+            x: '-100%',
+            duration: 0.6,
+            ease: 'power2.inOut'
+          });
+          
+          slidePosition = 2;
+        } else {
+          // Slide back to first content
+          gsap.to('#slide-content-1', {
+            x: '0%',
+            duration: 0.6,
+            ease: 'power2.inOut'
+          });
+          
+          gsap.to('#slide-content-2', {
+            x: '0%',
+            duration: 0.6,
+            ease: 'power2.inOut'
+          });
+          
+          slidePosition = 1;
+        }
+      }
+      
+      // Zoom Transition
+      let zoomState = 1;
+      
+      function playZoomTransition() {
+        if (zoomState === 1) {
+          // Zoom out first content
+          anime({
+            targets: '#zoom-content-1',
+            scale: 0,
+            opacity: 0,
+            duration: 500,
+            easing: 'easeInQuad'
+          });
+          
+          // Zoom in second content
+          anime({
+            targets: '#zoom-content-2',
+            scale: [0, 1],
+            opacity: [0, 1],
+            delay: 300,
+            duration: 500,
+            easing: 'easeOutQuad'
+          });
+          
+          zoomState = 2;
+        } else {
+          // Zoom out second content
+          anime({
+            targets: '#zoom-content-2',
+            scale: 0,
+            opacity: 0,
+            duration: 500,
+            easing: 'easeInQuad'
+          });
+          
+          // Zoom in first content
+          anime({
+            targets: '#zoom-content-1',
+            scale: [0, 1],
+            opacity: [0, 1],
+            delay: 300,
+            duration: 500,
+            easing: 'easeOutQuad'
+          });
+          
+          zoomState = 1;
+        }
+      }
+      
+      // Reset Scroll Reveal Animation
+      function resetScrollReveal() {
+        // Reset AOS animations
+        document.querySelectorAll('.scroll-item').forEach(item => {
+          item.classList.remove('aos-animate');
+        });
+        
+        // Refresh AOS
+        setTimeout(() => {
+          if (typeof AOS !== 'undefined') {
+            AOS.refresh();
+          }
+        }, 100);
+      }
+      
+      // 3D Card Flip
+      let isFlipped = false;
+      
+      function flipCard() {
+        if (!isFlipped) {
+          // Flip to back
+          gsap.to('#card-3d', {
+            rotationY: 180,
+            duration: 0.6,
+            ease: 'power3.inOut'
+          });
+        } else {
+          // Flip to front
+          gsap.to('#card-3d', {
+            rotationY: 0,
+            duration: 0.6,
+            ease: 'power3.inOut'
+          });
+        }
+        
+        isFlipped = !isFlipped;
+      }
+      
+      // Draggable Element
+      function initDraggable() {
+        if (typeof Draggable === 'undefined' || !gsap) return;
+        
+        const dragElement = document.getElementById('draggable-element');
+        const container = document.querySelector('.draggable-container');
+        
+        if (!dragElement || !container) return;
+        
+        // Get container bounds
+        const containerBounds = container.getBoundingClientRect();
+        const elementBounds = dragElement.getBoundingClientRect();
+        
+        // Make element draggable with GSAP Draggable
+        Draggable.create(dragElement, {
+          type: 'x,y',
+          bounds: {
+            minX: 0,
+            maxX: containerBounds.width - elementBounds.width,
+            minY: 0,
+            maxY: containerBounds.height - elementBounds.height
+          },
+          edgeResistance: 0.65,
+          onDragStart: function() {
+            gsap.to(this.target, { scale: 1.1, boxShadow: '0 5px 15px rgba(0,0,0,0.2)', duration: 0.2 });
+          },
+          onDragEnd: function() {
+            gsap.to(this.target, { scale: 1, boxShadow: 'none', duration: 0.2 });
+          }
+        });
+      }
+      
+      // Reset Draggable Position
+      function resetDraggable() {
+        gsap.to('#draggable-element', {
+          x: 0,
+          y: 0,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        });
+      }
+      
+      // Interactive 3D Object
+      let scene, camera, renderer, cube;
+      let animating = false;
+      
+      function initThreeScene() {
+        if (typeof THREE === 'undefined') return;
+        
+        const container = document.getElementById('three-container');
+        if (!container) return;
+        
+        // Create scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f7fa);
+        
+        // Create camera
+        camera = new THREE.PerspectiveCamera(
+          75,
+          container.clientWidth / container.clientHeight,
+          0.1,
+          1000
+        );
+        camera.position.z = 5;
+        
+        // Create renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        
+        // Clear container and add renderer
+        container.innerHTML = '';
+        container.appendChild(renderer.domElement);
+        
+        // Create a colorful cube
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        
+        const materials = [
+          new THREE.MeshBasicMaterial({ color: 0xffc067 }), // Orange
+          new THREE.MeshBasicMaterial({ color: 0x66f4ff }), // Teal
+          new THREE.MeshBasicMaterial({ color: 0xff8a5b }), // Coral
+          new THREE.MeshBasicMaterial({ color: 0xffdc5b }), // Yellow
+          new THREE.MeshBasicMaterial({ color: 0x64e291 }), // Green
+          new THREE.MeshBasicMaterial({ color: 0x9b81e5 })  // Purple
+        ];
+        
+        cube = new THREE.Mesh(geometry, materials);
+        scene.add(cube);
+        
+        // Add subtle continuous rotation
+        function animate() {
+          requestAnimationFrame(animate);
+          
+          if (!animating) {
+            cube.rotation.x += 0.005;
+            cube.rotation.y += 0.005;
+          }
+          
+          renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Add mouse controls
+        let isDragging = false;
+        let previousMousePosition = {
+          x: 0,
+          y: 0
+        };
+        
+        container.addEventListener('mousedown', function(e) {
+          isDragging = true;
+        });
+        
+        container.addEventListener('mousemove', function(e) {
+          if (isDragging) {
+            const deltaMove = {
+              x: e.offsetX - previousMousePosition.x,
+              y: e.offsetY - previousMousePosition.y
+            };
+            
+            cube.rotation.y += deltaMove.x * 0.01;
+            cube.rotation.x += deltaMove.y * 0.01;
+          }
+          
+          previousMousePosition = {
+            x: e.offsetX,
+            y: e.offsetY
+          };
+        });
+        
+        container.addEventListener('mouseup', function(e) {
+          isDragging = false;
+        });
+      }
+      
+      // Animate 3D Object
+      function animateThreeObject() {
+        if (!cube || animating) return;
+        
+        animating = true;
+        
+        // Store original rotation
+        const originalRotation = {
+          x: cube.rotation.x,
+          y: cube.rotation.y,
+          z: cube.rotation.z
+        };
+        
+        // Perform a full spin animation
+        gsap.to(cube.rotation, {
+          x: cube.rotation.x + Math.PI * 2,
+          y: cube.rotation.y + Math.PI * 2,
+          duration: 1.5,
+          ease: 'power2.inOut',
+          onComplete: function() {
+            animating = false;
+          }
+        });
+      }
+      
+      // Initialize Particle Playground
+      function initParticlePlayground() {
+        const playground = document.getElementById('particle-playground');
+        if (!playground) return;
+        
+        // Add click event to create particles
+        playground.addEventListener('click', function(e) {
+          // Get click position relative to playground
+          const rect = playground.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          // Create particles
+          createParticles(x, y);
+        });
+        
+        // Create instruction text
+        const instruction = document.createElement('div');
+        instruction.style.position = 'absolute';
+        instruction.style.top = '50%';
+        instruction.style.left = '50%';
+        instruction.style.transform = 'translate(-50%, -50%)';
+        instruction.style.color = 'var(--dark-gray)';
+        instruction.style.fontSize = '0.9rem';
+        instruction.style.fontWeight = '600';
+        instruction.style.textAlign = 'center';
+        instruction.style.pointerEvents = 'none';
+        instruction.style.opacity = '0.7';
+        instruction.textContent = 'Click anywhere to create particles';
+        
+        playground.appendChild(instruction);
+      }
+    </script>
+  </body>
+</html>
+      
+      <!-- Engagement Animations -->
+      <section id="engagement" class="section">
+        <div class="container">
+          <div class="animation-category">
+            <div class="category-header">
+              <div class="category-icon" style="background: var(--gradient-secondary)">
+                <i class="fas fa-hand-pointer"></i>
+              </div>
+              <h2 class="category-title">Engagement Animations</h2>
+            </div>
+            <p class="animation-description">
+              Engagement animations respond to user interactions, making the interface feel alive and responsive to improve the overall experience.
+            </p>
+            
+            <div class="animation-grid">
+              <!-- Button Ripple Effect -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Button Ripple</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <button class="ripple-button" id="ripple-button">Click Me!</button>
+                  </div>
+                  <div class="animation-description">
+                    A satisfying ripple effect when buttons are clicked, providing tangible feedback that enhances the feeling of interaction.
+                  </div>
+                  <div class="code-toggle" id="ripple-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="ripple-code-container">
+                    <pre><code class="language-javascript">
+// Button ripple effect with Anime.js
+document.getElementById('ripple-button').addEventListener('click', function(e) {
+  // Create ripple element
+  const ripple = document.createElement('span');
+  ripple.classList.add('ripple');
+  this.appendChild(ripple);
+  
+  // Set ripple position
+  const rect = this.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  ripple.style.width = ripple.style.height = size + 'px';
+  
+  // Animate the ripple
+  anime({
+    targets: ripple,
+    left: x + 'px',
+    top: y + 'px',
+    scale: [0, 1],
+    opacity: [1, 0],
+    duration: 800,
+    easing: 'easeOutCubic',
+    complete: function() {
+      ripple.remove();
+    }
+  });
+});
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Hover Card Effect -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Hover Card</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="hover-card" id="hover-card">
+                      <i class="fas fa-book hover-icon"></i>
+                      <div class="hover-text">Study Material</div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Reveals additional information or actions when hovering over cards, encouraging exploration of content.
+                  </div>
+                  <div class="code-toggle" id="hover-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="hover-code-container">
+                    <pre><code class="language-javascript">
+// Hover card effect with GSAP
+const hoverCard = document.getElementById('hover-card');
+const hoverIcon = document.querySelector('#hover-card .hover-icon');
+const hoverText = document.querySelector('#hover-card .hover-text');
+
+// Set initial states
+gsap.set(hoverText, { y: '100%' });
+
+// Hover in
+hoverCard.addEventListener('mouseenter', () => {
+  gsap.to(hoverIcon, {
+    y: -20,
+    color: 'var(--orange)',
+    duration: 0.3,
+    ease: 'power2.out'
+  });
+  
+  gsap.to(hoverText, {
+    y: 0,
+    duration: 0.4,
+    ease: 'back.out(1.7)'
+  });
+});
+
+// Hover out
+hoverCard.addEventListener('mouseleave', () => {
+  gsap.to(hoverIcon, {
+    y: 0,
+    color: 'var(--dark-gray)',
+    duration: 0.3,
+    ease: 'power2.out'
+  });
+  
+  gsap.to(hoverText, {
+    y: '100%',
+    duration: 0.2,
+    ease: 'power2.in'
+  });
+});
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- SVG Drawing -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">SVG Drawing</h3>
+                  <span class="library-badge library-vivus">Vivus.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="svg-container" id="svg-drawing">
+                      <svg id="my-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+                        <path fill="none" stroke="#FFC067" stroke-width="4" d="M50,120 Q100,40 150,120"></path>
+                        <path fill="none" stroke="#66F4FF" stroke-width="4" d="M30,100 Q100,160 170,100"></path>
+                        <circle fill="none" stroke="#64E291" stroke-width="4" cx="100" cy="100" r="70"></circle>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Animates SVG paths being drawn, perfect for illustrating concepts or creating dynamic logos and visual elements.
+                  </div>
+                  <button class="animation-trigger" id="svg-trigger">Draw SVG</button>
+                  
+                  <div class="code-toggle" id="svg-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="svg-code-container">
+                    <pre><code class="language-javascript">
+// SVG drawing animation with Vivus.js
+function playSvgAnimation() {
+  // Create new Vivus instance
+  new Vivus('my-svg', {
+    duration: 100,
+    type: 'sync',
+    start: 'autostart',
+    animTimingFunction: Vivus.EASE_OUT
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Pulse Notification -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Pulse Notification</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="pulse-container" style="position: relative; width: 60px; height: 60px;">
+                      <div id="pulse-icon" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 2;">
+                        <i class="fas fa-bell" style="font-size: 1.8rem; color: var(--orange);"></i>
+                      </div>
+                      <div id="pulse-circle" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: rgba(255, 192, 103, 0.3); transform: scale(0); opacity: 0;"></div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    A gentle pulsing effect to draw attention to notifications or new content without being distracting.
+                  </div>
+                  <button class="animation-trigger" id="pulse-trigger">Show Pulse</button>
+                  
+                  <div class="code-toggle" id="pulse-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="pulse-code-container">
+                    <pre><code class="language-javascript">
+// Pulse notification animation with Anime.js
+function playPulseAnimation() {
+  // Reset animation
+  anime.set('#pulse-circle', {
+    scale: 0,
+    opacity: 0
+  });
+  
+  // Create the animation
+  const pulseAnimation = anime.timeline({
+    duration: 1000,
+    easing: 'easeOutQuad'
+  });
+  
+  pulseAnimation
+    .add({
+      targets: '#pulse-icon',
+      scale: [1, 1.1, 1],
+      duration: 600
+    })
+    .add({
+      targets: '#pulse-circle',
+      scale: [0, 1.5],
+      opacity: [0.7, 0],
+      duration: 800
+    }, '-=400')
+    .add({
+      targets: '#pulse-circle',
+      scale: [0, 1.5],
+      opacity: [0.7, 0],
+      duration: 800
+    }, '-=400');
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Progress Animations -->
+      <section id="progress" class="section">
+        <div class="container">
+          <div class="animation-category">
+            <div class="category-header">
+              <div class="category-icon" style="background: var(--gradient-primary)">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h2 class="category-title">Progress Animations</h2>
+            </div>
+            <p class="animation-description">
+              Progress animations visually represent advancement through tasks or content, motivating students to continue and complete their work.
+            </p>
+            
+            <div class="animation-grid">
+              <!-- Progress Bar -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Progress Bar</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div style="width: 80%;">
+                      <div class="progress-bar">
+                        <div class="progress-indicator" id="progress-indicator"></div>
+                      </div>
+                      <div style="text-align: right; margin-top: 10px; font-weight: 600; color: var(--dark-gray);">
+                        <span id="progress-percentage">0%</span> Complete
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Shows completion progress through courses, lessons, or tasks, providing a clear visual indication of advancement.
+                  </div>
+                  <button class="animation-trigger" id="progress-trigger">Animate Progress</button>
+                  
+                  <div class="code-toggle" id="progress-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="progress-code-container">
+                    <pre><code class="language-javascript">
+// Progress bar animation with GSAP
+function playProgressAnimation() {
+  // Reset progress
+  gsap.set("#progress-indicator", { width: "0%" });
+  gsap.set("#progress-percentage", { innerText: "0%" });
+  
+  // Animate to random percentage
+  const targetProgress = Math.floor(Math.random() * 100) + 1;
+  
+  gsap.to("#progress-indicator", {
+    width: targetProgress + "%",
+    duration: 1.5,
+    ease: "power2.inOut"
+  });
+  
+  // Update percentage text
+  let currentProgress = 0;
+  const progressText = document.getElementById("progress-percentage");
+  
+  gsap.to(progressText, {
+    duration: 1.5,
+    ease: "power2.inOut",
+    onUpdate: function() {
+      currentProgress = Math.round(targetProgress * this.progress());
+      progressText.innerText = currentProgress + "%";
+    }
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Number Counter -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Number Counter</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="counter" id="number-counter">0</div>
+                  </div>
+                  <div class="animation-description">
+                    Counts up to display point totals, completed tasks, or other numerical achievements in an engaging way.
+                  </div>
+                  <button class="animation-trigger" id="counter-trigger">Count Points</button>
+                  
+                  <div class="code-toggle" id="counter-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="counter-code-container">
+                    <pre><code class="language-javascript">
+// Number counter animation with Anime.js
+function playCounterAnimation() {
+  // Reset counter
+  document.getElementById('number-counter').textContent = '0';
+  
+  // Generate random target number (25-250)
+  const targetNumber = Math.floor(Math.random() * 226) + 25;
+  
+  // Create counter object
+  let obj = { count: 0 };
+  const counterElement = document.getElementById('number-counter');
+  
+  // Animate the counter
+  anime({
+    targets: obj,
+    count: targetNumber,
+    round: 1, // Round to whole numbers
+    easing: 'easeOutExpo',
+    duration: 2000,
+    update: function() {
+      counterElement.innerHTML = obj.count;
+    }
+  });
+  
+  // Add bounce animation to counter
+  anime({
+    targets: '#number-counter',
+    scale: [1, 1.1, 1],
+    duration: 800,
+    easing: 'easeOutElastic(1, 0.5)'
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Step Progress -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Step Progress</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="step-progress" style="display: flex; justify-content: space-between; width: 80%;">
+                      <div class="step-item" style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background-color: var(--medium-gray); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold;">1</div>
+                        <div class="step-label" style="margin-top: 8px; font-size: 0.8rem; color: var(--dark-gray);">Start</div>
+                      </div>
+                      <div class="step-line" style="flex-grow: 1; height: 3px; background-color: var(--medium-gray); margin: 15px 5px 0;"></div>
+                      <div class="step-item" style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background-color: var(--medium-gray); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold;">2</div>
+                        <div class="step-label" style="margin-top: 8px; font-size: 0.8rem; color: var(--dark-gray);">Learn</div>
+                      </div>
+                      <div class="step-line" style="flex-grow: 1; height: 3px; background-color: var(--medium-gray); margin: 15px 5px 0;"></div>
+                      <div class="step-item" style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background-color: var(--medium-gray); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold;">3</div>
+                        <div class="step-label" style="margin-top: 8px; font-size: 0.8rem; color: var(--dark-gray);">Quiz</div>
+                      </div>
+                      <div class="step-line" style="flex-grow: 1; height: 3px; background-color: var(--medium-gray); margin: 15px 5px 0;"></div>
+                      <div class="step-item" style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background-color: var(--medium-gray); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold;">4</div>
+                        <div class="step-label" style="margin-top: 8px; font-size: 0.8rem; color: var(--dark-gray);">Complete</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Shows progress through a multi-step process like a lesson or course, making the learning journey clear and structured.
+                  </div>
+                  <button class="animation-trigger" id="step-trigger">Advance Step</button>
+                  
+                  <div class="code-toggle" id="step-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="step-code-container">
+                    <pre><code class="language-javascript">
+// Step progress animation with GSAP
+let currentStep = 0;
+
+function advanceStepProgress() {
+  if (currentStep >= 4) {
+    // Reset all steps
+    currentStep = 0;
+    gsap.set('#step-progress .step-circle', {
+      backgroundColor: 'var(--medium-gray)'
+    });
+    gsap.set('#step-progress .step-line', {
+      backgroundColor: 'var(--medium-gray)'
+    });
+    return;
+  }
+  
+  // Advance to next step
+  currentStep++;
+  
+  // Get all step circles and lines
+  const circles = document.querySelectorAll('#step-progress .step-circle');
+  const lines = document.querySelectorAll('#step-progress .step-line');
+  
+  // Animate current step circle
+  gsap.to(circles[currentStep - 1], {
+    backgroundColor: 'var(--orange)',
+    scale: [1, 1.2, 1],
+    duration: 0.5,
+    ease: 'back.out(1.7)'
+  });
+  
+  // Animate previous line
+  if (currentStep > 1) {
+    gsap.to(lines[currentStep - 2], {
+      backgroundColor: 'var(--orange)',
+      duration: 0.3,
+      ease: 'power1.out'
+    });
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Level Up Animation -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Level Up</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="level-up-container" style="position: relative; width: 100%; height: 100%;">
+                      <div id="level-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--heading-font); font-weight: 800; font-size: 2.5rem; color: var(--orange); opacity: 0;">
+                        LEVEL UP!
+                      </div>
+                      <div id="level-number" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, 30px); font-family: var(--heading-font); font-weight: 700; font-size: 1.5rem; color: var(--dark-gray); opacity: 0;">
+                        Level 5
+                      </div>
+                      <div class="particles-container" id="level-particles"></div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Celebrates when students advance to the next level, using dynamic text and particle effects for a rewarding moment.
+                  </div>
+                  <button class="animation-trigger" id="level-trigger">Level Up!</button>
+                  
+                  <div class="code-toggle" id="level-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="level-code-container">
+                    <pre><code class="language-javascript">
+// Level up animation with GSAP
+function playLevelUpAnimation() {
+  // Reset animation
+  gsap.set('#level-text', { opacity: 0, scale: 0.5 });
+  gsap.set('#level-number', { opacity: 0, y: 30 });
+  
+  // Generate random level number (2-10)
+  const newLevel = Math.floor(Math.random() * 9) + 2;
+  document.getElementById('level-number').innerText = `Level ${newLevel}`;
+  
+  // Create animation timeline
+  const tl = gsap.timeline();
+  
+  // Animate text elements
+  tl.to('#level-text', {
+    opacity: 1,
+    scale: 1,
+    duration: 0.5,
+    ease: 'back.out(1.7)'
+  })
+  .to('#level-number', {
+    opacity: 1,
+    y: 0,
+    duration: 0.4,
+    ease: 'power2.out'
+  }, '-=0.2')
+  .to('#level-text, #level-number', {
+    opacity: 0,
+    scale: 1.2,
+    duration: 0.4,
+    ease: 'power2.in',
+    delay: 1.5
+  });
+  
+  // Create particle effect
+  const particlesContainer = document.getElementById('level-particles');
+  particlesContainer.innerHTML = ''; // Clear any previous particles
+  
+  const colors = ['var(--orange)', 'var(--yellow)', 'var(--coral)', 'var(--teal)'];
+  
+  // Create particles
+  for (let i = 0; i < 30; i++) {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
+    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    particlesContainer.appendChild(particle);
+    
+    // Set starting position
+    gsap.set(particle, {
+      x: '50%',
+      y: '50%',
+      scale: 0
+    });
+    
+    // Animate particles
+    gsap.to(particle, {
+      x: `${Math.random() * 100}%`,
+      y: `${Math.random() * 100}%`,
+      scale: Math.random() * 0.8 + 0.2,
+      opacity: 0,
+      duration: Math.random() * 1 + 1,
+      delay: Math.random() * 0.5,
+      ease: 'power2.out'
+    });
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Achievement Animations -->
+      <section id="achievement" class="section">
+        <div class="container">
+          <div class="animation-category">
+            <div class="category-header">
+              <div class="category-icon" style="background: var(--gradient-warning)">
+                <i class="fas fa-trophy"></i>
+              </div>
+              <h2 class="category-title">Achievement Animations</h2>
+            </div>
+            <p class="animation-description">
+              Achievement animations celebrate student success, creating memorable moments for completing tasks, earning badges, or reaching milestones.
+            </p>
+            
+            <div class="animation-grid">
+              <!-- Badge Award -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Badge Award</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="badge-award-container">
+                      <div class="achievement-badge" id="achievement-badge">
+                        <i class="fas fa-star"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Celebrates earning a new badge with visual flourish, making achievements feel special and rewarding.
+                  </div>
+                  <button class="animation-trigger" id="badge-trigger">Award Badge</button>
+                  
+                  <div class="code-toggle" id="badge-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="badge-code-container">
+                    <pre><code class="language-javascript">
+// Badge award animation with GSAP
+function playBadgeAnimation() {
+  // Reset animation state
+  gsap.set('#achievement-badge', {
+    scale: 0,
+    rotation: -30,
+    opacity: 0
+  });
+  
+  gsap.set('#achievement-badge::before', {
+    scale: 0,
+    opacity: 0
+  });
+  
+  // Create badge animation
+  const tl = gsap.timeline();
+  
+  tl.to('#achievement-badge', {
+    scale: 1,
+    rotation: 0,
+    opacity: 1,
+    duration: 0.7,
+    ease: 'back.out(1.7)'
+  })
+  .to('#achievement-badge::before', {
+    scale: 1.1,
+    opacity: 0.8,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, '-=0.3')
+  .to('#achievement-badge::before', {
+    scale: 1.5,
+    opacity: 0,
+    duration: 1,
+    ease: 'power2.out'
+  })
+  .to('#achievement-badge', {
+    y: -20,
+    yoyo: true,
+    repeat: 1,
+    duration: 0.4,
+    ease: 'power2.inOut'
+  }, '-=1.3')
+  .to('#achievement-badge', {
+    scale: 0,
+    opacity: 0,
+    rotation: 30,
+    duration: 0.5,
+    delay: 0.5,
+    ease: 'power2.in'
+  });
+  
+  // Create particle effect
+  const particlesContainer = document.createElement('div');
+  particlesContainer.classList.add('particles-container');
+  document.getElementById('badge-award-container').appendChild(particlesContainer);
+  
+  const colors = ['var(--orange)', 'var(--yellow)', 'var(--coral)'];
+  
+  // Create particles
+  for (let i = 0; i < 20; i++) {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
+    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    particlesContainer.appendChild(particle);
+    
+    // Set starting position at the center
+    gsap.set(particle, {
+      x: '50%',
+      y: '50%',
+      scale: 0
+    });
+    
+    // Animate particles outward
+    gsap.to(particle, {
+      x: `${25 + Math.random() * 50}%`,
+      y: `${25 + Math.random() * 50}%`,
+      scale: Math.random() * 0.7 + 0.3,
+      opacity: 0,
+      duration: Math.random() * 1 + 0.5,
+      delay: 0.3 + Math.random() * 0.3,
+      ease: 'power2.out',
+      onComplete: function() {
+        particle.remove();
+      }
+    });
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Confetti Celebration -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Confetti Celebration</h3>
+                  <span class="library-badge library-mo">Mo.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="confetti-container" style="position: relative; width: 100%; height: 100%;">
+                      <div id="celebration-text" style="text-align: center; font-family: var(--heading-font); font-weight: 800; font-size: 1.5rem; color: var(--orange); opacity: 0;">
+                        CONGRATULATIONS!
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Marks major achievements with a shower of colorful confetti, creating a festive moment of celebration.
+                  </div>
+                  <button class="animation-trigger" id="confetti-trigger">Celebrate!</button>
+                  
+                  <div class="code-toggle" id="confetti-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="confetti-code-container">
+                    <pre><code class="language-javascript">
+// Confetti celebration with Mo.js
+function playConfettiAnimation() {
+  // Reset and show text
+  const celebrationText = document.getElementById('celebration-text');
+  gsap.set(celebrationText, { opacity: 0, scale: 0.8 });
+  gsap.to(celebrationText, {
+    opacity: 1,
+    scale: 1,
+    duration: 0.5,
+    ease: 'back.out(1.7)'
+  });
+  
+  // Hide text after delay
+  gsap.to(celebrationText, {
+    opacity: 0,
+    scale: 1.2,
+    duration: 0.5,
+    delay: 2.5,
+    ease: 'power2.in'
+  });
+  
+  // Create confetti container and position it
+  const container = document.getElementById('confetti-container');
+  
+  // Create burst animation
+  const burst1 = new mojs.Burst({
+    parent: container,
+    left: '30%',
+    top: '40%',
+    radius: { 0: 100 },
+    count: 10,
+    children: {
+      shape: ['circle', 'rect'],
+      points: 5,
+      fill: ['var(--orange)', 'var(--teal)', 'var(--yellow)', 'var(--green)'],
+      radius: { 10: 0 },
+      angle: { 0: 90 },
+      duration: 2000,
+      delay: 'stagger(0, 100)'
+    }
+  });
+  
+  const burst2 = new mojs.Burst({
+    parent: container,
+    left: '70%',
+    top: '40%',
+    radius: { 0: 100 },
+    count: 10,
+    children: {
+      shape: ['circle', 'rect'],
+      points: 5,
+      fill: ['var(--coral)', 'var(--purple)', 'var(--blue)', 'var(--yellow)'],
+      radius: { 10: 0 },
+      angle: { 0: -90 },
+      duration: 2000,
+      delay: 'stagger(0, 100)'
+    }
+  });
+  
+  // Create falling confetti pieces
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.classList.add('confetti-piece');
+    
+    // Randomize confetti colors
+    const colors = ['var(--orange)', 'var(--teal)', 'var(--yellow)', 'var(--green)', 'var(--coral)', 'var(--purple)'];
+    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Randomize confetti size
+    const width = Math.random() * 10 + 5;
+    const height = Math.random() * 10 + 5;
+    piece.style.width = `${width}px`;
+    piece.style.height = `${height}px`;
+    
+    // Randomize shape
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    
+    // Add to container
+    container.appendChild(piece);
+    
+    // Set initial position at the top of container
+    const startX = Math.random() * 100;
+    gsap.set(piece, {
+      x: `${startX}%`,
+      y: '-20px',
+      rotation: Math.random() * 360,
+      opacity: 0
+    });
+    
+    // Animate falling
+    gsap.to(piece, {
+      x: `${startX - 20 + Math.random() * 40}%`,
+      y: '120%',
+      rotation: `+=${Math.random() * 360}`,
+      opacity: [0, 1, 0],
+      duration: Math.random() * 2 + 1,
+      delay: Math.random() * 0.5,
+      ease: 'power1.out',
+      onComplete: function() {
+        piece.remove();
+      }
+    });
+  }
+  
+  // Play burst animations
+  burst1.play();
+  burst2.play();
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Star Rating -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Star Rating</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="star-rating" style="display: flex; gap: 10px;">
+                      <i class="far fa-star" style="font-size: 2rem; color: var(--medium-gray);"></i>
+                      <i class="far fa-star" style="font-size: 2rem; color: var(--medium-gray);"></i>
+                      <i class="far fa-star" style="font-size: 2rem; color: var(--medium-gray);"></i>
+                      <i class="far fa-star" style="font-size: 2rem; color: var(--medium-gray);"></i>
+                      <i class="far fa-star" style="font-size: 2rem; color: var(--medium-gray);"></i>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Animates star ratings for graded assignments or feedback, clearly showing achievement levels.
+                  </div>
+                  <button class="animation-trigger" id="stars-trigger">Rate Performance</button>
+                  
+                  <div class="code-toggle" id="stars-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="stars-code-container">
+                    <pre><code class="language-javascript">
+// Star rating animation with Anime.js
+function playStarRatingAnimation() {
+  // Reset all stars
+  const stars = document.querySelectorAll('#star-rating i');
+  stars.forEach(star => {
+    star.className = 'far fa-star';
+    star.style.color = 'var(--medium-gray)';
+  });
+  
+  // Generate random rating (1-5)
+  const rating = Math.floor(Math.random() * 5) + 1;
+  
+  // Animate stars one by one
+  for (let i = 0; i < rating; i++) {
+    // Create animation timeline
+    anime.timeline({ easing: 'easeOutElastic(1, .8)' })
+      .add({
+        targets: stars[i],
+        scale: [1, 1.5, 1],
+        duration: 600,
+        delay: i * 150,
+        update: function(anim) {
+          // Change to solid star partway through animation
+          if (anim.progress > 30) {
+            stars[i].className = 'fas fa-star';
+            stars[i].style.color = 'var(--yellow)';
+          }
+        }
+      });
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Trophy Animation -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Trophy Award</h3>
+                  <span class="library-badge library-lottie">Lottie</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="trophy-lottie" style="width: 150px; height: 150px;"></div>
+                  </div>
+                  <div class="animation-description">
+                    Presents trophies for significant accomplishments with premium animation quality using Lottie animations.
+                  </div>
+                  <button class="animation-trigger" id="trophy-trigger">Show Trophy</button>
+                  
+                  <div class="code-toggle" id="trophy-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="trophy-code-container">
+                    <pre><code class="language-javascript">
+// Trophy award animation with Lottie
+let trophyAnimation;
+
+function initTrophyAnimation() {
+  // Initialize the Lottie animation
+  trophyAnimation = lottie.loadAnimation({
+    container: document.getElementById('trophy-lottie'),
+    renderer: 'svg',
+    loop: false,
+    autoplay: false,
+    path: 'https://assets2.lottiefiles.com/packages/lf20_ydo1amjm.json' // Trophy animation
+  });
+}
+
+function playTrophyAnimation() {
+  if (!trophyAnimation) {
+    initTrophyAnimation();
+  }
+  
+  // Stop and reset any in-progress animation
+  trophyAnimation.stop();
+  
+  // Play animation from beginning
+  trophyAnimation.goToAndPlay(0, true);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initTrophyAnimation);
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Attention Animations -->
+      <section id="attention" class="section">
+        <div class="container">
+          <div class="animation-category">
+            <div class="category-header">
+              <div class="category-icon" style="background: var(--gradient-purple)">
+                <i class="fas fa-bullseye"></i>
+              </div>
+              <h2 class="category-title">Attention Animations</h2>
+            </div>
+            <p class="animation-description">
+              Attention animations guide focus to important elements or required actions, helping students navigate the learning interface effectively.
+            </p>
+            
+            <div class="animation-grid">
+              <!-- Highlight Effect -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Highlight Effect</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="highlight-container" style="position: relative; width: 200px; text-align: center;">
+                      <div id="highlight-element" style="padding: 12px 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block; font-weight: 600;">
+                        Important Information
+                      </div>
+                      <div id="highlight-outline" style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 2px dashed var(--orange); border-radius: 12px; opacity: 0;"></div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Draws attention to important information or areas that require student focus.
+                  </div>
+                  <button class="animation-trigger" id="highlight-trigger">Highlight Element</button>
+                  
+                  <div class="code-toggle" id="highlight-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="highlight-code-container">
+                    <pre><code class="language-javascript">
+// Highlight effect animation with GSAP
+function playHighlightAnimation() {
+  // Reset animation
+  gsap.set('#highlight-outline', { opacity: 0 });
+  
+  // Create highlight animation
+  const tl = gsap.timeline({
+    repeat: 2,
+    repeatDelay: 0.3
+  });
+  
+  tl.to('#highlight-outline', {
+    opacity: 1,
+    duration: 0.3,
+    ease: 'power1.out'
+  })
+  .to('#highlight-outline', {
+    opacity: 0,
+    duration: 0.3,
+    ease: 'power1.in'
+  });
+  
+  // Add element pop animation
+  gsap.to('#highlight-element', {
+    scale: 1.05,
+    boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
+    duration: 0.3,
+    yoyo: true,
+    repeat: 2,
+    ease: 'power1.inOut'
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Notification Dot -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Notification Dot</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="attention-container">
+                      <button class="attention-button">Messages</button>
+                      <div class="attention-indicator" id="notification-dot">1</div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Alerts students to new messages, notifications, or content updates that require their attention.
+                  </div>
+                  <button class="animation-trigger" id="notification-trigger">Show Notification</button>
+                  
+                  <div class="code-toggle" id="notification-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="notification-code-container">
+                    <pre><code class="language-javascript">
+// Notification dot animation with Anime.js
+function playNotificationAnimation() {
+  // Reset animation
+  anime.set('#notification-dot', {
+    scale: 0,
+    opacity: 0
+  });
+  
+  // Random count (1-9)
+  const count = Math.floor(Math.random() * 9) + 1;
+  document.getElementById('notification-dot').textContent = count;
+  
+  // Create animation
+  anime.timeline({
+    easing: 'easeOutElastic(1, .6)'
+  })
+  .add({
+    targets: '#notification-dot',
+    scale: [0, 1],
+    opacity: 1,
+    duration: 800
+  })
+  .add({
+    targets: '#notification-dot',
+    scale: [1, 1.2, 1],
+    duration: 500,
+    delay: 500
+  })
+  .add({
+    targets: '#notification-dot',
+    scale: 0,
+    opacity: 0,
+    duration: 300,
+    delay: 1500,
+    easing: 'easeInQuad'
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Focus Spotlight -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Focus Spotlight</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="spotlight-container" style="position: relative; overflow: hidden; width: 100%; height: 100%;">
+                      <div style="display: flex; gap: 20px; justify-content: center;">
+                        <div class="spotlight-item" style="width: 60px; height: 60px; background-color: var(--medium-gray); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                          <i class="fas fa-calculator" style="color: var(--dark-gray); font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="spotlight-item" style="width: 60px; height: 60px; background-color: var(--medium-gray); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                          <i class="fas fa-book" style="color: var(--dark-gray); font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="spotlight-item" style="width: 60px; height: 60px; background-color: var(--medium-gray); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                          <i class="fas fa-globe" style="color: var(--dark-gray); font-size: 1.5rem;"></i>
+                        </div>
+                      </div>
+                      <div id="spotlight-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); opacity: 0; pointer-events: none;"></div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Creates a spotlight effect to focus attention on specific elements while dimming the rest of the interface.
+                  </div>
+                  <button class="animation-trigger" id="spotlight-trigger">Show Spotlight</button>
+                  
+                  <div class="code-toggle" id="spotlight-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="spotlight-code-container">
+                    <pre><code class="language-javascript">
+// Focus spotlight animation with GSAP
+function playSpotlightAnimation() {
+  // Reset animation
+  gsap.set('#spotlight-overlay', { opacity: 0 });
+  gsap.set('.spotlight-item', { 
+    zIndex: 0,
+    boxShadow: 'none',
+    backgroundColor: 'var(--medium-gray)'
+  });
+  
+  // Get random item to spotlight
+  const spotlightItems = document.querySelectorAll('.spotlight-item');
+  const randomIndex = Math.floor(Math.random() * spotlightItems.length);
+  const targetItem = spotlightItems[randomIndex];
+  
+  // Create spotlight animation
+  const tl = gsap.timeline();
+  
+  tl.to('#spotlight-overlay', {
+    opacity: 0.7,
+    duration: 0.5,
+    ease: 'power2.out'
+  })
+  .set(targetItem, {
+    zIndex: 10,
+    boxShadow: '0 0 0 4px var(--orange)',
+    backgroundColor: 'white'
+  }, 0)
+  .to(targetItem, {
+    scale: 1.1,
+    duration: 0.5,
+    yoyo: true,
+    repeat: 1,
+    ease: 'power2.inOut'
+  }, 0)
+  .to('#spotlight-overlay', {
+    opacity: 0,
+    duration: 0.5,
+    delay: 1.5,
+    ease: 'power2.in'
+  })
+  .to(targetItem, {
+    scale: 1,
+    backgroundColor: 'var(--medium-gray)',
+    boxShadow: 'none',
+    clearProps: 'zIndex',
+    duration: 0.5
+  }, '-=0.5');
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Hint Pointer -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Hint Pointer</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="hint-container" style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center;">
+                      <button id="hint-button" style="padding: 10px 20px; background-color: var(--medium-gray); color: var(--dark-gray); border: none; border-radius: 6px; font-family: var(--body-font); font-weight: 600; cursor: pointer;">
+                        Try This
+                      </button>
+                      <div id="hint-pointer" style="position: absolute; top: 50%; right: 30%; transform: translateY(-50%) rotate(180deg); opacity: 0;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                          <path d="M10 17L15 12L10 7" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Guides students to interactive elements or next steps with a subtle animated pointer.
+                  </div>
+                  <button class="animation-trigger" id="hint-trigger">Show Hint</button>
+                  
+                  <div class="code-toggle" id="hint-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="hint-code-container">
+                    <pre><code class="language-javascript">
+// Hint pointer animation with Anime.js
+function playHintAnimation() {
+  // Reset animation
+  anime.set('#hint-pointer', {
+    opacity: 0,
+    translateX: 20
+  });
+  
+  // Create hint animation
+  anime.timeline({
+    easing: 'easeOutQuad'
+  })
+  .add({
+    targets: '#hint-pointer',
+    opacity: 1,
+    translateX: 0,
+    duration: 500
+  })
+  .add({
+    targets: '#hint-pointer',
+    translateX: -10,
+    duration: 600,
+    direction: 'alternate',
+    easing: 'easeInOutSine',
+    loop: 2
+  })
+  .add({
+    targets: '#hint-pointer',
+    opacity: 0,
+    translateX: -20,
+    duration: 500,
+    easing: 'easeInQuad'
+  });
+  
+  // Also highlight the button
+  anime({
+    targets: '#hint-button',
+    backgroundColor: 'var(--orange)',
+    color: 'white',
+    duration: 500,
+    direction: 'alternate',
+    delay: 1000,
+    endDelay: 500,
+    easing: 'easeInOutQuad',
+    loop: 1
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Transition Animations -->
+      <section id="transitions" class="section">
+        <div class="container">
+          <div class="animation-category">
+            <div class="category-header">
+              <div class="category-icon" style="background: var(--gradient-secondary)">
+                <i class="fas fa-exchange-alt"></i>
+              </div>
+              <h2 class="category-title">Transition Animations</h2>
+            </div>
+            <p class="animation-description">
+              Transition animations create smooth movement between states or pages, making the learning experience feel cohesive and polished.
+            </p>
+            
+            <div class="animation-grid">
+              <!-- Fade Transition -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Fade Transition</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="fade-container" style="position: relative; width: 100%; height: 100%;">
+                      <div id="fade-content-1" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--light-gray); border-radius: 8px;">
+                        <div style="text-align: center;">
+                          <i class="fas fa-file-alt" style="font-size: 2rem; color: var(--orange); margin-bottom: 10px;"></i>
+                          <div style="font-weight: 600;">Step 1: Read</div>
+                        </div>
+                      </div>
+                      <div id="fade-content-2" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--light-gray); border-radius: 8px; opacity: 0;">
+                        <div style="text-align: center;">
+                          <i class="fas fa-pencil-alt" style="font-size: 2rem; color: var(--teal); margin-bottom: 10px;"></i>
+                          <div style="font-weight: 600;">Step 2: Practice</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Smoothly transitions between content sections or steps with a simple fade effect.
+                  </div>
+                  <button class="animation-trigger" id="fade-trigger">Transition Content</button>
+                  
+                  <div class="code-toggle" id="fade-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="fade-code-container">
+                    <pre><code class="language-javascript">
+// Fade transition animation with GSAP
+let currentContent = 1;
+
+function playFadeTransition() {
+  // Determine which content to show
+  const fadeFrom = currentContent === 1 ? '#fade-content-1' : '#fade-content-2';
+  const fadeTo = currentContent === 1 ? '#fade-content-2' : '#fade-content-1';
+  
+  // Fade out current content
+  gsap.to(fadeFrom, {
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power1.out'
+  });
+  
+  // Fade in new content
+  gsap.to(fadeTo, {
+    opacity: 1,
+    duration: 0.5,
+    delay: 0.3,
+    ease: 'power1.in'
+  });
+  
+  // Toggle current content
+  currentContent = currentContent === 1 ? 2 : 1;
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Slide Transition -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Slide Transition</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="slide-container" style="position: relative; width: 100%; height: 120px; overflow: hidden; border-radius: 8px;">
+                      <div id="slide-content-1" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--light-gray);">
+                        <div style="text-align: center;">
+                          <i class="fas fa-question" style="font-size: 2rem; color: var(--orange); margin-bottom: 10px;"></i>
+                          <div style="font-weight: 600;">Question</div>
+                        </div>
+                      </div>
+                      <div id="slide-content-2" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--light-gray);">
+                        <div style="text-align: center;">
+                          <i class="fas fa-lightbulb" style="font-size: 2rem; color: var(--yellow); margin-bottom: 10px;"></i>
+                          <div style="font-weight: 600;">Answer</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Transitions between content with a directional slide, creating a sense of forward progression through material.
+                  </div>
+                  <button class="animation-trigger" id="slide-trigger">Slide Content</button>
+                  
+                  <div class="code-toggle" id="slide-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="slide-code-container">
+                    <pre><code class="language-javascript">
+// Slide transition animation with GSAP
+let slidePosition = 1;
+
+function playSlideTransition() {
+  // Determine slide direction
+  if (slidePosition === 1) {
+    // Slide to second content
+    gsap.to('#slide-content-1', {
+      x: '-100%',
+      duration: 0.6,
+      ease: 'power2.inOut'
+    });
+    
+    gsap.to('#slide-content-2', {
+      x: '-100%',
+      duration: 0.6,
+      ease: 'power2.inOut'
+    });
+    
+    slidePosition = 2;
+  } else {
+    // Slide back to first content
+    gsap.to('#slide-content-1', {
+      x: '0%',
+      duration: 0.6,
+      ease: 'power2.inOut'
+    });
+    
+    gsap.to('#slide-content-2', {
+      x: '0%',
+      duration: 0.6,
+      ease: 'power2.inOut'
+    });
+    
+    slidePosition = 1;
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Zoom Transition -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Zoom Transition</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="zoom-container" style="position: relative; width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px; background-color: var(--light-gray);">
+                      <div id="zoom-content-1" style="text-align: center;">
+                        <i class="fas fa-map" style="font-size: 2rem; color: var(--teal); margin-bottom: 10px;"></i>
+                        <div style="font-weight: 600;">Overview</div>
+                      </div>
+                      <div id="zoom-content-2" style="position: absolute; text-align: center; transform: scale(0); opacity: 0;">
+                        <i class="fas fa-map-marker-alt" style="font-size: 2rem; color: var(--coral); margin-bottom: 10px;"></i>
+                        <div style="font-weight: 600;">Detail View</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Creates a zoom effect when transitioning between overview and detailed content, mimicking focus changes.
+                  </div>
+                  <button class="animation-trigger" id="zoom-trigger">Zoom Transition</button>
+                  
+                  <div class="code-toggle" id="zoom-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="zoom-code-container">
+                    <pre><code class="language-javascript">
+// Zoom transition animation with Anime.js
+let zoomState = 1;
+
+function playZoomTransition() {
+  if (zoomState === 1) {
+    // Zoom out first content
+    anime({
+      targets: '#zoom-content-1',
+      scale: 0,
+      opacity: 0,
+      duration: 500,
+      easing: 'easeInQuad'
+    });
+    
+    // Zoom in second content
+    anime({
+      targets: '#zoom-content-2',
+      scale: [0, 1],
+      opacity: [0, 1],
+      delay: 300,
+      duration: 500,
+      easing: 'easeOutQuad'
+    });
+    
+    zoomState = 2;
+  } else {
+    // Zoom out second content
+    anime({
+      targets: '#zoom-content-2',
+      scale: 0,
+      opacity: 0,
+      duration: 500,
+      easing: 'easeInQuad'
+    });
+    
+    // Zoom in first content
+    anime({
+      targets: '#zoom-content-1',
+      scale: [0, 1],
+      opacity: [0, 1],
+      delay: 300,
+      duration: 500,
+      easing: 'easeOutQuad'
+    });
+    
+    zoomState = 1;
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Scroll Reveal -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Scroll Reveal</h3>
+                  <span class="library-badge library-aos">AOS</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo" style="height: 150px; overflow-y: auto;">
+                    <div style="padding: 10px;">
+                      <div class="scroll-item" data-aos="fade-up" style="padding: 10px; background-color: white; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="margin-bottom: 5px; color: var(--orange);">Chapter 1</h4>
+                        <p style="font-size: 0.9rem; color: var(--dark-gray);">Introduction to the topic with key concepts.</p>
+                      </div>
+                      <div class="scroll-item" data-aos="fade-up" data-aos-delay="100" style="padding: 10px; background-color: white; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="margin-bottom: 5px; color: var(--teal);">Chapter 2</h4>
+                        <p style="font-size: 0.9rem; color: var(--dark-gray);">Building on fundamentals with examples.</p>
+                      </div>
+                      <div class="scroll-item" data-aos="fade-up" data-aos-delay="200" style="padding: 10px; background-color: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="margin-bottom: 5px; color: var(--green);">Chapter 3</h4>
+                        <p style="font-size: 0.9rem; color: var(--dark-gray);">Advanced concepts and practical applications.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Reveals content as students scroll through lessons, creating a dynamic reading experience.
+                  </div>
+                  <button class="animation-trigger" id="scroll-trigger">Reset & Reveal</button>
+                  
+                  <div class="code-toggle" id="scroll-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="scroll-code-container">
+                    <pre><code class="language-javascript">
+// Scroll reveal animation with AOS library
+function initScrollReveal() {
+  // Initialize AOS
+  AOS.init({
+    duration: 800,
+    easing: 'ease-out-cubic',
+    once: false,
+    offset: 50
+  });
+}
+
+function resetScrollReveal() {
+  // Reset AOS animations
+  document.querySelectorAll('.scroll-item').forEach(item => {
+    item.classList.remove('aos-animate');
+  });
+  
+  // Refresh AOS
+  setTimeout(() => {
+    AOS.refresh();
+  }, 100);
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', initScrollReveal);
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Interactive Animations -->
+      <section id="interactive" class="section">
+        <div class="container">
+          <div class="animation-category">
+            <div class="category-header">
+              <div class="category-icon" style="background: var(--gradient-success)">
+                <i class="fas fa-hand-pointer"></i>
+              </div>
+              <h2 class="category-title">Interactive Animations</h2>
+            </div>
+            <p class="animation-description">
+              Interactive animations respond directly to user manipulation, creating engaging experiences that encourage exploration and increase retention.
+            </p>
+            
+            <div class="animation-grid">
+              <!-- 3D Card Flip -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">3D Card Flip</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="card-3d-container">
+                      <div class="card-3d" id="card-3d">
+                        <div class="card-3d-front">Question</div>
+                        <div class="card-3d-back">Answer</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Creates interactive flashcards with a 3D flip effect, perfect for quiz and memorization activities.
+                  </div>
+                  <button class="animation-trigger" id="flip-trigger">Flip Card</button>
+                  
+                  <div class="code-toggle" id="flip-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="flip-code-container">
+                    <pre><code class="language-javascript">
+// 3D card flip with GSAP
+let isFlipped = false;
+
+function flipCard() {
+  if (!isFlipped) {
+    // Flip to back
+    gsap.to('#card-3d', {
+      rotationY: 180,
+      duration: 0.6,
+      ease: 'power3.inOut'
+    });
+  } else {
+    // Flip to front
+    gsap.to('#card-3d', {
+      rotationY: 0,
+      duration: 0.6,
+      ease: 'power3.inOut'
+    });
+  }
+  
+  isFlipped = !isFlipped;
+}
+
+// Add click listener to card
+document.getElementById('card-3d').addEventListener('click', flipCard);
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Draggable Element -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Draggable Element</h3>
+                  <span class="library-badge library-gsap">GSAP</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="draggable-container">
+                      <div class="draggable-element" id="draggable-element">
+                        <i class="fas fa-arrows-alt"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="animation-description">
+                    Enables drag-and-drop interactions for sorting tasks, matching exercises, or interactive assignments.
+                  </div>
+                  <button class="animation-trigger" id="draggable-reset">Reset Position</button>
+                  
+                  <div class="code-toggle" id="draggable-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="draggable-code-container">
+                    <pre><code class="language-javascript">
+// Draggable element with GSAP
+function initDraggable() {
+  const dragElement = document.getElementById('draggable-element');
+  const container = document.querySelector('.draggable-container');
+  
+  // Get container bounds
+  const containerBounds = container.getBoundingClientRect();
+  const elementBounds = dragElement.getBoundingClientRect();
+  
+  // Make element draggable with GSAP Draggable
+  Draggable.create(dragElement, {
+    type: 'x,y',
+    bounds: {
+      minX: 0,
+      maxX: containerBounds.width - elementBounds.width,
+      minY: 0,
+      maxY: containerBounds.height - elementBounds.height
+    },
+    edgeResistance: 0.65,
+    onDragStart: function() {
+      gsap.to(this.target, { scale: 1.1, boxShadow: '0 5px 15px rgba(0,0,0,0.2)', duration: 0.2 });
+    },
+    onDragEnd: function() {
+      gsap.to(this.target, { scale: 1, boxShadow: 'none', duration: 0.2 });
+    }
+  });
+}
+
+// Reset draggable position
+function resetDraggable() {
+  gsap.to('#draggable-element', {
+    x: 0,
+    y: 0,
+    duration: 0.5,
+    ease: 'back.out(1.7)'
+  });
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Interactive 3D Object -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">3D Object</h3>
+                  <span class="library-badge library-three">Three.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div class="three-container" id="three-container"></div>
+                  </div>
+                  <div class="animation-description">
+                    Creates interactive 3D objects for science, math, or geography lessons that students can rotate and explore.
+                  </div>
+                  <button class="animation-trigger" id="three-trigger">Animate Object</button>
+                  
+                  <div class="code-toggle" id="three-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="three-code-container">
+                    <pre><code class="language-javascript">
+// Interactive 3D object with Three.js
+let scene, camera, renderer, cube;
+let animating = false;
+
+function initThreeScene() {
+  // Create scene
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf5f7fa);
+  
+  // Create camera
+  camera = new THREE.PerspectiveCamera(
+    75,
+    document.querySelector('.three-container').clientWidth / 
+    document.querySelector('.three-container').clientHeight,
+    0.1,
+    1000
+  );
+  camera.position.z = 5;
+  
+  // Create renderer
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(
+    document.querySelector('.three-container').clientWidth,
+    document.querySelector('.three-container').clientHeight
+  );
+  
+  // Clear container and add renderer
+  const container = document.getElementById('three-container');
+  container.innerHTML = '';
+  container.appendChild(renderer.domElement);
+  
+  // Create a colorful cube
+  const geometry = new THREE.BoxGeometry(2, 2, 2);
+  
+  const materials = [
+    new THREE.MeshBasicMaterial({ color: 0xffc067 }), // Orange
+    new THREE.MeshBasicMaterial({ color: 0x66f4ff }), // Teal
+    new THREE.MeshBasicMaterial({ color: 0xff8a5b }), // Coral
+    new THREE.MeshBasicMaterial({ color: 0xffdc5b }), // Yellow
+    new THREE.MeshBasicMaterial({ color: 0x64e291 }), // Green
+    new THREE.MeshBasicMaterial({ color: 0x9b81e5 })  // Purple
+  ];
+  
+  cube = new THREE.Mesh(geometry, materials);
+  scene.add(cube);
+  
+  // Add subtle continuous rotation
+  function animate() {
+    requestAnimationFrame(animate);
+    
+    if (!animating) {
+      cube.rotation.x += 0.005;
+      cube.rotation.y += 0.005;
+    }
+    
+    renderer.render(scene, camera);
+  }
+  
+  animate();
+  
+  // Add mouse controls
+  let isDragging = false;
+  let previousMousePosition = {
+    x: 0,
+    y: 0
+  };
+  
+  container.addEventListener('mousedown', function(e) {
+    isDragging = true;
+  });
+  
+  container.addEventListener('mousemove', function(e) {
+    if (isDragging) {
+      const deltaMove = {
+        x: e.offsetX - previousMousePosition.x,
+        y: e.offsetY - previousMousePosition.y
+      };
+      
+      cube.rotation.y += deltaMove.x * 0.01;
+      cube.rotation.x += deltaMove.y * 0.01;
+    }
+    
+    previousMousePosition = {
+      x: e.offsetX,
+      y: e.offsetY
+    };
+  });
+  
+  container.addEventListener('mouseup', function(e) {
+    isDragging = false;
+  });
+}
+
+// Animate 3D object
+function animateThreeObject() {
+  if (animating) return;
+  
+  animating = true;
+  
+  // Store original rotation
+  const originalRotation = {
+    x: cube.rotation.x,
+    y: cube.rotation.y,
+    z: cube.rotation.z
+  };
+  
+  // Perform a full spin animation
+  gsap.to(cube.rotation, {
+    x: cube.rotation.x + Math.PI * 2,
+    y: cube.rotation.y + Math.PI * 2,
+    duration: 1.5,
+    ease: 'power2.inOut',
+    onComplete: function() {
+      animating = false;
+    }
+  });
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', initThreeScene);
+
+// Handle window resize
+window.addEventListener('resize', function() {
+  if (camera && renderer) {
+    camera.aspect = document.querySelector('.three-container').clientWidth / 
+                    document.querySelector('.three-container').clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(
+      document.querySelector('.three-container').clientWidth,
+      document.querySelector('.three-container').clientHeight
+    );
+  }
+});
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Particle Playground -->
+              <div class="animation-card">
+                <div class="card-header">
+                  <h3 class="card-title">Particle Playground</h3>
+                  <span class="library-badge library-anime">Anime.js</span>
+                </div>
+                <div class="card-body">
+                  <div class="animation-demo">
+                    <div id="particle-playground" style="position: relative; width: 100%; height: 100%; background-color: var(--light-gray); border-radius: 8px; overflow: hidden;"></div>
+                  </div>
+                  <div class="animation-description">
+                    Creates an interactive playground where students can click to generate particle effects, fostering engagement through play.
+                  </div>
+                  <div class="code-toggle" id="particle-code-toggle">
+                    <i class="fas fa-code"></i> <span>View Code</span>
+                  </div>
+                  <div class="code-container" id="particle-code-container">
+                    <pre><code class="language-javascript">
+// Particle playground with Anime.js
+function initParticlePlayground() {
+  const playground = document.getElementById('particle-playground');
+  
+  // Add click event to create particles
+  playground.addEventListener('click', function(e) {
+    // Get click position relative to playground
+    const rect = playground.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Create particles
+    createParticles(x, y);
+  });
+  
+  // Create instruction text
+  const instruction = document.createElement('div');
+  instruction.style.position = 'absolute';
+  instruction.style.top = '50%';
+  instruction.style.left = '50%';
+  instruction.style.transform = 'translate(-50%, -50%)';
+  instruction.style.color = 'var(--dark-gray)';
+  instruction.style.fontSize = '0.9rem';
+  instruction.style.fontWeight = '600';
+  instruction.style.textAlign = 'center';
+  instruction.style.pointerEvents = 'none';
+  instruction.style.opacity = '0.7';
+  instruction.textContent = 'Click anywhere to create particles';
+  
+  playground.appendChild(instruction);
+}
+
+// Create particles at position
+function createParticles(x, y) {
+  const playground = document.getElementById('particle-playground');
+  const particleCount = 20 + Math.floor(Math.random() * 10);
+  
+  // Particle colors from brand palette
+  const colors = [
+    'var(--orange)',
+    'var(--teal)',
+    'var(--coral)',
+    'var(--yellow)',
+    'var(--green)',
+    'var(--purple)'
+  ];
+  
+  // Create particles
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div');
+    
+    // Random particle properties
+    const size = Math.random() * 10 + 5;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Style the particle
+    particle.style.position = 'absolute';
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.backgroundColor = color;
+    particle.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+    particle.style.opacity = '0';
+    particle.style.left = `${x}px`;
+    particle.style.top = `${y}px`;
+    
+    playground.appendChild(particle);
+    
+    // Animate the particle with Anime.js
+    anime({
+      targets: particle,
+      left: x + (Math.random() - 0.5) * 200,
+      top: y + (Math.random() - 0.5) * 200,
+      opacity: [1, 0],
+      scale: [1, 0],
+      easing: 'easeOutExpo',
+      duration: 1000 + Math.random() * 1000,
+      complete: function() {
+        playground.removeChild(particle);
+      }
+    });
+  }
+}
