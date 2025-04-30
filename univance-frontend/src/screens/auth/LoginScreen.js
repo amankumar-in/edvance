@@ -36,6 +36,7 @@ const LoginScreen = () => {
   
   // UI state
   const [loading, setLoading] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -112,6 +113,42 @@ const LoginScreen = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  
+  // Check if user has a profile and navigate accordingly
+  const checkUserProfileAndNavigate = async (userRole) => {
+    setCheckingProfile(true);
+    try {
+      // Get user profile(s)
+      const profileResponse = await authService.getUserProfiles();
+      setCheckingProfile(false);
+      
+      // If no profiles exist, redirect to profile creation
+      if (!profileResponse || !profileResponse.data || profileResponse.data.length === 0) {
+        // Navigate to profile creation with the user's role
+        navigation.navigate('ProfileCreation', { userRole });
+        return;
+      }
+      
+      // If multiple profiles exist (future feature), we would navigate to a profile selection screen
+      // if (profileResponse.data.length > 1) {
+      //   navigation.navigate('ProfileSelection');
+      //   return;
+      // }
+      
+      // If only one profile exists, navigate to the main app
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
+      
+    } catch (error) {
+      setCheckingProfile(false);
+      console.error('Error checking profile:', error);
+      
+      // Default to profile creation if there's an error
+      navigation.navigate('ProfileCreation', { userRole });
+    }
+  };
 
   // Handle login
   const handleLogin = async () => {
@@ -130,18 +167,11 @@ const LoginScreen = () => {
       
       setLoading(false);
       
-      // Just navigate to login for now (placeholder - we'll implement proper navigation later)
-      // This avoids the error about accessing role
-      alert('Login successful! This is a placeholder - we would navigate to the home screen here.');
+      // Get user role from response or from storage
+      const userRole = response.data?.user?.roles?.[0] || await authService.getUserRole();
       
-      // Instead of navigating or accessing response.role, we'll just stay on this screen for now
-      // Once the full app is implemented, we would do something like:
-      /*
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'MainApp' }],
-      });
-      */
+      // Check profile and navigate accordingly
+      await checkUserProfileAndNavigate(userRole);
       
     } catch (error) {
       setLoading(false);
@@ -338,13 +368,13 @@ const LoginScreen = () => {
             {/* Login Button */}
             <TouchableOpacity
               onPress={handleLogin}
-              disabled={loading}
+              disabled={loading || checkingProfile}
               activeOpacity={0.9}
               onMouseEnter={() => Platform.OS === 'web' && setButtonHovered(true)}
               onMouseLeave={() => Platform.OS === 'web' && setButtonHovered(false)}
               style={[
                 styles.loginButtonContainer,
-                loading && {opacity: 0.6}
+                (loading || checkingProfile) && {opacity: 0.6}
               ]}
             >
               <LinearGradient
@@ -358,6 +388,11 @@ const LoginScreen = () => {
               >
                 {loading ? (
                   <ActivityIndicator color="#AD56C4" />
+                ) : checkingProfile ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator color="#AD56C4" size="small" />
+                    <Text style={styles.loadingText}>Checking profile...</Text>
+                  </View>
                 ) : (
                   <Text style={styles.loginButtonText}>Log In</Text>
                 )}
@@ -551,6 +586,16 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       transition: 'all 0.2s ease',
     } : {})
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: Platform.OS === 'web' ? 'Nunito_600SemiBold' : 'Nunito-SemiBold',
+    fontSize: 16,
+    color: '#AD56C4',
+    marginLeft: 8,
   },
   hoveredButton: {
     transform: [{scale: 1.03}],
