@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { login, register, verifyEmail } from './auth.api';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { login, register, verifyEmail } from "./auth.api";
 
 /**
  * Hook for user registration
@@ -8,8 +8,8 @@ const useRegister = () => {
   return useMutation({
     mutationFn: register,
     onSuccess: (data) => {
-      console.log('Registration successfull', data);
-    }
+      console.log("Registration successfull", data);
+    },
   });
 };
 
@@ -34,13 +34,9 @@ const useLogin = () => {
   return useMutation({
     mutationFn: login,
     onSuccess: (data) => {
-      console.log('Login successful', data);
-    }
+      console.log("Login successful", data);
+    },
   });
 };
 
-export {
-  useRegister,
-  useVerifyEmail,
-  useLogin
-}
+export { useRegister, useVerifyEmail, useLogin };
