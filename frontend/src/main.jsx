@@ -8,12 +8,12 @@ import { Toaster } from "sonner";
 import { QueryProvider } from "../providers/QueryProvider";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // <StrictMode>
     <QueryProvider>
       <Theme accentColor="purple" grayColor="slate">
         <Toaster position="top-right" richColors />
         <AppRouter />
       </Theme>
     </QueryProvider>
-  </StrictMode>
+  // </StrictMode>
 );

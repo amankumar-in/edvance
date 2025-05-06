@@ -1,38 +1,46 @@
-import { Button, Text } from '@radix-ui/themes'
-import { CheckCheck, CheckCircle, CircleCheck } from 'lucide-react';
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Text } from '@radix-ui/themes';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import MyButton from '../../components/MyButton';
+import {
+  FaChalkboardTeacher,
+  MdCheckCircle,
+  MdDomain,
+  MdGroups,
+  MdSchool,
+  RiParentFill
+} from '../../icons/index';
 
 // User roles with icons
 export const roleOptions = [
   {
     id: 'STUDENT',
     title: 'Student',
-    icon: 'school',
+    icon: MdSchool,
     gradient: ['#FF8DA1', '#FF6B85'],
   },
   {
     id: 'PARENT',
     title: 'Parent',
-    icon: 'account-child-circle',
+    icon: RiParentFill,
     gradient: ['#FFC2BA', '#FFAD9F'],
   },
   {
     id: 'SOCIAL_WORKER',
     title: 'Social Worker',
-    icon: 'account-group',
+    icon: MdGroups,
     gradient: ['#64B5F6', '#2196F3'],
   },
   {
     id: 'TEACHER',
     title: 'Teacher',
-    icon: 'human-male-board',
+    icon: FaChalkboardTeacher,
     gradient: ['#FF9CE9', '#FF7DE0'],
   },
   {
     id: 'SCHOOL',
     title: 'School Admin',
-    icon: 'domain',
+    icon: MdDomain,
     gradient: ['#AD56C4', '#9548A8'],
   },
 ];
@@ -62,10 +70,10 @@ function RoleSelection() {
         {roleOptions.map((role) => {
           const isSelected = selectedRole === role.id;
           return (
-            <div
+            <button
               key={role.id}
               onClick={() => setSelectedRole(role.id)}
-              className={`p-4 py-3 text-white transition-transform border rounded-xl cursor-pointer hover:scale-[1.02] flex-col flex justify-center ${selectedRole === role.id ? 'border-[--gray-6]' : 'bg-white/20 border-[--gray-9] hover:border-[--gray-6]'} relative`}
+              className={`p-4 py-3 text-white transition-transform border rounded-2xl cursor-pointer hover:scale-[1.02] flex-col flex justify-center ${isSelected ? 'border-[--gray-6]' : 'bg-gradient-to-br from-white/10 to-white/20 border-[--gray-9] hover:border-[--gray-6]'} relative focus:outline-none focus-visible:ring-2 ring-[--focus-8]`}
               style={{
                 background:
                   selectedRole === role.id
@@ -74,40 +82,39 @@ function RoleSelection() {
               }}
             >
               {/* Check icon */}
-              {selectedRole === role.id && <div className='absolute top-3 right-3'>
-                <CircleCheck />
+              {isSelected && <div className='absolute top-3 right-3'>
+                <MdCheckCircle className='size-6' />
               </div>}
 
               {/* Icon and text */}
               <div className="flex flex-col items-center gap-4">
-                <div className="rounded-full size-14"
+                <div className="flex items-center justify-center rounded-full size-14"
                   style={{
                     background:
-                      selectedRole === role.id
+                      isSelected
                         ? 'transparent' // neutral or faded when selected
                         : `linear-gradient(to right, ${role.gradient[0]}, ${role.gradient[1]})`,
                   }}
-                />
+                >
+                  {role.icon && <role.icon className='size-8' />}
+                </div>
                 <Text as="span" weight="bold" align="center">
                   {role.title}
                 </Text>
               </div>
-            </div>
+            </button>
 
           )
         })}
       </div>
 
       <div className='text-center'>
-        <Button
-          radius='full'
-          size={'4'}
-          className="w-full max-w-sm disabled:bg-[--gray-6]"
+        <MyButton
           disabled={!selectedRole}
           onClick={handleContinue}
         >
           Continue
-        </Button>
+        </MyButton>
       </div>
       <Text as="div" align={'center'}>
         Already have an account?{" "}

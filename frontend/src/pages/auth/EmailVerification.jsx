@@ -3,6 +3,7 @@ import { ArrowLeft, CircleCheck } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
 import { useVerifyEmail } from "../../api/auth/auth.mutations";
+import MyButton from "../../components/MyButton";
 
 const EmailVerification = () => {
   const location = useLocation();
@@ -37,7 +38,7 @@ const EmailVerification = () => {
           if (
             backendMessage === "Invalid or expired verification token" ||
             backendMessage ===
-              "Too many authentication attempts, please try again later."
+            "Too many authentication attempts, please try again later."
           ) {
             // Treat these specific errors as a success case for the UI
             setIsVerified(true);
@@ -145,14 +146,14 @@ const EmailVerification = () => {
 
         {/* Resend Button */}
         <div className="text-center">
-          <Button radius="full" size={"4"} className="w-full max-w-sm">
+          <MyButton>
             Resend verification email
-          </Button>
+          </MyButton>
         </div>
 
         {/* Go to Login */}
         <div className="text-center">
-          <Button radius="full" variant="ghost" asChild>
+          <Button radius="full" variant="ghost" asChild size={'3'}>
             <Link to={"/login"}>
               <ArrowLeft color="var(--gray-1)" size={"20"} />
               <Text as="span" weight={"medium"} className="text-[--gray-1]">

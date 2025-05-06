@@ -1,18 +1,19 @@
 import {
-  Button,
   Callout,
   Checkbox,
   Flex,
   IconButton,
   Text,
-  TextField,
+  TextField
 } from "@radix-ui/themes";
 import { Eye, EyeOff, Info } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { useLogin } from "../../api/auth/auth.mutations";
-import { toast } from "sonner";
+import { toast } from 'sonner';
+import { useLogin } from '../../api/auth/auth.mutations';
+import MyButton from "../../components/MyButton";
+import { MdPerson } from '../../icons/index'
 
 export default function Login() {
   const navigate = useNavigate();
@@ -83,7 +84,8 @@ export default function Login() {
       </div>
 
       {/* Logo Placeholder */}
-      <div className="flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-400 to-purple-600">
+      <div className="flex items-center justify-center w-20 h-20 mx-auto bg-[--purple-9] rounded-full">
+        <MdPerson className='size-10' />
         {/* <MdAccountCircle size={36} /> */}
       </div>
 
@@ -195,14 +197,11 @@ export default function Login() {
 
       {/* Login Button with Loading State */}
       <div className="flex justify-center w-full">
-        <Button
-          size={"4"}
-          radius="full"
-          className="w-full max-w-sm disabled:bg-[--gray-8] disabled:text-[--accent-8]"
+        <MyButton
           disabled={isLoggingIn}
         >
           {isLoggingIn ? "Logging in..." : "Log In"}
-        </Button>
+        </MyButton>
       </div>
 
       {/* Registration Link */}
