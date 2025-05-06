@@ -225,3 +225,47 @@ exports.getUserById = async (req, res) => {
     });
   }
 };
+
+// Get all role-specific profiles for the current user
+exports.getAllProfiles = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    const userProfile = user.toObject();
+    delete userProfile.password;
+
+    // Fetch all possible profiles
+    const [student, parent, teacher, socialWorker] = await Promise.all([
+      Student.findOne({ userId }),
+      Parent.findOne({ userId }),
+      Teacher.findOne({ userId }),
+      SocialWorker.findOne({ userId }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: userProfile,
+        profiles: {
+          student,
+          parent,
+          teacher,
+          social_worker: socialWorker,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get all profiles error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get all profiles",
+      error: error.message,
+    });
+  }
+};

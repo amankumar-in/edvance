@@ -475,4 +475,52 @@ router.get(
   userController.getUserById
 );
 
+/**
+ * @openapi
+ * /users/me/profiles:
+ *   get:
+ *     summary: Get all role-specific profiles for the current user
+ *     description: Returns the user object and all role-specific profiles (student, parent, teacher, social_worker) for the authenticated user.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: All profiles retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *                     profiles:
+ *                       type: object
+ *                       properties:
+ *                         student:
+ *                           type: object
+ *                           nullable: true
+ *                         parent:
+ *                           type: object
+ *                           nullable: true
+ *                         teacher:
+ *                           type: object
+ *                           nullable: true
+ *                         social_worker:
+ *                           type: object
+ *                           nullable: true
+ *       '404':
+ *         description: User not found
+ *       '500':
+ *         description: Failed to get all profiles
+ */
+router.get("/me/profiles", authMiddleware.verifyToken, userController.getAllProfiles);
+
 module.exports = router;
