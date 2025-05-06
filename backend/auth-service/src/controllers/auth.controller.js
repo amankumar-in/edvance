@@ -86,9 +86,9 @@ function buildUrl(path, token, email) {
   // Map API paths to frontend routes
   let frontendPath = path;
   if (path === "verify-email") {
-    frontendPath = "EmailVerification";
+    frontendPath = "email-verification";
   } else if (path === "reset-password") {
-    frontendPath = "ResetPassword";
+    frontendPath = "reset-password";
   }
 
   // Create frontend URL with parameters
