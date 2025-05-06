@@ -28,4 +28,34 @@ const login = async (loginData) => {
   return response.data;
 };
 
-export { register, verifyEmail, login };
+const forgotPassword = async ({ email }) => {
+  const response = await apiClient.post("/auth/forgot-password", { email });
+  return response.data;
+};
+
+const verifyResetToken = async ({ email, token }) => {
+  const response = await apiClient.get(
+    `/auth/reset-password?email=${encodeURIComponent(
+      email
+    )}&token=${encodeURIComponent(token)}`
+  );
+  return response.data;
+};
+
+const resetPassword = async ({ email, token, newPassword }) => {
+  const response = await apiClient.post("/auth/reset-password", {
+    email,
+    token,
+    newPassword,
+  });
+  return response.data;
+};
+
+export {
+  register,
+  verifyEmail,
+  login,
+  forgotPassword,
+  verifyResetToken,
+  resetPassword,
+};

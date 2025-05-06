@@ -1,4 +1,9 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+} from "react-router";
 import App from "../src/App";
 import Login from "../src/pages/auth/Login";
 import ForgotPassword from "../src/pages/auth/ForgotPassword";
@@ -18,9 +23,9 @@ const router = createBrowserRouter(
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="ResetPassword" element={<ResetPassword />} />
+        <Route path="reset-password" element={<ResetPassword />} />
         <Route path="role-selection" element={<RoleSelection />} />
-        <Route path="EmailVerification" element={<EmailVerification />} />
+        <Route path="email-verification" element={<EmailVerification />} />
         <Route path="register" element={<Register />} />
       </Route>
 
