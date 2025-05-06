@@ -1,34 +1,35 @@
 // /controllers/auth.controller.js
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const User = require('../models/user.model');
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const User = require("../models/user.model");
 
-const ALLOW_ADMIN_REGISTRATION = process.env.ALLOW_ADMIN_REGISTRATION === 'true';
+const ALLOW_ADMIN_REGISTRATION =
+  process.env.ALLOW_ADMIN_REGISTRATION === "true";
 const EMAIL_TIMEOUT = 10000; // 10 seconds timeout for email operations
 
 // Set up SMTP transporter with timeout
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT, 10),
-  secure: process.env.SMTP_SECURE === 'true',
+  secure: process.env.SMTP_SECURE === "true",
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+    pass: process.env.SMTP_PASS,
   },
   connectionTimeout: EMAIL_TIMEOUT,
   greetingTimeout: EMAIL_TIMEOUT,
-  socketTimeout: EMAIL_TIMEOUT
+  socketTimeout: EMAIL_TIMEOUT,
 });
 
 // Test email connection on startup
 (async function verifyEmailConnection() {
   try {
     await transporter.verify();
-    console.log('SMTP connection verified successfully');
+    console.log("SMTP connection verified successfully");
   } catch (err) {
-    console.error('SMTP connection failed:', err.message);
-    console.error('Email functionality will not work properly');
+    console.error("SMTP connection failed:", err.message);
+    console.error("Email functionality will not work properly");
   }
 })();
 
@@ -36,18 +37,19 @@ const transporter = nodemailer.createTransport({
 async function safeSendMail(mailOptions) {
   return new Promise((resolve) => {
     const timeoutId = setTimeout(() => {
-      console.error('Mail send timeout after', EMAIL_TIMEOUT, 'ms');
-      resolve({ error: 'Email timeout', success: false });
+      console.error("Mail send timeout after", EMAIL_TIMEOUT, "ms");
+      resolve({ error: "Email timeout", success: false });
     }, EMAIL_TIMEOUT * 1.2);
 
-    transporter.sendMail(mailOptions)
+    transporter
+      .sendMail(mailOptions)
       .then(() => {
         clearTimeout(timeoutId);
         resolve({ success: true });
       })
       .catch((err) => {
         clearTimeout(timeoutId);
-        console.error('Mail send error:', err.message);
+        console.error("Mail send error:", err.message);
         resolve({ error: err.message, success: false });
       });
   });
@@ -55,50 +57,58 @@ async function safeSendMail(mailOptions) {
 
 // Generate secure tokens
 function generateSecureToken() {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }
 
 // Build verification or reset URL
 function buildUrl(path, token, email) {
   // For API endpoints (internal use)
-  if (path !== 'verify-email' && path !== 'reset-password') {
-    const baseUrl = process.env.NODE_ENV === 'development'
-      ? `http://${process.env.AUTH_HOST === '0.0.0.0' ? 'localhost' : process.env.AUTH_HOST}:${process.env.AUTH_PORT}`
-      : process.env.PRODUCTION_URL;
-    return `${baseUrl}/api/auth/${path}?token=${token}&email=${encodeURIComponent(email)}`;
+  if (path !== "verify-email" && path !== "reset-password") {
+    const baseUrl =
+      process.env.NODE_ENV === "development"
+        ? `http://${
+            process.env.AUTH_HOST === "0.0.0.0"
+              ? "localhost"
+              : process.env.AUTH_HOST
+          }:${process.env.AUTH_PORT}`
+        : process.env.PRODUCTION_URL;
+    return `${baseUrl}/api/auth/${path}?token=${token}&email=${encodeURIComponent(
+      email
+    )}`;
   }
-  
+
   // For frontend routes (email links)
-  const frontendUrl = process.env.NODE_ENV === 'development'
-    ? process.env.FRONTEND_URL_DEV
-    : process.env.FRONTEND_URL_PRODUCTION;
-    
+  const frontendUrl =
+    process.env.NODE_ENV === "development"
+      ? process.env.FRONTEND_URL_DEV
+      : process.env.FRONTEND_URL_PRODUCTION;
+
   // Map API paths to frontend routes
   let frontendPath = path;
-  if (path === 'verify-email') {
-    frontendPath = 'EmailVerification';
-  } else if (path === 'reset-password') {
-    frontendPath = 'ResetPassword';
+  if (path === "verify-email") {
+    frontendPath = "EmailVerification";
+  } else if (path === "reset-password") {
+    frontendPath = "ResetPassword";
   }
-  
+
   // Create frontend URL with parameters
-  return `${frontendUrl}/${frontendPath}?token=${token}&email=${encodeURIComponent(email)}`;
+  return `${frontendUrl}/${frontendPath}?token=${token}&email=${encodeURIComponent(
+    email
+  )}`;
 }
 
 // Generate JWT tokens
 function generateTokens(userId, roles) {
-  const accessToken = jwt.sign(
-    { id: userId, roles },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRATION || '1d' }
-  );
-  
+  const accessToken = jwt.sign({ id: userId, roles }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRATION || "1d",
+  });
+
   const refreshToken = jwt.sign(
     { id: userId },
     process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_REFRESH_EXPIRATION || '7d' }
+    { expiresIn: process.env.JWT_REFRESH_EXPIRATION || "7d" }
   );
-  
+
   return { accessToken, refreshToken };
 }
 
@@ -106,46 +116,46 @@ function generateTokens(userId, roles) {
 exports.register = async (req, res) => {
   try {
     const { email, password, firstName, lastName, roles } = req.body;
-    
+
     // Input validation
     if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Missing required registration fields',
-        fields: ['email', 'password', 'firstName', 'lastName']
+      return res.status(400).json({
+        success: false,
+        message: "Missing required registration fields",
+        fields: ["email", "password", "firstName", "lastName"],
       });
     }
 
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid email format' 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format",
       });
     }
 
     // Password strength validation
     if (password.length < 8) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Password must be at least 8 characters long' 
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters long",
       });
     }
 
     // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'User with this email already exists' 
+      return res.status(400).json({
+        success: false,
+        message: "User with this email already exists",
       });
     }
 
     // Determine roles
     const finalRoles = ALLOW_ADMIN_REGISTRATION
-      ? (roles || ['student'])
-      : (roles || ['student']).filter(r => r !== 'platform_admin');
+      ? roles || ["student"]
+      : (roles || ["student"]).filter((r) => r !== "platform_admin");
 
     // Create verification token (expires in 1 hour)
     const verificationToken = generateSecureToken();
@@ -153,26 +163,26 @@ exports.register = async (req, res) => {
 
     // Create new user
     const newUser = new User({
-      email, 
-      password, 
-      firstName, 
+      email,
+      password,
+      firstName,
       lastName,
       roles: finalRoles,
-      verificationToken, 
-      verificationTokenExpires
+      verificationToken,
+      verificationTokenExpires,
     });
-    
+
     // Save user to database
     await newUser.save();
 
     // Generate email verification link
-    const verifyLink = buildUrl('verify-email', verificationToken, email);
+    const verifyLink = buildUrl("verify-email", verificationToken, email);
 
     // Send verification email
     const mailResult = await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: 'Verify your Univance account',
+      subject: "Verify your Univance account",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Welcome to Univance!</h2>
@@ -190,11 +200,14 @@ exports.register = async (req, res) => {
           <p>If you did not create this account, please ignore this email.</p>
           <p>Best regards,<br>The Univance Team</p>
         </div>
-      `
+      `,
     });
 
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(newUser._id, newUser.roles);
+    const { accessToken, refreshToken } = generateTokens(
+      newUser._id,
+      newUser.roles
+    );
 
     // Strip sensitive data before sending back
     const userObj = newUser.toObject();
@@ -207,21 +220,21 @@ exports.register = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: mailResult.success
-        ? 'Registration successful! Please check your email to verify your account.'
-        : 'Registration successful, but we couldn\'t send a verification email. Please use the resend verification option.',
+        ? "Registration successful! Please check your email to verify your account."
+        : "Registration successful, but we couldn't send a verification email. Please use the resend verification option.",
       emailSent: mailResult.success,
-      data: { 
-        user: userObj, 
-        accessToken, 
-        refreshToken 
-      }
+      data: {
+        user: userObj,
+        accessToken,
+        refreshToken,
+      },
     });
   } catch (err) {
-    console.error('Register error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Registration failed due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("Register error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Registration failed due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -230,12 +243,12 @@ exports.register = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const { token, email } = req.query;
-    
+
     // Input validation
     if (!token || !email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Token and email are required' 
+      return res.status(400).json({
+        success: false,
+        message: "Token and email are required",
       });
     }
 
@@ -243,13 +256,13 @@ exports.verifyEmail = async (req, res) => {
     const user = await User.findOne({
       email,
       verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() }
+      verificationTokenExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid or expired verification token' 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired verification token",
       });
     }
 
@@ -260,16 +273,16 @@ exports.verifyEmail = async (req, res) => {
     await user.save();
 
     // Return success
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Email verified successfully. You can now log in.' 
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully. You can now log in.",
     });
   } catch (err) {
-    console.error('VerifyEmail error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Email verification failed due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("VerifyEmail error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Email verification failed due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -278,29 +291,29 @@ exports.verifyEmail = async (req, res) => {
 exports.resendVerification = async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     // Input validation
     if (!email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email is required' 
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
       });
     }
 
     // Find user
     const user = await User.findOne({ email });
-    
+
     if (!user) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'No account found with that email address' 
+      return res.status(400).json({
+        success: false,
+        message: "No account found with that email address",
       });
     }
-    
+
     if (user.isVerified) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'This account is already verified' 
+      return res.status(400).json({
+        success: false,
+        message: "This account is already verified",
       });
     }
 
@@ -311,13 +324,13 @@ exports.resendVerification = async (req, res) => {
     await user.save();
 
     // Generate verification link
-    const verifyLink = buildUrl('verify-email', verificationToken, email);
+    const verifyLink = buildUrl("verify-email", verificationToken, email);
 
     // Send verification email
     const mailResult = await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: 'Verify your Univance account',
+      subject: "Verify your Univance account",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Verify Your Univance Account</h2>
@@ -335,22 +348,25 @@ exports.resendVerification = async (req, res) => {
           <p>If you did not request this email, please ignore it.</p>
           <p>Best regards,<br>The Univance Team</p>
         </div>
-      `
+      `,
     });
 
     return res.json({
       success: mailResult.success,
       message: mailResult.success
-        ? 'Verification email has been sent. Please check your inbox.'
-        : 'Could not send verification email. Please try again later.',
-      error: mailResult.error && process.env.NODE_ENV === 'development' ? mailResult.error : undefined
+        ? "Verification email has been sent. Please check your inbox."
+        : "Could not send verification email. Please try again later.",
+      error:
+        mailResult.error && process.env.NODE_ENV === "development"
+          ? mailResult.error
+          : undefined,
     });
   } catch (err) {
-    console.error('ResendVerification error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to resend verification email due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("ResendVerification error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to resend verification email due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -359,49 +375,49 @@ exports.resendVerification = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     // Input validation
     if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email and password are required' 
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
       });
     }
 
     // Find user
     const user = await User.findOne({ email });
-    
+
     if (!user) {
       // Use same message for security (don't reveal which field is wrong)
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
       });
     }
-    
+
     // Check if email is verified
     if (!user.isVerified) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Please verify your email before logging in',
-        needsVerification: true
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email before logging in",
+        needsVerification: true,
       });
     }
-    
+
     // Check if account is active
     if (!user.isActive) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'This account has been deactivated. Please contact support.' 
+      return res.status(403).json({
+        success: false,
+        message: "This account has been deactivated. Please contact support.",
       });
     }
 
     // Verify password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
       });
     }
 
@@ -411,7 +427,7 @@ exports.login = async (req, res) => {
     // Return user data
     return res.json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       data: {
         accessToken,
         refreshToken,
@@ -421,16 +437,16 @@ exports.login = async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           roles: user.roles,
-          isVerified: user.isVerified
-        }
-      }
+          isVerified: user.isVerified,
+        },
+      },
     });
   } catch (err) {
-    console.error('Login error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Login failed due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("Login error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Login failed due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -439,55 +455,55 @@ exports.login = async (req, res) => {
 exports.refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
-    
+
     // Input validation
     if (!refreshToken) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Refresh token is required' 
+      return res.status(400).json({
+        success: false,
+        message: "Refresh token is required",
       });
     }
 
     try {
       // Verify refresh token
       const decoded = jwt.verify(
-        refreshToken, 
+        refreshToken,
         process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET
       );
-      
+
       // Find user
       const user = await User.findById(decoded.id);
       if (!user || !user.isActive) {
-        return res.status(401).json({ 
-          success: false, 
-          message: 'Invalid refresh token or user is inactive' 
+        return res.status(401).json({
+          success: false,
+          message: "Invalid refresh token or user is inactive",
         });
       }
 
       // Generate new access token
       const accessToken = jwt.sign(
         { id: user._id, roles: user.roles },
-        process.env.JWT_SECRET, 
-        { expiresIn: process.env.JWT_EXPIRATION || '1d' }
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRATION || "1d" }
       );
 
-      return res.json({ 
-        success: true, 
-        message: 'Token refreshed successfully', 
-        data: { accessToken } 
+      return res.json({
+        success: true,
+        message: "Token refreshed successfully",
+        data: { accessToken },
       });
     } catch (jwtErr) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid or expired refresh token' 
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired refresh token",
       });
     }
   } catch (err) {
-    console.error('RefreshToken error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Token refresh failed due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("RefreshToken error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Token refresh failed due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -496,19 +512,20 @@ exports.refreshToken = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     // Input validation
     if (!email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email is required' 
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
       });
     }
 
     // For security reasons, always return success (don't reveal if email exists)
-    res.json({ 
-      success: true, 
-      message: 'If an account with that email exists, a password reset link will be sent shortly.' 
+    res.json({
+      success: true,
+      message:
+        "If an account with that email exists, a password reset link will be sent shortly.",
     });
 
     // Find user
@@ -522,13 +539,13 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Generate reset link
-    const resetLink = buildUrl('reset-password', resetToken, email);
+    const resetLink = buildUrl("reset-password", resetToken, email);
 
     // Send reset email
     await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: 'Reset Your Univance Password',
+      subject: "Reset Your Univance Password",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Reset</h2>
@@ -546,10 +563,10 @@ exports.forgotPassword = async (req, res) => {
           <p>If you did not request a password reset, please ignore this email and your password will remain unchanged.</p>
           <p>Best regards,<br>The Univance Team</p>
         </div>
-      `
+      `,
     });
   } catch (err) {
-    console.error('ForgotPassword error:', err);
+    console.error("ForgotPassword error:", err);
     // Response already sent, so just log error
   }
 };
@@ -558,12 +575,12 @@ exports.forgotPassword = async (req, res) => {
 exports.getResetPassword = async (req, res) => {
   try {
     const { token, email } = req.query;
-    
+
     // Input validation
     if (!token || !email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Token and email are required' 
+      return res.status(400).json({
+        success: false,
+        message: "Token and email are required",
       });
     }
 
@@ -571,29 +588,29 @@ exports.getResetPassword = async (req, res) => {
     const user = await User.findOne({
       email,
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid or expired reset token' 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
       });
     }
 
     // Token is valid, return success
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Valid reset token',
+    return res.status(200).json({
+      success: true,
+      message: "Valid reset token",
       email: email,
-      token: token
+      token: token,
     });
   } catch (err) {
-    console.error('GetResetPassword error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Password reset verification failed due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("GetResetPassword error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Password reset verification failed due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -602,20 +619,20 @@ exports.getResetPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const { email, token, newPassword } = req.body;
-    
+
     // Input validation
     if (!email || !token || !newPassword) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email, token, and new password are required' 
+      return res.status(400).json({
+        success: false,
+        message: "Email, token, and new password are required",
       });
     }
 
     // Password strength validation
     if (newPassword.length < 8) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Password must be at least 8 characters long' 
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters long",
       });
     }
 
@@ -623,13 +640,13 @@ exports.resetPassword = async (req, res) => {
     const user = await User.findOne({
       email,
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid or expired reset token' 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
       });
     }
 
@@ -643,7 +660,7 @@ exports.resetPassword = async (req, res) => {
     await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: 'Your Univance Password Has Been Changed',
+      subject: "Your Univance Password Has Been Changed",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Changed</h2>
@@ -652,19 +669,20 @@ exports.resetPassword = async (req, res) => {
           <p>If you did not request this change, please contact our support immediately.</p>
           <p>Best regards,<br>The Univance Team</p>
         </div>
-      `
+      `,
     });
 
-    return res.json({ 
-      success: true, 
-      message: 'Password reset successfully. You can now log in with your new password.' 
+    return res.json({
+      success: true,
+      message:
+        "Password reset successfully. You can now log in with your new password.",
     });
   } catch (err) {
-    console.error('ResetPassword error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Password reset failed due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("ResetPassword error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Password reset failed due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -673,9 +691,9 @@ exports.resetPassword = async (req, res) => {
 exports.logout = (req, res) => {
   // The actual token invalidation would typically be handled client-side
   // Server can implement token blacklisting for additional security
-  return res.json({ 
-    success: true, 
-    message: 'Logged out successfully' 
+  return res.json({
+    success: true,
+    message: "Logged out successfully",
   });
 };
 
@@ -684,38 +702,38 @@ exports.updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.id;
-    
+
     // Input validation
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Current password and new password are required' 
+      return res.status(400).json({
+        success: false,
+        message: "Current password and new password are required",
       });
     }
 
     // Password strength validation
     if (newPassword.length < 8) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'New password must be at least 8 characters long' 
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 8 characters long",
       });
     }
 
     // Find user
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
       });
     }
 
     // Verify current password
     const isPasswordValid = await user.comparePassword(currentPassword);
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Current password is incorrect' 
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
       });
     }
 
@@ -727,7 +745,7 @@ exports.updatePassword = async (req, res) => {
     await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: user.email,
-      subject: 'Your Univance Password Has Been Changed',
+      subject: "Your Univance Password Has Been Changed",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Changed</h2>
@@ -736,19 +754,19 @@ exports.updatePassword = async (req, res) => {
           <p>If you did not request this change, please contact our support immediately.</p>
           <p>Best regards,<br>The Univance Team</p>
         </div>
-      `
+      `,
     });
 
-    return res.json({ 
-      success: true, 
-      message: 'Password updated successfully' 
+    return res.json({
+      success: true,
+      message: "Password updated successfully",
     });
   } catch (err) {
-    console.error('UpdatePassword error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Password update failed due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("UpdatePassword error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Password update failed due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
@@ -757,27 +775,29 @@ exports.updatePassword = async (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     // Find user
-    const user = await User.findById(userId).select('-password -resetPasswordToken -resetPasswordExpires -verificationToken -verificationTokenExpires');
-    
+    const user = await User.findById(userId).select(
+      "-password -resetPasswordToken -resetPasswordExpires -verificationToken -verificationTokenExpires"
+    );
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
       });
     }
 
     return res.json({
       success: true,
-      data: { user }
+      data: { user },
     });
   } catch (err) {
-    console.error('GetProfile error:', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch profile due to a server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error("GetProfile error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch profile due to a server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };
