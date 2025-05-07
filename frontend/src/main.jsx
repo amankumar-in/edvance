@@ -6,14 +6,20 @@ import "./index.css";
 import AppRouter from "../providers/RouterProvider";
 import { Toaster } from "sonner";
 import { QueryProvider } from "../providers/QueryProvider";
+import { AuthProvider } from "./Context/AuthContext";
+import { RoleProvider } from "./Context/RoleContext";
 
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
-    <QueryProvider>
-      <Theme accentColor="purple" grayColor="slate">
-        <Toaster position="top-right" richColors />
-        <AppRouter />
-      </Theme>
-    </QueryProvider>
+  <QueryProvider>
+    <AuthProvider>
+      <RoleProvider>
+        <Theme accentColor="purple" grayColor="slate">
+          <Toaster position="top-right" richColors />
+          <AppRouter />
+        </Theme>
+      </RoleProvider>
+    </AuthProvider>
+  </QueryProvider>
   // </StrictMode>
 );

@@ -1,0 +1,6 @@
+export { default as TeacherRoutes } from './TeacherRoutes'
+export { default as StudentRoutes } from './StudentRoutes'
+export { default as SocialWorkerRoutes } from './SocialWorkerRoutes'
+export { default as SchoolAdminRoutes } from './SchoolAdminRoutes'
+export { default as PlatformAdminRoutes } from './PlatformAdminRoutes'
+export { default as ParentRoutes } from './ParentRoutes'

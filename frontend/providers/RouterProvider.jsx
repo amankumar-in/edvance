@@ -1,42 +1,41 @@
-import {
-  createBrowserRouter,
-  createRoutesFromElements,
-  Route,
-  RouterProvider,
-} from "react-router";
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router";
 import App from "../src/App";
-import Login from "../src/pages/auth/Login";
-import ForgotPassword from "../src/pages/auth/ForgotPassword";
-import RoleSelection from "../src/pages/auth/RoleSelection";
-import Register from "../src/pages/auth/Register.jsx";
-import AuthLayout from "../src/pages/auth/AuthLayout";
-import ResetPassword from "../src/pages/auth/ResetPassword";
-import EmailVerification from "../src/pages/auth/EmailVerification";
-import CreateProfile from "../src/pages/profile/CreateProfile";
-import ProtectedRoute from "../src/components/ProtectedRoute";
-import Dashboard from "../src/pages/dashboard/Dashboard";
+import { ParentRoutes, PlatformAdminRoutes, SchoolAdminRoutes, SocialWorkerRoutes, StudentRoutes, TeacherRoutes } from '../src/routes'
+import { AuthLayout, EmailVerification, ForgotPassword, Home, Login, NotFound, Register, ResetPassword, RoleSelection, SelectProfile } from "../src/pages";
+import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
+
       {/* Public Routes */}
-      <Route element={<AuthLayout />}>
-        <Route path="login" element={<Login />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-        <Route path="role-selection" element={<RoleSelection />} />
-        <Route path="email-verification" element={<EmailVerification />} />
-        <Route path="register" element={<Register />} />
+      <Route element={<PublicRoute />}>
+        <Route element={<AuthLayout />}>
+          <Route path="login" element={<Login />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
+          <Route path="role-selection" element={<RoleSelection />} />
+          <Route path="email-verification" element={<EmailVerification />} />
+          <Route path="register" element={<Register />} />
+        </Route>
       </Route>
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="profile/create" element={<CreateProfile />} />
+        <Route element={<ProtectedLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="select-profile" element={<SelectProfile />} />
+          <Route path="parent/*" element={<ParentRoutes />} />
+          <Route path="platform-admin/*" element={<PlatformAdminRoutes />} />
+          <Route path="school-admin/*" element={<SchoolAdminRoutes />} />
+          <Route path="social-worker/*" element={<SocialWorkerRoutes />} />
+          <Route path="student/*" element={<StudentRoutes />} />
+          <Route path="teacher/*" element={<TeacherRoutes />} />
+        </Route>
       </Route>
 
       {/* Fallback */}
-      {/* <Route path="*" element={<NotFound />} /> */}
+      <Route path="*" element={<NotFound />} />
     </Route>
   )
 );

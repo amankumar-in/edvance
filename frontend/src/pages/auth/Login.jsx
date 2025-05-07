@@ -14,11 +14,16 @@ import { toast } from 'sonner';
 import { useLogin } from '../../api/auth/auth.mutations';
 import MyButton from "../../components/MyButton";
 import { MdPerson } from '../../icons/index'
+import { useAuth } from "../../Context/AuthContext";
+import { buildSelectionList } from "../../utils/helperFunctions";
+
 
 export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const { loading, fetchProfile, setToken, setIsAuthenticated } = useAuth()
+
 
   // Initialize React Hook Form with validation
   const {
@@ -34,7 +39,7 @@ export default function Login() {
 
   // Login mutation from TanStack Query
   const {
-    mutate: loginUser,
+    mutateAsync: loginUser,
     isPending: isLoggingIn,
     isError: isLoginError,
     error: loginError,
@@ -46,21 +51,41 @@ export default function Login() {
    * - Stores user preference if "Remember me" is checked
    * - Navigates to dashboard on success
    */
-  const handleLogin = (data) => {
+  const handleLogin = async (data) => {
     loginUser(data, {
-      onSuccess: (response) => {
-        // Display success notification
+      onSuccess: async (response) => {
+        // Show toast
         toast.success("Login successful", {
           description: `Welcome back, ${response.data?.user?.email || "User"}!`,
         });
+
+        const { data } = response;
+        const { accessToken } = data ?? {};
+
+        setToken(accessToken);
+        setIsAuthenticated(true)
+
+        const profileData = await fetchProfile();
+        const { user, profiles } = profileData;
+
+        const selectionList = buildSelectionList(user, profiles);
+
+        if (selectionList.length === 0) {
+          toast.error("No valid roles or profiles found.");
+          return;
+        }
+
+        if (selectionList.length === 1) {
+          const onlyOption = selectionList[0];
+          navigate(onlyOption.route);
+        } else {
+          navigate("/select-profile", { state: { selectionList } });
+        }
 
         // Store remember me preference if selected
         if (rememberMe) {
           localStorage.setItem("rememberMe", "true");
         }
-
-        // Navigate to dashboard
-        navigate("/dashboard");
       },
       onError: (error) => {
         console.log(error);

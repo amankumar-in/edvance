@@ -6,6 +6,7 @@ import {
   forgotPassword,
   verifyResetToken,
   resetPassword,
+  logout,
 } from "./auth.api";
 
 /**
@@ -73,6 +74,15 @@ const useResetPassword = () => {
   });
 };
 
+/**
+ * Hook for user logout
+ */
+const useLogout = () => {
+  return useMutation({
+    mutationFn: logout,
+  });
+};
+
 export {
   useRegister,
   useVerifyEmail,
@@ -80,4 +90,5 @@ export {
   useForgotPassword,
   useVerifyResetToken,
   useResetPassword,
+  useLogout,
 };
