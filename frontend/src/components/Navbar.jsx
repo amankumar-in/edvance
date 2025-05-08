@@ -5,7 +5,7 @@ export default function Navbar() {
   const { handleLogout, isLoggingOut } = useAuth();
 
   return (
-    <Flex as="nav" align="center" justify="between" px="5" py="3" className="bg-[--slate-1] border-b border-[--slate-6] w-full">
+    <Flex as="nav" align="center" justify="between" px="5" py="3" className="h-16 bg-[--slate-1] border-b border-[--slate-6] w-full sticky top-0 z-50">
       <Text weight="bold" size="5" color="purple">
         Univance
       </Text>
@@ -13,7 +13,6 @@ export default function Navbar() {
         disabled={isLoggingOut}
         color="red" variant="soft"
         onClick={handleLogout}
-        size="3"
       >
         Logout
       </Button>

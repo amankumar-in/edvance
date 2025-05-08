@@ -1,7 +1,6 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router";
+import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from "react-router";
 import App from "../src/App";
-import { ParentRoutes, PlatformAdminRoutes, SchoolAdminRoutes, SocialWorkerRoutes, StudentRoutes, TeacherRoutes } from '../src/routes'
-import { AuthLayout, EmailVerification, ForgotPassword, Home, Login, NotFound, Register, ResetPassword, RoleSelection, SelectProfile } from "../src/pages";
+import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, PlatformAdminDashboard, Register, ResetPassword, RoleSelection, SchoolAdminDashboard, SelectProfile, SocialWorkerDashboard, StudentDashboard, TeacherDashboard } from "../src/pages";
 import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components'
 
 const router = createBrowserRouter(
@@ -25,12 +24,34 @@ const router = createBrowserRouter(
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="select-profile" element={<SelectProfile />} />
-          <Route path="parent/*" element={<ParentRoutes />} />
-          <Route path="platform-admin/*" element={<PlatformAdminRoutes />} />
-          <Route path="school-admin/*" element={<SchoolAdminRoutes />} />
-          <Route path="social-worker/*" element={<SocialWorkerRoutes />} />
-          <Route path="student/*" element={<StudentRoutes />} />
-          <Route path="teacher/*" element={<TeacherRoutes />} />
+          <Route path="parent" >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<ParentDashboard />} />
+            <Route path="create-profile" element={<CreateParentProfile />} />
+          </Route>
+          <Route path="platform-admin">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<PlatformAdminDashboard />} />
+          </Route>
+          <Route path="school-admin">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<SchoolAdminDashboard />} />
+          </Route>
+          <Route path="social-worker">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<SocialWorkerDashboard />} />
+            <Route path="create-profile" element={<CreateSocialWorkerProfile />} />
+          </Route>
+          <Route path="student" >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<StudentDashboard />} />
+            <Route path="create-profile" element={<CreateStudentProfile />} />
+          </Route>
+          <Route path="teacher" >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<TeacherDashboard />} />
+            <Route path="create-profile" element={<CreateTeacherProfile />} />
+          </Route>
         </Route>
       </Route>
 
