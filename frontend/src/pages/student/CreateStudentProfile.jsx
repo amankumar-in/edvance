@@ -1,19 +1,22 @@
 import { Button, Callout, Flex, Select, Text, TextField } from '@radix-ui/themes';
 import { Info } from 'lucide-react';
-import React, { use } from 'react';
+import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useCreateStudentProfile } from '../../api/student/student.mutations';
-import { Container } from '../../components';
+import { useUpdateUserProfile } from '../../api/user/user.mutations';
+import { Container, ProfilePictureUpload } from '../../components';
 import { useAuth } from '../../Context/AuthContext';
-import { useUpdateUserProfile } from '../../api/user/user.mutations'
+
 
 const gradeOptions = [
   'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade',
   '6th Grade', '7th Grade', '8th Grade', '9th Grade', '10th Grade',
   '11th Grade', '12th Grade'
 ];
+
+// ProfilePictureUpload component
 
 function calculateAge(dateString) {
   const today = new Date();
@@ -56,10 +59,10 @@ function CreateStudentProfile() {
     isPending: isUpdatingUserProfile,
     isError: isErrorUpdatingUserProfile,
     error: errorUpdatingUserProfile,
-  } = useUpdateUserProfile()
+  } = useUpdateUserProfile();
 
   const onSubmit = async (data) => {
-    const { grade, ...userData } = data
+    const { grade, ...userData } = data;
 
     try {
       await updateUserProfile(userData);
@@ -99,6 +102,10 @@ function CreateStudentProfile() {
             </Callout.Text>
           </Callout.Root>
         )}
+        
+        {/* Profile Picture Upload Component */}
+        <ProfilePictureUpload />
+        
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* First Name and Last Name */}
           <Flex gap={'4'} className='flex-col sm:flex-row'>

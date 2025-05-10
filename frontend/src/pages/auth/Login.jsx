@@ -66,7 +66,7 @@ export default function Login() {
         setIsAuthenticated(true)
 
         const profileData = await fetchProfile();
-        const { user, profiles } = profileData;
+        const { user, profiles } = profileData ?? {};
 
         const selectionList = buildSelectionList(user, profiles);
 

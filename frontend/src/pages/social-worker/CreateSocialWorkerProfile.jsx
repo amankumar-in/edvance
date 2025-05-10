@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useCreateSocialWorkerProfile } from '../../api/social-worker/socialWorker.mutations';
 import { useUpdateUserProfile } from '../../api/user/user.mutations';
-import { Container } from '../../components';
+import { Container, ProfilePictureUpload } from '../../components';
 import { useAuth } from '../../Context/AuthContext';
 
 function calculateAge(dateString) {
@@ -91,6 +91,10 @@ function CreateSocialWorkerProfile() {
             </Callout.Text>
           </Callout.Root>
         )}
+
+        {/* Profile Picture Upload Component */}
+        <ProfilePictureUpload />
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* First Name and Last Name */}
           <Flex gap={'4'} className='flex-col sm:flex-row'>
