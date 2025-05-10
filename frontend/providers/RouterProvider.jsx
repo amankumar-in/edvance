@@ -1,7 +1,8 @@
 import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from "react-router";
 import App from "../src/App";
-import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, PlatformAdminDashboard, Register, ResetPassword, RoleSelection, SchoolAdminDashboard, SelectProfile, SocialWorkerDashboard, StudentDashboard, TeacherDashboard } from "../src/pages";
-import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components'
+import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
+import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SchoolAdminDashboard, SelectProfile, SocialWorkerDashboard, StudentDashboard, TeacherDashboard } from "../src/pages";
+import { Overview, PlatformAdminDashboardLayout, Users } from "../src/pages/platform-admin";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,10 +30,6 @@ const router = createBrowserRouter(
             <Route path="dashboard" element={<ParentDashboard />} />
             <Route path="create-profile" element={<CreateParentProfile />} />
           </Route>
-          <Route path="platform-admin">
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<PlatformAdminDashboard />} />
-          </Route>
           <Route path="school-admin">
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<SchoolAdminDashboard />} />
@@ -51,6 +48,13 @@ const router = createBrowserRouter(
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<TeacherDashboard />} />
             <Route path="create-profile" element={<CreateTeacherProfile />} />
+          </Route>
+        </Route>
+        <Route path="platform-admin">
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<PlatformAdminDashboardLayout />} >
+            <Route index element={<Overview />} />
+            <Route path="users" element={<Users />} />
           </Route>
         </Route>
       </Route>

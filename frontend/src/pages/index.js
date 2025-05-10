@@ -21,8 +21,6 @@ export { default as CreateSocialWorkerProfile } from './social-worker/CreateSoci
 
 export { default as SchoolAdminDashboard } from './school-admin/SchoolAdminDashboard'
 
-export { default as PlatformAdminDashboard } from './platform-admin/PlatformAdminDashboard'
-
 export { default as NotFound } from './NotFound'
 
 export { default as Home } from './Home'

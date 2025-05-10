@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useLayo
 import { getProfile } from '../api/auth/auth.api';
 import { toast } from 'sonner';
 import { useLogout } from '../api/auth/auth.mutations'
+import { Loader } from '../components';
+import { Flex } from '@radix-ui/themes';
 
 // Define the shape and default values for the AuthContext
 const AuthContext = createContext({
@@ -96,7 +98,9 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {loading ? (
-        <>Loading...</>
+        <Flex justify='center' align='center' className='h-screen'>
+          <Loader />
+        </Flex>
       ) : children}
     </AuthContext.Provider>
   );
