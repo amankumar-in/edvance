@@ -2,7 +2,7 @@ import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterP
 import App from "../src/App";
 import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
 import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SchoolAdminDashboard, SelectProfile, SocialWorkerDashboard, StudentDashboard, TeacherDashboard } from "../src/pages";
-import { Overview, PlatformAdminDashboardLayout, Users } from "../src/pages/platform-admin";
+import { Overview, PlatformAdminDashboardLayout, Users, Students, Teachers, Parents, SocialWorkers, SchoolAdmins } from "../src/pages/platform-admin";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -54,7 +54,14 @@ const router = createBrowserRouter(
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<PlatformAdminDashboardLayout />} >
             <Route index element={<Overview />} />
-            <Route path="users" element={<Users />} />
+            <Route path="users" element={<Users />} >
+              <Route index element={<Navigate to="students" replace />} />
+              <Route path="students" element={<Students />} />
+              <Route path="teachers" element={<Teachers />} />
+              <Route path="parents" element={<Parents />} />
+              <Route path="social-workers" element={<SocialWorkers />} />
+              <Route path="school-admins" element={<SchoolAdmins />} />
+            </Route>
           </Route>
         </Route>
       </Route>

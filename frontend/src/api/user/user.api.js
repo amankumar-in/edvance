@@ -16,4 +16,16 @@ export const uploadAvatar = async (file) => {
     },
   });
   return response.data;
+};
+
+export const getUsersByRole = async ({ role, page = 1, limit = 10, sort = "firstName", order = "asc" }) => {
+  const response = await apiClient.get(`/users/by-role/${role}`, {
+    params: { page, limit, sort, order }
+  });
+  return response.data;
+};
+
+export const getTotalUserCount = async () => {
+  const response = await apiClient.get('/users/stats/totalUsers');
+  return response.data;
 }; 

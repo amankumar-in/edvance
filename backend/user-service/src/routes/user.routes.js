@@ -523,4 +523,174 @@ router.get(
  */
 router.get("/me/profiles", authMiddleware.verifyToken, userController.getAllProfiles);
 
+/**
+ * @openapi
+ * /users/by-role/{role}:
+ *   get:
+ *     summary: Get users by role with pagination
+ *     description: Retrieve users filtered by role with pagination. This endpoint is accessible only to administrators.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [student, parent, teacher, social_worker, school_admin]
+ *         required: true
+ *         description: The role to filter users by
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of records per page
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           default: firstName
+ *         description: Field to sort by (e.g., firstName, lastName, email, createdAt)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Sort order (ascending or descending)
+ *     responses:
+ *       200:
+ *         description: Users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     docs:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           email:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                           firstName:
+ *                             type: string
+ *                           lastName:
+ *                             type: string
+ *                           roles:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                     totalDocs:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     hasPrevPage:
+ *                       type: boolean
+ *                     hasNextPage:
+ *                       type: boolean
+ *                     prevPage:
+ *                       type: integer
+ *                       nullable: true
+ *                     nextPage:
+ *                       type: integer
+ *                       nullable: true
+ *                     pagingCounter:
+ *                       type: integer
+ *       400:
+ *         description: Invalid role specified
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Access denied - insufficient permissions
+ *       500:
+ *         description: Failed to fetch users
+ */
+router.get(
+  "/by-role/:role",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["platform_admin"]),
+  userController.getUsersByRole
+);
+
+/**
+ * @openapi
+ * /users/stats/totalUsers:
+ *   get:
+ *     summary: Get total user count excluding platform admins
+ *     description: Returns the total number of users on the platform, excluding platform admins
+ *     tags:
+ *       - Users
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User count retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       description: Total users excluding platform admins
+ *                       example: 125
+ *       401:
+ *         description: Unauthorized - User not authenticated
+ *       403:
+ *         description: Forbidden - User doesn't have required permissions
+ *       500:
+ *         description: Server error - Failed to fetch user count
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to fetch user count"
+ *                 error:
+ *                   type: string
+ *                   example: "Database connection error"
+ */
+router.get(
+  "/stats/totalUsers",
+  authMiddleware.verifyToken,
+  userController.getTotalUserCount
+)
+
 module.exports = router;

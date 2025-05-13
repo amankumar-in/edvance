@@ -3,7 +3,7 @@ import { useAuth } from '../../Context/AuthContext';
 import { Avatar, Button, DropdownMenu, Flex, IconButton, Select, Separator, Text, TextField } from '@radix-ui/themes';
 import profileFallback from '../../assets/profileImage.webp';
 import { Link } from 'react-router';
-import { Search, LogOut, Settings as SettingsIcon, Menu } from 'lucide-react';
+import { Search, LogOut, Settings as SettingsIcon, Menu, MenuIcon } from 'lucide-react';
 
 function Header({ toggleSidebar }) {
   const { handleLogout, isLoggingOut } = useAuth();
@@ -19,12 +19,15 @@ function Header({ toggleSidebar }) {
         >
           <Menu size={20} />
         </IconButton>
-        <Text weight="bold" size="5" color="purple">
-          Univance
+        <Text weight="medium" size="7">
+          EdVance
         </Text>
       </Flex>
-      <TextField.Root placeholder='Search' size={'3'} className='flex-1 hidden max-w-sm md:flex'>
+      <TextField.Root placeholder='Search' size={'3'} className='flex-1 hidden max-w-sm md:flex' radius='full'>
         <TextField.Slot side="left">
+          <MenuIcon size={16} color='var(--gray-9)' />
+        </TextField.Slot>
+        <TextField.Slot side="right">
           <Search size={16} color='var(--gray-9)' />
         </TextField.Slot>
       </TextField.Root>
@@ -34,8 +37,6 @@ function Header({ toggleSidebar }) {
       <Flex align="center" gap="4" className='text-sm'>
         <Button
           variant='ghost'
-          color='gray'
-          highContrast
           asChild
           className="hidden md:flex"
         >
@@ -46,7 +47,7 @@ function Header({ toggleSidebar }) {
         <Separator orientation='vertical' className="hidden md:block" />
         <div className='hidden md:block'>
           <Select.Root defaultValue="US">
-            <Select.Trigger />
+            <Select.Trigger  variant='ghost'/>
             <Select.Content variant="soft" position='popper'>
               <Select.Item value="US">United States</Select.Item>
               <Select.Item value="UG">Uganda</Select.Item>

@@ -3,6 +3,7 @@ const Student = require("../models/student.model");
 const Parent = require("../models/parent.model");
 const Teacher = require("../models/teacher.model");
 const SocialWorker = require("../models/socialWorker.model");
+const School = require("../models/school.model");
 
 // Get current user profile
 exports.getProfile = async (req, res) => {
@@ -265,6 +266,114 @@ exports.getAllProfiles = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get all profiles",
+      error: error.message,
+    });
+  }
+};
+
+// Get users by role with pagination
+exports.getUsersByRole = async (req, res) => {
+  try {
+    const { role } = req.params;
+    const { page = 1, limit = 10, sort = "firstName", order = "asc" } = req.query;
+
+    // Validate role parameter
+    const validRoles = ["student", "parent", "teacher", "social_worker", "school_admin"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role specified",
+      });
+    }
+
+    // Convert page and limit to numbers
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Create filter for role
+    const filter = { roles: role };
+
+    // Set up sorting
+    const sortOrder = order.toLowerCase() === "desc" ? -1 : 1;
+    const sortOptions = {};
+    sortOptions[sort] = sortOrder;
+
+    // Query the database with pagination
+    const users = await User.find(filter)
+      .select('-password') // Exclude password field
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    // Get total count for pagination
+    const total = await User.countDocuments(filter);
+
+    // Calculate pagination data
+    const totalPages = Math.ceil(total / limitNum);
+    const hasPrevPage = pageNum > 1;
+    const hasNextPage = pageNum < totalPages;
+    const prevPage = hasPrevPage ? pageNum - 1 : null;
+    const nextPage = hasNextPage ? pageNum + 1 : null;
+    const pagingCounter = (pageNum - 1) * limitNum + 1;
+    const offset = skip;
+
+    // Add a name field combining firstName and lastName
+    const usersWithName = users.map(user => {
+      // Create a name field combining firstName and lastName
+      const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      return {
+        ...user,
+        name
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        docs: usersWithName,
+        totalDocs: total,
+        limit: limitNum,
+        page: pageNum,
+        totalPages: totalPages,
+        offset: offset,
+        hasPrevPage: hasPrevPage,
+        hasNextPage: hasNextPage,
+        prevPage: prevPage,
+        nextPage: nextPage,
+        pagingCounter: pagingCounter
+      }
+    });
+  } catch (error) {
+    console.error("Get users by role error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+};
+
+// Get total user count excluding platform admins
+exports.getTotalUserCount = async (req, res) => {
+  try {
+    // Count users that don't have the platform_admin role
+    const totalUsers = await User.countDocuments({
+      roles: { $nin: ["platform_admin"] }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        total: totalUsers
+      }
+    });
+  } catch (error) {
+    console.error("Get total user count error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user count",
       error: error.message,
     });
   }

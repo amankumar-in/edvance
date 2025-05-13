@@ -1,8 +1,13 @@
 import React from 'react'
 
-function Loader({ className = '' }) {
+function Loader({ className = '', borderWidth = 4, borderColor = 'var(--purple-9)' }) {
   return (
-    <div className={`size-10 rounded-full border-4 border-l-transparent animate-spin-fast ${className} border-[--purple-9]`} />
+    <div className={`size-10 rounded-full border-${borderWidth} border-l-transparent animate-spin-fast ${className}`} 
+    style={{
+      border: `${borderWidth}px solid ${borderColor}`, 
+      borderLeftColor: 'transparent',
+    }}
+    />
 
   )
 }
