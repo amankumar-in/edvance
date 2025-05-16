@@ -1,6 +1,6 @@
-import { Avatar, Badge, Button, Callout, CheckboxGroup, DataList, Flex, Heading, IconButton, Separator, Skeleton, Text, TextField, Tooltip } from '@radix-ui/themes'
+import { Avatar, Badge, Button, Callout, CheckboxGroup, DataList, Flex, Heading, Separator, Skeleton, Text, TextField } from '@radix-ui/themes'
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertCircleIcon, ArrowLeft, PencilIcon } from 'lucide-react'
+import { AlertCircleIcon, ArrowLeft } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router'
@@ -18,8 +18,8 @@ const roleFields = ['student', 'parent', 'teacher', 'social_worker', 'school_adm
 
 function UserDetails() {
   const { id } = useParams()
-  const [isAccountEditing, setIsAccountEditing] = useState(false);
-  const { register, handleSubmit, formState: { errors }, reset, control } = useForm()
+  const [isAccountEditing, setIsAccountEditing] = useState(true);
+  const { register, handleSubmit, formState: { errors, isDirty }, reset, control } = useForm()
 
   // Get User Account details
   const {
@@ -191,17 +191,6 @@ function UserDetails() {
           <Heading as='h2' size={'5'} weight={'medium'}>
             Account Details
           </Heading>
-          <Tooltip content='Edit Account Details'>
-            <IconButton
-              type='button'
-              size='1'
-              variant='soft'
-              color='gray'
-              onClick={() => setIsAccountEditing(!isAccountEditing)}
-            >
-              <PencilIcon size={14} />
-            </IconButton>
-          </Tooltip>
         </Flex>
         <div className='flex flex-wrap justify-between gap-4'>
           <div className='flex-1 min-w-[240px]'>
@@ -215,31 +204,23 @@ function UserDetails() {
               <DataList.Item>
                 <DataList.Label color='blue' minWidth="88px">Roles</DataList.Label>
                 <DataList.Value className='flex flex-wrap gap-y-1'>
-                  {isAccountEditing ? (
-                    <Controller
-                      name="roles"
-                      control={control}
-                      render={({ field }) => (
-                        <CheckboxGroup.Root
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={isUpdatingAccount}
-                        >
-                          {roleFields.map((role) => (
-                            <CheckboxGroup.Item key={role} value={role}>
-                              {role}
-                            </CheckboxGroup.Item>
-                          ))}
-                        </CheckboxGroup.Root>
-                      )}
-                    />
-                  ) : (
-                    roles.map((role) => (
-                      <Badge key={role} variant='surface' className='mr-1 capitalize'>
-                        {role.split('_').join(' ')}
-                      </Badge>
-                    ))
-                  )}
+                  <Controller
+                    name="roles"
+                    control={control}
+                    render={({ field }) => (
+                      <CheckboxGroup.Root
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isUpdatingAccount}
+                      >
+                        {roleFields.map((role) => (
+                          <CheckboxGroup.Item key={role} value={role}>
+                            {role}
+                          </CheckboxGroup.Item>
+                        ))}
+                      </CheckboxGroup.Root>
+                    )}
+                  />
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
@@ -277,40 +258,26 @@ function UserDetails() {
               <DataList.Item>
                 <DataList.Label color='blue' minWidth="88px">Phone</DataList.Label>
                 <DataList.Value>
-                  {isAccountEditing ? (
-                    <TextField.Root
-                      type='tel'
-                      autoFocus
-                      aria-label='Phone'
-                      placeholder='Phone'
-                      {...register('phoneNumber')}
-                      className='w-full'
-                      disabled={isUpdatingAccount}
-                    />
-                  ) : (
-                    phoneNumber || '-'
-                  )}
+                  <TextField.Root
+                    type='tel'
+                    aria-label='Phone'
+                    placeholder='Phone'
+                    {...register('phoneNumber')}
+                    className='w-full'
+                    disabled={isUpdatingAccount}
+                  />
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label color='blue' minWidth="88px">Date of Birth </DataList.Label>
                 <DataList.Value>
-                  {
-                    isAccountEditing ? (
-                      <TextField.Root
-                        type='date'
-                        aria-label='Date of Birth'
-                        placeholder='Date of Birth'
-                        {...register('dateOfBirth')}
-                        disabled={isUpdatingAccount}
-                      />
-                    ) : (
-                      dateOfBirth ? new Date(dateOfBirth).toLocaleString("en-IN", {
-                        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        dateStyle: "medium",
-                      }) : '-'
-                    )
-                  }
+                  <TextField.Root
+                    type='date'
+                    aria-label='Date of Birth'
+                    placeholder='Date of Birth'
+                    {...register('dateOfBirth')}
+                    disabled={isUpdatingAccount}
+                  />
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
@@ -327,37 +294,25 @@ function UserDetails() {
               <DataList.Item>
                 <DataList.Label color='blue' minWidth="88px">First Name</DataList.Label>
                 <DataList.Value>
-                  {
-                    isAccountEditing ? (
-                      <TextField.Root
-                        aria-label='First Name'
-                        placeholder='First Name'
-                        className='w-full'
-                        {...register('firstName')}
-                        disabled={isUpdatingAccount}
-                      />
-                    ) : (
-                      firstName || '-'
-                    )
-                  }
+                  <TextField.Root
+                    aria-label='First Name'
+                    placeholder='First Name'
+                    className='w-full'
+                    {...register('firstName')}
+                    disabled={isUpdatingAccount}
+                  />
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label color='blue' minWidth="88px">Last Name</DataList.Label>
                 <DataList.Value>
-                  {
-                    isAccountEditing ? (
-                      <TextField.Root
-                        aria-label='Last Name'
-                        placeholder='Last Name'
-                        {...register('lastName')}
-                        className='w-full'
-                        disabled={isUpdatingAccount}
-                      />
-                    ) : (
-                      lastName || '-'
-                    )
-                  }
+                  <TextField.Root
+                    aria-label='Last Name'
+                    placeholder='Last Name'
+                    {...register('lastName')}
+                    className='w-full'
+                    disabled={isUpdatingAccount}
+                  />
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
@@ -370,29 +325,24 @@ function UserDetails() {
 
           </div>
         </div>
-        {isAccountEditing && (
-          <Flex gap='2' justify='end' align='center'>
-            <Button
-              type='button'
-              variant='soft'
-              color='gray'
-              onClick={() => {
-                setIsAccountEditing(false)
-                reset()
-              }}
-              disabled={isUpdatingAccount}
-            >
-              Cancel
-            </Button>
-            <Button
-              type='submit'
-              color='grass'
-              disabled={isUpdatingAccount}
-            >
-              {isUpdatingAccount ? 'Saving...' : 'Save'}
-            </Button>
-          </Flex>
-        )}
+        <Flex gap='2' justify='end' align='center'>
+          <Button
+            type='button'
+            variant='soft'
+            color='gray'
+            onClick={() => reset()}
+            disabled={isUpdatingAccount || !isDirty}
+          >
+            Reset
+          </Button>
+          <Button
+            type='submit'
+            color='grass'
+            disabled={isUpdatingAccount || !isDirty}
+          >
+            {isUpdatingAccount ? 'Saving...' : 'Save'}
+          </Button>
+        </Flex>
       </form>
 
       <Separator size={'4'} />

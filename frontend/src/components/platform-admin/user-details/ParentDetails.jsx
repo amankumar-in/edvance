@@ -1,14 +1,13 @@
-import { Button, DataList, Flex, Heading, IconButton, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { Button, DataList, Flex, Heading, Text, TextField } from '@radix-ui/themes';
 import { useQueryClient } from '@tanstack/react-query';
-import { PencilIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useUpdateParentProfile } from '../../../api/parent/parent.mutations';
 
 const ParentDetails = ({ data }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const { register, handleSubmit } = useForm({
+  const [isEditing, setIsEditing] = useState(true);
+  const { register, handleSubmit, formState: { isDirty }, reset } = useForm({
     defaultValues: {
       tuitPoints: data?.tuitPoints,
     }
@@ -18,11 +17,12 @@ const ParentDetails = ({ data }) => {
   const { mutate: updateParentProfile, isPending: isUpdatingParentProfile } = useUpdateParentProfile();
 
   const handleUpdateParentProfile = (formData) => {
-    updateParentProfile({ id: data?._id, data: { tuitPoints: Number(formData.tuitPoints) } },
+    updateParentProfile({ id: data?._id, data: formData },
       {
         onSuccess: ({ data: updatedParent }) => {
           setIsEditing(false);
           toast.success('Parent profile updated successfully');
+          reset({ tuitPoints: updatedParent.tuitPoints });
 
           // Update the parent profile in the query cache
           queryClient.setQueryData(['parents', data?.userId], (prev) => {
@@ -51,17 +51,6 @@ const ParentDetails = ({ data }) => {
         <Heading as='h3' size={'3'} weight={'medium'}>
           Parent -
         </Heading>
-        <Tooltip content='Edit Parent Details'>
-          <IconButton
-            type='button'
-            size='1'
-            variant='soft'
-            color='gray'
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <PencilIcon size={14} />
-          </IconButton>
-        </Tooltip>
       </Flex>
       <Flex gap='4' wrap='wrap'>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
@@ -81,19 +70,14 @@ const ParentDetails = ({ data }) => {
           <DataList.Item>
             <DataList.Label color='blue' minWidth="88px">Tuit Points</DataList.Label>
             <DataList.Value>
-              {isEditing ? (
-                <TextField.Root
-                  type='number'
-                  autoFocus
-                  aria-label='Tuit Points'
-                  placeholder='Tuit Points'
-                  {...register('tuitPoints')}
-                  className='w-full'
-                  disabled={isUpdatingParentProfile}
-                />
-              ) : (
-                data?.tuitPoints ?? 0
-              )}
+              <TextField.Root
+                type='number'
+                aria-label='Tuit Points'
+                placeholder='Tuit Points'
+                {...register('tuitPoints', { valueAsNumber: true })}
+                className='w-full'
+                disabled={isUpdatingParentProfile}
+              />
             </DataList.Value>
           </DataList.Item>
         </DataList.Root>
@@ -127,26 +111,24 @@ const ParentDetails = ({ data }) => {
           </DataList.Value>
         </DataList.Item>
       </DataList.Root>
-      {isEditing && (
-        <Flex gap='2' justify='end' align='center'>
-          <Button
-            type='button'
-            variant='soft'
-            color='gray'
-            onClick={() => setIsEditing(false)}
-            disabled={isUpdatingParentProfile}
-          >
-            Cancel
-          </Button>
-          <Button
-            type='submit'
-            color='grass'
-            disabled={isUpdatingParentProfile}
-          >
-            {isUpdatingParentProfile ? 'Saving...' : 'Save'}
-          </Button>
-        </Flex>
-      )}
+      <Flex gap='2' justify='end' align='center'>
+        <Button
+          type='button'
+          variant='soft'
+          color='gray'
+          onClick={() => reset()}
+          disabled={isUpdatingParentProfile || !isDirty}
+        >
+          Reset
+        </Button>
+        <Button
+          type='submit'
+          color='grass'
+          disabled={isUpdatingParentProfile || !isDirty}
+        >
+          {isUpdatingParentProfile ? 'Saving...' : 'Save'}
+        </Button>
+      </Flex>
     </form>
   )
 }

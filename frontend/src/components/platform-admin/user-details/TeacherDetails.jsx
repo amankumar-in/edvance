@@ -1,14 +1,13 @@
-import { Badge, Button, DataList, Flex, Heading, IconButton, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { Button, DataList, Flex, Heading, Text, TextField } from '@radix-ui/themes';
 import { useQueryClient } from '@tanstack/react-query';
-import { PencilIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useUpdateTeacherProfile } from '../../../api/teacher/teacher.mutations';
 
 const TeacherDetails = ({ data }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const { register, handleSubmit } = useForm({
+  const [isEditing, setIsEditing] = useState(true);
+  const { register, handleSubmit, formState: { isDirty }, reset } = useForm({
     defaultValues: {
       subjectsTaught: data?.subjectsTaught?.join(', '),
     }
@@ -54,17 +53,6 @@ const TeacherDetails = ({ data }) => {
         <Heading as='h3' size={'3'} weight={'medium'}>
           Teacher -
         </Heading>
-        <Tooltip content='Edit Teacher Details'>
-          <IconButton
-            type='button'
-            size='1'
-            variant='soft'
-            color='gray'
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <PencilIcon size={14} />
-          </IconButton>
-        </Tooltip>
       </Flex>
       <Flex gap='4' wrap='wrap'>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
@@ -92,43 +80,30 @@ const TeacherDetails = ({ data }) => {
             <DataList.Label color='blue' minWidth="88px">Subjects Taught</DataList.Label>
             <DataList.Value>
               <Flex gap='1' wrap='wrap'>
-                {isEditing ? (
-                  <>
-                    <TextField.Root
-                      type='text'
-                      autoFocus
-                      aria-label='Subjects Taught'
-                      placeholder='Subjects Taught'
-                      {...register('subjectsTaught')}
-                      className='w-full'
-                      disabled={isUpdatingTeacherProfile}
-                    />
-                    <Text as='p' size='1' color='gray'>
-                      Enter subjects taught separated by commas
-                    </Text>
-                  </>
-                ) : (
-                  data?.subjectsTaught?.length > 0 ? (
-                    data?.subjectsTaught?.map((subject) => (
-                      <Badge key={subject} color='gray' className='capitalize'>{subject}</Badge>
-                    ))
-                  ) : '-'
-                )}
+                <TextField.Root
+                  type='text'
+                  aria-label='Subjects Taught'
+                  placeholder='Subjects Taught'
+                  {...register('subjectsTaught')}
+                  className='w-full'
+                  disabled={isUpdatingTeacherProfile}
+                />
+                <Text as='p' size='1' color='gray'>
+                  Enter subjects taught separated by commas
+                </Text>
               </Flex>
             </DataList.Value>
           </DataList.Item>
         </DataList.Root>
       </Flex>
-      {isEditing && (
-        <Flex gap='2' justify='end' align='center'>
-          <Button type='button' variant='soft' color='gray' onClick={() => setIsEditing(false)} disabled={isUpdatingTeacherProfile}>
-            Cancel
-          </Button>
-          <Button type='submit' color='grass' disabled={isUpdatingTeacherProfile}>
-            {isUpdatingTeacherProfile ? 'Saving...' : 'Save'}
-          </Button>
-        </Flex>
-      )}
+      <Flex gap='2' justify='end' align='center'>
+        <Button type='button' variant='soft' color='gray' onClick={() => reset()} disabled={isUpdatingTeacherProfile || !isDirty}>
+          Reset
+        </Button>
+        <Button type='submit' color='grass' disabled={isUpdatingTeacherProfile || !isDirty}>
+          {isUpdatingTeacherProfile ? 'Saving...' : 'Save'}
+        </Button>
+      </Flex>
     </form>
   )
 }

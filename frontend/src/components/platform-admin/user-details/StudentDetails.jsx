@@ -1,6 +1,5 @@
-import { Button, DataList, Flex, Heading, IconButton, Select, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { Button, DataList, Flex, Heading, Select, Text, TextField } from '@radix-ui/themes';
 import { useQueryClient } from '@tanstack/react-query';
-import { PencilIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -9,8 +8,8 @@ import { useUpdateStudentProfile } from '../../../api/student/student.mutations'
 import { gradeOptions } from '../../../utils/constants';
 
 const StudentDetails = ({ data }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const { control, register, handleSubmit } = useForm({
+  const [isEditing, setIsEditing] = useState(true);
+  const { control, register, handleSubmit, formState: { isDirty }, reset } = useForm({
     defaultValues: {
       grade: data?.grade,
       level: data?.level,
@@ -84,18 +83,6 @@ const StudentDetails = ({ data }) => {
         <Heading as='h3' size={'3'} weight={'medium'}>
           Student -
         </Heading>
-
-        <Tooltip content='Edit Student Details'>
-          <IconButton
-            type='button'
-            size='1'
-            variant='soft'
-            color='gray'
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <PencilIcon size={14} />
-          </IconButton>
-        </Tooltip>
       </Flex>
       <Flex gap='1' align='center' direction={'column'} className='shadow-md p-2 rounded-md text-sm font-medium bg-[--accent-9] text-[--accent-contrast] max-w-xs'>
         <Text as='span'>
@@ -135,49 +122,40 @@ const StudentDetails = ({ data }) => {
             <DataList.Item>
               <DataList.Label color='blue' minWidth="88px">Grade</DataList.Label>
               <DataList.Value>
-                {isEditing ? (
-                  <Controller
-                    control={control}
-                    name="grade"
-                    render={({ field }) => (
-                      <Select.Root
-                        value={field.value}
-                        onValueChange={(value) => field.onChange(value)}
-                      >
-                        <Select.Trigger
-                          disabled={isUpdatingStudentProfile}
-                          autoFocus placeholder='Select Grade' radius="large" className='w-full' />
-                        <Select.Content position="popper">
-                          {gradeOptions.map((g) => (
-                            <Select.Item key={g} value={g} className='capitalize'>
-                              {g}
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Root>
-                    )}
-                  />
-                ) : (
-                  data?.grade
-                )}
+                <Controller
+                  control={control}
+                  name="grade"
+                  render={({ field }) => (
+                    <Select.Root
+                      value={field.value}
+                      onValueChange={(value) => field.onChange(value)}
+                    >
+                      <Select.Trigger
+                        disabled={isUpdatingStudentProfile}
+                        placeholder='Select Grade' radius="large" className='w-full' />
+                      <Select.Content position="popper">
+                        {gradeOptions.map((g) => (
+                          <Select.Item key={g} value={g} className='capitalize'>
+                            {g}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  )}
+                />
               </DataList.Value>
             </DataList.Item>
             <DataList.Item>
               <DataList.Label color='blue' minWidth="88px">Level</DataList.Label>
               <DataList.Value>
-                {isEditing ? (
-                  <TextField.Root
-                    type='number'
-                    autoFocus
-                    aria-label='Level'
-                    placeholder='Level'
-                    {...register('level')}
-                    className='w-full'
-                    disabled={isUpdatingStudentProfile}
-                  />
-                ) : (
-                  data?.level
-                )}
+                <TextField.Root
+                  type='number'
+                  aria-label='Level'
+                  placeholder='Level'
+                  {...register('level')}
+                  className='w-full'
+                  disabled={isUpdatingStudentProfile}
+                />
               </DataList.Value>
             </DataList.Item>
           </DataList.Root>
@@ -225,26 +203,24 @@ const StudentDetails = ({ data }) => {
           </DataList.Item>
         </DataList.Root>
       </Flex>
-      {isEditing && (
-        <Flex gap='2' justify='end' align='center'>
-          <Button
-            type='button'
-            variant='soft'
-            color='gray'
-            onClick={() => setIsEditing(false)}
-            disabled={isUpdatingStudentProfile}
-          >
-            Cancel
-          </Button>
-          <Button
-            type='submit'
-            color='grass'
-            disabled={isUpdatingStudentProfile}
-          >
-            {isUpdatingStudentProfile ? 'Saving...' : 'Save'}
-          </Button>
-        </Flex>
-      )}
+      <Flex gap='2' justify='end' align='center'>
+        <Button
+          type='button'
+          variant='soft'
+          color='gray'
+          onClick={() => reset()}
+          disabled={isUpdatingStudentProfile || !isDirty}
+        >
+          Reset
+        </Button>
+        <Button
+          type='submit'
+          color='grass'
+          disabled={isUpdatingStudentProfile || !isDirty}
+        >
+          {isUpdatingStudentProfile ? 'Saving...' : 'Save'}
+        </Button>
+      </Flex>
     </form>
   )
 }

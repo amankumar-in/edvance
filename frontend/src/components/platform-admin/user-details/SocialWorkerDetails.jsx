@@ -1,14 +1,13 @@
-import { Button, DataList, Flex, Heading, IconButton, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { Button, DataList, Flex, Heading, Text, TextField } from '@radix-ui/themes';
 import { useQueryClient } from '@tanstack/react-query';
-import { PencilIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useUpdateSocialWorkerProfile } from '../../../api/social-worker/socialWorker.mutations';
 
 const SocialWorkerDetails = ({ data }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const { register, handleSubmit } = useForm({
+  const [isEditing, setIsEditing] = useState(true);
+  const { register, handleSubmit, formState: { isDirty }, reset } = useForm({
     defaultValues: {
       caseloadLimit: data?.caseloadLimit,
       organization: data?.organization,
@@ -22,10 +21,7 @@ const SocialWorkerDetails = ({ data }) => {
     updateSocialWorkerProfile(
       {
         id: data?._id,
-        data: {
-          caseloadLimit: Number(formData.caseloadLimit),
-          organization: formData.organization
-        }
+        data: formData
       },
       {
         onSuccess: ({ data: updatedSocialWorker }) => {
@@ -33,6 +29,7 @@ const SocialWorkerDetails = ({ data }) => {
 
           toast.success('Social worker profile updated successfully');
           setIsEditing(false);
+          reset({ caseloadLimit, organization });
 
           // Update the social worker profile in the query cache
           queryClient.setQueryData(['socialWorkers', data?.userId], (prev) => {
@@ -62,17 +59,6 @@ const SocialWorkerDetails = ({ data }) => {
         <Heading as='h3' size={'3'} weight={'medium'}>
           Social Worker -
         </Heading>
-        <Tooltip content='Edit Social Worker Details'>
-          <IconButton
-            type='button'
-            size='1'
-            variant='soft'
-            color='gray'
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <PencilIcon size={14} />
-          </IconButton>
-        </Tooltip>
       </Flex>
       <Flex gap='4' wrap='wrap'>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
@@ -89,19 +75,14 @@ const SocialWorkerDetails = ({ data }) => {
           <DataList.Item>
             <DataList.Label color='blue' minWidth="88px">Case Load Limit</DataList.Label>
             <DataList.Value>
-              {isEditing ? (
-                <TextField.Root
-                  type='number'
-                  autoFocus
-                  aria-label='Case Load Limit'
-                  placeholder='Case Load Limit'
-                  {...register('caseloadLimit')}
-                  className='w-full'
-                  disabled={isUpdatingSocialWorkerProfile}
-                />
-              ) : (
-                data?.caseloadLimit ?? '-'
-              )}
+              <TextField.Root
+                type='number'
+                aria-label='Case Load Limit'
+                placeholder='Case Load Limit'
+                {...register('caseloadLimit', { valueAsNumber: true })}
+                className='w-full'
+                disabled={isUpdatingSocialWorkerProfile}
+              />
             </DataList.Value>
           </DataList.Item>
         </DataList.Root>
@@ -117,19 +98,14 @@ const SocialWorkerDetails = ({ data }) => {
           <DataList.Item>
             <DataList.Label color='blue' minWidth="88px">Organization</DataList.Label>
             <DataList.Value>
-              {isEditing ? (
-                <TextField.Root
-                  type='text'
-                  autoFocus
-                  aria-label='Organization'
-                  placeholder='Organization'
-                  {...register('organization')}
-                  className='w-full'
-                  disabled={isUpdatingSocialWorkerProfile}
-                />
-              ) : (
-                data?.organization ?? '-'
-              )}
+              <TextField.Root
+                type='text'
+                aria-label='Organization'
+                placeholder='Organization'
+                {...register('organization')}
+                className='w-full'
+                disabled={isUpdatingSocialWorkerProfile}
+              />
             </DataList.Value>
           </DataList.Item>
         </DataList.Root>
@@ -153,16 +129,14 @@ const SocialWorkerDetails = ({ data }) => {
           </DataList.Value>
         </DataList.Item>
       </DataList.Root>
-      {isEditing && (
-        <Flex gap='2' justify='end' align='center'>
-          <Button type='button' variant='soft' color='gray' onClick={() => setIsEditing(false)} disabled={isUpdatingSocialWorkerProfile}>
-            Cancel
-          </Button>
-          <Button type='submit' color='grass' disabled={isUpdatingSocialWorkerProfile}>
-            {isUpdatingSocialWorkerProfile ? 'Saving...' : 'Save'}
-          </Button>
-        </Flex>
-      )}
+      <Flex gap='2' justify='end' align='center'>
+        <Button type='button' variant='soft' color='gray' onClick={() => reset()} disabled={isUpdatingSocialWorkerProfile || !isDirty}>
+          Reset
+        </Button>
+        <Button type='submit' color='grass' disabled={isUpdatingSocialWorkerProfile || !isDirty}>
+          {isUpdatingSocialWorkerProfile ? 'Saving...' : 'Save'}
+        </Button>
+      </Flex>
     </form>
   )
 }
