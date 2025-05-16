@@ -378,3 +378,74 @@ exports.getTotalUserCount = async (req, res) => {
     });
   }
 };
+
+// Admin: Update any user's profile and roles (platform admin only)
+// This route should be protected by platform admin middleware
+exports.adminUpdateUserProfile = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { firstName, lastName, phoneNumber, dateOfBirth, roles } = req.body;
+
+    // List of valid roles
+    const validRoles = [
+      "student",
+      "parent",
+      "teacher",
+      "social_worker",
+      "school_admin"
+    ];
+
+    // Validate roles if provided
+    if (roles !== undefined) {
+      if (!Array.isArray(roles)) {
+        return res.status(400).json({
+          success: false,
+          message: "Roles must be an array",
+        });
+      }
+      const invalidRoles = roles.filter(role => !validRoles.includes(role));
+      if (invalidRoles.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid roles: ${invalidRoles.join(", ")}`,
+        });
+      }
+    }
+
+    // Find user by ID
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Update allowed fields
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+    if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
+    if (roles !== undefined) user.roles = roles;
+
+    user.updatedAt = Date.now();
+    await user.save();
+
+    // Don't send password
+    const updatedProfile = user.toObject();
+    delete updatedProfile.password;
+
+    res.status(200).json({
+      success: true,
+      message: "User profile updated successfully",
+      data: updatedProfile,
+    });
+  } catch (error) {
+    console.error("Admin update user profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user profile",
+      error: error.message,
+    });
+  }
+};

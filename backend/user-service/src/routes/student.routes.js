@@ -1396,4 +1396,10 @@ router.post(
   studentController.requestSchoolLink
 );
 
+router.get(
+  "/user/:userId",
+  authMiddleware.verifyToken,
+  studentController.getStudentByUserId
+);
+
 module.exports = router;

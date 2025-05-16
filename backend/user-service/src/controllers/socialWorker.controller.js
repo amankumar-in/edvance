@@ -402,3 +402,30 @@ exports.getCaseNotes = async (req, res) => {
     });
   }
 };
+
+// Get social worker profile by ID
+exports.getSocialWorkerProfileById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const socialWorker = await SocialWorker.findOne({ userId }).populate("assignedChildIds");
+    if (!socialWorker) {
+      return res.status(404).json({
+        success: false,
+        message: "Social worker profile not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: socialWorker,
+    });
+  } catch (error) {
+    console.error("Get social worker profile by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get social worker profile",
+      error: error.message,
+    });
+  }
+};

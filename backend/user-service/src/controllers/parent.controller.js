@@ -516,3 +516,32 @@ exports.respondToLinkRequest = async (req, res) => {
     });
   }
 };
+
+// Get parent by userId
+exports.getParentByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const parent = await Parent.findOne({ userId })
+      .populate("childIds", "userId")
+
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: "Parent not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: parent,
+    });
+  } catch (error) {
+    console.error("Get parent by userId error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get parent",
+      error: error.message,
+    });
+  }
+};

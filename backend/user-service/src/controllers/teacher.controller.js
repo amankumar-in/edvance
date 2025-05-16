@@ -151,3 +151,34 @@ exports.updateTeacherProfile = async (req, res) => {
     });
   }
 };
+
+// Get teacher by userId
+exports.getTeacherById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const teacher = await Teacher.findOne({ userId })
+      .populate("userId", "firstName lastName email avatar dateOfBirth")
+      .populate("schoolId", "name")
+      .populate("classIds", "name grade");
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: teacher,
+    });
+  } catch (error) {
+    console.error("Get teacher by userId error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get teacher",
+      error: error.message,
+    });
+  }
+};

@@ -367,4 +367,10 @@ router.put(
   teacherController.updateTeacherProfile
 );
 
+router.get(
+  "/:id",
+  authMiddleware.verifyToken,
+  teacherController.getTeacherById
+);
+
 module.exports = router;

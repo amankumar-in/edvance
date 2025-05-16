@@ -693,4 +693,11 @@ router.get(
   userController.getTotalUserCount
 )
 
+router.put(
+  "/admin/:id",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["platform_admin"]),
+  userController.adminUpdateUserProfile
+);
+
 module.exports = router;

@@ -655,3 +655,34 @@ exports.requestSchoolLink = async (req, res) => {
     });
   }
 };
+
+// Get student by userId
+exports.getStudentByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const student = await Student.findOne({ userId })
+      .populate("userId", "firstName lastName email avatar dateOfBirth")
+      .populate("parentIds", "userId firstName lastName")
+      .populate("teacherIds", "userId firstName lastName");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: student,
+    });
+  } catch (error) {
+    console.error("Get student by userId error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get student",
+      error: error.message,
+    });
+  }
+};

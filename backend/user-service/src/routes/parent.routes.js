@@ -787,4 +787,6 @@ router.post(
   parentController.respondToLinkRequest
 );
 
+router.get("/by-user/:userId", parentController.getParentByUserId);
+
 module.exports = router;

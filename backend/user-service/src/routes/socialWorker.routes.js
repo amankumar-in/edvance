@@ -813,4 +813,10 @@ router.get(
   socialWorkerController.getCaseNotes
 );
 
+router.get(
+  "/user/:id",
+  authMiddleware.verifyToken,
+  socialWorkerController.getSocialWorkerProfileById
+);
+
 module.exports = router;
