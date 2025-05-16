@@ -9,7 +9,7 @@ export const updateUserProfile = async (data) => {
 export const uploadAvatar = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   const response = await apiClient.post("/users/me/avatar", formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -28,4 +28,15 @@ export const getUsersByRole = async ({ role, page = 1, limit = 10, sort = "first
 export const getTotalUserCount = async () => {
   const response = await apiClient.get('/users/stats/totalUsers');
   return response.data;
-}; 
+};
+
+export const getUserById = async (id) => {
+  const response = await apiClient.get(`/users/${id}`);
+  return response.data;
+}
+
+export const adminUpdateUserProfile = async ({id, data}) => {
+  const response = await apiClient.put(`/users/admin/${id}`, data);
+  return response.data;
+}
+

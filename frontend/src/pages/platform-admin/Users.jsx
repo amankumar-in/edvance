@@ -2,7 +2,7 @@ import { Flex, Heading, IconButton, Skeleton, TabNav, Text } from '@radix-ui/the
 import React, { useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { AddNewUserDialog } from '../../components/platform-admin';
-import { useTotalUserCount } from '../../api/user';
+import { useTotalUserCount } from '../../api/user/user.queries';
 import { toast } from 'sonner';
 import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
 import { Dot, Ellipsis } from 'lucide-react';

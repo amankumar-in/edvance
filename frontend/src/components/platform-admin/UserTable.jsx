@@ -3,8 +3,9 @@ import { AlertCircleIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 import React, { useState } from 'react';
 import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
 import { BarLoader } from 'react-spinners';
-import { useUsersByRole } from '../../api/user';
 import { Loader } from '../../components';
+import { Link } from 'react-router';
+import { useUsersByRole } from '../../api/user/user.queries'
 
 const UserTable = ({ role }) => {
   const [page, setPage] = useState(1);
@@ -174,8 +175,11 @@ const UserTable = ({ role }) => {
                     <Separator orientation={'vertical'} color='blue' />
                     <Button
                       variant='ghost'
+                      asChild
                     >
-                      View
+                      <Link to={`/platform-admin/dashboard/users/user/${user._id}`}>
+                        View
+                      </Link>
                     </Button>
                   </Flex>
                 </Table.Cell>

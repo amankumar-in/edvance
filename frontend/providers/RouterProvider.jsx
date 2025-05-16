@@ -2,7 +2,7 @@ import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterP
 import App from "../src/App";
 import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
 import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SchoolAdminDashboard, SelectProfile, SocialWorkerDashboard, StudentDashboard, TeacherDashboard } from "../src/pages";
-import { Overview, PlatformAdminDashboardLayout, Users, Students, Teachers, Parents, SocialWorkers, SchoolAdmins } from "../src/pages/platform-admin";
+import { Overview, PlatformAdminDashboardLayout, Users, Students, Teachers, Parents, SocialWorkers, SchoolAdmins, UserDetails } from "../src/pages/platform-admin";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -62,6 +62,7 @@ const router = createBrowserRouter(
               <Route path="social-workers" element={<SocialWorkers />} />
               <Route path="school-admins" element={<SchoolAdmins />} />
             </Route>
+            <Route path="users/user/:id" element={<UserDetails />} />
           </Route>
         </Route>
       </Route>

@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getUsersByRole, getTotalUserCount } from "./user.api";
+import { getUsersByRole, getTotalUserCount, getUserById } from "./user.api";
 
 export const useUsersByRole = ({
   role,
@@ -25,3 +25,10 @@ export const useTotalUserCount = () => {
     queryFn: getTotalUserCount
   });
 }; 
+
+export const useUserById = (id) => {
+  return useQuery({
+    queryKey: ["users", id],
+    queryFn: () => getUserById(id)
+  })
+}

@@ -8,3 +8,4 @@ export { default as Parents } from './tabs/parents'
 export { default as SocialWorkers } from './tabs/socialWorkers'
 export { default as SchoolAdmins } from './tabs/schoolAdmins'
 
+export { default as UserDetails } from './UserDetails'
