@@ -57,7 +57,7 @@ const SocialWorkerDetails = ({ data }) => {
   }
   
   return (
-    <form onSubmit={handleSubmit(handleUpdateSocialWorkerProfile)} className='space-y-4'>
+    <form onSubmit={handleSubmit(handleUpdateSocialWorkerProfile)} className='space-y-4 border border-[--gray-a6] rounded-md p-4'>
       <Flex justify='between' align='center'>
         <Heading as='h3' size={'3'} weight={'medium'}>
           Social Worker -
@@ -77,7 +77,7 @@ const SocialWorkerDetails = ({ data }) => {
       <Flex gap='4' wrap='wrap'>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Created At</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Created At</DataList.Label>
             <DataList.Value>
               {data?.createdAt ? new Date(data?.createdAt).toLocaleString("en-IN", {
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -87,7 +87,7 @@ const SocialWorkerDetails = ({ data }) => {
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Case Load Limit</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Case Load Limit</DataList.Label>
             <DataList.Value>
               {isEditing ? (
                 <TextField.Root
@@ -107,7 +107,7 @@ const SocialWorkerDetails = ({ data }) => {
         </DataList.Root>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Social Worker _id</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Social Worker _id</DataList.Label>
             <DataList.Value>
               {data?._id}
             </DataList.Value>
@@ -115,7 +115,7 @@ const SocialWorkerDetails = ({ data }) => {
         </DataList.Root>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Organization</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Organization</DataList.Label>
             <DataList.Value>
               {isEditing ? (
                 <TextField.Root
@@ -136,7 +136,7 @@ const SocialWorkerDetails = ({ data }) => {
       </Flex>
       <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
         <DataList.Item>
-          <DataList.Label minWidth="88px">Child IDs</DataList.Label>
+          <DataList.Label color='blue' minWidth="88px">Child IDs</DataList.Label>
           <DataList.Value>
             {data?.childIds?.length > 0 ? (
               data?.childIds?.map(({ _id, userId }) => (
@@ -158,7 +158,7 @@ const SocialWorkerDetails = ({ data }) => {
           <Button type='button' variant='soft' color='gray' onClick={() => setIsEditing(false)} disabled={isUpdatingSocialWorkerProfile}>
             Cancel
           </Button>
-          <Button type='submit' color='green' disabled={isUpdatingSocialWorkerProfile}>
+          <Button type='submit' color='grass' disabled={isUpdatingSocialWorkerProfile}>
             {isUpdatingSocialWorkerProfile ? 'Saving...' : 'Save'}
           </Button>
         </Flex>

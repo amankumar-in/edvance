@@ -207,13 +207,13 @@ function UserDetails() {
           <div className='flex-1 min-w-[240px]'>
             <DataList.Root>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Email</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Email</DataList.Label>
                 <DataList.Value>
                   {email || '-'}
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Roles</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Roles</DataList.Label>
                 <DataList.Value className='flex flex-wrap gap-y-1'>
                   {isAccountEditing ? (
                     <Controller
@@ -243,7 +243,7 @@ function UserDetails() {
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Created At</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Created At</DataList.Label>
                 <DataList.Value>
                   {createdAt ? new Date(createdAt).toLocaleString("en-IN", {
                     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -253,7 +253,7 @@ function UserDetails() {
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Email Verified</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Email Verified</DataList.Label>
                 <DataList.Value>
                   {isVerified ? 'Yes' : 'No'}
                 </DataList.Value>
@@ -264,7 +264,7 @@ function UserDetails() {
           <div className='flex-1 min-w-[240px]'>
             <DataList.Root>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Account Status</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Account Status</DataList.Label>
                 <DataList.Value>
                   <Badge
                     color={isActive ? 'jade' : 'red'}
@@ -275,7 +275,7 @@ function UserDetails() {
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Phone</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Phone</DataList.Label>
                 <DataList.Value>
                   {isAccountEditing ? (
                     <TextField.Root
@@ -293,7 +293,7 @@ function UserDetails() {
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Date of Birth </DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Date of Birth </DataList.Label>
                 <DataList.Value>
                   {
                     isAccountEditing ? (
@@ -314,7 +314,7 @@ function UserDetails() {
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Login Attempts</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Login Attempts</DataList.Label>
                 <DataList.Value>
                   {loginAttempts}
                 </DataList.Value>
@@ -325,7 +325,7 @@ function UserDetails() {
           <div className='flex-1 min-w-[240px]'>
             <DataList.Root>
               <DataList.Item>
-                <DataList.Label minWidth="88px">First Name</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">First Name</DataList.Label>
                 <DataList.Value>
                   {
                     isAccountEditing ? (
@@ -343,7 +343,7 @@ function UserDetails() {
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Last Name</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Last Name</DataList.Label>
                 <DataList.Value>
                   {
                     isAccountEditing ? (
@@ -361,7 +361,7 @@ function UserDetails() {
                 </DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Avatar</DataList.Label>
+                <DataList.Label color='blue' minWidth="88px">Avatar</DataList.Label>
                 <DataList.Value>
                   {avatar ? avatar : "-"}
                 </DataList.Value>
@@ -386,7 +386,7 @@ function UserDetails() {
             </Button>
             <Button
               type='submit'
-              color='green'
+              color='grass'
               disabled={isUpdatingAccount}
             >
               {isUpdatingAccount ? 'Saving...' : 'Save'}

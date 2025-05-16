@@ -46,7 +46,7 @@ const ParentDetails = ({ data }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(handleUpdateParentProfile)} className='space-y-4'>
+    <form onSubmit={handleSubmit(handleUpdateParentProfile)} className='space-y-4 border border-[--gray-a6] rounded-md p-4'>
       <Flex justify='between' align='center'>
         <Heading as='h3' size={'3'} weight={'medium'}>
           Parent -
@@ -66,7 +66,7 @@ const ParentDetails = ({ data }) => {
       <Flex gap='4' wrap='wrap'>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Created At</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Created At</DataList.Label>
             <DataList.Value>
               {data?.createdAt ? new Date(data?.createdAt).toLocaleString("en-IN", {
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -79,7 +79,7 @@ const ParentDetails = ({ data }) => {
 
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Tuit Points</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Tuit Points</DataList.Label>
             <DataList.Value>
               {isEditing ? (
                 <TextField.Root
@@ -99,7 +99,7 @@ const ParentDetails = ({ data }) => {
         </DataList.Root>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Parent _id</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Parent _id</DataList.Label>
             <DataList.Value>
               {data?._id}
             </DataList.Value>
@@ -108,7 +108,7 @@ const ParentDetails = ({ data }) => {
       </Flex>
       <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='w-max'>
         <DataList.Item>
-          <DataList.Label minWidth="88px">Child IDs</DataList.Label>
+          <DataList.Label color='blue' minWidth="88px">Child IDs</DataList.Label>
           <DataList.Value>
             <Flex gap='2' direction={'column'} className='w-full'>
               {data?.childIds?.length > 0 ? (
@@ -140,7 +140,7 @@ const ParentDetails = ({ data }) => {
           </Button>
           <Button
             type='submit'
-            color='green'
+            color='grass'
             disabled={isUpdatingParentProfile}
           >
             {isUpdatingParentProfile ? 'Saving...' : 'Save'}

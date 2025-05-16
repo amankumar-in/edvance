@@ -49,7 +49,7 @@ const TeacherDetails = ({ data }) => {
 
 
   return (
-    <form onSubmit={handleSubmit(handleUpdateTeacherProfile)} className='space-y-4'>
+    <form onSubmit={handleSubmit(handleUpdateTeacherProfile)} className='space-y-4 border border-[--gray-a6] rounded-md p-4'>
       <Flex justify='between' align='center'>
         <Heading as='h3' size={'3'} weight={'medium'}>
           Teacher -
@@ -69,7 +69,7 @@ const TeacherDetails = ({ data }) => {
       <Flex gap='4' wrap='wrap'>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Created At</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Created At</DataList.Label>
             <DataList.Value>
               {data?.createdAt ? new Date(data?.createdAt).toLocaleString("en-IN", {
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -81,7 +81,7 @@ const TeacherDetails = ({ data }) => {
         </DataList.Root>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Teacher _id</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Teacher _id</DataList.Label>
             <DataList.Value>
               {data?._id}
             </DataList.Value>
@@ -89,7 +89,7 @@ const TeacherDetails = ({ data }) => {
         </DataList.Root>
         <DataList.Root orientation={{ initial: "vertical", xs: "horizontal" }} className='flex-1 min-w-[240px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Subjects Taught</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Subjects Taught</DataList.Label>
             <DataList.Value>
               <Flex gap='1' wrap='wrap'>
                 {isEditing ? (
@@ -124,7 +124,7 @@ const TeacherDetails = ({ data }) => {
           <Button type='button' variant='soft' color='gray' onClick={() => setIsEditing(false)} disabled={isUpdatingTeacherProfile}>
             Cancel
           </Button>
-          <Button type='submit' color='green' disabled={isUpdatingTeacherProfile}>
+          <Button type='submit' color='grass' disabled={isUpdatingTeacherProfile}>
             {isUpdatingTeacherProfile ? 'Saving...' : 'Save'}
           </Button>
         </Flex>

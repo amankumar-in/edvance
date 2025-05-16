@@ -79,7 +79,7 @@ const StudentDetails = ({ data }) => {
   }, [isBalanceError, balanceError])
 
   return (
-    <form onSubmit={handleSubmit(handleUpdateStudentProfile)} className='space-y-4'>
+    <form onSubmit={handleSubmit(handleUpdateStudentProfile)} className='space-y-4 border border-[--gray-a6] rounded-md p-4'>
       <Flex justify='between' align='center'>
         <Heading as='h3' size={'3'} weight={'medium'}>
           Student -
@@ -97,7 +97,7 @@ const StudentDetails = ({ data }) => {
           </IconButton>
         </Tooltip>
       </Flex>
-      <Flex gap='1' align='center' direction={'column'} className='shadow-md p-2 rounded-md text-sm font-medium bg-[--accent-9] text-[--gray-1] max-w-xs'>
+      <Flex gap='1' align='center' direction={'column'} className='shadow-md p-2 rounded-md text-sm font-medium bg-[--accent-9] text-[--accent-contrast] max-w-xs'>
         <Text as='span'>
           Lifetime SP: {totalEarned}
         </Text>
@@ -107,13 +107,13 @@ const StudentDetails = ({ data }) => {
       </Flex>
       <Flex gap='4' justify='between' wrap='wrap'>
         <div className='flex-1 min-w-[240px]'>
-          <DataList.Root>
+          <DataList.Root> 
             <DataList.Item>
-              <DataList.Label minWidth="88px">Points Account ID</DataList.Label>
+              <DataList.Label color='blue' minWidth="88px">Points Account ID</DataList.Label>
               <DataList.Value>{data?.pointsAccountId}</DataList.Value>
             </DataList.Item>
             <DataList.Item>
-              <DataList.Label minWidth="88px">Created At</DataList.Label>
+              <DataList.Label color='blue' minWidth="88px">Created At</DataList.Label>
               <DataList.Value>
                 {data?.createdAt ? new Date(data?.createdAt).toLocaleString("en-IN", {
                   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -123,7 +123,7 @@ const StudentDetails = ({ data }) => {
               </DataList.Value>
             </DataList.Item>
             <DataList.Item>
-              <DataList.Label minWidth="88px">Attendance Streak</DataList.Label>
+              <DataList.Label color='blue' minWidth="88px">Attendance Streak</DataList.Label>
               <DataList.Value>{data?.attendanceStreak}</DataList.Value>
             </DataList.Item>
           </DataList.Root>
@@ -133,7 +133,7 @@ const StudentDetails = ({ data }) => {
         <div className='flex-1 min-w-[240px]'>
           <DataList.Root>
             <DataList.Item>
-              <DataList.Label minWidth="88px">Grade</DataList.Label>
+              <DataList.Label color='blue' minWidth="88px">Grade</DataList.Label>
               <DataList.Value>
                 {isEditing ? (
                   <Controller
@@ -163,7 +163,7 @@ const StudentDetails = ({ data }) => {
               </DataList.Value>
             </DataList.Item>
             <DataList.Item>
-              <DataList.Label minWidth="88px">Level</DataList.Label>
+              <DataList.Label color='blue' minWidth="88px">Level</DataList.Label>
               <DataList.Value>
                 {isEditing ? (
                   <TextField.Root
@@ -187,7 +187,7 @@ const StudentDetails = ({ data }) => {
       <Flex gap='4' wrap='wrap'>
         <DataList.Root className='flex-1 min-w-[300px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Parents</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Parents</DataList.Label>
             <DataList.Value>
               <Flex gap='2' direction={'column'} className='w-full'>
                 {data?.parentIds?.length > 0 ? (
@@ -210,7 +210,7 @@ const StudentDetails = ({ data }) => {
         </DataList.Root>
         <DataList.Root className='flex-1 min-w-[300px]'>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Teachers</DataList.Label>
+            <DataList.Label color='blue' minWidth="88px">Teachers</DataList.Label>
             <DataList.Value>
               <Flex>
                 {data?.teacherIds?.length > 0 ? (
@@ -238,7 +238,7 @@ const StudentDetails = ({ data }) => {
           </Button>
           <Button
             type='submit'
-            color='green'
+            color='grass'
             disabled={isUpdatingStudentProfile}
           >
             {isUpdatingStudentProfile ? 'Saving...' : 'Save'}
