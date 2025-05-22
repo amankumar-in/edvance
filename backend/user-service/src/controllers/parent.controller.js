@@ -162,22 +162,66 @@ exports.addChild = async (req, res) => {
       }
     }
 
-    // Link student to parent if not already linked
-    if (!parent.childIds.includes(student._id)) {
-      parent.childIds.push(student._id);
-      await parent.save();
+    // Check if already linked
+    if (parent.childIds.includes(student._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Child is already linked to this parent",
+      });
     }
 
-    // Link parent to student if not already linked
-    if (!student.parentIds.includes(parent._id)) {
-      student.parentIds.push(parent._id);
-      await student.save();
+    // Check if there's already a pending link request
+    const existingRequest = await LinkRequest.findOne({
+      studentId: student._id,
+      targetId: parent._id,
+      requestType: "parent",
+      status: "pending"
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({
+        success: false,
+        message: "A link request for this child is already pending",
+        data: {
+          requestId: existingRequest._id,
+          code: existingRequest.code,
+          expiresAt: existingRequest.expiresAt
+        }
+      });
     }
+
+    // Generate a unique code for the request
+    const code = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+    // Set expiration to 7 days from now
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Get parent user details for notification
+    const parentUser = await User.findById(userId);
+    
+    // Create link request
+    const linkRequest = new LinkRequest({
+      initiatorId: parent._id,
+      initiator: "parent",
+      targetId: student._id,
+      targetEmail: childUser.email,
+      requestType: "parent",
+      code: code,
+      expiresAt: expiresAt,
+    });
+
+    await linkRequest.save();
+
+    // TODO: Notify child via email/notification service
 
     res.status(201).json({
       success: true,
-      message: "Child added successfully",
+      message: "Link request sent to child successfully",
       data: {
+        requestId: linkRequest._id,
+        code: linkRequest.code,
+        expiresAt: linkRequest.expiresAt,
         childId: student._id,
         userId: childUser._id,
         name: `${childUser.firstName} ${childUser.lastName}`,
@@ -396,13 +440,18 @@ exports.getPendingLinkRequests = async (req, res) => {
     const requests = await LinkRequest.find({
       targetEmail: user.email,
       requestType: "parent",
+      initiator: "student",
       status: "pending",
-    }).populate("studentId", "userId");
+    }).populate({
+      path: "initiatorId",
+      model: "Student",
+      select: "userId"
+    });
 
     // Also populate student names
     const populatedRequests = [];
     for (const request of requests) {
-      const studentUser = await User.findById(request.studentId.userId);
+      const studentUser = await User.findById(request.initiatorId.userId);
       populatedRequests.push({
         ...request.toObject(),
         studentName: studentUser
@@ -421,6 +470,110 @@ exports.getPendingLinkRequests = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get pending link requests",
+      error: error.message,
+    });
+  }
+};
+
+// Get outgoing link requests sent by parent to children
+exports.getOutgoingLinkRequests = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Find parent
+    const parent = await Parent.findOne({ userId });
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: "Parent profile not found",
+      });
+    }
+
+    // Find requests initiated by this parent
+    const requests = await LinkRequest.find({
+      initiatorId: parent._id,
+      initiator: "parent",
+      requestType: "parent",
+      status: "pending",
+    }).populate({
+      path: "targetId",
+      model: "Student",
+      select: "userId"
+    });
+
+    // Also populate student details
+    const populatedRequests = [];
+    for (const request of requests) {
+      const studentUser = await User.findById(request.targetId.userId);
+      populatedRequests.push({
+        ...request.toObject(),
+        childName: studentUser
+          ? `${studentUser.firstName} ${studentUser.lastName}`
+          : "Unknown",
+        childEmail: studentUser.email,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: populatedRequests,
+    });
+  } catch (error) {
+    console.error("Get outgoing link requests error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get outgoing link requests",
+      error: error.message,
+    });
+  }
+};
+
+// Cancel an outgoing link request
+exports.cancelOutgoingRequest = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { requestId } = req.params;
+
+    // Find parent
+    const parent = await Parent.findOne({ userId });
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: "Parent profile not found",
+      });
+    }
+
+    // Find and update request
+    const request = await LinkRequest.findOneAndUpdate(
+      {
+        _id: requestId,
+        initiatorId: parent._id,
+        initiator: "parent",
+        status: "pending",
+      },
+      {
+        status: "cancelled",
+        updatedAt: Date.now(),
+      },
+      { new: true }
+    );
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Link request not found or already processed",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Link request cancelled successfully",
+    });
+  } catch (error) {
+    console.error("Cancel outgoing request error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel link request",
       error: error.message,
     });
   }
@@ -463,6 +616,7 @@ exports.respondToLinkRequest = async (req, res) => {
       _id: requestId,
       targetEmail: user.email,
       requestType: "parent",
+      initiator: "student",
       status: "pending",
     });
 
@@ -480,8 +634,8 @@ exports.respondToLinkRequest = async (req, res) => {
 
     // If approved, link parent and student
     if (action === "approve") {
-      // Find student
-      const student = await Student.findById(request.studentId);
+      // Find student (initiator of the request)
+      const student = await Student.findById(request.initiatorId);
       if (!student) {
         return res.status(404).json({
           success: false,

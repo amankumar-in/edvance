@@ -72,10 +72,11 @@ exports.requestParentLink = async (req, res) => {
 
     // Create link request
     const linkRequest = new LinkRequest({
-      studentId: student._id,
-      requestType: "parent",
-      targetId: parentId, // Will be null if parent doesn't exist yet
+      initiatorId: student._id,
+      initiator: "student",
+      targetId: parentId,
       targetEmail: parentEmail,
+      requestType: "parent",
       code: code,
       expiresAt: expiresAt,
     });
@@ -91,7 +92,6 @@ exports.requestParentLink = async (req, res) => {
         requestId: linkRequest._id,
         code: linkRequest.code,
         expiresAt: linkRequest.expiresAt,
-        
       },
     });
   } catch (error) {
@@ -156,12 +156,13 @@ exports.requestSchoolLink = async (req, res) => {
 
     // Create link request
     const linkRequest = new LinkRequest({
-      studentId: student._id,
-      requestType: "school",
+      initiatorId: student._id,
+      initiator: "student",
       targetId: schoolClass.schoolId,
+      targetEmail: schoolClass.schoolId.email,
+      requestType: "school",
       code: code,
       expiresAt: expiresAt,
-      targetEmail: schoolClass.schoolId.email,
     });
 
     await linkRequest.save();
@@ -203,9 +204,10 @@ exports.getPendingRequests = async (req, res) => {
       });
     }
 
-    // Get pending requests
+    // Get pending requests initiated by the student
     const requests = await LinkRequest.find({
-      studentId: student._id,
+      initiatorId: student._id,
+      initiator: "student",
       status: "pending",
     }).sort({ createdAt: -1 });
 
@@ -242,7 +244,8 @@ exports.cancelRequest = async (req, res) => {
     const request = await LinkRequest.findOneAndUpdate(
       {
         _id: requestId,
-        studentId: student._id,
+        initiatorId: student._id,
+        initiator: "student",
         status: "pending",
       },
       {

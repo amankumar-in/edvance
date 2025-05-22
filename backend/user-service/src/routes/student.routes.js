@@ -1402,4 +1402,118 @@ router.get(
   studentController.getStudentByUserId
 );
 
+/**
+ * @openapi
+ * /students/requests/parent:
+ *   get:
+ *     summary: Get parent link requests
+ *     description: Retrieves all pending link requests from parents for the student
+ *     tags:
+ *       - Students
+ *       - Link Requests
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Link requests retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       parentName:
+ *                         type: string
+ *                       parentEmail:
+ *                         type: string
+ *                       parentAvatar:
+ *                         type: string
+ *                       code:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       expiresAt:
+ *                         type: string
+ *                         format: date-time
+ *       '404':
+ *         description: Student profile not found
+ *       '500':
+ *         description: Failed to get link requests
+ */
+router.get(
+  "/requests/parent",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["student"]),
+  studentController.getParentLinkRequests
+);
+
+/**
+ * @openapi
+ * /students/requests/parent/{requestId}:
+ *   post:
+ *     summary: Respond to parent link request
+ *     description: Approve or reject a link request from a parent
+ *     tags:
+ *       - Students
+ *       - Link Requests
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: requestId
+ *         in: path
+ *         description: Link request ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - action
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [approve, reject]
+ *                 description: Action to take on the request
+ *     responses:
+ *       '200':
+ *         description: Link request processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Link request approved successfully"
+ *       '400':
+ *         description: Invalid request
+ *       '404':
+ *         description: Link request not found
+ *       '500':
+ *         description: Failed to process link request
+ */
+router.post(
+  "/requests/parent/:requestId",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["student"]),
+  studentController.respondToParentLinkRequest
+);
+
 module.exports = router;

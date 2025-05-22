@@ -603,15 +603,16 @@ router.delete(
  * @openapi
  * /parents/link-requests:
  *   get:
- *     summary: Get pending link requests
- *     description: Retrieves pending student-parent link requests for the authenticated parent
+ *     summary: Get incoming link requests
+ *     description: Retrieves link requests where parent is the target
  *     tags:
  *       - Parents
+ *       - Link Requests
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: Link requests retrieved successfully
+ *         description: List of link requests retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -623,73 +624,98 @@ router.delete(
  *                 data:
  *                   type: array
  *                   items:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                         example: "60d21b4667d0d8992e610c99"
- *                       studentId:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                           userId:
- *                             type: string
- *                       requestType:
- *                         type: string
- *                         example: "parent"
- *                       targetEmail:
- *                         type: string
- *                         example: "parent@example.com"
- *                       status:
- *                         type: string
- *                         example: "pending"
- *                       code:
- *                         type: string
- *                         example: "DEF456"
- *                       createdAt:
- *                         type: string
- *                         format: date-time
- *                       expiresAt:
- *                         type: string
- *                         format: date-time
- *                       studentName:
- *                         type: string
- *                         example: "Jane Smith"
- *       '404':
- *         description: Parent profile not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Parent profile not found"
+ *                     $ref: '#/components/schemas/LinkRequest'
+ *       '401':
+ *         $ref: '#/components/responses/UnauthorizedError'
  *       '500':
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Failed to get pending link requests"
- *                 error:
- *                   type: string
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get(
   "/link-requests",
-  authMiddleware.verifyToken,
-  authMiddleware.checkRole(["parent"]),
+  [authMiddleware.verifyToken, authMiddleware.checkRole(["parent"])],
   parentController.getPendingLinkRequests
+);
+
+/**
+ * @openapi
+ * /parents/outgoing-requests:
+ *   get:
+ *     summary: Get outgoing link requests
+ *     description: Retrieves link requests initiated by the parent to children
+ *     tags:
+ *       - Parents
+ *       - Link Requests
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: List of outgoing link requests retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/LinkRequest'
+ *       '401':
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       '500':
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.get(
+  "/outgoing-requests",
+  [authMiddleware.verifyToken, authMiddleware.checkRole(["parent"])],
+  parentController.getOutgoingLinkRequests
+);
+
+/**
+ * @openapi
+ * /parents/outgoing-requests/{requestId}:
+ *   delete:
+ *     summary: Cancel an outgoing link request
+ *     description: Cancels a link request that the parent sent to a child
+ *     tags:
+ *       - Parents
+ *       - Link Requests
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: requestId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the link request to cancel
+ *     responses:
+ *       '200':
+ *         description: Link request cancelled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Link request cancelled successfully
+ *       '401':
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       '404':
+ *         description: Link request not found or already processed
+ *       '500':
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.delete(
+  "/outgoing-requests/:requestId",
+  [authMiddleware.verifyToken, authMiddleware.checkRole(["parent"])],
+  parentController.cancelOutgoingRequest
 );
 
 /**
@@ -700,15 +726,16 @@ router.get(
  *     description: Approve or reject a student-parent link request
  *     tags:
  *       - Parents
+ *       - Link Requests
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - name: requestId
- *         in: path
- *         description: ID of the link request
+ *       - in: path
+ *         name: requestId
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID of the link request to respond to
  *     requestBody:
  *       description: Response to the link request
  *       required: true
@@ -721,7 +748,6 @@ router.get(
  *                 type: string
  *                 enum: [approve, reject]
  *                 description: Action to take on the request
- *                 example: "approve"
  *             required:
  *               - action
  *     responses:
@@ -739,51 +765,15 @@ router.get(
  *                   type: string
  *                   example: "Link request approved successfully"
  *       '400':
- *         description: Invalid action or missing parameters
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Action must be either 'approve' or 'reject'"
+ *         description: Invalid action
  *       '404':
- *         description: Parent profile not found or link request not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Link request not found or already processed"
+ *         description: Link request not found or already processed
  *       '500':
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Failed to respond to link request"
- *                 error:
- *                   type: string
+ *         $ref: '#/components/responses/ServerError'
  */
 router.post(
   "/link-requests/:requestId",
-  authMiddleware.verifyToken,
-  authMiddleware.checkRole(["parent"]),
+  [authMiddleware.verifyToken, authMiddleware.checkRole(["parent"])],
   parentController.respondToLinkRequest
 );
 

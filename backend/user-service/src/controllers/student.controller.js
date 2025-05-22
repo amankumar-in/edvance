@@ -794,3 +794,147 @@ exports.getStudentByUserId = async (req, res) => {
     });
   }
 };
+
+// Get parent link requests for student
+exports.getParentLinkRequests = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Find student
+    const student = await Student.findOne({ userId });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+
+    // Find pending link requests where this student is the target and parent is the initiator
+    const requests = await LinkRequest.find({
+      targetId: student._id,
+      requestType: "parent",
+      initiator: "parent",
+      status: "pending",
+    });
+
+    // We need to find the parent information for each request
+    const formattedRequests = [];
+    for (const request of requests) {
+      try {
+        // Get parent information (initiator)
+        const parent = await Parent.findById(request.initiatorId).populate('userId', 'firstName lastName email avatar');
+        
+        const parentUser = parent?.userId;
+
+        formattedRequests.push({
+          _id: request._id,
+          parentName: parentUser ? `${parentUser.firstName} ${parentUser.lastName}` : "Unknown",
+          parentEmail: parentUser ? parentUser.email : (request.targetEmail || "Unknown"),
+          parentAvatar: parentUser?.avatar || null,
+          code: request.code,
+          createdAt: request.createdAt,
+          expiresAt: request.expiresAt
+        });
+      } catch (err) {
+        console.error("Error processing link request:", err);
+        // Continue with other requests
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: formattedRequests,
+    });
+  } catch (error) {
+    console.error("Get parent link requests error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get parent link requests",
+      error: error.message,
+    });
+  }
+};
+
+// Respond to a parent link request
+exports.respondToParentLinkRequest = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { requestId } = req.params;
+    const { action } = req.body; // "approve" or "reject"
+
+    if (!action || !["approve", "reject"].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: "Action must be either 'approve' or 'reject'",
+      });
+    }
+
+    // Find student
+    const student = await Student.findOne({ userId });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+
+    // Find request
+    const request = await LinkRequest.findOne({
+      _id: requestId,
+      targetId: student._id,
+      requestType: "parent",
+      initiator: "parent",
+      status: "pending",
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Link request not found or already processed",
+      });
+    }
+
+    // Update request status
+    request.status = action === "approve" ? "approved" : "rejected";
+    request.updatedAt = Date.now();
+    await request.save();
+
+    // If approved, link parent and student
+    if (action === "approve") {
+      // Get the parent who initiated the request
+      const parent = await Parent.findById(request.initiatorId);
+      if (!parent) {
+        return res.status(404).json({
+          success: false,
+          message: "Parent not found",
+        });
+      }
+
+      // Link parent to student
+      if (!parent.childIds.includes(student._id)) {
+        parent.childIds.push(student._id);
+        await parent.save();
+      }
+
+      // Link student to parent
+      if (!student.parentIds.includes(parent._id)) {
+        student.parentIds.push(parent._id);
+        await student.save();
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Link request ${
+        action === "approve" ? "approved" : "rejected"
+      } successfully`,
+    });
+  } catch (error) {
+    console.error("Respond to parent link request error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to respond to parent link request",
+      error: error.message,
+    });
+  }
+};

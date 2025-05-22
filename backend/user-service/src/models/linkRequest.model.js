@@ -1,9 +1,23 @@
 const mongoose = require("mongoose");
 
 const linkRequestSchema = new mongoose.Schema({
-  studentId: {
+  initiatorId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Student",
+    required: true,
+    refPath: 'initiator'
+  },
+  initiator: {
+    type: String,
+    enum: ["student", "parent", "school", "teacher"],
+    required: true,
+  },
+  targetId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: false,
+  },
+  targetEmail: {
+    // Email address for invitation if no existing account
+    type: String,
     required: true,
   },
   requestType: {
@@ -11,18 +25,9 @@ const linkRequestSchema = new mongoose.Schema({
     enum: ["parent", "school"],
     required: true,
   },
-  targetId: {
-    // parentId or schoolId
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-  },
-  targetEmail: {
-    // Email address for invitation if no existing account
-    type: String,
-  },
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected", "expired"],
+    enum: ["pending", "approved", "rejected", "expired", "cancelled"],
     default: "pending",
   },
   code: {
