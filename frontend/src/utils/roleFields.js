@@ -51,7 +51,7 @@ export const roleFields = {
     icon: FaChalkboardTeacher,
     gradient: ['#FF9CE9', '#FF7DE0'],
   },
-  SCHOOL: {
+  SCHOOL_ADMIN: {
     fields: [
       { label: "School Name", name: "schoolName", type: "text", required: true, placeholder: "School name" },
       { label: "School Email", name: "schoolEmail", type: "email", required: true, placeholder: "School email" },

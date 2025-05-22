@@ -38,7 +38,7 @@ export const roleOptions = [
     gradient: ['#FF9CE9', '#FF7DE0'],
   },
   {
-    id: 'SCHOOL',
+    id: 'SCHOOL_ADMIN',
     title: 'School Admin',
     icon: MdDomain,
     gradient: ['#AD56C4', '#9548A8'],

@@ -16,3 +16,39 @@ export const updateParentProfile = async ({ id, data }) => {
   return response.data;
 };
 
+export const getParentProfile = async () => {
+  const response = await apiClient.get("/parents/me");
+  return response.data;
+};
+
+export const getChildren = async () => {
+  const response = await apiClient.get("/parents/me/children");
+  return response.data;
+};
+
+export const generateLinkCode = async () => {
+  const response = await apiClient.post("/parents/link-code");
+  return response.data;
+};
+
+export const unlinkChild = async ({ childId }) => {
+  const response = await apiClient.delete(`/parents/children/${childId}`);
+  return response.data;
+};
+
+export const addChild = async (data) => {
+  // data: { childEmail, childName, childAge, grade }
+  const response = await apiClient.post("/parents/children", data);
+  return response.data;
+};
+
+export const getPendingLinkRequests = async () => {
+  const response = await apiClient.get("/parents/link-requests");
+  return response.data;
+};
+
+export const respondToLinkRequest = async ({ requestId, action }) => {
+  // action: "approve" or "reject"
+  const response = await apiClient.post(`/parents/link-requests/${requestId}`, { action });
+  return response.data;
+};

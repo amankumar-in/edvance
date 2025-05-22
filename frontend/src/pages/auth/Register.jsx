@@ -12,7 +12,7 @@ const validRoles = [
   "PARENT",
   "SOCIAL_WORKER",
   "TEACHER",
-  "SCHOOL",
+  "SCHOOL_ADMIN",
   "DONOR",
 ];
 
