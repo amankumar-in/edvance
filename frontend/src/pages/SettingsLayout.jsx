@@ -23,7 +23,7 @@ function SettingsLayout() {
     <ThemeProvider
       attribute={'class'}
       disableTransitionOnChange
-      defaultTheme='light'
+      defaultTheme='dark'
     >
       <Theme accentColor="blue" grayColor="slate">
         <Container>

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getParentByUserId, getParentProfile, getChildren, getPendingLinkRequests } from "./parent.api";
+import { getChildren, getOutgoingLinkRequests, getParentByUserId, getParentProfile, getPendingLinkRequests } from "./parent.api";
 
 export const useGetParentByUserId = (userId, fetchNow = false) => {
   return useQuery({
@@ -27,6 +27,13 @@ export const usePendingLinkRequests = () => {
   return useQuery({
     queryKey: ["parents", "link-requests"],
     queryFn: getPendingLinkRequests,
+  });
+};
+
+export const useOutgoingLinkRequests = () => {
+  return useQuery({
+    queryKey: ["parents", "outgoing-requests"],
+    queryFn: getOutgoingLinkRequests,
   });
 };
 

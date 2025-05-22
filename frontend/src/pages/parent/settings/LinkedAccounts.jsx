@@ -1,27 +1,35 @@
 import { Avatar, Badge, Box, Button, Callout, Flex, Select, Separator, Tabs, Text, TextField, Theme } from '@radix-ui/themes'
-import { useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, CheckCircle, Clock, Copy, Info, Link2, Link2Off, RefreshCw, UserPlus, Users } from 'lucide-react'
 import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { 
-  useAddChild, 
-  useGenerateLinkCode, 
-  useRespondToLinkRequest, 
-  useUnlinkChild 
+import {
+  useAddChild,
+  useCancelOutgoingRequest,
+  useGenerateLinkCode,
+  useRespondToLinkRequest,
+  useUnlinkChild
 } from '../../../api/parent/parent.mutations'
-import { 
-  useChildren, 
-  useParentProfile, 
-  usePendingLinkRequests 
+import {
+  useChildren,
+  useOutgoingLinkRequests,
+  useParentProfile,
+  usePendingLinkRequests
 } from '../../../api/parent/parent.queries'
-import { EmptyStateCard, Loader, SectionHeader } from '../../../components'
+import { ConfirmationDialog, EmptyStateCard, Loader, SectionHeader } from '../../../components'
 import { gradeOptions } from '../../../utils/constants'
 
 function LinkedAccounts() {
   const [linkCodeCopied, setLinkCodeCopied] = useState(false)
-  const queryClient = useQueryClient()
-
+  
+  // Confirmation dialog states
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [unlinkDialogOpen, setUnlinkDialogOpen] = useState(false)
+  const [selectedRequestId, setSelectedRequestId] = useState(null)
+  const [selectedChildId, setSelectedChildId] = useState(null)
+  const [selectedChildName, setSelectedChildName] = useState('')
+  
   // Get parent profile
   const { data: parentData, isLoading, isError, error } = useParentProfile()
   const parent = parentData?.data
@@ -31,14 +39,19 @@ function LinkedAccounts() {
   const { data: childrenData, isLoading: isChildrenLoading, isError: isChildrenError, error: childrenError } = useChildren()
   const children = childrenData?.data || []
 
-  // Get pending link requests
+  // Get incoming link requests (from students)
   const { data: linkRequestsData, isLoading: isLoadingLinkRequests, isError: isLinkRequestsError, error: linkRequestsError } = usePendingLinkRequests()
   const pendingLinkRequests = linkRequestsData?.data || []
+
+  // Get outgoing link requests (to students)
+  const { data: outgoingRequestsData, isLoading: isLoadingOutgoingRequests, isError: isOutgoingRequestsError, error: outgoingRequestsError } = useOutgoingLinkRequests()
+  const outgoingRequests = outgoingRequestsData?.data || []
 
   const generateLinkCodeMutation = useGenerateLinkCode() // Generate link code
   const unlinkChildMutation = useUnlinkChild() // Unlink child
   const addChildMutation = useAddChild() // Add child
   const respondToLinkRequestMutation = useRespondToLinkRequest() // Respond to link request
+  const cancelOutgoingRequestMutation = useCancelOutgoingRequest() // Cancel outgoing request
 
   // Track currently processing request ID for loading states
   const [processingRequestId, setProcessingRequestId] = useState(null)
@@ -61,19 +74,8 @@ function LinkedAccounts() {
   // Handle generating a link code
   const handleGenerateLinkCode = () => {
     generateLinkCodeMutation.mutate(undefined, {
-      onSuccess: (data) => {
-        const { linkCode } = data.data
+      onSuccess: () => {
         toast.success("Link code generated successfully")
-        queryClient.setQueryData(["parents", "profile"], (prevData) => ({
-          ...prevData,
-          data: {
-            ...prevData.data,
-            linkCode
-          }
-        }));
-
-        // Refetch parent profile to update the link code
-        // queryClient.invalidateQueries({ queryKey: ["parents", "profile"] })
       },
       onError: (error) => {
         console.log(error)
@@ -98,27 +100,30 @@ function LinkedAccounts() {
   }
 
   // Handle unlinking a child
-  const handleUnlinkChild = (childId) => {
-    if (!childId) return
+  const handleUnlinkChild = (childId, childName) => {
+    if (!childId) return;
+    
+    // Show confirmation dialog
+    setSelectedChildId(childId);
+    setSelectedChildName(childName);
+    setUnlinkDialogOpen(true);
+  };
+  
+  // Confirm and execute child unlinking
+  const confirmUnlinkChild = () => {
+    if (!selectedChildId) return;
 
-    unlinkChildMutation.mutate({ childId }, {
-      onSuccess: (data) => {
-        toast.success("Successfully unlinked from child")
-
-        queryClient.setQueryData(["parents", "children"], (prevData) => ({
-          ...prevData,
-          data: prevData.data.filter((child) => child._id !== childId)
-        }))
-
-        // Refetch parent profile to update the children list
-        queryClient.invalidateQueries({ queryKey: ["parents", "children"] })
+    unlinkChildMutation.mutate({ childId: selectedChildId }, {
+      onSuccess: () => {
+        toast.success("Successfully unlinked from child");
+        setUnlinkDialogOpen(false);
       },
       onError: (error) => {
-        console.log(error)
-        toast.error(error?.response?.data?.message || error?.message || "Failed to unlink from child")
+        console.log(error);
+        toast.error(error?.response?.data?.message || error?.message || "Failed to unlink from child");
       }
-    })
-  }
+    });
+  };
 
   // Handle adding a child
   const onSubmit = (data) => {
@@ -130,17 +135,14 @@ function LinkedAccounts() {
     }
 
     addChildMutation.mutate(formData, {
-      onSuccess: (data) => {
-        toast.success("Child added successfully")
+      onSuccess: () => {
+        toast.success("Link request sent to child successfully")
         // Reset form
         reset()
-        // Refetch parent profile to update the children list
-        queryClient.invalidateQueries({ queryKey: ["parents", "children"] })
-        queryClient.invalidateQueries({ queryKey: ["parents", "link-requests"] })
       },
       onError: (error) => {
         console.log(error)
-        toast.error(error?.response?.data?.message || error?.message || "Failed to add child")
+        toast.error(error?.response?.data?.message || error?.message || "Failed to send link request")
       }
     })
   }
@@ -154,18 +156,8 @@ function LinkedAccounts() {
     respondToLinkRequestMutation.mutate(
       { requestId, action: 'approve' },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success("Successfully accepted link request");
-          queryClient.setQueryData(["parents", "link-requests"], (prevData) => {
-            if (!prevData) return;
-            return {
-              ...prevData,
-              data: prevData.data.filter((request) => request._id !== requestId)
-            }
-          })
-
-          queryClient.invalidateQueries({ queryKey: ["parents", "children"] });
-        
           setProcessingRequestId(null);
         },
         onError: (error) => {
@@ -178,28 +170,28 @@ function LinkedAccounts() {
   };
 
   // Handle rejecting a link request
-  const handleRejectRequest = (requestId) => {
+  const handleRejectRequest = (requestId, studentName) => {
     if (!requestId) return;
+    
+    // Show confirmation dialog
+    setSelectedRequestId(requestId);
+    setSelectedChildName(studentName);
+    setRejectDialogOpen(true);
+  };
+  
+  // Confirm and execute the rejection
+  const confirmRejectRequest = () => {
+    if (!selectedRequestId) return;
 
-    setProcessingRequestId(requestId);
+    setProcessingRequestId(selectedRequestId);
 
     respondToLinkRequestMutation.mutate(
-      { requestId, action: 'reject' },
+      { requestId: selectedRequestId, action: 'reject' },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success("Link request rejected");
-
-          queryClient.setQueryData(["parents", "link-requests"], (prevData) => {
-            if (!prevData) return;
-            return {
-              ...prevData,
-              data: prevData.data.filter((request) => request._id !== requestId)
-            }
-          })
+          setRejectDialogOpen(false);
           setProcessingRequestId(null);
-
-          // Refetch pending link requests
-          queryClient.invalidateQueries({ queryKey: ["parents", "link-requests"] });
         },
         onError: (error) => {
           console.log(error);
@@ -208,6 +200,36 @@ function LinkedAccounts() {
         }
       }
     );
+  };
+
+  // Handle cancelling an outgoing request
+  const handleCancelOutgoingRequest = (requestId, childName) => {
+    if (!requestId) return;
+    
+    // Show confirmation dialog
+    setSelectedRequestId(requestId);
+    setSelectedChildName(childName);
+    setCancelDialogOpen(true);
+  };
+  
+  // Confirm and execute the cancellation
+  const confirmCancelOutgoingRequest = () => {
+    if (!selectedRequestId) return;
+
+    setProcessingRequestId(selectedRequestId);
+
+    cancelOutgoingRequestMutation.mutate(selectedRequestId, {
+      onSuccess: () => {
+        toast.success("Link request cancelled successfully");
+        setCancelDialogOpen(false);
+        setProcessingRequestId(null);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error?.response?.data?.message || error?.message || "Failed to cancel link request");
+        setProcessingRequestId(null);
+      }
+    });
   };
 
   if (isLoading) {
@@ -230,6 +252,9 @@ function LinkedAccounts() {
       </Callout.Root>
     )
   }
+
+  // Count all requests for the notification badge
+  const totalPendingRequests = pendingLinkRequests.length + outgoingRequests.length;
 
   return (
     <Theme accentColor="blue">
@@ -261,9 +286,9 @@ function LinkedAccounts() {
                 <Clock size={16} />
                 <span>Requests</span>
               </Flex>
-              {pendingLinkRequests.length > 0 && (
+              {totalPendingRequests > 0 && (
                 <span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] flex items-center justify-center text-xs rounded-full bg-[--accent-9] text-[--accent-contrast] font-medium">
-                  {pendingLinkRequests.length}
+                  {totalPendingRequests}
                 </span>
               )}
             </Tabs.Trigger>
@@ -326,7 +351,7 @@ function LinkedAccounts() {
                           <Button
                             color="red"
                             variant="soft"
-                            onClick={() => handleUnlinkChild(child._id)}
+                            onClick={() => handleUnlinkChild(child._id, child?.userId?.firstName)}
                             disabled={unlinkChildMutation.isPending}
                             className='ml-auto'
                           >
@@ -434,124 +459,239 @@ function LinkedAccounts() {
 
           {/* PENDING REQUESTS TAB */}
           <Tabs.Content value="requests" className="mt-6">
-            <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-              <SectionHeader 
-                icon={<Clock />} 
-                title="Pending Connection Requests" 
-              />
+            <Flex direction="column" gap="6">
+              {/* INCOMING REQUESTS */}
+              <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
+                <SectionHeader 
+                  icon={<Clock />} 
+                  title="Incoming Connection Requests" 
+                />
 
-              <Box className="p-4 md:p-6">
-                <Callout.Root color="blue" size="1" className="mb-5">
-                  <Callout.Icon>
-                    <Info size={14} />
-                  </Callout.Icon>
-                  <Callout.Text>
-                    <Text as="p" size="2">Review and respond to connection requests from children who want to link with your account.</Text>
-                    <Text as="p" size="2" mt="1">Accepting a request will give you access to view their academic progress.</Text>
-                  </Callout.Text>
-                </Callout.Root>
+                <Box className="p-4 md:p-6">
+                  <Callout.Root color="blue" size="1" className="mb-5">
+                    <Callout.Icon>
+                      <Info size={14} />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      <Text as="p" size="2">Review and respond to connection requests from children who want to link with your account.</Text>
+                      <Text as="p" size="2" mt="1">Accepting a request will give you access to view their academic progress.</Text>
+                    </Callout.Text>
+                  </Callout.Root>
 
-                {isLoadingLinkRequests ? (
-                  <Flex align="center" justify="center" py="8">
-                    <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
-                  </Flex>
-                ) :
-                  isLinkRequestsError ? (
-                    <Callout.Root color="red" size="1" className="mb-5">
-                      <Callout.Icon>
-                        <AlertCircle size={14} />
-                      </Callout.Icon>
-                      <Callout.Text>
-                        {linkRequestsError?.response?.data?.message || linkRequestsError?.message || "Could not load link requests"}
-                      </Callout.Text>
-                    </Callout.Root>
+                  {isLoadingLinkRequests ? (
+                    <Flex align="center" justify="center" py="8">
+                      <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
+                    </Flex>
                   ) :
-                    pendingLinkRequests.length > 0 ? (
-                      <Box className="grid gap-3">
-                        {pendingLinkRequests.map((request) => (
-                          <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a6]">
-                            <Box className="bg-[--gray-a3] px-4 py-3">
-                              <Flex align="center" justify="between">
-                                <Flex align="center" gap="2">
-                                  <Users size={16} className="text-[--accent-9]" />
-                                  <Text size="2" weight="medium">
-                                    Child Connection Request
-                                  </Text>
-                                </Flex>
-                                <Badge variant="soft" color="amber">
-                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                </Badge>
-                              </Flex>
-                            </Box>
-
-                            <Box className="p-4">
-                              <Flex direction="column" gap="3">
-                                <Flex align="center" gap="3">
-                                  <Avatar
-                                    size="3"
-                                    fallback={request?.studentName?.[0] || "S"}
-                                    radius="full"
-                                    color="blue"
-                                    className="shadow-sm"
-                                  />
-                                  <Flex direction="column">
+                    isLinkRequestsError ? (
+                      <Callout.Root color="red" size="1" className="mb-5">
+                        <Callout.Icon>
+                          <AlertCircle size={14} />
+                        </Callout.Icon>
+                        <Callout.Text>
+                          {linkRequestsError?.response?.data?.message || linkRequestsError?.message || "Could not load link requests"}
+                        </Callout.Text>
+                      </Callout.Root>
+                    ) :
+                      pendingLinkRequests.length > 0 ? (
+                        <Box className="grid gap-3">
+                          {pendingLinkRequests.map((request) => (
+                            <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a6]">
+                              <Box className="bg-[--gray-a3] px-4 py-3">
+                                <Flex align="center" justify="between">
+                                  <Flex align="center" gap="2">
+                                    <Users size={16} className="text-[--accent-9]" />
                                     <Text size="2" weight="medium">
-                                      {request?.studentName}
+                                      Child Connection Request
                                     </Text>
-                                    <Text size="2" color="gray">{request?.studentEmail || "student@example.com"}</Text>
+                                  </Flex>
+                                  <Badge variant="soft" color="amber">
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                  </Badge>
+                                </Flex>
+                              </Box>
+
+                              <Box className="p-4">
+                                <Flex direction="column" gap="3">
+                                  <Flex align="center" gap="3">
+                                    <Avatar
+                                      size="3"
+                                      fallback={request?.studentName?.[0] || "S"}
+                                      radius="full"
+                                      color="blue"
+                                      className="shadow-sm"
+                                    />
+                                    <Flex direction="column">
+                                      <Text size="2" weight="medium">
+                                        {request?.studentName}
+                                      </Text>
+                                      <Text size="2" color="gray">{request?.studentEmail || "student@example.com"}</Text>
+                                    </Flex>
+                                  </Flex>
+
+                                  <Flex wrap="wrap" gap="3" className="text-sm">
+                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                      <Text size="1" color="gray">Code:</Text>
+                                      <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
+                                    </Box>
+
+                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                      <Text size="1" color="gray">Received:</Text>
+                                      <Text size="1">{new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                                    </Box>
+
+                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                      <Text size="1" color="gray">Expires:</Text>
+                                      <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                                    </Box>
+                                  </Flex>
+
+                                  <Flex justify="end" gap="2">
+                                    <Button
+                                      color="red"
+                                      variant="soft"
+                                      size="2"
+                                      onClick={() => handleRejectRequest(request._id, request?.studentName)}
+                                      disabled={respondToLinkRequestMutation.isPending && processingRequestId === request._id}
+                                    >
+                                      Reject
+                                    </Button>
+                                    <Button
+                                      color="green"
+                                      size="2"
+                                      onClick={() => handleAcceptRequest(request._id)}
+                                      disabled={respondToLinkRequestMutation.isPending && processingRequestId === request._id}
+                                    >
+                                      Approve
+                                    </Button>
                                   </Flex>
                                 </Flex>
-
-                                <Flex wrap="wrap" gap="3" className="text-sm">
-                                  <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                    <Text size="1" color="gray">Code:</Text>
-                                    <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
-                                  </Box>
-
-                                  <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                    <Text size="1" color="gray">Received:</Text>
-                                    <Text size="1">{new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                                  </Box>
-
-                                  <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                    <Text size="1" color="gray">Expires:</Text>
-                                    <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                                  </Box>
-                                </Flex>
-
-                                <Flex justify="end" gap="2">
-                                  <Button
-                                    color="red"
-                                    variant="soft"
-                                    size="2"
-                                    onClick={() => handleRejectRequest(request._id)}
-                                    disabled={respondToLinkRequestMutation.isPending && processingRequestId === request._id}
-                                  >
-                                    Reject
-                                  </Button>
-                                  <Button
-                                    color="green"
-                                    size="2"
-                                    onClick={() => handleAcceptRequest(request._id)}
-                                    disabled={respondToLinkRequestMutation.isPending && processingRequestId === request._id}
-                                  >
-                                    Approve
-                                  </Button>
-                                </Flex>
-                              </Flex>
+                              </Box>
                             </Box>
-                          </Box>
-                        ))}
-                      </Box>
-                    ) : (
-                      <EmptyStateCard 
-                        icon={<CheckCircle />}
-                        title="No pending requests"
-                        description="You don't have any pending connection requests from children. When a child requests to connect with you, it will appear here."
-                      />
-                    )}
+                          ))}
+                        </Box>
+                      ) : (
+                        <EmptyStateCard 
+                          icon={<CheckCircle />}
+                          title="No incoming requests"
+                          description="You don't have any pending connection requests from children. When a child requests to connect with you, it will appear here."
+                        />
+                      )}
+                </Box>
               </Box>
-            </Box>
+
+              {/* OUTGOING REQUESTS */}
+              <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
+                <SectionHeader 
+                  icon={<Clock />} 
+                  title="Outgoing Connection Requests" 
+                />
+
+                <Box className="p-4 md:p-6">
+                  <Callout.Root color="blue" size="1" className="mb-5">
+                    <Callout.Icon>
+                      <Info size={14} />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      <Text as="p" size="2">Connection requests you've sent to children are waiting for their approval.</Text>
+                      <Text as="p" size="2" mt="1">These requests will expire after 7 days if not accepted.</Text>
+                    </Callout.Text>
+                  </Callout.Root>
+
+                  {isLoadingOutgoingRequests ? (
+                    <Flex align="center" justify="center" py="8">
+                      <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
+                    </Flex>
+                  ) :
+                    isOutgoingRequestsError ? (
+                      <Callout.Root color="red" size="1" className="mb-5">
+                        <Callout.Icon>
+                          <AlertCircle size={14} />
+                        </Callout.Icon>
+                        <Callout.Text>
+                          {outgoingRequestsError?.response?.data?.message || outgoingRequestsError?.message || "Could not load outgoing requests"}
+                        </Callout.Text>
+                      </Callout.Root>
+                    ) :
+                      outgoingRequests.length > 0 ? (
+                        <Box className="grid gap-3">
+                          {outgoingRequests.map((request) => (
+                            <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a6]">
+                              <Box className="bg-[--gray-a3] px-4 py-3">
+                                <Flex align="center" justify="between">
+                                  <Flex align="center" gap="2">
+                                    <Users size={16} className="text-[--blue-9]" />
+                                    <Text size="2" weight="medium">
+                                      Request Pending Child Approval
+                                    </Text>
+                                  </Flex>
+                                  <Badge variant="soft" color="amber">
+                                    Awaiting Response
+                                  </Badge>
+                                </Flex>
+                              </Box>
+
+                              <Box className="p-4">
+                                <Flex direction="column" gap="3">
+                                  <Flex align="center" gap="3">
+                                    <Avatar
+                                      size="3"
+                                      fallback={request?.childName?.[0] || request?.studentName?.[0] || "C"}
+                                      radius="full"
+                                      className="shadow-sm"
+                                    />
+                                    <Flex direction="column">
+                                      <Text size="2" weight="medium">
+                                        {request?.childName || request?.studentName}
+                                      </Text>
+                                      <Text size="2" color="gray">{request?.childEmail || request?.studentEmail}</Text>
+                                    </Flex>
+                                  </Flex>
+
+                                  <Flex wrap="wrap" gap="3" className="text-sm">
+                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                      <Text size="1" color="gray">Code:</Text>
+                                      <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
+                                    </Box>
+
+                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                      <Text size="1" color="gray">Sent:</Text>
+                                      <Text size="1">{new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                                    </Box>
+
+                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                      <Text size="1" color="gray">Expires:</Text>
+                                      <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                                    </Box>
+                                  </Flex>
+
+                                  <Flex justify="end">
+                                    <Button
+                                      color="red"
+                                      variant="soft"
+                                      size="2"
+                                      onClick={() => handleCancelOutgoingRequest(request._id, request?.childName || request?.studentName)}
+                                      disabled={cancelOutgoingRequestMutation.isPending && processingRequestId === request._id}
+                                    >
+                                      {cancelOutgoingRequestMutation.isPending && processingRequestId === request._id ? 
+                                        "Cancelling..." : "Cancel Request"}
+                                    </Button>
+                                  </Flex>
+                                </Flex>
+                              </Box>
+                            </Box>
+                          ))}
+                        </Box>
+                      ) : (
+                        <EmptyStateCard 
+                          icon={<CheckCircle />}
+                          title="No outgoing requests"
+                          description="You haven't sent any connection requests to children that are pending approval."
+                        />
+                      )}
+                </Box>
+              </Box>
+            </Flex>
           </Tabs.Content>
 
           {/* MANAGE CHILDREN TAB */}
@@ -559,12 +699,12 @@ function LinkedAccounts() {
             <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
               <SectionHeader 
                 icon={<UserPlus />} 
-                title="Add a Child" 
+                title="Invite a Child" 
               />
               
               <Box className="p-4 md:p-6">
                 <Text as="p" size="2" mb="4">
-                  Connect with your child by adding them to your account. Enter your child's information below.
+                  Send a connection request to your child. They will need to approve the request before you can see their account.
                 </Text>
 
                 <form onSubmit={handleSubmit(onSubmit)}>
@@ -681,7 +821,7 @@ function LinkedAccounts() {
                       >
                         <UserPlus size={16} />
                         <Text>
-                          {addChildMutation.isPending ? 'Adding...' : 'Add Child'}
+                          {addChildMutation.isPending ? 'Sending Invitation...' : 'Send Invitation'}
                         </Text>
                       </Button>
                     </Flex>
@@ -695,7 +835,7 @@ function LinkedAccounts() {
                     </Callout.Icon>
                     <Callout.Text>
                       <Text as="p" size="2">
-                        Adding a child manually allows you to pre-create their account. They'll receive an email invitation to set up their password.
+                        Inviting a child sends them a link request which they'll need to approve. If they don't have an account yet, one will be created for them.
                       </Text>
                     </Callout.Text>
                   </Callout.Root>
@@ -705,6 +845,55 @@ function LinkedAccounts() {
           </Tabs.Content>
         </Tabs.Root>
       </Box>
+      
+      {/* Confirmation Dialogs */}
+      <ConfirmationDialog
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
+        title="Reject Connection Request"
+        description={`Are you sure you want to reject the connection request from ${selectedChildName || 'this student'}?`}
+        additionalContent={
+          <Text as="p" size="1" color="gray">
+            This action cannot be undone. The student will need to send a new connection request if you change your mind.
+          </Text>
+        }
+        confirmText="Reject Request"
+        confirmColor="red"
+        isLoading={respondToLinkRequestMutation.isPending}
+        onConfirm={confirmRejectRequest}
+      />
+      
+      <ConfirmationDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        title="Cancel Link Request"
+        description={`Are you sure you want to cancel your connection request to ${selectedChildName || 'this student'}?`}
+        additionalContent={
+          <Text as="p" size="1" color="gray">
+            This action cannot be undone. You will need to create a new request if you change your mind.
+          </Text>
+        }
+        confirmText="Cancel Request"
+        confirmColor="red"
+        isLoading={cancelOutgoingRequestMutation.isPending}
+        onConfirm={confirmCancelOutgoingRequest}
+      />
+      
+      <ConfirmationDialog
+        open={unlinkDialogOpen}
+        onOpenChange={setUnlinkDialogOpen}
+        title="Unlink Child"
+        description={`Are you sure you want to unlink ${selectedChildName || 'this child'} from your account?`}
+        additionalContent={
+          <Text as="p" size="1" color="gray">
+            This action will remove all connections between you and this child.
+          </Text>
+        }
+        confirmText="Unlink Child"
+        confirmColor="red"
+        isLoading={unlinkChildMutation.isPending}
+        onConfirm={confirmUnlinkChild}
+      />
     </Theme>
   )
 }

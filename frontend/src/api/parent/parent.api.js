@@ -52,3 +52,13 @@ export const respondToLinkRequest = async ({ requestId, action }) => {
   const response = await apiClient.post(`/parents/link-requests/${requestId}`, { action });
   return response.data;
 };
+
+export const getOutgoingLinkRequests = async () => {
+  const response = await apiClient.get("/parents/outgoing-requests");
+  return response.data;
+};
+
+export const cancelOutgoingRequest = async (requestId) => {
+  const response = await apiClient.delete(`/parents/outgoing-requests/${requestId}`);
+  return response.data;
+};

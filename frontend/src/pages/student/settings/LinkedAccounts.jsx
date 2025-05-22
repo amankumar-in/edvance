@@ -1,5 +1,4 @@
 import { Avatar, Badge, Box, Button, Callout, Flex, ScrollArea, Separator, Tabs, Text, TextField, Theme, Tooltip } from '@radix-ui/themes';
-import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Building, CheckCircle, Clock, GraduationCap, HelpCircle, Info, Link, Link2, Link2Off, Mail, School, Shield, UserPlus, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -9,22 +8,37 @@ import {
   useLinkWithSchool,
   useRequestParentLink,
   useRequestSchoolLink,
+  useRespondToParentLinkRequest,
   useUnlinkFromParent,
   useUnlinkFromSchool
 } from '../../../api/student/student.mutations';
 import {
+  useGetParentLinkRequests,
   useGetPendingLinkRequests,
   useStudentProfile
 } from '../../../api/student/student.queries';
-import { EmptyStateCard, Loader, SectionHeader } from '../../../components';
+import { ConfirmationDialog, EmptyStateCard, Loader, SectionHeader } from '../../../components';
 
 function LinkedAccounts() {
   const [parentCode, setParentCode] = useState('');
   const [parentEmail, setParentEmail] = useState('');
   const [schoolCode, setSchoolCode] = useState('');
   const [schoolRequestCode, setSchoolRequestCode] = useState('');
+  
+  // Confirmation dialog states
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [selectedParentName, setSelectedParentName] = useState('');
 
-  const queryClient = useQueryClient();
+  // Add state for parent unlink confirmation
+  const [unlinkParentDialogOpen, setUnlinkParentDialogOpen] = useState(false);
+  const [selectedParentId, setSelectedParentId] = useState(null);
+  const [selectedParentToUnlink, setSelectedParentToUnlink] = useState('');
+
+  // Add state for school unlink confirmation
+  const [unlinkSchoolDialogOpen, setUnlinkSchoolDialogOpen] = useState(false);
+  const [schoolToUnlink, setSchoolToUnlink] = useState('');
 
   const { data: studentData, isLoading, isError, error } = useStudentProfile();
   const student = studentData?.data;
@@ -32,9 +46,13 @@ function LinkedAccounts() {
   const { data: linkRequestsData, isLoading: isLoadingLinkRequests } = useGetPendingLinkRequests();
   const pendingLinkRequests = linkRequestsData?.data || [];
 
+  const { data: parentLinkRequestsData, isLoading: isLoadingParentLinkRequests } = useGetParentLinkRequests();
+  const parentLinkRequests = parentLinkRequestsData?.data || [];
+
   const linkParentMutation = useLinkWithParent();
   const unlinkParentMutation = useUnlinkFromParent();
   const requestParentLinkMutation = useRequestParentLink();
+  const respondToParentLinkMutation = useRespondToParentLinkRequest();
 
   const linkSchoolMutation = useLinkWithSchool();
   const unlinkSchoolMutation = useUnlinkFromSchool();
@@ -47,12 +65,9 @@ function LinkedAccounts() {
     if (!parentCode) return;
 
     linkParentMutation.mutate(parentCode, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Successfully linked with parent");
         setParentCode('');
-        // Refetch student profile to get updated parent list
-        queryClient.invalidateQueries({ queryKey: ["students", "profile"] });
-        queryClient.invalidateQueries({ queryKey: ["linkRequests", "pending"] })
       },
       onError: (error) => {
         console.log(error);
@@ -67,10 +82,9 @@ function LinkedAccounts() {
     if (!parentEmail) return;
 
     requestParentLinkMutation.mutate(parentEmail, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Parent link request sent successfully");
         setParentEmail('');
-        queryClient.invalidateQueries({ queryKey: ["linkRequests", "pending"] });
       },
       onError: (error) => {
         console.log(error)
@@ -79,16 +93,54 @@ function LinkedAccounts() {
     });
   };
 
+  // Handle responding to a parent link request
+  const handleRespondToParentLinkRequest = (requestId, action) => {
+    if (action === 'approve') {
+      // Approvals don't need confirmation
+      confirmRespondToParentLinkRequest(requestId, action);
+    } else {
+      // For rejections, show confirmation dialog
+      const request = parentLinkRequests.find(req => req._id === requestId);
+      if (request) {
+        setSelectedRequestId(requestId);
+        setSelectedParentName(request.parentName);
+        setRejectDialogOpen(true);
+      }
+    }
+  };
+
+  // Confirm and execute the response to parent link request
+  const confirmRespondToParentLinkRequest = (requestId, action) => {
+    respondToParentLinkMutation.mutate({ requestId, action }, {
+      onSuccess: () => {
+        toast.success(`Link request ${action === 'approve' ? 'approved' : 'rejected'} successfully`);
+        // Close dialog if open
+        if (rejectDialogOpen) setRejectDialogOpen(false);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error?.response?.data?.message || error?.message || `Failed to ${action} link request`);
+      }
+    });
+  };
+
   // Handle unlinking a parent
-  const handleUnlinkParent = (parentId) => {
+  const handleUnlinkParent = (parentId, parentName) => {
     if (!parentId) return;
+    
+    setSelectedParentId(parentId);
+    setSelectedParentToUnlink(parentName);
+    setUnlinkParentDialogOpen(true);
+  };
 
-    unlinkParentMutation.mutate({ id: student._id, parentId }, {
-      onSuccess: (data) => {
+  // Confirm and execute parent unlinking
+  const confirmUnlinkParent = () => {
+    if (!selectedParentId || !student?._id) return;
+
+    unlinkParentMutation.mutate({ id: student._id, parentId: selectedParentId }, {
+      onSuccess: () => {
         toast.success("Successfully unlinked from parent");
-
-        // Refetch student profile to get updated parent list
-        queryClient.invalidateQueries({ queryKey: ["students", "profile"] });
+        setUnlinkParentDialogOpen(false);
       },
       onError: (error) => {
         toast.error(error?.response?.data?.message || error?.message || "Failed to unlink from parent");
@@ -102,10 +154,9 @@ function LinkedAccounts() {
     if (!schoolCode) return;
 
     linkSchoolMutation.mutate(schoolCode, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Successfully linked with school");
         setSchoolCode('');
-        queryClient.invalidateQueries({ queryKey: ["students", "profile"] });
       },
       onError: (error) => {
         console.log(error);
@@ -115,13 +166,21 @@ function LinkedAccounts() {
   };
 
   // Handle unlinking a school
-  const handleUnlinkSchool = () => {
+  const handleUnlinkSchool = (schoolName) => {
+    if (!student?._id) return;
+    
+    setSchoolToUnlink(schoolName || 'your school');
+    setUnlinkSchoolDialogOpen(true);
+  };
+
+  // Confirm and execute school unlinking
+  const confirmUnlinkSchool = () => {
     if (!student?._id) return;
 
     unlinkSchoolMutation.mutate({ id: student._id }, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Successfully unlinked from school");
-        queryClient.invalidateQueries({ queryKey: ["students", "profile"] });
+        setUnlinkSchoolDialogOpen(false);
       },
       onError: (error) => {
         console.log(error);
@@ -132,12 +191,19 @@ function LinkedAccounts() {
 
   // Handle canceling a link request
   const handleCancelLinkRequest = (requestId) => {
-    if (!requestId) return;
+    // Show confirmation dialog
+    setSelectedRequestId(requestId);
+    setCancelDialogOpen(true);
+  };
 
-    cancelLinkRequestMutation.mutate(requestId, {
-      onSuccess: (data) => {
+  // Confirm and execute the cancellation
+  const confirmCancelLinkRequest = () => {
+    if (!selectedRequestId) return;
+    
+    cancelLinkRequestMutation.mutate(selectedRequestId, {
+      onSuccess: () => {
         toast.success("Link request canceled successfully");
-        queryClient.invalidateQueries({ queryKey: ["linkRequests", "pending"] });
+        setCancelDialogOpen(false);
       },
       onError: (error) => {
         console.log(error)
@@ -152,10 +218,9 @@ function LinkedAccounts() {
     if (!schoolRequestCode) return;
 
     requestSchoolLinkMutation.mutate(schoolRequestCode, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("School link request sent successfully");
         setSchoolRequestCode('');
-        queryClient.invalidateQueries({ queryKey: ["linkRequests", "pending"] });
       },
       onError: (error) => {
         console.log(error);
@@ -216,9 +281,9 @@ function LinkedAccounts() {
                 <Clock size={16} />
                 <span>Requests</span>
               </Flex>
-              {pendingLinkRequests.length > 0 && (
+              {(pendingLinkRequests.length > 0 || parentLinkRequests.length > 0) && (
                 <span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] flex items-center justify-center text-xs rounded-full bg-[--accent-9] text-[--accent-contrast] font-medium">
-                  {pendingLinkRequests.length}
+                  {pendingLinkRequests.length + parentLinkRequests.length}
                 </span>
               )}
             </Tabs.Trigger>
@@ -259,7 +324,7 @@ function LinkedAccounts() {
                               color="red"
                               variant="soft"
                               size="2"
-                              onClick={() => handleUnlinkParent(parent._id)}
+                              onClick={() => handleUnlinkParent(parent._id, parent.firstName)}
                               disabled={unlinkParentMutation.isPending}
                             >
                               <Link2Off size={16} />
@@ -412,7 +477,7 @@ function LinkedAccounts() {
                                 color="red"
                                 variant="soft"
                                 size="2"
-                                onClick={handleUnlinkSchool}
+                                onClick={() => handleUnlinkSchool(student?.schoolDetails?.name)}
                                 disabled={unlinkSchoolMutation.isPending}
                               >
                                 <Link2Off size={14} />{unlinkSchoolMutation.isPending ? "Unlinking..." : "Unlink School"}
@@ -566,101 +631,263 @@ function LinkedAccounts() {
 
           {/* PENDING REQUESTS TAB */}
           <Tabs.Content value="requests" className="mt-6">
-            <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-              <SectionHeader
-                icon={<Clock />}
-                title="Pending Connection Requests"
-              />
-
-              <Box className="p-4 md:p-6">
-                <Callout.Root color="blue" size="1" className="mb-5">
-                  <Callout.Icon>
-                    <Info size={14} />
-                  </Callout.Icon>
-                  <Callout.Text>
-                    <Text as="p" size="2">Link requests allow you to connect your account with parents or schools. Once sent, they can approve or reject your connection request.</Text>
-                    <Text as="p" size="2" mt="1">Requests automatically expire after 7 days if not acted upon.</Text>
-                  </Callout.Text>
-                </Callout.Root>
-
-                {isLoadingLinkRequests ? (
-                  <Flex align="center" justify="center" py="8">
-                    <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
-                  </Flex>
-                ) : pendingLinkRequests.length > 0 ? (
-                  <Box className="grid gap-3">
-                    {pendingLinkRequests.map((request) => (
-                      <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a5]">
-                        <Box className="bg-[--gray-a3] px-4 py-3">
-                          <Flex align="center" justify="between">
-                            <Flex align="center" gap="2">
-                              {request.requestType === 'parent' ? (
-                                <Users size={16} className="text-[--accent-9]" />
-                              ) : (
-                                <School size={16} className="text-[--accent-9]" />
-                              )}
-                              <Text size="2" weight="medium">
-                                {request.requestType === 'parent' ? 'Parent Connection' : 'School Connection'}
-                              </Text>
-                            </Flex>
-                            <Badge variant="soft" color="amber">
-                              {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                            </Badge>
-                          </Flex>
-                        </Box>
-
-                        <Box className="p-4">
-                          <Flex direction="column" gap="3">
-                            <Flex align="center" gap="2">
-                              <Shield size={14} className="text-[--accent-9]" />
-                              <Text size="2" weight="medium">{request.targetEmail}</Text>
-                            </Flex>
-
-                            <Flex wrap="wrap" gap="3" className="text-sm">
-                              <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                <Text size="1" color="gray">Code:</Text>
-                                <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
-                              </Box>
-
-                              <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                <Text size="1" color="gray">Created:</Text>
-                                <Text size="1">{new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                              </Box>
-
-                              <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                <Text size="1" color="gray">Expires:</Text>
-                                <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                              </Box>
-                            </Flex>
-
-                            <Flex justify="end">
-                              <Button
-                                color="red"
-                                variant="soft"
-                                size="1"
-                                onClick={() => handleCancelLinkRequest(request._id)}
-                                disabled={cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id}
-                              >
-                                {cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id ? "Cancelling..." : "Cancel"}
-                              </Button>
-                            </Flex>
-                          </Flex>
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <EmptyStateCard
-                    icon={<CheckCircle />}
-                    title="No pending requests"
-                    description="You don't have any active link requests. Use the options in the Family or School sections to create new connection requests."
+            <Flex direction="column" gap="6">
+              {/* REQUESTS FROM PARENTS */}
+              {parentLinkRequests.length > 0 && (
+                <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
+                  <SectionHeader
+                    icon={<Users />}
+                    title="Parent Connection Requests"
                   />
-                )}
+
+                  <Box className="p-4 md:p-6">
+                    <Callout.Root color="amber" size="1" className="mb-4">
+                      <Callout.Icon>
+                        <Info size={14} />
+                      </Callout.Icon>
+                      <Callout.Text>
+                        <Text as="p" size="2">Parents have requested to connect with your account. Review and approve or reject these requests.</Text>
+                      </Callout.Text>
+                    </Callout.Root>
+
+                    {isLoadingParentLinkRequests ? (
+                      <Flex align="center" justify="center" py="4">
+                        <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
+                      </Flex>
+                    ) : (
+                      <Box className="grid gap-3">
+                        {parentLinkRequests.map((request) => (
+                          <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a6]">
+                            <Box className="bg-[--gray-a3] px-4 py-3">
+                              <Flex align="center" justify="between">
+                                <Flex align="center" gap="2">
+                                  <Users size={16} className="text-[--blue-9]" />
+                                  <Text size="2" weight="medium">
+                                    Parent Connection Request
+                                  </Text>
+                                </Flex>
+                                <Badge variant="soft" color="amber">
+                                  Needs Review
+                                </Badge>
+                              </Flex>
+                            </Box>
+
+                            <Box className="p-4">
+                              <Flex direction="column" gap="3">
+                                <Flex align="center" gap="2">
+                                  <Avatar
+                                    size="3"
+                                    src={request.parentAvatar}
+                                    fallback={request.parentName?.[0] || "P"}
+                                    radius="full"
+                                  />
+                                  <Flex direction="column">
+                                    <Text size="2" weight="medium">{request.parentName}</Text>
+                                    <Text size="1" color="gray">{request.parentEmail}</Text>
+                                  </Flex>
+                                </Flex>
+
+                                <Flex wrap="wrap" gap="3" className="text-sm">
+                                  <Box>
+                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                      <Text size="1" color="gray">Code:</Text>  
+                                      <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
+                                    </Box>
+                                  </Box>
+                                  <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                    <Text size="1" color="gray">Expires:</Text>
+                                    <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                                  </Box>
+                                </Flex>
+
+                                <Flex justify="end" gap="2">
+                                  <Button
+                                    color="red"
+                                    variant="soft"
+                                    onClick={() => handleRespondToParentLinkRequest(request._id, 'reject')}
+                                    disabled={respondToParentLinkMutation.isPending}
+                                  >
+                                    Reject
+                                  </Button>
+                                  <Button
+                                    color="grass"
+                                    onClick={() => handleRespondToParentLinkRequest(request._id, 'approve')}
+                                    disabled={respondToParentLinkMutation.isPending}
+                                  >
+                                    Approve
+                                  </Button>
+                                </Flex>
+                              </Flex>
+                            </Box>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              )}
+
+              {/* REQUESTS I'VE SENT */}
+              <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
+                <SectionHeader
+                  icon={<Clock />}
+                  title="My Pending Connection Requests"
+                />
+
+                <Box className="p-4 md:p-6">
+                  <Callout.Root color="blue" size="1" className="mb-5">
+                    <Callout.Icon>
+                      <Info size={14} />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      <Text as="p" size="2">Link requests allow you to connect your account with parents or schools. Once sent, they can approve or reject your connection request.</Text>
+                      <Text as="p" size="2" mt="1">Requests automatically expire after 7 days if not acted upon.</Text>
+                    </Callout.Text>
+                  </Callout.Root>
+
+                  {isLoadingLinkRequests ? (
+                    <Flex align="center" justify="center" py="8">
+                      <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
+                    </Flex>
+                  ) : pendingLinkRequests.length > 0 ? (
+                    <Box className="grid gap-3">
+                      {pendingLinkRequests.map((request) => (
+                        <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a5]">
+                          <Box className="bg-[--gray-a3] px-4 py-3">
+                            <Flex align="center" justify="between">
+                              <Flex align="center" gap="2">
+                                {request.requestType === 'parent' ? (
+                                  <Users size={16} className="text-[--accent-9]" />
+                                ) : (
+                                  <School size={16} className="text-[--accent-9]" />
+                                )}
+                                <Text size="2" weight="medium">
+                                  {request.requestType === 'parent' ? 'Parent Connection' : 'School Connection'}
+                                </Text>
+                              </Flex>
+                              <Badge variant="soft" color="amber">
+                                {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                              </Badge>
+                            </Flex>
+                          </Box>
+
+                          <Box className="p-4">
+                            <Flex direction="column" gap="3">
+                              <Flex align="center" gap="2">
+                                <Shield size={14} className="text-[--accent-9]" />
+                                <Text size="2" weight="medium">{request.targetEmail}</Text>
+                              </Flex>
+
+                              <Flex wrap="wrap" gap="3" className="text-sm">
+                                <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                  <Text size="1" color="gray">Code:</Text>
+                                  <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
+                                </Box>
+
+                                <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                  <Text size="1" color="gray">Created:</Text>
+                                  <Text size="1">{new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                                </Box>
+
+                                <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                  <Text size="1" color="gray">Expires:</Text>
+                                  <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                                </Box>
+                              </Flex>
+
+                              <Flex justify="end">
+                                <Button
+                                  color="red"
+                                  variant="soft"
+                                  onClick={() => handleCancelLinkRequest(request._id)}
+                                  disabled={cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id}
+                                >
+                                  {cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id ? "Cancelling..." : "Cancel Request"}
+                                </Button>
+                              </Flex>
+                            </Flex>
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <EmptyStateCard
+                      icon={<CheckCircle />}
+                      title="No pending requests"
+                      description="You don't have any active link requests. Use the options in the Family or School sections to create new connection requests."
+                    />
+                  )}
+                </Box>
               </Box>
-            </Box>
+            </Flex>
           </Tabs.Content>
         </Tabs.Root>
       </Box>
+      
+      {/* Confirmation Dialogs */}
+      <ConfirmationDialog
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
+        title="Reject Connection Request"
+        description={`Are you sure you want to reject the connection request from ${selectedParentName || 'this parent'}?`}
+        additionalContent={
+          <Text as="p" size="1" color="gray">
+            This action cannot be undone. The parent will need to send a new connection request if you change your mind.
+          </Text>
+        }
+        confirmText="Reject Request"
+        confirmColor="red"
+        isLoading={respondToParentLinkMutation.isPending}
+        onConfirm={() => confirmRespondToParentLinkRequest(selectedRequestId, 'reject')}
+      />
+      
+      <ConfirmationDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        title="Cancel Link Request"
+        description="Are you sure you want to cancel this connection request?"
+        additionalContent={
+          <Text as="p" size="1" color="gray">
+            This action cannot be undone. You will need to create a new request if you change your mind.
+          </Text>
+        }
+        confirmText="Cancel Request"
+        confirmColor="red"
+        isLoading={cancelLinkRequestMutation.isPending}
+        onConfirm={confirmCancelLinkRequest}
+      />
+
+      <ConfirmationDialog
+        open={unlinkParentDialogOpen}
+        onOpenChange={setUnlinkParentDialogOpen}
+        title="Unlink Parent"
+        description={`Are you sure you want to unlink ${selectedParentToUnlink || 'this parent'} from your account?`}
+        additionalContent={
+          <Text as="p" size="1" color="gray">
+            This action will remove all connections between you and this parent.
+          </Text>
+        }
+        confirmText="Unlink Parent"
+        confirmColor="red"
+        isLoading={unlinkParentMutation.isPending}
+        onConfirm={confirmUnlinkParent}
+      />
+
+      <ConfirmationDialog
+        open={unlinkSchoolDialogOpen}
+        onOpenChange={setUnlinkSchoolDialogOpen}
+        title="Unlink School"
+        description={`Are you sure you want to unlink ${schoolToUnlink || 'your school'} from your account?`}
+        additionalContent={
+          <Text as="p" size="1" color="gray">
+            This action will remove all connections between you and this school.
+          </Text>
+        }
+        confirmText="Unlink School"
+        confirmColor="red"
+        isLoading={unlinkSchoolMutation.isPending}
+        onConfirm={confirmUnlinkSchool}
+      />
     </Theme>
   );
 }

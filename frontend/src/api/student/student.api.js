@@ -61,3 +61,14 @@ export const cancelLinkRequest = async (requestId) => {
   const response = await apiClient.delete(`/link-requests/${requestId}`);
   return response.data;
 }
+
+export const getParentLinkRequests = async () => {
+  const response = await apiClient.get('/students/requests/parent');
+  return response.data;
+}
+
+export const respondToParentLinkRequest = async ({ requestId, action }) => {
+  // action: { accept, reject }
+  const response = await apiClient.post(`/students/requests/parent/${requestId}`, { action });
+  return response.data;
+}
