@@ -3,6 +3,7 @@ const Student = require("../models/student.model");
 const User = require("../models/user.model");
 const Parent = require("../models/parent.model");
 const School = require("../models/school.model");
+const SchoolClass = require("../models/schoolClass.model");
 const crypto = require("crypto");
 
 // Student requests to link with a parent
@@ -90,6 +91,7 @@ exports.requestParentLink = async (req, res) => {
         requestId: linkRequest._id,
         code: linkRequest.code,
         expiresAt: linkRequest.expiresAt,
+        
       },
     });
   } catch (error) {
@@ -125,7 +127,11 @@ exports.requestSchoolLink = async (req, res) => {
     }
 
     // Find class with join code
-    const schoolClass = await SchoolClass.findOne({ joinCode: schoolCode });
+    const schoolClass = await SchoolClass.findOne({ joinCode: schoolCode }).populate({
+      path: "schoolId",
+      select: "email",
+    });
+
     if (!schoolClass) {
       return res.status(404).json({
         success: false,
@@ -155,6 +161,7 @@ exports.requestSchoolLink = async (req, res) => {
       targetId: schoolClass.schoolId,
       code: code,
       expiresAt: expiresAt,
+      targetEmail: schoolClass.schoolId.email,
     });
 
     await linkRequest.save();

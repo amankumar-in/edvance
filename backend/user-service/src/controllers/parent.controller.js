@@ -408,6 +408,7 @@ exports.getPendingLinkRequests = async (req, res) => {
         studentName: studentUser
           ? `${studentUser.firstName} ${studentUser.lastName}`
           : "Unknown",
+        studentEmail: studentUser.email,
       });
     }
 

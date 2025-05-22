@@ -1,4 +1,6 @@
 const Student = require("../models/student.model");
+const Parent = require("../models/parent.model");
+const Teacher = require("../models/teacher.model");
 const User = require("../models/user.model");
 const Badge = require("../models/badge.model");
 const SchoolClass = require("../models/schoolClass.model");
@@ -6,15 +8,121 @@ const LinkRequest = require("../models/linkRequest.model");
 const linkRequestController = require("./linkRequest.controller");
 const crypto = require("crypto");
 const axios = require("axios");
+const { default: mongoose } = require("mongoose");
 
 // Get student profile (for student users)
 exports.getStudentProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const student = await Student.findOne({ userId })
-      .populate("parentIds", "userId firstName lastName")
-      .populate("teacherIds", "userId firstName lastName");
+    const student = await Student.aggregate([
+      {
+        $match: {
+          userId: mongoose.Types.ObjectId.createFromHexString(userId),
+        },
+      },
+      // Look up parents information
+      {
+        $lookup: {
+          from: "parents",
+          localField: "parentIds",
+          foreignField: "_id",
+          as: "parentIds",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                userId: 1,
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "userDetails",
+              },
+            },
+            {
+              $unwind: {
+                path: "$userDetails",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $project: {
+                userId: 1,
+                firstName: "$userDetails.firstName",
+                lastName: "$userDetails.lastName",
+                email: "$userDetails.email",
+                avatar: "$userDetails.avatar",
+              }
+            }
+          ]
+        },
+      },
+      {
+        $lookup: {
+          from: "schools",
+          localField: "schoolId",
+          foreignField: "_id",
+          as: "schoolId",
+          pipeline: [
+            {
+              $project: {
+                adminIds: 0,
+              }
+            }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: "teachers",
+          localField: "teacherIds",
+          foreignField: "_id",
+          as: "teacherIds",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "userDetails",
+              }
+            },
+            {
+              $unwind: {
+                path: "$userDetails",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $project: {
+                userId: 1,
+                firstName: "$userDetails.firstName",
+                lastName: "$userDetails.lastName",
+                email: "$userDetails.email",
+                avatar: "$userDetails.avatar",
+                subjectsTaught: 1,
+              }
+            }
+          ]
+        },
+      },
+      {
+        $addFields: {
+          schoolDetails: {
+            $arrayElemAt: ["$schoolId", 0]
+          },
+        }
+      },
+      {
+        $project: {
+          schoolId: 0,
+        }
+      }
+    ])
 
     if (!student) {
       return res.status(404).json({
@@ -25,7 +133,7 @@ exports.getStudentProfile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: student,
+      data: student[0],
     });
   } catch (error) {
     console.error("Get student profile error:", error);

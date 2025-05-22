@@ -6,7 +6,7 @@ const schoolClassSchema = new mongoose.Schema({
     required: true,
   },
   grade: {
-    type: Number,
+    type: String,
   },
   schoolId: {
     type: mongoose.Schema.Types.ObjectId,

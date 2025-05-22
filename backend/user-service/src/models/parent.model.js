@@ -24,6 +24,7 @@ const parentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  linkCode: { type: String }
 });
 
 module.exports = mongoose.model("Parent", parentSchema);
