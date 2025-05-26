@@ -60,6 +60,26 @@ const getProfile = async () => {
   return response.data;
 };
 
+// Send OTP to phone number
+async function sendOtp({ phoneNumber, purpose = "login" }) {
+  return apiClient.post('/auth/send-otp', { phoneNumber, purpose });
+}
+
+// Login with phone number and OTP
+async function loginWithPhone({ phoneNumber, otp }) {
+  const response = await apiClient.post('/auth/login', { phoneNumber, otp });
+  const { accessToken, refreshToken } = response.data.data;
+  localStorage.setItem("token", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
+  return response.data;
+}
+
+// Verify phone number with OTP
+async function verifyPhone({ phoneNumber, otp }) {
+  const response = await apiClient.post('/auth/verify-phone', { phoneNumber, otp });
+  return response.data;
+}
+
 export {
   register,
   verifyEmail,
@@ -68,5 +88,8 @@ export {
   verifyResetToken,
   resetPassword,
   getProfile,
-  logout
+  logout,
+  sendOtp,
+  loginWithPhone,
+  verifyPhone,
 };

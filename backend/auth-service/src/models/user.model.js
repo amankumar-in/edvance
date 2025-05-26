@@ -43,11 +43,17 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    trim: true
+    trim: true,
+    unique: true,
+    sparse: true
   },
 
   // Verification fields
   isVerified: {
+    type: Boolean,
+    default: false
+  },
+  isPhoneVerified: {
     type: Boolean,
     default: false
   },
@@ -59,6 +65,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false
   },
+  phoneVerificationOtp: {
+    type: String,
+    select: false
+  },
+  phoneVerificationOtpExpires: {
+    type: Date,
+    select: false
+  },
 
   // Password reset fields
   resetPasswordToken: {
@@ -66,6 +80,14 @@ const userSchema = new mongoose.Schema({
     select: false
   },
   resetPasswordExpires: {
+    type: Date,
+    select: false
+  },
+  otp: {
+    type: String,
+    select: false
+  },
+  otpExpires: {
     type: Date,
     select: false
   },
@@ -126,6 +148,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 });
 userSchema.index({ verificationToken: 1 }, { sparse: true });
 userSchema.index({ resetPasswordToken: 1 }, { sparse: true });
+userSchema.index({ phoneNumber: 1 }, { unique: true, sparse: true });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {

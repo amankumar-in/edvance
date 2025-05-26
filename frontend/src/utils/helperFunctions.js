@@ -25,7 +25,7 @@ export const buildSelectionList = (user, profiles) => {
     // Handle roles that may require profile creation or lead to a dashboard
     if (["teacher", "parent", "student", "social_worker"].includes(role)) {
       // Check if a profile already exists for the current role
-      const profileExists = profiles?.[role] !== null;
+      const profileExists = profiles?.[role] !== null && user.phoneNumber && user.isPhoneVerified;
       list.push({
         // Dynamically set label based on profile existence
         label: profileExists

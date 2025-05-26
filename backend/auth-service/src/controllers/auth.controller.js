@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const User = require("../models/user.model");
+const { sendOTP } = require('../utils/twilio');
 
 const ALLOW_ADMIN_REGISTRATION =
   process.env.ALLOW_ADMIN_REGISTRATION === "true";
@@ -66,11 +67,10 @@ function buildUrl(path, token, email) {
   if (path !== "verify-email" && path !== "reset-password") {
     const baseUrl =
       process.env.NODE_ENV === "development"
-        ? `http://${
-            process.env.AUTH_HOST === "0.0.0.0"
-              ? "localhost"
-              : process.env.AUTH_HOST
-          }:${process.env.AUTH_PORT}`
+        ? `http://${process.env.AUTH_HOST === "0.0.0.0"
+          ? "localhost"
+          : process.env.AUTH_HOST
+        }:${process.env.AUTH_PORT}`
         : process.env.PRODUCTION_URL;
     return `${baseUrl}/api/auth/${path}?token=${token}&email=${encodeURIComponent(
       email
@@ -374,73 +374,121 @@ exports.resendVerification = async (req, res) => {
 // POST /auth/login
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, phoneNumber, otp } = req.body;
 
-    // Input validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password are required",
-      });
-    }
+    // Email/password login
+    if (email && password) {
+      // Find user
+      const user = await User.findOne({ email });
 
-    // Find user
-    const user = await User.findOne({ email });
+      if (!user) {
+        // Use same message for security (don't reveal which field is wrong)
+        return res.status(401).json({
+          success: false,
+          message: "Invalid credentials",
+        });
+      }
 
-    if (!user) {
-      // Use same message for security (don't reveal which field is wrong)
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+      // Check if email is verified
+      if (!user.isVerified) {
+        return res.status(403).json({
+          success: false,
+          message: "Please verify your email before logging in",
+          needsVerification: true,
+        });
+      }
 
-    // Check if email is verified
-    if (!user.isVerified) {
-      return res.status(403).json({
-        success: false,
-        message: "Please verify your email before logging in",
-        needsVerification: true,
-      });
-    }
+      // Check if account is active
+      if (!user.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "This account has been deactivated. Please contact support.",
+        });
+      }
 
-    // Check if account is active
-    if (!user.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: "This account has been deactivated. Please contact support.",
-      });
-    }
+      // Verify password
+      const isPasswordValid = await user.comparePassword(password);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid credentials",
+        });
+      }
 
-    // Verify password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+      // Generate tokens
+      const { accessToken, refreshToken } = generateTokens(user._id, user.roles);
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id, user.roles);
-
-    // Return user data
-    return res.json({
-      success: true,
-      message: "Login successful",
-      data: {
-        accessToken,
-        refreshToken,
-        user: {
-          id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          roles: user.roles,
-          isVerified: user.isVerified,
+      // Return user data
+      return res.json({
+        success: true,
+        message: "Login successful",
+        data: {
+          accessToken,
+          refreshToken,
+          user: {
+            id: user._id,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            roles: user.roles,
+            isVerified: user.isVerified,
+          },
         },
-      },
-    });
+      });
+    }
+    // Phone/OTP login
+    else if (phoneNumber && otp) {
+      const user = await User.findOne({ phoneNumber }).select('+otp +otpExpires');
+      if (!user) {
+        return res.status(401).json({ success: false, message: "Invalid credentials" });
+      }
+      if (!user.isPhoneVerified) {
+        return res.status(403).json({
+          success: false,
+          message: "Phone number is not verified. Please verify your phone number before logging in."
+        });
+      }
+      if (!user.isVerified) {
+        return res.status(403).json({ success: false, message: "Please verify your account before logging in" });
+      }
+      if (!user.isActive) {
+        return res.status(403).json({ success: false, message: "This account has been deactivated. Please contact support." });
+      }
+      if (!user.otp || !user.otpExpires || user.otp !== otp || user.otpExpires < Date.now()) {
+        return res.status(401).json({ success: false, message: "Invalid or expired OTP" });
+      }
+
+      // OTP is valid, clear it
+      user.otp = undefined;
+      user.otpExpires = undefined;
+      await user.save();
+
+      // Generate tokens
+      const { accessToken, refreshToken } = generateTokens(user._id, user.roles);
+
+      return res.json({
+        success: true,
+        message: "Login successful",
+        data: {
+          accessToken,
+          refreshToken,
+          user: {
+            id: user._id,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            roles: user.roles,
+            isVerified: user.isVerified,
+          },
+        },
+      });
+    }
+    // Missing credentials
+    else {
+      return res.status(400).json({ success: false, message: "Email/password or phone/otp required" });
+    }
   } catch (err) {
     console.error("Login error:", err);
     return res.status(500).json({
@@ -799,5 +847,160 @@ exports.getProfile = async (req, res) => {
       message: "Failed to fetch profile due to a server error",
       error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
+  }
+};
+
+// POST /auth/send-otp
+
+/**
+ * Sends a 6-digit OTP to a user's phone number via SMS for either login or phone verification.
+ * - Purpose can be "login" (for verified users) or "verify" (to verify phone number).
+ * - Enforces a 45-second cooldown to prevent spam.
+ * - Stores OTP and expiry in the user record.
+ * - Sends purpose-specific SMS using Twilio.
+ */
+exports.sendOtp = async (req, res) => {
+  try {
+    const { phoneNumber, purpose = "login" } = req.body;
+
+    const normalizedPurpose = purpose.toLowerCase();
+
+    // Validate input
+    if (!phoneNumber) {
+      return res.status(400).json({ success: false, message: "Phone number is required" });
+    }
+
+    if (!['login', 'verify'].includes(normalizedPurpose)) {
+      return res.status(400).json({ success: false, message: "Invalid purpose. Allowed values are 'login' and 'verify'." });
+    }
+
+    // Find user
+    const user = await User.findOne({ phoneNumber });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No user found with this phone number" });
+    }
+
+    // If purpose is 'verify', require authentication and check phone number matches logged in user
+    if (normalizedPurpose === 'verify' && req.user) {
+      const userId = req.user.id;
+      const authUser = await User.findById(userId).select('+phoneNumber');
+      if (!authUser) {
+        return res.status(404).json({ success: false, message: "Authenticated user not found" });
+      }
+      if (authUser.phoneNumber !== phoneNumber) {
+        return res.status(403).json({ success: false, message: "You can only request a verification OTP for your own phone number." });
+      }
+    }
+
+    const now = Date.now();
+    const cooldownPeriod = 45 * 1000; // 45 seconds cooldown between OTP sends
+
+    // Throttle OTP resend for each purpose
+    if (
+      normalizedPurpose === "login" &&
+      user.otpExpires &&
+      user.otpExpires > now - cooldownPeriod
+    ) {
+      return res.status(429).json({
+        success: false,
+        message: "OTP was recently sent. Please wait before trying again."
+      });
+    }
+
+    if (
+      normalizedPurpose === "verify" &&
+      user.phoneVerificationOtpExpires &&
+      user.phoneVerificationOtpExpires > now - cooldownPeriod
+    ) {
+      return res.status(429).json({
+        success: false,
+        message: "Verification OTP was recently sent. Please wait before trying again."
+      });
+    }
+
+    // Generate OTP and expiry
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    const otpExpires = now + 5 * 60 * 1000; // 5 minutes
+
+    // Set OTP on user based on purpose
+    if (normalizedPurpose === "login") {
+      if (!user.isPhoneVerified) {
+        return res.status(403).json({
+          success: false,
+          message: "Phone number is not verified. Please verify your phone number first."
+        });
+      }
+      user.otp = otp;
+      user.otpExpires = otpExpires;
+    } else {
+      user.phoneVerificationOtp = otp;
+      user.phoneVerificationOtpExpires = otpExpires;
+    }
+
+    await user.save();
+
+    // Send SMS via Twilio
+    const message =
+      normalizedPurpose === "verify"
+        ? `Use this OTP to verify your phone number on Univance: ${otp}. This OTP will expire in 5 minutes.`
+        : `Use this OTP to log into your Univance account: ${otp}. This OTP will expire in 5 minutes. If you did not request this OTP, please ignore this message. - Univance Team`;
+
+    try {
+      await sendOTP(phoneNumber, message);
+    } catch (twilioErr) {
+      console.error("Twilio send error:", twilioErr);
+      return res.status(500).json({ success: false, message: "Failed to send OTP via SMS" });
+    }
+
+    return res.json({ success: true, message: "OTP sent successfully" });
+
+  } catch (err) {
+    console.error("SendOtp error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send OTP",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
+/**
+ * Verifies a user's phone number using the OTP sent for verification.
+ * - Accepts phoneNumber and otp in the request body.
+ * - Checks OTP and expiry.
+ * - Sets isPhoneVerified to true and clears verification OTP fields if valid.
+ * - Returns appropriate success or error responses.
+ */
+exports.verifyPhone = async (req, res) => {
+  try {
+    const { phoneNumber, otp } = req.body;
+    const userId = req.user.id; // from auth middleware
+    if (!phoneNumber || !otp) {
+      return res.status(400).json({ success: false, message: "Phone number and OTP are required" });
+    }
+    const user = await User.findById(userId).select('+phoneVerificationOtp +phoneVerificationOtpExpires +phoneNumber');
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    if (user.phoneNumber !== phoneNumber) {
+      return res.status(403).json({ success: false, message: "You can only verify your own phone number." });
+    }
+    if (!user.phoneVerificationOtp || !user.phoneVerificationOtpExpires) {
+      return res.status(400).json({ success: false, message: "No OTP request found for this phone number" });
+    }
+    if (user.phoneVerificationOtp !== otp) {
+      return res.status(401).json({ success: false, message: "Invalid OTP" });
+    }
+    if (user.phoneVerificationOtpExpires < Date.now()) {
+      return res.status(401).json({ success: false, message: "OTP has expired" });
+    }
+    user.isPhoneVerified = true;
+    user.phoneVerificationOtp = undefined;
+    user.phoneVerificationOtpExpires = undefined;
+    await user.save();
+    return res.json({ success: true, message: "Phone number verified successfully" });
+  } catch (err) {
+    console.error("VerifyPhone error:", err);
+    return res.status(500).json({ success: false, message: "Failed to verify phone number" });
   }
 };

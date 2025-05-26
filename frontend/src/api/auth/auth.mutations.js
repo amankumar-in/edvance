@@ -7,6 +7,9 @@ import {
   verifyResetToken,
   resetPassword,
   logout,
+  sendOtp,
+  loginWithPhone,
+  verifyPhone,
 } from "./auth.api";
 
 /**
@@ -82,6 +85,21 @@ const useLogout = () => {
     mutationFn: logout,
   });
 };
+function useSendOtp() {
+  return useMutation({
+    mutationFn: sendOtp,
+  });
+}
+function useLoginWithPhone() {
+  return useMutation({
+    mutationFn: loginWithPhone,
+  });
+}
+function useVerifyPhone() {
+  return useMutation({
+    mutationFn: verifyPhone,
+  });
+}
 
 export {
   useRegister,
@@ -91,4 +109,7 @@ export {
   useVerifyResetToken,
   useResetPassword,
   useLogout,
+  useSendOtp,
+  useLoginWithPhone,
+  useVerifyPhone,
 };

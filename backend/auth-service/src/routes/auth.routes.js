@@ -144,6 +144,76 @@ router.post('/login', authController.login);
 
 /**
  * @openapi
+ * /auth/send-otp:
+ *   post:
+ *     summary: Send OTP to user's phone number
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [phoneNumber]
+ *             properties:
+ *               phoneNumber: { type: string }
+ *               purpose:
+ *                 type: string
+ *                 enum: [login, verify]
+ *                 default: login
+ *                 description: "Purpose of OTP. 'login' for login OTP, 'verify' for phone verification OTP."
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         description: Missing phone number or invalid purpose
+ *       404:
+ *         description: No user found with this phone number
+ *       429:
+ *         description: OTP recently sent, please wait
+ *       500:
+ *         description: Failed to send OTP
+ */
+router.post('/send-otp', authMiddleware.optionalAuth, authController.sendOtp);
+
+/**
+ * @openapi
+ * /auth/verify-phone:
+ *   post:
+ *     summary: Verify user's phone number with OTP
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     description: >
+ *       Requires authentication. Only the authenticated user can verify their own phone number. The phoneNumber in the request body must match the user's phone number.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [phoneNumber, otp]
+ *             properties:
+ *               phoneNumber: { type: string }
+ *               otp: { type: string }
+ *     responses:
+ *       200:
+ *         description: Phone number verified successfully
+ *       400:
+ *         description: Missing phone number or OTP, or no OTP request found
+ *       401:
+ *         description: Invalid or expired OTP, or not authenticated
+ *       403:
+ *         description: Phone number does not match authenticated user
+ *       404:
+ *         description: No user found with this phone number
+ *       500:
+ *         description: Failed to verify phone number
+ */
+router.post('/verify-phone', authMiddleware.verifyToken, authController.verifyPhone);
+
+/**
+ * @openapi
  * /auth/refresh-token:
  *   post:
  *     summary: Refresh access token
