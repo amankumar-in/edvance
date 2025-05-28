@@ -1,6 +1,8 @@
 export { default as PlatformAdminDashboardLayout } from './PlatformAdminDashboardLayout'
 export { default as Overview } from './Overview'
 export { default as Users } from './Users'
+export { default as Tasks } from './Tasks'
+export { default as CreateTask } from './CreateTask'
 
 export { default as Students } from './tabs/students'
 export { default as Teachers } from './tabs/teachers'

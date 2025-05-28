@@ -1,11 +1,12 @@
 import { Flex, Heading, IconButton, Skeleton, TabNav, Text } from '@radix-ui/themes';
+import { Ellipsis } from 'lucide-react';
 import React, { useEffect } from 'react';
+import { MdArrowDropDown } from "react-icons/md";
 import { Link, Outlet, useLocation } from 'react-router';
-import { AddNewUserDialog } from '../../components/platform-admin';
-import { useTotalUserCount } from '../../api/user/user.queries';
 import { toast } from 'sonner';
-import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
-import { Dot, Ellipsis } from 'lucide-react';
+import { useTotalUserCount } from '../../api/user/user.queries';
+import { AddNewUserDialog } from '../../components/platform-admin';
+import CreateSubAdmin from '../../components/platform-admin/CreateSubAdminDialog';
 
 function Users() {
   const { pathname } = useLocation();
@@ -58,6 +59,7 @@ function Users() {
           </span>
         </Heading>
         <div className='flex items-center gap-2'>
+          <CreateSubAdmin />
           <AddNewUserDialog />
           <IconButton
             variant='outline'

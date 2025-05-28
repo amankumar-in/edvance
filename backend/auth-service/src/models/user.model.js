@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
   roles: {
     type: [String],
     enum: {
-      values: ['student', 'parent', 'teacher', 'school_admin', 'social_worker', 'platform_admin'],
+      values: ['student', 'parent', 'teacher', 'school_admin', 'social_worker', 'platform_admin', 'sub_admin'],
       message: '{VALUE} is not a supported role'
     },
     default: ['student']

@@ -45,7 +45,7 @@ const authMiddleware = {
         req.user = {
           id: decoded.id,
           email: decoded.email,
-          role: decoded.role,
+          roles: decoded.roles,
           firstName: decoded.firstName,
           lastName: decoded.lastName,
           schoolId: decoded.schoolId,
@@ -80,15 +80,15 @@ const authMiddleware = {
           });
         }
 
-        // Check if user's role is in the allowed roles array
-        if (roles.includes(req.user.role)) {
-          next();
-        } else {
+        const hasRole = req.user.roles.some((role) => roles.includes(role));
+        if (!hasRole) {
           return res.status(403).json({
             success: false,
             message: "Access denied: insufficient permissions",
           });
         }
+
+        next();
       } catch (error) {
         console.error("Role check error:", error);
         return res.status(500).json({

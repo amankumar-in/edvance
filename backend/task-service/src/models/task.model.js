@@ -50,8 +50,8 @@ const taskSchema = new mongoose.Schema(
       required: true,
     },
     // Role of the creator
-    creatorRole: {
-      type: String,
+    creatorRoles: {
+      type: [String],
       enum: [
         "student",
         "parent",
@@ -59,14 +59,21 @@ const taskSchema = new mongoose.Schema(
         "school_admin",
         "social_worker",
         "platform_admin",
-        "system",
+        "sub_admin",
       ],
       required: true,
     },
     // Who the task is assigned to (typically a student)
     assignedTo: {
-      type: String,
-      required: true,
+      role: {
+        type: String,
+        enum: [
+          'parent',
+          'student',
+          'school',
+        ]
+      },
+      selectedPeopleIds: [mongoose.Schema.Types.ObjectId]
     },
     // Current status of the task
     status: {

@@ -3,7 +3,7 @@ import App from "../src/App";
 import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
 import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, StudentDashboard, TeacherDashboard } from "../src/pages";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
-import { Overview, Parents, PlatformAdminDashboardLayout, SchoolAdmins, SocialWorkers, Students, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
+import { Overview, Parents, PlatformAdminDashboardLayout, SchoolAdmins, SocialWorkers, Students, Teachers, UserDetails, Users, CreateTask, Tasks } from "../src/pages/platform-admin";
 import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
@@ -76,6 +76,8 @@ const router = createBrowserRouter(
               <Route path="social-workers" element={<SocialWorkers />} />
               <Route path="school-admins" element={<SchoolAdmins />} />
             </Route>
+            <Route path="tasks" element={<Tasks />} />
+            <Route path="tasks/create" element={<CreateTask />} />
             <Route path="users/user/:id" element={<UserDetails />} />
           </Route>
         </Route>

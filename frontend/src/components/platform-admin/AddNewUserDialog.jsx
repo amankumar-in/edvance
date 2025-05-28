@@ -202,7 +202,7 @@ function AddNewUserDialog() {
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger>
-        <Button onClick={() => setIsOpen(true)}>Add New User</Button>
+        <Button onClick={() => setIsOpen(true)} variant='soft'>Add New User</Button>
       </Dialog.Trigger>
 
       <Dialog.Content maxWidth="768px" aria-describedby={undefined}>

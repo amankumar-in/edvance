@@ -36,7 +36,7 @@ const taskController = {
 
       // Extract user info from authentication middleware
       const createdBy = req.user.id;
-      const creatorRole = req.user.role;
+      const creatorRoles = req.user.roles; // [parent, teacher]
 
       // Validate required fields
       if (!title || !category || !assignedTo || pointValue === undefined) {
@@ -55,7 +55,7 @@ const taskController = {
         subCategory,
         pointValue: Number(pointValue),
         createdBy,
-        creatorRole,
+        creatorRoles,
         assignedTo,
         status: "pending",
         dueDate: dueDate ? new Date(dueDate) : undefined,
@@ -65,9 +65,9 @@ const taskController = {
           requiresApproval !== undefined ? requiresApproval : true,
         approverType:
           approverType ||
-          (creatorRole === "parent"
+          (creatorRoles.includes("parent")
             ? "parent"
-            : creatorRole === "teacher" || creatorRole === "school_admin"
+            : creatorRoles.includes("teacher") || creatorRoles.includes("school_admin")
             ? "teacher"
             : "none"),
         specificApproverId: specificApproverId || createdBy,
