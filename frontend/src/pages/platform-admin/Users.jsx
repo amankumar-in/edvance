@@ -51,14 +51,14 @@ function Users() {
 
   return (
     <div className='space-y-4'>
-      <Flex as='div' justify='between' align='center'>
-        <Heading as='h1' size={'7'} weight={'medium'} className='flex items-center gap-2'>
+      <Flex as='div' justify='between' align='center' className='flex-wrap gap-4'>
+        <Heading as='h1' size={'7'} weight={'medium'} className='flex items-center gap-2 flex-wrap'>
           User Management <span><MdArrowDropDown size={28} /></span>
           <span className='text-sm font-normal border rounded-md border-[--gray-a6] px-2 py-1 flex items-center gap-[6px]'>
             <span className='w-[6px] h-[6px] bg-[--green-8] rounded-full' /> 23 Active
           </span>
         </Heading>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2 flex-wrap'>
           <CreateSubAdmin />
           <AddNewUserDialog />
           <IconButton

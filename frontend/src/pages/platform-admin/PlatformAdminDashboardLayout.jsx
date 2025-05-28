@@ -25,7 +25,7 @@ function PlatformAdminDashboardLayout() {
           <Flex className="flex-1">
             <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-            <div className="flex-1">
+            <div className="flex-1" style={{ minWidth: 0 }}>
               <Container>
                 <Outlet />
               </Container>

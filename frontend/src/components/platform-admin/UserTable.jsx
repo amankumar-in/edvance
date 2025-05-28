@@ -96,98 +96,105 @@ const UserTable = ({ role }) => {
           height={'4px'}
         />
       </div>}
-      <Table.Root variant='ghost'>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell onClick={() => handleSort('_id')} style={{ cursor: 'pointer' }}>
-              <Flex align="center" gap="2" className='font-medium'>
-                ID
-                {sort === '_id' && (
-                  order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                )}
-              </Flex>
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell onClick={() => handleSort('firstName')} style={{ cursor: 'pointer' }}>
-              <Flex align="center" gap="2" className='font-medium'>
-                Name
-                {sort === 'firstName' && (
-                  order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                )}
-              </Flex>
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell onClick={() => handleSort('email')} style={{ cursor: 'pointer' }}>
-              <Flex align="center" gap="2" className='font-medium'>
-                Email
-                {sort === 'email' && (
-                  order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                )}
-              </Flex>
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell onClick={() => handleSort('phoneNumber')} style={{ cursor: 'pointer' }}>
-              <Flex align="center" gap="2" className='font-medium'>
-                Phone
-                {sort === 'phoneNumber' && (
-                  order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                )}
-              </Flex>
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className='font-medium'>
-              Actions
-            </Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-
-        <Table.Body>
-          {users.length === 0 ? (
+      <div
+        style={{
+          overflowX: 'auto',
+          width: '100%',
+        }}
+      >
+        <Table.Root variant='ghost' style={{ minWidth: 700 }}>
+          <Table.Header>
             <Table.Row>
-              <Table.Cell colSpan={5}>
-                <Text align="center">No users found</Text>
-              </Table.Cell>
+              <Table.ColumnHeaderCell onClick={() => handleSort('_id')} style={{ cursor: 'pointer' }}>
+                <Flex align="center" gap="2" className='font-medium'>
+                  ID
+                  {sort === '_id' && (
+                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
+                  )}
+                </Flex>
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell onClick={() => handleSort('firstName')} style={{ cursor: 'pointer' }}>
+                <Flex align="center" gap="2" className='font-medium'>
+                  Name
+                  {sort === 'firstName' && (
+                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
+                  )}
+                </Flex>
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell onClick={() => handleSort('email')} style={{ cursor: 'pointer' }}>
+                <Flex align="center" gap="2" className='font-medium'>
+                  Email
+                  {sort === 'email' && (
+                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
+                  )}
+                </Flex>
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell onClick={() => handleSort('phoneNumber')} style={{ cursor: 'pointer' }}>
+                <Flex align="center" gap="2" className='font-medium'>
+                  Phone
+                  {sort === 'phoneNumber' && (
+                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
+                  )}
+                </Flex>
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className='font-medium'>
+                Actions
+              </Table.ColumnHeaderCell>
             </Table.Row>
-          ) : (
-            users.map((user) => (
-              <Table.Row key={user._id}>
-                <Table.Cell>
-                  <Text size="2">{user._id}</Text>
-                </Table.Cell>
-                <Table.Cell>
-                  <Text className='capitalize'>{user.name || `${user.firstName} ${user.lastName}`}</Text>
-                </Table.Cell>
-                <Table.Cell>
-                  {user.email}
-                </Table.Cell>
-                <Table.Cell>
-                  {user.phoneNumber || '-'}
-                </Table.Cell>
-                <Table.Cell>
-                  <Flex gap="2" align={'center'}>
-                    <Button
-                      variant='ghost'
-                    >
-                      Edit
-                    </Button>
-                    <Separator orientation={'vertical'} color='blue' />
-                    <Button
-                      variant='ghost'
-                    >
-                      Delete
-                    </Button>
-                    <Separator orientation={'vertical'} color='blue' />
-                    <Button
-                      variant='ghost'
-                      asChild
-                    >
-                      <Link to={`/platform-admin/dashboard/users/user/${user._id}`}>
-                        View
-                      </Link>
-                    </Button>
-                  </Flex>
+          </Table.Header>
+
+          <Table.Body>
+            {users.length === 0 ? (
+              <Table.Row>
+                <Table.Cell colSpan={5}>
+                  <Text align="center">No users found</Text>
                 </Table.Cell>
               </Table.Row>
-            ))
-          )}
-        </Table.Body>
-      </Table.Root>
+            ) : (
+              users.map((user) => (
+                <Table.Row key={user._id}>
+                  <Table.Cell>
+                    <Text size="2">{user._id}</Text>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Text className='capitalize'>{user.name || `${user.firstName} ${user.lastName}`}</Text>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {user.email}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {user.phoneNumber || '-'}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Flex gap="2" align={'center'}>
+                      <Button
+                        variant='ghost'
+                      >
+                        Edit
+                      </Button>
+                      <Separator orientation={'vertical'} color='blue' />
+                      <Button
+                        variant='ghost'
+                      >
+                        Delete
+                      </Button>
+                      <Separator orientation={'vertical'} color='blue' />
+                      <Button
+                        variant='ghost'
+                        asChild
+                      >
+                        <Link to={`/platform-admin/dashboard/users/user/${user._id}`}>
+                          View
+                        </Link>
+                      </Button>
+                    </Flex>
+                  </Table.Cell>
+                </Table.Row>
+              ))
+            )}
+          </Table.Body>
+        </Table.Root>
+      </div>
 
       <Flex justify="between" align="center" mt="4">
         <Flex align="center" gap="2">
