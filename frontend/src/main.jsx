@@ -7,20 +7,17 @@ import AppRouter from "../providers/RouterProvider";
 import { Toaster } from "sonner";
 import { QueryProvider } from "../providers/QueryProvider";
 import { AuthProvider } from "./Context/AuthContext";
-import { RoleProvider } from "./Context/RoleContext";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <QueryProvider>
     <AuthProvider>     
-      <RoleProvider>
         <Theme accentColor="purple" grayColor="slate">
           <Toaster position="top-right" richColors />
           <ReactQueryDevtools initialIsOpen={false} />
           <AppRouter />
         </Theme>
-      </RoleProvider>
     </AuthProvider>
   </QueryProvider>
   // </StrictMode>

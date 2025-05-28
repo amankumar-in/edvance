@@ -1,33 +1,27 @@
 import { Text } from "@radix-ui/themes";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import MyButton from "../../components/MyButton";
 import { useAuth } from "../../Context/AuthContext";
-import { useRole } from "../../Context/RoleContext";
-import { buildSelectionList } from "../../utils/helperFunctions";
 import AuthLayout from "./AuthLayout";
 
 function SelectProfile() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const [selectionList, setSelectionList] = useState(state?.selectionList || []);
-  const { fetchProfile, handleLogout } = useAuth();
-  const { activeRole, setActiveRole } = useRole()
+  const { handleLogout, setActiveRole, selectionList, setSelectionList } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState(null);
 
   useEffect(() => {
-    if (!state?.selectionList) {
-      fetchProfile().then(data => {
-        const rebuiltList = buildSelectionList(data.user, data.profiles);
-        setSelectionList(rebuiltList);
-      })
+    if (state?.selectionList) {
+      setSelectionList(state.selectionList);
     }
-  }, []);
+  }, [state?.selectionList]);
 
   const handleContinue = () => {
     if (!selectedProfile) return;
 
     setActiveRole(selectedProfile.value);
+    localStorage.setItem('activeRole', selectedProfile.value);
     navigate(selectedProfile.route)
   };
 

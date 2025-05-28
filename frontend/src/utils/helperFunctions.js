@@ -12,12 +12,12 @@ export const buildSelectionList = (user, profiles) => {
     const hyphenatedRole = role.replace(/_/g, "-");
 
     // Handle roles that directly map to a dashboard (e.g., admin roles)
-    if (["school_admin", "platform_admin"].includes(role)) {
+    if (["school_admin", "platform_admin", "sub_admin"].includes(role)) {
       list.push({
         label: `${formatLabel(role)} Dashboard`, // Formatted label for display
         value: role, // Original role value
         needsProfile: false, // Indicates no separate profile creation is needed
-        route: `/${hyphenatedRole}/dashboard` // Route to the respective dashboard
+        route: hyphenatedRole === "platform-admin" || hyphenatedRole === "sub-admin" ? "/platform-admin/dashboard" : `/${hyphenatedRole}/dashboard` // Route to the respective dashboard
       });
       
     }

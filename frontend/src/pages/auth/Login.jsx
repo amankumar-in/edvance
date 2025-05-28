@@ -23,7 +23,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { loading, fetchProfile, setToken, setIsAuthenticated } = useAuth()
+  const { loading, fetchProfile, setToken, setIsAuthenticated, setActiveRole } = useAuth()
   const [loginMode, setLoginMode] = useState("email");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -133,6 +133,8 @@ export default function Login() {
 
     if (selectionList.length === 1) {
       const onlyOption = selectionList[0];
+      setActiveRole(onlyOption.value);
+      localStorage.setItem('activeRole', onlyOption.value);
       navigate(onlyOption.route);
     } else {
       navigate("/select-profile", { state: { selectionList } });

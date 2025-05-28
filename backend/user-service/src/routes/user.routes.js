@@ -633,7 +633,7 @@ router.get("/me/profiles", authMiddleware.verifyToken, userController.getAllProf
 router.get(
   "/by-role/:role",
   authMiddleware.verifyToken,
-  authMiddleware.checkRole(["platform_admin"]),
+  authMiddleware.checkRole(["platform_admin", "sub_admin"]),
   userController.getUsersByRole
 );
 

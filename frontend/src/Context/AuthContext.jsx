@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useLogout } from '../api/auth/auth.mutations'
 import { Loader } from '../components';
 import { Flex } from '@radix-ui/themes';
+import { buildSelectionList } from '../utils/helperFunctions';
 
 // Define the shape and default values for the AuthContext
 const AuthContext = createContext({
@@ -18,6 +19,10 @@ const AuthContext = createContext({
   fetchProfile: async () => null,
   handleLogout: async () => null,
   isLoggingOut: false,
+  activeRole: null,
+  setActiveRole: () => { },
+  selectionList: [],
+  setSelectionList: () => { }
 });
 
 // AuthProvider wraps the app and provides authentication state and actions
@@ -26,8 +31,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')));
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(true);
+  const [activeRole, setActiveRole] = useState(localStorage.getItem('activeRole'));
+  const [selectionList, setSelectionList] = useState([]);
   // Logout mutation
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
@@ -76,7 +82,13 @@ export const AuthProvider = ({ children }) => {
   // On mount, if authenticated, fetch the user profile
   useEffect(() => {
     if (isAuthenticated) {
-      fetchProfile();
+      fetchProfile().then(data => {
+        if (data?.user && data?.profiles) {
+          setSelectionList(buildSelectionList(data.user, data.profiles));
+        }
+      })
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -92,7 +104,11 @@ export const AuthProvider = ({ children }) => {
     fetchProfile,
     handleLogout,
     isLoggingOut,
-  }), [user, token, isAuthenticated, loading, isLoggingOut]);
+    activeRole,
+    setActiveRole,
+    selectionList,
+    setSelectionList
+  }), [user, token, isAuthenticated, loading, isLoggingOut, activeRole, selectionList]);
 
   // Provide the context to children, show loading UI if fetching
   return (
