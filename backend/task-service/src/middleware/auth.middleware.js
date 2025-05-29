@@ -12,8 +12,10 @@ const authMiddleware = {
     try {
       // Get token from Authorization header
       const bearerHeader = req.headers.authorization;
+      console.log("🔍 Authorization header received:", bearerHeader ? bearerHeader.substring(0, 30) + "..." : "NONE");
 
       if (!bearerHeader) {
+        console.log("❌ No authorization header provided");
         return res.status(401).json({
           success: false,
           message: "No authorization token provided",

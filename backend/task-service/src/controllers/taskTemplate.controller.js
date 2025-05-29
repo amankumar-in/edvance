@@ -1,5 +1,6 @@
 const TaskTemplate = require("../models/taskTemplate.model");
 const Task = require("../models/task.model");
+const TaskCategory = require("../models/taskCategory.model");
 const mongoose = require("mongoose");
 
 /**
@@ -45,6 +46,18 @@ const taskTemplateController = {
           message:
             "Missing required fields: title, category, and suggestedPointValue are required",
         });
+      }
+
+      // Validate and get category details if category is provided as ObjectId
+      let categoryDoc = null;
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        categoryDoc = await TaskCategory.findById(category);
+        if (!categoryDoc || !categoryDoc.isActive) {
+          return res.status(400).json({
+            success: false,
+            message: "Category not found or inactive",
+          });
+        }
       }
 
       // Create new template
@@ -548,11 +561,24 @@ const taskTemplateController = {
         });
       }
 
+      // Validate and get category details if template has ObjectId category
+      let categoryDoc = null;
+      if (mongoose.Types.ObjectId.isValid(template.category)) {
+        categoryDoc = await TaskCategory.findById(template.category);
+        if (!categoryDoc || !categoryDoc.isActive) {
+          return res.status(400).json({
+            success: false,
+            message: "Template category not found or inactive",
+          });
+        }
+      }
+
       // Create the task from template
       const task = new Task({
         title: template.title,
         description: description || template.description,
         category: template.category,
+        categoryType: categoryDoc ? categoryDoc.type : template.category, // Use category type if ObjectId, otherwise use string value
         subCategory: template.subCategory,
         pointValue: pointValue || template.suggestedPointValue,
         createdBy,

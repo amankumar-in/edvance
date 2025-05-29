@@ -72,3 +72,17 @@ export const respondToParentLinkRequest = async ({ requestId, action }) => {
   const response = await apiClient.post(`/students/requests/parent/${requestId}`, { action });
   return response.data;
 }
+
+export const getStudentTasks = async (studentId, params = {}) => {
+  const query = new URLSearchParams();
+
+  // Only include defined, non-null parameters
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.append(key, value);
+    }
+  });
+
+  const response = await apiClient.get(`/task-management/students/${studentId}/tasks?${query.toString()}`);
+  return response.data;
+};

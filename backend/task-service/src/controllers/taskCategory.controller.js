@@ -28,7 +28,7 @@ const taskCategoryController = {
 
       // Extract user info from authentication middleware
       const createdBy = req.user.id;
-      const creatorRole = req.user.role;
+      const creatorRole = req.user.roles && req.user.roles.length > 0 ? req.user.roles[0] : 'unknown';
 
       // Validate required fields
       if (!name || !type) {
@@ -92,6 +92,7 @@ const taskCategoryController = {
    * Get a task category by ID
    */
   getCategoryById: async (req, res) => {
+    console.log("🔴 getCategoryById method called - this is WRONG for /tasks/categories", req.params);
     try {
       const { id } = req.params;
 
@@ -113,16 +114,16 @@ const taskCategoryController = {
 
       // Check visibility/authorization
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRoles = req.user.roles || [];
 
       let isAuthorized =
         category.createdBy === userId ||
         category.visibility === "public" ||
-        userRole === "platform_admin";
+        userRoles.includes("platform_admin");
 
       // School admin can see school categories
       if (
-        userRole === "school_admin" &&
+        userRoles.includes("school_admin") &&
         category.schoolId &&
         req.user.schoolId === category.schoolId
       ) {
@@ -131,7 +132,7 @@ const taskCategoryController = {
 
       // Teachers can see school categories for their school
       if (
-        userRole === "teacher" &&
+        userRoles.includes("teacher") &&
         category.schoolId &&
         req.user.schoolId === category.schoolId
       ) {
@@ -167,7 +168,7 @@ const taskCategoryController = {
       const { id } = req.params;
       const updateData = req.body;
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRoles = req.user.roles || [];
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -187,11 +188,11 @@ const taskCategoryController = {
 
       // Check authorization
       let isAuthorized =
-        category.createdBy === userId || userRole === "platform_admin";
+        category.createdBy === userId || userRoles.includes("platform_admin");
 
       // School admin can update school categories
       if (
-        userRole === "school_admin" &&
+        userRoles.includes("school_admin") &&
         category.schoolId &&
         req.user.schoolId === category.schoolId
       ) {
@@ -254,7 +255,7 @@ const taskCategoryController = {
     try {
       const { id } = req.params;
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRoles = req.user.roles || [];
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -274,11 +275,11 @@ const taskCategoryController = {
 
       // Check authorization
       let isAuthorized =
-        category.createdBy === userId || userRole === "platform_admin";
+        category.createdBy === userId || userRoles.includes("platform_admin");
 
       // School admin can delete school categories
       if (
-        userRole === "school_admin" &&
+        userRoles.includes("school_admin") &&
         category.schoolId &&
         req.user.schoolId === category.schoolId
       ) {
@@ -321,6 +322,7 @@ const taskCategoryController = {
    * Get all categories with filters
    */
   getCategories: async (req, res) => {
+    console.log("🟢 getCategories method called - this is the correct method");
     try {
       const {
         type,
@@ -334,7 +336,7 @@ const taskCategoryController = {
       } = req.query;
 
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRoles = req.user.roles || [];
 
       // Build filter
       const filter = { isActive: true };
@@ -354,21 +356,21 @@ const taskCategoryController = {
       }
 
       // Access control based on user role and visibility
-      if (userRole === "student" || userRole === "parent") {
+      if (userRoles.includes("student") || userRoles.includes("parent")) {
         // Students and parents can see public, their own, and school categories
         filter.$or = [
           { visibility: "public" },
           { createdBy: userId },
           { visibility: "school", schoolId: req.user.schoolId }, // if user has a schoolId
         ];
-      } else if (userRole === "teacher") {
+      } else if (userRoles.includes("teacher")) {
         // Teachers can see public, their own, and their school's categories
         filter.$or = [
           { visibility: "public" },
           { createdBy: userId },
           { visibility: "school", schoolId: req.user.schoolId },
         ];
-      } else if (userRole === "school_admin") {
+      } else if (userRoles.includes("school_admin")) {
         // School admins can see public, their own, and their school's categories
         filter.$or = [
           { visibility: "public" },
@@ -405,10 +407,10 @@ const taskCategoryController = {
   createDefaultCategories: async (req, res) => {
     try {
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRoles = req.user.roles || [];
 
       // Only platform admin can create system categories
-      if (userRole !== "platform_admin") {
+      if (!userRoles || !userRoles.includes("platform_admin")) {
         return res.status(403).json({
           success: false,
           message: "Only platform administrators can create system categories",
@@ -421,7 +423,7 @@ const taskCategoryController = {
         {
           name: "Math",
           description: "Mathematics tasks and assignments",
-          icon: "calculator",
+          icon: "🧮",
           color: "#4285F4",
           type: "academic",
           defaultPointValue: 20,
@@ -432,7 +434,7 @@ const taskCategoryController = {
         {
           name: "Reading",
           description: "Reading and literature tasks",
-          icon: "book",
+          icon: "📚",
           color: "#34A853",
           type: "academic",
           defaultPointValue: 15,
@@ -443,7 +445,7 @@ const taskCategoryController = {
         {
           name: "Science",
           description: "Science experiments and learning",
-          icon: "microscope",
+          icon: "🔬",
           color: "#FBBC05",
           type: "academic",
           defaultPointValue: 20,
@@ -454,7 +456,7 @@ const taskCategoryController = {
         {
           name: "Writing",
           description: "Writing assignments and exercises",
-          icon: "pen",
+          icon: "✏️",
           color: "#EA4335",
           type: "academic",
           defaultPointValue: 15,
@@ -466,7 +468,7 @@ const taskCategoryController = {
         {
           name: "Chores",
           description: "Household chores and responsibilities",
-          icon: "home",
+          icon: "🏠",
           color: "#8E44AD",
           type: "home",
           defaultPointValue: 10,
@@ -477,7 +479,7 @@ const taskCategoryController = {
         {
           name: "Hygiene",
           description: "Personal care and hygiene tasks",
-          icon: "droplet",
+          icon: "🚿",
           color: "#3498DB",
           type: "home",
           defaultPointValue: 5,
@@ -489,7 +491,7 @@ const taskCategoryController = {
         {
           name: "Positive Behavior",
           description: "Recognition for positive behaviors",
-          icon: "thumbs-up",
+          icon: "👍",
           color: "#2ECC71",
           type: "behavior",
           defaultPointValue: 5,
@@ -501,7 +503,7 @@ const taskCategoryController = {
         {
           name: "Attendance",
           description: "School attendance and check-ins",
-          icon: "calendar",
+          icon: "📅",
           color: "#F39C12",
           type: "attendance",
           defaultPointValue: 5,
@@ -513,7 +515,7 @@ const taskCategoryController = {
         {
           name: "Sports",
           description: "Sports and physical activities",
-          icon: "activity",
+          icon: "🏃‍♂️",
           color: "#E74C3C",
           type: "extracurricular",
           defaultPointValue: 15,
@@ -524,7 +526,7 @@ const taskCategoryController = {
         {
           name: "Arts",
           description: "Art, music, and creative activities",
-          icon: "music",
+          icon: "🎵",
           color: "#9B59B6",
           type: "extracurricular",
           defaultPointValue: 15,
@@ -549,7 +551,7 @@ const taskCategoryController = {
           const category = new TaskCategory({
             ...categoryData,
             createdBy: userId,
-            creatorRole: userRole,
+            creatorRole: "platform_admin",
           });
 
           await category.save();
@@ -580,7 +582,7 @@ const taskCategoryController = {
     try {
       const { context } = req.params;
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRoles = req.user.roles || [];
 
       if (
         ![
@@ -608,7 +610,7 @@ const taskCategoryController = {
       }
 
       // Access control filtering
-      if (userRole === "student" || userRole === "parent") {
+      if (userRoles.includes("student") || userRoles.includes("parent")) {
         filter.$or = [
           { visibility: "public" },
           { createdBy: userId },
@@ -617,13 +619,13 @@ const taskCategoryController = {
             ? [{ visibility: "school", schoolId: req.user.schoolId }]
             : []),
         ];
-      } else if (userRole === "teacher") {
+      } else if (userRoles.includes("teacher")) {
         filter.$or = [
           { visibility: "public" },
           { createdBy: userId },
           { schoolId: req.user.schoolId },
         ];
-      } else if (userRole === "school_admin") {
+      } else if (userRoles.includes("school_admin")) {
         filter.$or = [
           { visibility: "public" },
           { createdBy: userId },
@@ -685,6 +687,84 @@ const taskCategoryController = {
       return res.status(500).json({
         success: false,
         message: "Failed to get categories",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Migrate existing categories from string icons to emoji icons
+   * This is a one-time migration function for admin use
+   */
+  migrateIconsToEmojis: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const userRoles = req.user.roles || [];
+
+      // Only platform admin can run migrations
+      if (!userRoles || !userRoles.includes("platform_admin")) {
+        return res.status(403).json({
+          success: false,
+          message: "Only platform administrators can run migrations",
+        });
+      }
+
+      // Mapping of old string icons to new emoji icons
+      const iconMapping = {
+        'calculator': '🧮',
+        'book': '📚', 
+        'microscope': '🔬',
+        'pen': '✏️',
+        'home': '🏠',
+        'droplet': '🚿',
+        'thumbs-up': '👍',
+        'calendar': '📅',
+        'activity': '🏃‍♂️',
+        'music': '🎵',
+        'edit': '📝',
+        'star': '⭐',
+        'target': '🎯',
+        'palette': '🎨',
+        'award': '🏆',
+        'chart': '📊',
+        'lightbulb': '💡',
+        'circus-tent': '🎪',
+        'sparkle': '🌟',
+        'theater': '🎭',
+        'medal': '🏅',
+        'clipboard': '📋'
+      };
+
+      // Find all categories with string icons
+      const categoriesToMigrate = await TaskCategory.find({
+        icon: { $in: Object.keys(iconMapping) }
+      });
+
+      let migrated = 0;
+
+      for (const category of categoriesToMigrate) {
+        const newIcon = iconMapping[category.icon];
+        if (newIcon) {
+          await TaskCategory.findByIdAndUpdate(category._id, {
+            icon: newIcon
+          });
+          migrated++;
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: `Migration completed: ${migrated} categories updated with emoji icons`,
+        data: {
+          migrated,
+          total: categoriesToMigrate.length
+        }
+      });
+    } catch (error) {
+      console.error("Icon migration error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to migrate icons",
         error: error.message,
       });
     }

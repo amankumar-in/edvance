@@ -54,7 +54,7 @@ app.use(limiter);
 // Stricter rate limit for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Limit each IP to 20 auth requests per windowMs
+  max: 200000, // Limit each IP to 20 auth requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
   message: {

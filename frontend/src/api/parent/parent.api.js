@@ -62,3 +62,59 @@ export const cancelOutgoingRequest = async (requestId) => {
   const response = await apiClient.delete(`/parents/outgoing-requests/${requestId}`);
   return response.data;
 };
+
+/**
+ * Get available tasks for a parent to control
+ */
+export const getAvailableTasksForParent = async (parentId, params = {}) => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.append(key, value);
+    }
+  });
+
+  const response = await apiClient.get(`/task-management/parents/${parentId}/available-tasks?${query.toString()}`);
+  return response.data;
+};
+
+/**
+ * Get tasks for parent's children
+ */
+export const getTasksForParentChildren = async (parentId, params = {}) => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.append(key, value);
+    }
+  });
+
+  const response = await apiClient.get(`/task-management/parents/${parentId}/children/tasks?${query.toString()}`);
+  return response.data;
+};
+
+/**
+ * Set task visibility control for parent
+ */
+export const setTaskVisibilityControl = async (taskId, data) => {
+  const response = await apiClient.post(`/task-management/tasks/${taskId}/visibility-control`, data);
+  return response.data;
+};
+
+/**
+ * Get parent's visibility controls
+ */
+export const getParentVisibilityControls = async (parentId, params = {}) => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.append(key, value);
+    }
+  });
+
+  const response = await apiClient.get(`/task-management/visibility-controls/parent/${parentId}?${query.toString()}`);
+  return response.data;
+};

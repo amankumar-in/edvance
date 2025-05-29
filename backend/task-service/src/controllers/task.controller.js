@@ -1,4 +1,5 @@
 const Task = require("../models/task.model");
+const TaskCategory = require("../models/taskCategory.model");
 const mongoose = require("mongoose");
 const axios = require("axios");
 
@@ -47,11 +48,28 @@ const taskController = {
         });
       }
 
+      // Validate and get category details
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid category ID format",
+        });
+      }
+
+      const categoryDoc = await TaskCategory.findById(category);
+      if (!categoryDoc || !categoryDoc.isActive) {
+        return res.status(400).json({
+          success: false,
+          message: "Category not found or inactive",
+        });
+      }
+
       // Create new task
       const task = new Task({
         title,
         description,
         category,
+        categoryType: categoryDoc.type, // Set categoryType from the referenced category
         subCategory,
         pointValue: Number(pointValue),
         createdBy,
@@ -140,7 +158,7 @@ const taskController = {
         });
       }
 
-      const task = await Task.findById(id);
+      const task = await Task.findById(id).populate('category', 'name description icon color type');
 
       if (!task || task.isDeleted) {
         return res.status(404).json({

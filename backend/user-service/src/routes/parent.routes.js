@@ -779,4 +779,7 @@ router.post(
 
 router.get("/by-user/:userId", parentController.getParentByUserId);
 
+// Internal route for getting children by parent ID (no auth required)
+router.get("/:parentId/children", parentController.getChildrenByParentId);
+
 module.exports = router;

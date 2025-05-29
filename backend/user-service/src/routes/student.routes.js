@@ -1516,4 +1516,58 @@ router.post(
   studentController.respondToParentLinkRequest
 );
 
+// ==================== INTERNAL ROUTES (No Auth Required) ====================
+
+/**
+ * @openapi
+ * /students/internal/{id}:
+ *   get:
+ *     summary: Get student by ID (Internal Service Call)
+ *     description: Internal endpoint for service-to-service communication - no authentication required
+ *     tags:
+ *       - Internal
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Student's unique ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Student retrieved successfully
+ *       '404':
+ *         description: Student not found
+ *       '500':
+ *         description: Internal server error
+ */
+router.get("/internal/:id", studentController.getStudentById);
+
+/**
+ * @openapi
+ * /students/internal/user/{userId}:
+ *   get:
+ *     summary: Get student by user ID (Internal Service Call)
+ *     description: Internal endpoint for service-to-service communication - no authentication required
+ *     tags:
+ *       - Internal
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         description: User ID to find student for
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Student retrieved successfully
+ *       '404':
+ *         description: Student not found
+ *       '500':
+ *         description: Internal server error
+ */
+router.get("/internal/user/:userId", studentController.getStudentByUserId);
+
+// ==================== PUBLIC ROUTES ====================
+
 module.exports = router;

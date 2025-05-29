@@ -700,3 +700,43 @@ exports.getParentByUserId = async (req, res) => {
     });
   }
 };
+
+// Get children by parent ID (internal service call)
+exports.getChildrenByParentId = async (req, res) => {
+  try {
+    const parentId = req.params.parentId;
+
+    const parent = await Parent.findById(parentId);
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: "Parent not found",
+      });
+    }
+
+    const children = await Student.find({
+      _id: { $in: parent.childIds },
+    }).populate("userId", "firstName lastName email avatar dateOfBirth");
+
+    // Format children data for task service
+    const formattedChildren = children.map(child => ({
+      _id: child._id,
+      name: child.userId ? `${child.userId.firstName} ${child.userId.lastName}` : 'Unknown',
+      grade: child.grade,
+      userId: child.userId ? child.userId._id : null,
+      email: child.userId ? child.userId.email : null
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedChildren,
+    });
+  } catch (error) {
+    console.error("Get children by parent ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get children",
+      error: error.message,
+    });
+  }
+};

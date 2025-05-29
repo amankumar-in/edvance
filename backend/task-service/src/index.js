@@ -9,6 +9,8 @@ require("dotenv").config();
 const taskRoutes = require("./routes/task.routes");
 const taskCategoryRoutes = require("./routes/taskCategory.routes");
 const taskTemplateRoutes = require("./routes/taskTemplate.routes");
+const testRoutes = require("./routes/test.routes");
+const taskManagementRoutes = require("./routes/taskManagement.routes");
 
 // Environment variables
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -44,10 +46,12 @@ app.get("/health", (req, res) => {
   });
 });
 
-// API Routes - include full path prefixes to match gateway routing
-app.use("/api/tasks", taskRoutes);
+// API Routes - mount specific routes before general ones
 app.use("/api/tasks/categories", taskCategoryRoutes);
 app.use("/api/tasks/templates", taskTemplateRoutes);
+app.use("/api/test", testRoutes);
+app.use("/api/task-management", taskManagementRoutes);
+app.use("/api/tasks", taskRoutes);
 
 // MongoDB connection
 const connectDB = async () => {

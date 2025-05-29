@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Memoize the context value to avoid unnecessary re-renders
   const value = useMemo(() => ({

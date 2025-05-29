@@ -19,6 +19,10 @@ const sideBarItems = [
     href: 'tasks',
   },
   {
+    label: 'Categories',
+    href: 'categories',
+  },
+  {
     label: "Rewards",
     href: 'rewards',
   },

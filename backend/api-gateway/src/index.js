@@ -145,6 +145,8 @@ createServiceProxy("/api/search", USER_SERVICE_URL);
 createServiceProxy("/api/social-workers", USER_SERVICE_URL);
 
 createServiceProxy("/api/tasks", TASK_SERVICE_URL);
+createServiceProxy("/api/task-management", TASK_SERVICE_URL);
+createServiceProxy("/api/test", TASK_SERVICE_URL);
 createServiceProxy("/api/points", POINTS_SERVICE_URL);
 createServiceProxy("/api/rewards", REWARDS_SERVICE_URL);
 createServiceProxy("/api/notifications", NOTIFICATION_SERVICE_URL);

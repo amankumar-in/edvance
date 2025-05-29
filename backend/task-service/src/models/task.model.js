@@ -20,8 +20,14 @@ const taskSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    // Primary category
+    // Primary category - reference to TaskCategory
     category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TaskCategory',
+      required: true,
+    },
+    // Category type for quick filtering (derived from category.type)
+    categoryType: {
       type: String,
       enum: [
         "academic",
@@ -30,8 +36,8 @@ const taskSchema = new mongoose.Schema(
         "extracurricular",
         "attendance",
         "system",
+        "custom",
       ],
-      required: true,
     },
     // More specific subcategory (e.g., "math", "reading", "chore", etc.)
     subCategory: {
@@ -289,6 +295,43 @@ const taskSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // NEW: Assignment strategy for scalable task assignment
+    assignmentStrategy: {
+      type: String,
+      enum: ['specific', 'role_based', 'school_based', 'global'],
+      required: true,
+      default: 'specific'
+    },
+    // NEW: Target criteria for assignment (replaces simple assignedTo for complex scenarios)
+    targetCriteria: {
+      roles: [{
+        type: String,
+        enum: ['student', 'parent', 'teacher', 'school_admin']
+      }],
+      schoolIds: [String],       // specific schools
+      classIds: [String],        // specific classes  
+      gradeLevel: Number,        // grade filter
+      specificUserIds: [String], // for small specific assignments
+      excludeUserIds: [String]   // exclusions
+    },
+    // NEW: Default visibility settings for different controllers
+    defaultVisibility: {
+      forParents: {
+        type: Boolean,
+        default: true,
+        description: "Can parents see this task and control it for their children?"
+      },
+      forSchools: {
+        type: Boolean, 
+        default: true,
+        description: "Can schools see this task and control it for their students?"
+      },
+      forStudents: {
+        type: Boolean,
+        default: false,
+        description: "Is this task directly visible to students without parent/school control?"
+      }
+    },
   },
   { timestamps: true }
 );
@@ -300,5 +343,31 @@ taskSchema.index({ dueDate: 1 });
 taskSchema.index({ category: 1, subCategory: 1 });
 taskSchema.index({ schoolId: 1, classId: 1 });
 taskSchema.index({ isRecurring: 1, parentTaskId: 1 });
+
+// NEW: Indexes for assignment strategy and targeting
+taskSchema.index({ assignmentStrategy: 1, status: 1 });
+taskSchema.index({ 'targetCriteria.roles': 1 });
+taskSchema.index({ 'targetCriteria.schoolIds': 1 });
+taskSchema.index({ 'targetCriteria.classIds': 1 });
+taskSchema.index({ 'targetCriteria.gradeLevel': 1 });
+taskSchema.index({ 'defaultVisibility.forParents': 1, 'defaultVisibility.forSchools': 1 });
+
+// Pre-save hook to populate categoryType from category reference
+taskSchema.pre('save', async function(next) {
+  // Only populate categoryType if category is an ObjectId and categoryType is not already set
+  if (this.category && mongoose.Types.ObjectId.isValid(this.category) && !this.categoryType) {
+    try {
+      const TaskCategory = mongoose.model('TaskCategory');
+      const categoryDoc = await TaskCategory.findById(this.category);
+      if (categoryDoc) {
+        this.categoryType = categoryDoc.type;
+      }
+    } catch (error) {
+      console.error('Error populating categoryType:', error);
+      // Don't fail the save, just log the error
+    }
+  }
+  next();
+});
 
 module.exports = mongoose.model("Task", taskSchema);
