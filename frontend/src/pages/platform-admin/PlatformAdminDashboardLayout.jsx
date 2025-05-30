@@ -2,7 +2,6 @@ import { Flex, Theme } from '@radix-ui/themes'
 import { ThemeProvider } from 'next-themes'
 import React, { useState } from 'react'
 import { Outlet } from 'react-router'
-import { Container } from '../../components'
 import { Header, SideBar } from '../../components/platform-admin'
 
 function PlatformAdminDashboardLayout() {
@@ -26,9 +25,7 @@ function PlatformAdminDashboardLayout() {
             <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
             <div className="flex-1" style={{ minWidth: 0 }}>
-              <Container>
-                <Outlet />
-              </Container>
+              <Outlet />
             </div>
           </Flex>
         </div>

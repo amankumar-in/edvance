@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router'
-import { Container } from '../components'
-import { Flex, IconButton, Text, Theme, Tooltip } from '@radix-ui/themes'
+import { Flex, Text, Theme, Tooltip } from '@radix-ui/themes'
+import { PanelLeftOpenIcon } from 'lucide-react'
 import { ThemeProvider } from 'next-themes'
-import { Menu, PanelLeftCloseIcon, PanelLeftOpen, PanelLeftOpenIcon, X } from 'lucide-react'
+import React, { useState } from 'react'
+import { NavLink, Outlet } from 'react-router'
+import { Container } from '../components'
 
 const settings = [
   {
@@ -23,7 +23,7 @@ function SettingsLayout() {
     <ThemeProvider
       attribute={'class'}
       disableTransitionOnChange
-      defaultTheme='dark'
+      defaultTheme='light'
     >
       <Theme accentColor="blue" grayColor="slate">
         <Container>

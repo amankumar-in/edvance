@@ -1,4 +1,28 @@
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
+
+const getAllProfiles = async (userId, token) => {
+  const baseUrl = process.env.NODE_ENV === "production"
+    ? process.env.PRODUCTION_USER_SERVICE_URL
+    : process.env.USER_SERVICE_URL;
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    const { data } = await axios.get(`${baseUrl}/api/users/me/profiles`, config);
+    return data.data;
+  } catch (error) {
+    console.error(`Error fetching profiles:`, error.response?.data || error.message);
+    return null;
+  }
+};
+
+
+
 
 /**
  * Authentication Middleware
@@ -8,7 +32,7 @@ const authMiddleware = {
   /**
    * Verify JWT token from request
    */
-  verifyToken: (req, res, next) => {
+  verifyToken: async (req, res, next) => {
     try {
       // Get token from Authorization header
       const bearerHeader = req.headers.authorization;
@@ -32,7 +56,7 @@ const authMiddleware = {
       const token = bearer[1];
 
       // Verify token
-      jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) {
           return res.status(401).json({
             success: false,
@@ -41,16 +65,16 @@ const authMiddleware = {
           });
         }
 
+        const userDetails = await getAllProfiles(decoded.id, token);
+
         // Attach user info to request object
         req.user = {
           id: decoded.id,
-          email: decoded.email,
+          email: userDetails.user.email,
           roles: decoded.roles,
-          firstName: decoded.firstName,
-          lastName: decoded.lastName,
-          schoolId: decoded.schoolId,
-          classIds: decoded.classIds || [],
-          childIds: decoded.childIds || [],
+          firstName: userDetails.user.firstName,
+          lastName: userDetails.user.lastName,
+          profiles: userDetails.profiles
         };
 
         next();

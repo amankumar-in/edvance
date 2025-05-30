@@ -13,7 +13,7 @@ export { default as ParentDashboard } from './parent/ParentDashboard'
 export { default as TeacherDashboard } from './teacher/TeacherDashboard'
 export { default as CreateTeacherProfile } from './teacher/CreateTeacherProfile'
 
-export { default as StudentDashboard } from './student/StudentDashboard'
+export { default as StudentDashboard } from './student/StudentLayout'
 export { default as CreateStudentProfile } from './student/CreateStudentProfile'
 
 export { default as SocialWorkerDashboard } from './social-worker/SocialWorkerDashboard'

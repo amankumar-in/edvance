@@ -4,7 +4,6 @@ export const buildSelectionList = (user, profiles) => {
   const roles = user.roles || [];
   const list = []; // Initialize the list to be returned
   // Debug log for user object (consider removing in production)
-  console.log(user)
 
   // Iterate over each role the user has
   for (const role of roles) {
@@ -19,7 +18,7 @@ export const buildSelectionList = (user, profiles) => {
         needsProfile: false, // Indicates no separate profile creation is needed
         route: hyphenatedRole === "platform-admin" || hyphenatedRole === "sub-admin" ? "/platform-admin/dashboard" : `/${hyphenatedRole}/dashboard` // Route to the respective dashboard
       });
-      
+
     }
 
     // Handle roles that may require profile creation or lead to a dashboard
@@ -51,3 +50,12 @@ const formatLabel = (role) => {
     .map(word => word[0].toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
     .join(" "); // Join the words with spaces
 };
+
+export const formatDate = (date, options = {
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  dateStyle: "medium",
+}) => {
+  return date ? new Date(date).toLocaleString("en-IN", options) : '-' 
+}
+
+

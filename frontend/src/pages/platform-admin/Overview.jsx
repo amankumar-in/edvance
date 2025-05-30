@@ -1,12 +1,14 @@
 import { Flex, Select, Separator, Text, Card, Box, Button, IconButton, Grid } from '@radix-ui/themes'
 import React from 'react'
 import { Users, UserPlus, UserMinus, CheckSquare, Gift, Plus, School, GraduationCap, UserCircle2 } from 'lucide-react'
+import { Container } from '../../components'
 
 function Overview() {
   return (
-    <div>
-      <section className='flex flex-col gap-6'>        
-        <Flex gap="4" wrap="wrap">
+    <Container> 
+      <div>
+        <section className='flex flex-col gap-6'>        
+          <Flex gap="4" wrap="wrap">
           {/* Total Users Card */}
           <Card className="flex-1 lg:max-w-sm min-w-[250px]">
             <Flex direction="column" gap="2" p="4">
@@ -182,6 +184,7 @@ function Overview() {
         </Flex>
       </section>
     </div>
+    </Container>
   )
 }
 

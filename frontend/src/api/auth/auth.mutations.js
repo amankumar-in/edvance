@@ -81,8 +81,12 @@ const useResetPassword = () => {
  * Hook for user logout
  */
 const useLogout = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
+    onSuccess: () => {
+      queryClient.clear();
+    },
   });
 };
 function useSendOtp() {

@@ -1,4 +1,4 @@
-import { Flex, Heading, IconButton, Skeleton, TabNav, Text } from '@radix-ui/themes';
+import { Flex, Heading, IconButton, ScrollArea, Skeleton, TabNav, Text } from '@radix-ui/themes';
 import { Ellipsis } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { MdArrowDropDown } from "react-icons/md";
@@ -50,15 +50,15 @@ function Users() {
   ]
 
   return (
-    <div className='space-y-4'>
+    <div className='px-4 py-8 space-y-4 lg:px-8 xl:px-12'>
       <Flex as='div' justify='between' align='center' className='flex-wrap gap-4'>
-        <Heading as='h1' size={'7'} weight={'medium'} className='flex items-center gap-2 flex-wrap'>
+        <Heading as='h1' size={'7'} weight={'medium'} className='flex flex-wrap items-center gap-2'>
           User Management <span><MdArrowDropDown size={28} /></span>
           <span className='text-sm font-normal border rounded-md border-[--gray-a6] px-2 py-1 flex items-center gap-[6px]'>
             <span className='w-[6px] h-[6px] bg-[--green-8] rounded-full' /> 23 Active
           </span>
         </Heading>
-        <div className='flex items-center gap-2 flex-wrap'>
+        <div className='flex flex-wrap items-center gap-2'>
           <CreateSubAdmin />
           <AddNewUserDialog />
           <IconButton
@@ -69,7 +69,7 @@ function Users() {
           </IconButton>
         </div>
       </Flex>
-      <Text as='p' color='blue' size={'2'} className='flex items-center gap-6'>
+      <Text as='p' color='blue' size={'2'} className='flex flex-wrap items-center gap-6 gap-y-2'>
         <span>
           <Skeleton loading={isLoading}>
             {totalUsers?.data.total} Total Users
@@ -79,18 +79,20 @@ function Users() {
           245 New Users in this month
         </span>
       </Text>
-      <TabNav.Root>
-        {tabs.map((tab) => (
-          <TabNav.Link
-            asChild
-            active={tab.active}
-          >
-            <Link to={tab.href}>
-              {tab.label}
-            </Link>
-          </TabNav.Link>
-        ))}
-      </TabNav.Root>
+      <ScrollArea size={'1'} className='pb-2'  scrollbars='horizontal' >
+        <TabNav.Root>
+          {tabs.map((tab) => (
+            <TabNav.Link
+              asChild
+              active={tab.active}
+            >
+              <Link to={tab.href}>
+                {tab.label}
+              </Link>
+            </TabNav.Link>
+          ))}
+        </TabNav.Root>
+      </ScrollArea>
       <Outlet />
     </div>
   )

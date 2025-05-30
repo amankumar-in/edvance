@@ -75,66 +75,9 @@ const taskSchema = new mongoose.Schema(
       },
       selectedPeopleIds: [mongoose.Schema.Types.ObjectId]
     },
-    // Current status of the task
-    status: {
-      type: String,
-      enum: [
-        "pending",
-        "completed",
-        "pending_approval",
-        "approved",
-        "rejected",
-        "expired",
-      ],
-      default: "pending",
-    },
     // Due date for the task
     dueDate: {
       type: Date,
-    },
-    // Date when task was marked as completed
-    completedDate: {
-      type: Date,
-    },
-    // ID of who approved the task
-    approvedBy: {
-      type: String,
-    },
-    // Role of the approver
-    approverRole: {
-      type: String,
-      enum: [
-        "parent",
-        "teacher",
-        "school_admin",
-        "social_worker",
-        "platform_admin",
-        "system",
-      ],
-    },
-    // Date when task was approved
-    approvalDate: {
-      type: Date,
-    },
-    // User's submission when completing the task
-    completion: {
-      note: {
-        type: String,
-      },
-      evidence: [
-        {
-          type: {
-            type: String,
-            enum: ["image", "document", "link", "text"],
-          },
-          url: {
-            type: String,
-          },
-          content: {
-            type: String,
-          },
-        },
-      ],
     },
     // Is this a recurring task?
     isRecurring: {
@@ -269,12 +212,6 @@ const taskSchema = new mongoose.Schema(
     badgeId: {
       type: String,
     },
-    // Task visibility (who can see it)
-    visibility: {
-      type: String,
-      enum: ["private", "family", "class", "school", "public"],
-      default: "private",
-    },
     // Additional task properties
     metadata: {
       type: Object,
@@ -294,7 +231,6 @@ const taskSchema = new mongoose.Schema(
 );
 
 // Indexes for common queries
-taskSchema.index({ assignedTo: 1, status: 1 });
 taskSchema.index({ createdBy: 1 });
 taskSchema.index({ dueDate: 1 });
 taskSchema.index({ category: 1, subCategory: 1 });

@@ -1,11 +1,21 @@
-import { Box, Button, Callout, Flex, IconButton, Select, Separator, Table, Text } from '@radix-ui/themes';
-import { AlertCircleIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Box, Button, Callout, Flex, IconButton, Select, Separator, Table, Text, Tooltip } from '@radix-ui/themes';
+import { AlertCircleIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown, ChevronUp, EyeIcon, Icon, PencilIcon, TrashIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
 import { BarLoader } from 'react-spinners';
 import { Loader } from '../../components';
 import { Link } from 'react-router';
 import { useUsersByRole } from '../../api/user/user.queries'
+
+// Reusable sort icon component
+export const SortIcon = ({ currentSort, columnName }) => {
+  if (currentSort.field === columnName) {
+    return currentSort.order === 'asc'
+      ? <ChevronUp className='size-4' color='var(--accent-11)' />
+      : <ChevronDown className='size-4' color='var(--accent-11)' />
+  }
+  return <ChevronsUpDown className='size-4' color='var(--accent-11)' />
+};
 
 const UserTable = ({ role }) => {
   const [page, setPage] = useState(1);
@@ -20,6 +30,30 @@ const UserTable = ({ role }) => {
     sort,
     order
   });
+
+  // Column definitions for headers only
+  const columns = [
+    {
+      id: '_id',
+      header: 'ID',
+      sortable: true
+    },
+    {
+      id: 'firstName',
+      header: 'Name',
+      sortable: true
+    },
+    {
+      id: 'email',
+      header: 'Email',
+      sortable: true
+    },
+    {
+      id: 'phoneNumber',
+      header: 'Phone',
+      sortable: true
+    }
+  ];
 
   const handleSort = (field) => {
     if (sort === field) {
@@ -87,6 +121,9 @@ const UserTable = ({ role }) => {
   const users = data?.data?.docs || [];
   const pagination = data?.data || {};
 
+  // Current sort state object for the SortIcon component
+  const currentSort = { field: sort, order: order };
+
   return (
     <Box>
       {isFetching && <div className='fixed left-0 right-0 top-16'>
@@ -96,47 +133,25 @@ const UserTable = ({ role }) => {
           height={'4px'}
         />
       </div>}
-      <div
-        style={{
-          overflowX: 'auto',
-          width: '100%',
-        }}
-      >
-        <Table.Root variant='ghost' style={{ minWidth: 700 }}>
+      <div>
+        <Table.Root variant='surface' layout={'auto'}>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell onClick={() => handleSort('_id')} style={{ cursor: 'pointer' }}>
-                <Flex align="center" gap="2" className='font-medium'>
-                  ID
-                  {sort === '_id' && (
-                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                  )}
-                </Flex>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell onClick={() => handleSort('firstName')} style={{ cursor: 'pointer' }}>
-                <Flex align="center" gap="2" className='font-medium'>
-                  Name
-                  {sort === 'firstName' && (
-                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                  )}
-                </Flex>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell onClick={() => handleSort('email')} style={{ cursor: 'pointer' }}>
-                <Flex align="center" gap="2" className='font-medium'>
-                  Email
-                  {sort === 'email' && (
-                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                  )}
-                </Flex>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell onClick={() => handleSort('phoneNumber')} style={{ cursor: 'pointer' }}>
-                <Flex align="center" gap="2" className='font-medium'>
-                  Phone
-                  {sort === 'phoneNumber' && (
-                    order === 'asc' ? <MdArrowDropUp className='size-5' /> : <MdArrowDropDown className='size-5' />
-                  )}
-                </Flex>
-              </Table.ColumnHeaderCell>
+              {columns.map((column) => (
+                <Table.ColumnHeaderCell
+
+                  key={column.id}
+                  onClick={column.sortable ? () => handleSort(column.id) : undefined}
+                  style={column.sortable ? { cursor: 'pointer' } : undefined}
+                >
+                  <Flex align="center" gap="2" className='font-medium'>
+                    {column.header}
+                    {column.sortable && (
+                      <SortIcon currentSort={currentSort} columnName={column.id} />
+                    )}
+                  </Flex>
+                </Table.ColumnHeaderCell>
+              ))}
               <Table.ColumnHeaderCell className='font-medium'>
                 Actions
               </Table.ColumnHeaderCell>
@@ -146,47 +161,54 @@ const UserTable = ({ role }) => {
           <Table.Body>
             {users.length === 0 ? (
               <Table.Row>
-                <Table.Cell colSpan={5}>
+                <Table.Cell colSpan={columns.length + 1}>
                   <Text align="center">No users found</Text>
                 </Table.Cell>
               </Table.Row>
             ) : (
               users.map((user) => (
-                <Table.Row key={user._id}>
-                  <Table.Cell>
-                    <Text size="2">{user._id}</Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text className='capitalize'>{user.name || `${user.firstName} ${user.lastName}`}</Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {user.email}
-                  </Table.Cell>
-                  <Table.Cell>
-                    {user.phoneNumber || '-'}
-                  </Table.Cell>
+                <Table.Row key={user._id} className='hover:bg-[--gray-a3] even:bg-[--gray-a2]'>
+                  <Table.Cell>{user._id}</Table.Cell>
+                  <Table.Cell className='text-nowrap'>{user.name}</Table.Cell>
+                  <Table.Cell>{user.email}</Table.Cell>
+                  <Table.Cell>{user.phoneNumber || '-'}</Table.Cell>
                   <Table.Cell>
                     <Flex gap="2" align={'center'}>
-                      <Button
-                        variant='ghost'
-                      >
-                        Edit
-                      </Button>
-                      <Separator orientation={'vertical'} color='blue' />
-                      <Button
-                        variant='ghost'
-                      >
-                        Delete
-                      </Button>
-                      <Separator orientation={'vertical'} color='blue' />
-                      <Button
-                        variant='ghost'
-                        asChild
-                      >
-                        <Link to={`/platform-admin/dashboard/users/user/${user._id}`}>
-                          View
-                        </Link>
-                      </Button>
+                      <Tooltip content='Edit user'>
+                        <IconButton
+                          size={'1'}
+                          variant='soft'
+                          highContrast
+                        >
+                          <PencilIcon size={14} />
+                        </IconButton>
+                      </Tooltip>
+                      <Separator orientation={'vertical'}/>
+                      <Tooltip content='View user'>
+                        <IconButton
+                          // variant='ghost'
+                          size={'1'}
+                          asChild
+                          variant='soft'
+                          highContrast
+                        >
+                          <Link to={`/platform-admin/dashboard/users/user/${user._id}`}>
+                            <EyeIcon size={14} />
+                          </Link>
+                        </IconButton  >
+                      </Tooltip>
+                      <Separator orientation={'vertical'}/>
+                      <Tooltip content='Delete user'>
+                        <IconButton
+                          // variant='ghost'
+                          color='red'
+                          size={'1'}
+                          variant='soft'
+                          highContrast
+                        >
+                          <TrashIcon size={14} />
+                        </IconButton>
+                      </Tooltip>
                     </Flex>
                   </Table.Cell>
                 </Table.Row>
@@ -196,7 +218,7 @@ const UserTable = ({ role }) => {
         </Table.Root>
       </div>
 
-      <Flex justify="between" align="center" mt="4">
+      <Flex justify="between" align="center" mt="4" wrap={'wrap-reverse'} gap={'2'}>
         <Flex align="center" gap="2">
           <Text size="2">Rows per page:</Text>
           <Select.Root
@@ -204,7 +226,7 @@ const UserTable = ({ role }) => {
             onValueChange={(value) => setLimit(Number(value))}
           >
             <Select.Trigger />
-            <Select.Content>
+            <Select.Content position='popper' variant='soft'>
               <Select.Item value="10">10</Select.Item>
               <Select.Item value="25">25</Select.Item>
               <Select.Item value="50">50</Select.Item>

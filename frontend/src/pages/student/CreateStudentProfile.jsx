@@ -211,6 +211,7 @@ function CreateStudentProfile() {
                     type='tel'
                     size={"3"}
                     {...register("phoneNumber", {
+                      required: 'Phone number is required',
                       validate: (value) => {
                         if (value && value.length < 10) return 'Phone number must be at least 10 digits';
                         return true;

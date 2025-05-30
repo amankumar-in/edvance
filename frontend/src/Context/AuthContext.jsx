@@ -10,6 +10,8 @@ import { buildSelectionList } from '../utils/helperFunctions';
 // Define the shape and default values for the AuthContext
 const AuthContext = createContext({
   user: null,
+  profiles: {},
+  setProfiles: () => { },
   setUser: () => { },
   token: null,
   setToken: () => { },
@@ -36,6 +38,7 @@ export const AuthProvider = ({ children }) => {
   const [selectionList, setSelectionList] = useState([]);
   // Logout mutation
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  const [profiles, setProfiles] = useState(null)
 
   // Fetch the user's profile from the backend and update state/localStorage
   const fetchProfile = async () => {
@@ -44,6 +47,7 @@ export const AuthProvider = ({ children }) => {
       const res = await getProfile();
       if (res?.data?.user) {
         setUser(res.data.user);
+        setProfiles(res.data.profiles)
         localStorage.setItem('user', JSON.stringify(res.data.user));
         // Return user data for further use if needed
         return res.data;
@@ -107,8 +111,10 @@ export const AuthProvider = ({ children }) => {
     activeRole,
     setActiveRole,
     selectionList,
-    setSelectionList
-  }), [user, token, isAuthenticated, loading, isLoggingOut, activeRole, selectionList]);
+    setSelectionList, 
+    profiles, 
+    setProfiles
+  }), [user, token, isAuthenticated, loading, isLoggingOut, activeRole, selectionList, profiles]);
 
   // Provide the context to children, show loading UI if fetching
   return (

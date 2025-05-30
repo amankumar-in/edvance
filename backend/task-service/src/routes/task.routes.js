@@ -991,4 +991,75 @@ router.post(
   taskController.generateNextInstance
 );
 
+/**
+ * @openapi
+ * /tasks/visibility/toggle:
+ *   post:
+ *     summary: Toggle task visibility for a student
+ *     description: Parents, teachers, and admins can hide or show tasks for specific students
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Visibility toggle details
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - taskId
+ *               - studentId
+ *               - isVisible
+ *             properties:
+ *               taskId:
+ *                 type: string
+ *                 description: ID of the task to toggle visibility
+ *                 example: "60f8a9b5e6b3f32f8c9a8d7e"
+ *               studentId:
+ *                 type: string
+ *                 description: ID of the student for whom visibility is being toggled
+ *                 example: "60f8a9b5e6b3f32f8c9a8d7f"
+ *               isVisible:
+ *                 type: boolean
+ *                 description: Whether the task should be visible to the student
+ *                 example: false
+ *     responses:
+ *       '200':
+ *         description: Visibility toggled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Task visibility hidden successfully."
+ *                 data:
+ *                   type: object
+ *       '400':
+ *         description: Missing or invalid fields
+ *       '403':
+ *         description: Not authorized to toggle visibility
+ *       '404':
+ *         description: Task not found
+ *       '500':
+ *         description: Failed to toggle visibility
+ */
+router.post(
+  "/visibility/toggle",
+  authMiddleware.checkRoles([
+    "parent",
+    "teacher",
+    "school_admin",
+    "platform_admin",
+    "sub_admin"
+  ]),
+  taskController.toggleTaskVisibility
+);
+
 module.exports = router;

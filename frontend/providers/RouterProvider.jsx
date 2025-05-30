@@ -1,12 +1,17 @@
 import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from "react-router";
 import App from "../src/App";
 import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
-import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, StudentDashboard, TeacherDashboard } from "../src/pages";
+import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, TeacherDashboard,  } from "../src/pages";
+import ParentLayout from "../src/pages/parent/ParentLayout";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
+import ParentTasks from "../src/pages/parent/ParentTasks";
 import { Overview, Parents, PlatformAdminDashboardLayout, SchoolAdmins, SocialWorkers, Students, Teachers, UserDetails, Users, CreateTask, Tasks } from "../src/pages/platform-admin";
 import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
+import StudentTasks from "../src/pages/student/StudentTasks";
+import StudentLayout from "../src/pages/student/StudentLayout";
+import StudentDashboard from "../src/pages/student/StudentDashboard";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -30,8 +35,11 @@ const router = createBrowserRouter(
           <Route path="/" element={<Home />} />
           <Route path="select-profile" element={<SelectProfile />} />
           <Route path="parent" >
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<ParentDashboard />} />
+            {/* <Route index element={<Navigate to="dashboard" replace />} /> */}
+            <Route element={<ParentLayout />} >
+              <Route path="dashboard" element={<ParentDashboard />} />
+              <Route path="tasks" element={<ParentTasks />} />
+            </Route>
             <Route path="create-profile" element={<CreateParentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >
               <Route index element={<Navigate to="linked-accounts" replace />} />
@@ -44,8 +52,11 @@ const router = createBrowserRouter(
             <Route path="create-profile" element={<CreateSocialWorkerProfile />} />
           </Route>
           <Route path="student" >
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<StudentDashboard />} />
+            {/* <Route index element={<Navigate to="dashboard" replace />} /> */}
+            <Route element={<StudentLayout />} >
+              <Route path="dashboard" element={<StudentDashboard />} />
+              <Route path="tasks" element={<StudentTasks />} />
+            </Route>
             <Route path="create-profile" element={<CreateStudentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >
               <Route index element={<Navigate to="linked-accounts" replace />} />
