@@ -10,6 +10,7 @@ import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout } from "
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
 import StudentTasks from "../src/pages/student/StudentTasks";
+import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentLayout from "../src/pages/student/StudentLayout";
 import StudentDashboard from "../src/pages/student/StudentDashboard";
 
@@ -56,6 +57,7 @@ const router = createBrowserRouter(
             <Route element={<StudentLayout />} >
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="tasks" element={<StudentTasks />} />
+              <Route path="tasks/:id" element={<StudentTaskDetail />} />
             </Route>
             <Route path="create-profile" element={<CreateStudentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >

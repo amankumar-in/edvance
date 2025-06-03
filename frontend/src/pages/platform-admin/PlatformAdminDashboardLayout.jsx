@@ -15,7 +15,7 @@ function PlatformAdminDashboardLayout() {
     <ThemeProvider
       attribute={'class'}
       disableTransitionOnChange
-      defaultTheme='dark'
+      defaultTheme='light'
     >
       <Theme accentColor="blue" grayColor="slate">
         <div className="flex flex-col min-h-screen">

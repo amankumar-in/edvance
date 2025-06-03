@@ -1,0 +1,544 @@
+import { Badge, Box, Button, Callout, Card, Flex, Grid, Heading, Separator, Text, TextArea } from '@radix-ui/themes';
+import { AlertCircle, AlertCircleIcon, ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileImage, FileText, Link as LinkIcon, MessageSquare, Star, Target, Upload, User, XCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useParams } from 'react-router';
+import { toast } from 'sonner';
+import { useSubmitTask } from '../../api/task/task.mutations';
+import { useGetStudentTaskById } from '../../api/task/task.queries';
+import { Loader, TaskSubmissionDialog } from '../../components';
+import { formatDate } from '../../utils/helperFunctions';
+
+function StudentTaskDetail() {
+  const { id } = useParams();
+  const [newComment, setNewComment] = useState('');
+  const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
+
+  const { data, isLoading, isError, error } = useGetStudentTaskById(id);
+  const { data: task } = data ?? {};
+
+  const { mutateAsync: submitTask, isPending: isSubmitting, isError: isSubmissionError, error: submissionError } = useSubmitTask()
+
+  // Handle task submission
+  const handleTaskSubmission = async (submissionData) => {
+    const { note, evidence, taskId } = submissionData
+
+    try {
+      await submitTask({ id: taskId, data: { note, evidence } })
+      toast.success('Task submitted successfully');
+      setIsSubmissionOpen(false);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error?.message || 'Something went wrong while submitting task');
+    }
+  };
+
+  // Get status badge color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'blue';
+      case 'completed': return 'yellow';
+      case 'pending_approval': return 'orange';
+      case 'approved': return 'green';
+      case 'rejected': return 'red';
+      default: return 'gray';
+    }
+  };
+
+  // Get category color
+  const getCategoryColor = (category) => {
+    switch (category) {
+      case 'academic': return 'indigo';
+      case 'home': return 'cyan';
+      case 'behavior': return 'purple';
+      case 'extracurricular': return 'green';
+      case 'attendance': return 'blue';
+      default: return 'gray';
+    }
+  };
+
+  // Get difficulty badge
+  const getDifficultyBadge = (difficulty) => {
+    switch (difficulty) {
+      case 'easy':
+        return <Badge color="green" variant="outline">Easy</Badge>;
+      case 'medium':
+        return <Badge color="yellow" variant="outline">Medium</Badge>;
+      case 'hard':
+        return <Badge color="orange" variant="outline">Hard</Badge>;
+      case 'challenging':
+        return <Badge color="red" variant="outline">Challenging</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  // Get status icon
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'pending': return <Clock size={16} />;
+      case 'completed': return <AlertCircle size={16} />;
+      case 'pending_approval': return <Eye size={16} />;
+      case 'approved': return <CheckCircle size={16} />;
+      case 'rejected': return <XCircle size={16} />;
+      default: return <Clock size={16} />;
+    }
+  };
+
+  // Get submit button text based on status
+  const getSubmitButtonText = (status) => {
+    switch (status) {
+      case 'pending': return 'Submit Task';
+      case 'rejected': return 'Resubmit Task';
+      default: return 'Submit Task';
+    }
+  };
+
+  if (isLoading) return (
+    <Flex justify='center' align='center'>
+      <Loader className='size-8' borderWidth={2} borderColor='var(--accent-9)' />
+    </Flex>
+  );
+
+  if (isError) return (
+    <Callout.Root color='red'>
+      <Callout.Icon>
+        <AlertCircleIcon size={16} />
+      </Callout.Icon>
+      <Callout.Text>
+        {error?.response?.data?.message || error?.message || 'Something went wrong while fetching task details'}
+      </Callout.Text>
+    </Callout.Root>
+  );
+
+  return (
+    <Box>
+      {/* Back Navigation */}
+      <Button
+        mb={'5'}
+        asChild
+        variant="ghost"
+        size="2"
+        color="gray"
+        highContrast
+      >
+        <Link to="/student/tasks">
+          <ArrowLeft size={18} /> Back to Tasks
+        </Link>
+      </Button>
+
+      {/* Success Message */}
+      {task?.completionStatus?.status === 'approved' && (
+        <Card size="3" mb="5">
+          <Flex direction="column" gap="4">
+            <Heading size="4">🎉 Well Done!</Heading>
+
+            <Callout.Root color="green" size="1">
+              <Callout.Icon>
+                <CheckCircle size={16} />
+              </Callout.Icon>
+              <Callout.Text>
+                <Text size="2">
+                  Congratulations! You've earned <strong>{task?.pointValue} points</strong> for completing this task.
+                  Keep up the great work!
+                </Text>
+              </Callout.Text>
+            </Callout.Root>
+          </Flex>
+        </Card>
+      )}
+
+      {/* Approval Status Info */}
+      {task?.completionStatus?.status === 'pending_approval' && (
+        <Card size="3" mb="5">
+          <Flex direction="column" gap="4">
+            <Heading size="4">⏳ Under Review</Heading>
+
+            <Callout.Root color="blue" size="1">
+              <Callout.Icon>
+                <Eye size={16} />
+              </Callout.Icon>
+              <Callout.Text>
+                <Text size="2">
+                  Your submission is being reviewed by {task?.approverType === 'parent' ? 'your parent' : task?.approverType === 'teacher' ? 'your teacher' : 'an authorized person'}.
+                  You'll be notified once it's approved or if changes are needed.
+                </Text>
+              </Callout.Text>
+            </Callout.Root>
+          </Flex>
+        </Card>
+      )}
+
+      {/* Rejection Help */}
+      {task?.completionStatus?.status === 'rejected' && (
+        <Card size="3" mb="5">
+          <Flex direction="column" gap="4">
+            <Heading size="4">🔄 Resubmission Needed</Heading>
+
+            <Callout.Root color="red" size="1">
+              <Callout.Icon>
+                <XCircle size={16} />
+              </Callout.Icon>
+              <Callout.Text>
+                <Text size="2">
+                  Your submission needs revision. Check the comments below for feedback, make the necessary changes, and resubmit when ready.
+                </Text>
+              </Callout.Text>
+            </Callout.Root>
+          </Flex>
+        </Card>
+      )}
+
+      <Grid columns={{ initial: '1', lg: '3' }} gap="6">
+        {/* Main Content */}
+        <Box gridColumn={{ lg: '1 / 3' }}>
+          {/* Task Header */}
+          <Card size="3" mb="5">
+            <Flex direction="column" gap="4">
+              <Flex justify="between" align="start" gap="4">
+                <Flex direction="column" gap="2" style={{ flex: 1 }}>
+                  <Flex gap="2" align="center" wrap="wrap">
+                    <Badge color={getCategoryColor(task?.category)} variant="surface" className='capitalize'>
+                      {task?.category}
+                    </Badge>
+                    {task?.subCategory && <Badge color="gray" variant="outline">
+                      {task?.subCategory}
+                    </Badge>}
+                    {getDifficultyBadge(task?.difficulty)}
+                  </Flex>
+                  <Heading size="6" weight="bold">
+                    {task?.title}
+                  </Heading>
+                </Flex>
+
+                <Flex direction="column" align="end" gap="2">
+                  <Badge
+                    color={getStatusColor(task?.completionStatus?.status)}
+                    variant="soft"
+                    size="3"
+                    className="capitalize"
+                  >
+                    <Flex align="center" gap="1">
+                      {getStatusIcon(task?.completionStatus?.status)}
+                      {task?.completionStatus?.status}
+                    </Flex>
+                  </Badge>
+                  <Flex align="center" gap="2" className="bg-[--accent-a3] px-3 py-1 rounded-full">
+                    <Target size={16} className="text-[--accent-9]" />
+                    <Text as="p" weight="bold" size="4">
+                      {task?.pointValue}
+                    </Text>
+                    <Text as="p" size="2">points</Text>
+                  </Flex>
+                </Flex>
+              </Flex>
+
+              <Separator size="4" />
+
+              <Text as="p" size="3">
+                {task?.description}
+              </Text>
+            </Flex>
+          </Card>
+
+          {/* Task Details */}
+          <Card size="3" mb="5">
+            <Flex direction="column" gap="4">
+              <Heading size="4">Task Details</Heading>
+
+              <Grid columns="2" gap="4">
+                <Flex direction="column" gap="2">
+                  <Text size="1" weight="medium" color="gray">DUE DATE</Text>
+                  <Flex align="center" gap="2">
+                    <Calendar size={16} className="text-[--gray-9]" />
+                    <Text size="2">{formatDate(task?.dueDate)}</Text>
+                  </Flex>
+                </Flex>
+
+                <Flex direction="column" gap="2">
+                  <Text size="1" weight="medium" color="gray">ASSIGNED BY</Text>
+                  <Flex align="center" gap="2">
+                    <User size={16} className="text-[--gray-9]" />
+                    <Text size="2">{task?.createdBy}</Text>
+                  </Flex>
+                </Flex>
+
+                <Flex direction="column" gap="2" >
+                  <Text size="1" weight="medium" color="gray">REQUIRES APPROVAL</Text>
+                  <Text size="2">{task?.requiresApproval ? 'Yes' : 'No'}</Text>
+                </Flex>
+              </Grid>
+
+              {/* Approval Explanation */}
+              {task?.requiresApproval && (
+                <>
+                  <Separator size="4" />
+                  <Callout.Root color="blue" size="1">
+                    <Callout.Icon>
+                      <CheckCircle size={16} />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      <Text size="2">
+                        <strong>About Approval:</strong> After you submit this task, it will be reviewed by{' '}
+                        {task?.approverType === 'parent' ? 'your parent' :
+                          task?.approverType === 'teacher' ? 'your teacher' :
+                            'an authorized person'}.
+                        Once approved, you'll earn <strong>{task?.pointValue} points</strong> and the task will be marked as complete.
+                      </Text>
+                    </Callout.Text>
+                  </Callout.Root>
+                </>
+              )}
+
+              {!task?.requiresApproval && (
+                <>
+                  <Separator size="4" />
+                  <Callout.Root color="green" size="1">
+                    <Callout.Icon>
+                      <CheckCircle size={16} />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      <Text size="2">
+                        <strong>Auto-Approved:</strong> This task doesn't require manual approval.
+                        When you submit it, you'll automatically earn <strong>{task?.pointValue} points</strong> and the task will be marked as complete.
+                      </Text>
+                    </Callout.Text>
+                  </Callout.Root>
+                </>
+              )}
+
+              {/* Attachments */}
+              {task?.attachments && task?.attachments?.length > 0 && (
+                <>
+                  <Separator size="4" />
+                  <Flex direction="column" gap="3">
+                    <Text size="2" weight="medium">Attachments</Text>
+                    {task?.attachments?.map((attachment, index) => (
+                      <Card key={index} variant="surface" size="1">
+                        <Flex align="center" gap="3" p="2">
+                          <FileText size={16} className="text-[--gray-9]" />
+                          <Text size="2" style={{ flex: 1 }}>{attachment?.name}</Text>
+                          <Button size="1" variant="ghost">Download</Button>
+                        </Flex>
+                      </Card>
+                    ))}
+                  </Flex>
+                </>
+              )}
+            </Flex>
+          </Card>
+
+          {/* Comments Section */}
+          <Card size="3">
+            <Flex direction="column" gap="4">
+              <Heading size="4">Comments</Heading>
+
+              {/* Existing Comments */}
+              {/* <Flex direction="column" gap="3">
+                {task?.comments?.map((comment, index) => (
+                  <Card key={index} variant="surface" size="2">
+                    <Flex direction="column" gap="2">
+                      <Flex justify="between" align="center">
+                        <Flex align="center" gap="2">
+                          <Avatar size="1" fallback={comment?.createdBy[0]} />
+                          <Text size="2" weight="medium">{comment?.createdBy}</Text>
+                          <Badge variant="outline" size="1">{comment?.creatorRole}</Badge>
+                        </Flex>
+                        <Text size="1" color="gray">{formatDate(comment?.createdAt)}</Text>
+                      </Flex>
+                      <Text size="2">{comment?.text}</Text>
+                    </Flex>
+                  </Card>
+                ))}
+              </Flex> */}
+
+              {/* Add Comment */}
+              <Separator size="4" />
+              <Flex direction="column" gap="3">
+                <Text size="2" weight="medium">Add a comment</Text>
+                <TextArea
+                  placeholder="Ask a question or share your progress..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  rows={3}
+                />
+                <Flex justify="end">
+                  <Button size="2">
+                    <MessageSquare size={16} />
+                    Post Comment
+                  </Button>
+                </Flex>
+              </Flex>
+            </Flex>
+          </Card>
+        </Box>
+
+        {/* Sidebar */}
+        <Box>
+          {/* Action Panel */}
+          <Card size="3" mb="5">
+            <Flex direction="column" gap="3">
+              <Heading size="4">Actions</Heading>
+
+              {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
+                <Button
+                  size="3"
+                  onClick={() => setIsSubmissionOpen(true)}
+                  color={task?.completionStatus?.status === 'rejected' ? 'red' : undefined}
+                >
+                  <CheckCircle size={16} />
+                  {getSubmitButtonText(task?.completionStatus?.status)}
+                </Button>
+              )}
+
+              {task?.completionStatus?.status === 'completed' && (
+                <Button variant="outline">
+                  <Upload size={16} />
+                  Submit for Approval
+                </Button>
+              )}
+              <Button size="2" variant="surface">
+                <Star size={16} />
+                Add to Favorites
+              </Button>
+            </Flex>
+          </Card>
+
+          {/* Task Progress */}
+          <Card size="3" mb="5">
+            <Flex direction="column" gap="4">
+              <Heading size="4">Progress</Heading>
+
+              <Flex direction="column" gap="3">
+                <Flex justify="between" align="center">
+                  <Text size="2">Status</Text>
+                  <Badge color={getStatusColor(task?.completionStatus?.status)} className="capitalize">
+                    {task?.completionStatus?.status}
+                  </Badge>
+                </Flex>
+
+                <Separator size="4" />
+
+                <Flex justify="between" align="center">
+                  <Text size="2">Points Value</Text>
+                  <Text size="2" weight="bold">{task?.pointValue}</Text>
+                </Flex>
+
+                <Flex justify="between" align="center">
+                  <Text size="2">Difficulty</Text>
+                  {getDifficultyBadge(task?.difficulty) || '-'}
+                </Flex>
+              </Flex>
+            </Flex>
+          </Card>
+
+          {/* Status Guide */}
+          <Card size="3" mb="5">
+            <Flex direction="column" gap="4">
+              <Heading size="4">Status Guide</Heading>
+
+              <Flex direction="column" gap="2">
+                <Flex align="center" gap="2">
+                  <Clock size={16} className="text-blue-500" />
+                  <Text size="2"><strong>Pending:</strong> Ready to work on</Text>
+                </Flex>
+                <Flex align="center" gap="2">
+                  <Eye size={16} className="text-orange-500" />
+                  <Text size="2"><strong>Pending Approval:</strong> Submitted, awaiting review</Text>
+                </Flex>
+                <Flex align="center" gap="2">
+                  <CheckCircle size={16} className="text-green-500" />
+                  <Text size="2"><strong>Approved:</strong> Complete! Points earned</Text>
+                </Flex>
+                <Flex align="center" gap="2">
+                  <XCircle size={16} className="text-red-500" />
+                  <Text size="2"><strong>Rejected:</strong> Needs revision</Text>
+                </Flex>
+              </Flex>
+            </Flex>
+          </Card>
+
+          {/* Completion Tips */}
+          {task?.completionStatus?.status === 'pending' && (
+            <Card size="3" mb="5">
+              <Flex direction="column" gap="4">
+                <Heading size="4">💡 Completion Tips</Heading>
+
+                <Flex direction="column" gap="2">
+                  <Text size="2">• <strong>Read carefully:</strong> Make sure you understand all requirements</Text>
+                  <Text size="2">• <strong>Show your work:</strong> Especially for academic tasks</Text>
+                  <Text size="2">• <strong>Add evidence:</strong> Photos, documents, or detailed descriptions help</Text>
+                  <Text size="2">• <strong>Ask questions:</strong> Use comments if you need clarification</Text>
+                  {task?.dueDate && (
+                    <Text size="2">• <strong>Due date:</strong> Complete before {formatDate(task.dueDate)}</Text>
+                  )}
+                </Flex>
+              </Flex>
+            </Card>
+          )}
+
+          {/* Submission Help */}
+          {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
+            <Card size="3" mb="5">
+              <Flex direction="column" gap="4">
+                <Heading size="4">📤 Submission Help</Heading>
+
+                <Callout.Root color="amber" size="1">
+                  <Callout.Icon>
+                    <Upload size={16} />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    <Text size="2">
+                      <strong>Before submitting:</strong> Double-check your work and add evidence to show completion.
+                      {task?.requiresApproval ? ' Your submission will be reviewed for approval.' : ' You\'ll receive points immediately upon submission.'}
+                    </Text>
+                  </Callout.Text>
+                </Callout.Root>
+              </Flex>
+            </Card>
+          )}
+
+          {/* Evidence Guide */}
+          {task?.completionStatus?.status === 'pending' && (
+            <Card size="3" mb="5">
+              <Flex direction="column" gap="4">
+                <Heading size="4">📋 Evidence Types</Heading>
+
+                <Flex direction="column" gap="2">
+                  <Flex align="center" gap="2">
+                    <FileImage size={16} className="text-purple-500" />
+                    <Text size="2"><strong>Images:</strong> Photos of completed work, projects</Text>
+                  </Flex>
+                  <Flex align="center" gap="2">
+                    <FileText size={16} className="text-blue-500" />
+                    <Text size="2"><strong>Documents:</strong> PDFs, worksheets, reports</Text>
+                  </Flex>
+                  <Flex align="center" gap="2">
+                    <LinkIcon size={16} className="text-green-500" />
+                    <Text size="2"><strong>Links:</strong> Online projects, presentations</Text>
+                  </Flex>
+                  <Flex align="center" gap="2">
+                    <MessageSquare size={16} className="text-orange-500" />
+                    <Text size="2"><strong>Text:</strong> Detailed descriptions, answers</Text>
+                  </Flex>
+                </Flex>
+              </Flex>
+            </Card>
+          )}
+        </Box>
+      </Grid>
+
+      {/* Task Submission Dialog */}
+      <TaskSubmissionDialog
+        isOpen={isSubmissionOpen}
+        onOpenChange={setIsSubmissionOpen}
+        onSubmit={handleTaskSubmission}
+        task={task}
+        submitButtonText={getSubmitButtonText(task?.completionStatus?.status)}
+        isSubmitting={isSubmitting}
+        isSubmissionError={isSubmissionError}
+        submissionError={submissionError}
+      />
+    </Box>
+  );
+}
+
+export default StudentTaskDetail; 

@@ -186,9 +186,11 @@ function Tasks() {
                     tasks.map((task) => (
                       <Table.Row key={task._id} className='hover:bg-[--gray-a3] even:bg-[--gray-a2]'>
                         <Table.Cell>{task._id}</Table.Cell>
-                        <Table.Cell>{task.title}</Table.Cell>
+                        <Table.Cell>
+                            <Text title={task.title} className='line-clamp-2 min-w-[250px]'>{task.title}</Text>
+                        </Table.Cell>
                         <Table.Cell >
-                          <Text title={task.description} className='line-clamp-2 w-[200px]'>{task.description}</Text>
+                          <Text title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description}</Text>
                         </Table.Cell>
                         <Table.Cell>{task.category}</Table.Cell>
                         <Table.Cell>{task.subCategory || '-'}</Table.Cell>

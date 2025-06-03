@@ -2,6 +2,7 @@ const Task = require("../models/task.model");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const TaskVisibility = require("../models/taskVisibility.model");
+const TaskCompletion = require("../models/taskCompletion.model");
 
 /**
  * Task Controller
@@ -450,7 +451,7 @@ const taskController = {
 
       // If no approval required, also set approval details
       if (!task.requiresApproval) {
-        updateData.approvedBy = "system";
+        updateData.approvedBy = null;
         updateData.approverRole = "system";
         updateData.approvalDate = new Date();
       }
@@ -506,6 +507,205 @@ const taskController = {
       return res.status(500).json({
         success: false,
         message: "Failed to complete task",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Submit task completion using TaskCompletion model
+   */
+  submitTaskCompletion: async (req, res) => {
+    try {
+      const { profiles } = req.user;
+      const { id } = req.params;
+      const { note, evidence } = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid task ID format",
+        });
+      }
+
+      const currentProfileId = profiles.student?._id;
+
+      if (!currentProfileId) {
+        return res.status(400).json({
+          success: false,
+          message: "Student profile not found",
+        });
+      }
+
+      // Find the task
+      const task = await Task.findById(id).lean();
+
+      if (!task || task.isDeleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Task not found",
+        });
+      }
+
+      // Check task visibility
+      const visibility = await TaskVisibility.findOne({
+        taskId: id,
+        toggledForUserId: currentProfileId,
+      });
+
+      // If task is explicitly hidden by parent, deny access
+      if (visibility && !visibility.isVisible) {
+        return res.status(403).json({
+          success: false,
+          message: "This task is not available to you",
+        });
+      }
+
+      // Check if student has access to this task
+      let hasAccess = false;
+
+      // Check if task is explicitly made visible by parent
+      if (visibility && visibility.isVisible) {
+        hasAccess = true;
+      } else {
+        // Check normal assignment rules
+        if (task.assignedTo?.role === "student") {
+          // If no specific students selected, it's assigned to all students
+          if (!task.assignedTo.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0) {
+            hasAccess = true;
+          } else {
+            // Check if current student is in the selected list
+            hasAccess = task.assignedTo.selectedPeopleIds.some(
+              assignedId => assignedId.toString() === currentProfileId.toString()
+            );
+          }
+        }
+      }
+
+      if (!hasAccess) {
+        return res.status(403).json({
+          success: false,
+          message: "You don't have permission to submit this task",
+        });
+      }
+
+      // Check if there's already a completion record
+      let taskCompletion = await TaskCompletion.findOne({
+        taskId: id,
+        studentId: currentProfileId
+      });
+
+      // If already approved, don't allow resubmission
+      if (taskCompletion && taskCompletion.status === "approved") {
+        return res.status(400).json({
+          success: false,
+          message: "Task already approved and cannot be resubmitted",
+        });
+      }
+
+      // Determine the status based on approval requirements
+      const newStatus = task.requiresApproval ? "pending_approval" : "approved";
+      
+      // Prepare completion data
+      const completionData = {
+        taskId: id,
+        studentId: currentProfileId,
+        note: note || "",
+        evidence: evidence || [],
+        status: newStatus,
+        completedAt: new Date(),
+      };
+
+      // Handle approval fields based on requirements and resubmission status
+      if (!task.requiresApproval) {
+        // Auto-approved task
+        completionData.approvedBy = null;
+        completionData.approverRole = "system";
+        completionData.approvalDate = new Date();
+      } else {
+        // Task requires approval - clear any previous approval/rejection data
+        completionData.approvedBy = null;
+        completionData.approverRole = null;
+        completionData.approvalDate = null;
+      }
+
+      // Create or update the completion record
+      let isResubmission = false;
+      if (taskCompletion) {
+        // Resubmission case - update existing completion
+        isResubmission = true;
+        console.log(`Student resubmitting task ${id}, previous status: ${taskCompletion.status}`);
+        
+        taskCompletion = await TaskCompletion.findByIdAndUpdate(
+          taskCompletion._id,
+          { $set: completionData },
+          { new: true }
+        );
+      } else {
+        // First submission - create new completion
+        taskCompletion = new TaskCompletion(completionData);
+        await taskCompletion.save();
+      }
+
+      // If no approval required, award points immediately
+      if (!task.requiresApproval) {
+        await taskController.awardPointsForTaskCompletion(req, task, taskCompletion);
+      } else {
+        // Notify approver that task needs approval
+        try {
+          const notificationServiceUrl =
+            process.env.NOTIFICATION_SERVICE_URL || "http://localhost:3006";
+
+          // Determine who should be notified based on approverType
+          let recipientId;
+          if (task.approverType === "parent") {
+            recipientId = task.specificApproverId || task.createdBy;
+          } else if (task.approverType === "teacher") {
+            recipientId = task.createdBy;
+          } else {
+            recipientId = task.createdBy;
+          }
+
+          await axios.post(`${notificationServiceUrl}/api/notifications`, {
+            type: isResubmission ? "task_resubmitted" : "task_needs_approval",
+            recipientId: recipientId,
+            data: {
+              taskId: task._id,
+              title: task.title,
+              studentId: currentProfileId,
+              submissionId: taskCompletion._id,
+              isResubmission: isResubmission,
+            },
+          }, {
+            headers: {
+              Authorization: req.headers.authorization,
+            },
+          });
+        } catch (error) {
+          console.error("Failed to send approval notification:", error.message);
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: task.requiresApproval
+          ? isResubmission
+            ? "Task resubmitted successfully, awaiting approval"
+            : "Task submitted successfully, awaiting approval"
+          : isResubmission
+            ? "Task resubmitted and approved automatically"
+            : "Task completed and approved automatically",
+        data: {
+          task: task,
+          completion: taskCompletion,
+        },
+      });
+
+    } catch (error) {
+      console.error("Submit task completion error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to submit task completion",
         error: error.message,
       });
     }
@@ -641,20 +841,29 @@ const taskController = {
   },
 
   /**
-   * Get tasks with filtering
+   * Get tasks with filtering - General administrative function
+   * For platform_admin, sub_admin, school_admin, and teacher roles
    */
   getTasks: async (req, res) => {
     try {
       const { profiles, roles } = req.user;
       const { role = "platform_admin" } = req.query;
-  
-      if (!role || !roles.includes(role)) {
+
+      // Validate role - only allow administrative roles
+      if (!role || !["platform_admin", "sub_admin", "school_admin", "teacher"].includes(role)) {
         return res.status(400).json({
           success: false,
-          message: 'Invalid or missing role in query.',
+          message: 'Invalid role. This endpoint is for administrative roles only (platform_admin, sub_admin, school_admin, teacher).',
         });
       }
-  
+
+      if (!roles.includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: 'You do not have the required role.',
+        });
+      }
+
       const {
         assignedTo,
         createdBy,
@@ -671,222 +880,115 @@ const taskController = {
         sort = "dueDate",
         order = "asc",
       } = req.query;
-  
+
       const currentProfileId = profiles[role]?._id;
       const parsedPage = parseInt(page);
       const parsedLimit = parseInt(limit);
       const skip = (parsedPage - 1) * parsedLimit;
-  
+
+      // Build base query
       let query = { isDeleted: false };
-      let conditions = [];
-  
-      // Admins can see all tasks
-      if (!["platform_admin", "sub_admin"].includes(role)) {
-        if (role === "student") {
-          // Tasks directly assigned to students
-          conditions.push(
-            {
-              "assignedTo.role": "student",
-              $or: [
-                { "assignedTo.selectedPeopleIds": { $exists: false } },
-                { "assignedTo.selectedPeopleIds": { $size: 0 } },
-                { "assignedTo.selectedPeopleIds": { $in: [currentProfileId] } },
-              ],
-            },
-            // Tasks assigned to parents (should NOT be visible by default)
-            {
-              "assignedTo.role": "parent",
-              $or: [
-                { "assignedTo.selectedPeopleIds": { $exists: false } },
-                { "assignedTo.selectedPeopleIds": { $size: 0 } },
-              ],
-            }
-          );
-        } else if (role === "parent") {
-          const childIds = profiles.parent?.childIds || [];
-  
-          // Tasks assigned to the parent
-          conditions.push({
-            "assignedTo.role": "parent",
-            $or: [
-              { "assignedTo.selectedPeopleIds": { $exists: false } },
-              { "assignedTo.selectedPeopleIds": { $size: 0 } },
-              { "assignedTo.selectedPeopleIds": { $in: [currentProfileId] } },
-            ],
-          });
-  
-          // Tasks assigned to children of the parent
-          if (childIds.length) {
-            conditions.push(
-              {
-                "assignedTo.role": "student",
-                "assignedTo.selectedPeopleIds": { $in: childIds },
-              },
-              {
-                "assignedTo.role": "student",
-                $or: [
-                  { "assignedTo.selectedPeopleIds": { $exists: false } },
-                  { "assignedTo.selectedPeopleIds": { $size: 0 } },
-                ],
-              }
-            );
-          }
-        } else {
-          // Other roles
-          conditions.push({
-            "assignedTo.role": role,
-            $or: [
-              { "assignedTo.selectedPeopleIds": { $exists: false } },
-              { "assignedTo.selectedPeopleIds": { $size: 0 } },
-              { "assignedTo.selectedPeopleIds": { $in: [currentProfileId] } },
-            ],
-          });
+
+      // Apply role-based access control
+      if (role === "school_admin") {
+        // School admins can only see tasks within their school
+        if (currentProfileId) {
+          query.schoolId = currentProfileId;
         }
-  
-        query.$or = conditions;
+      } else if (role === "teacher") {
+        // Teachers can see tasks they created or tasks in their classes
+        const teacherConditions = [
+          { createdBy: currentProfileId }
+        ];
+        
+        // If teacher has class assignments, include those
+        if (currentProfileId) {
+          teacherConditions.push({ classId: currentProfileId });
+        }
+        
+        query.$or = teacherConditions;
       }
-  
+      // platform_admin and sub_admin can see all tasks (no additional restrictions)
+
       // Apply filters
-      if (assignedTo) query["assignedTo.role"] = assignedTo;
+      if (assignedTo) {
+        if (assignedTo === "student") {
+          query["assignedTo.role"] = "student";
+        } else if (assignedTo === "parent") {
+          query["assignedTo.role"] = "parent";
+        } else {
+          // Assume it's a specific user ID
+          query.$or = [
+            { "assignedTo.selectedPeopleIds": { $in: [assignedTo] } },
+            { createdBy: assignedTo }
+          ];
+        }
+      }
+      
       if (createdBy) query.createdBy = createdBy;
       if (category) query.category = category;
       if (subCategory) query.subCategory = subCategory;
       if (schoolId) query.schoolId = schoolId;
       if (classId) query.classId = classId;
       if (status) query.status = status;
-  
+
       if (dueDate) query.dueDate = new Date(dueDate);
       if (startDate || endDate) {
         query.createdAt = {};
         if (startDate) query.createdAt.$gte = new Date(startDate);
         if (endDate) query.createdAt.$lte = new Date(endDate);
       }
-  
-      // Fetch tasks
+
+      // Fetch tasks with pagination
       const tasks = await Task.find(query)
         .sort({ [sort]: order === "desc" ? -1 : 1 })
         .skip(skip)
         .limit(parsedLimit)
         .lean();
-  
+
       const total = await Task.countDocuments(query);
-      let filteredTasks = tasks;
-  
-      // Apply TaskVisibility filter for students
-      if (role === "student") {
-        const taskIds = tasks.map((task) => task._id.toString()); // Convert ObjectIds to strings
-        
-        const visibilities = await TaskVisibility.find({
-          toggledForUserId: currentProfileId,
-        }).select("taskId isVisible");
-        
-        const hiddenSet = new Set();
-        const visibleSet = new Set();
-        
-        visibilities.forEach(tv => {
-          const id = tv.taskId.toString();
-          if (tv.isVisible) visibleSet.add(id);
-          else hiddenSet.add(id);
-        });
-        
-        // Exclude hidden tasks
-        filteredTasks = tasks.filter(task => !hiddenSet.has(task._id.toString()));
-        
-        // Include extra tasks made visible by parent for student
-        const extraVisibleTaskIds = [...visibleSet].filter(id => !taskIds.includes(id));
-        
-        if (extraVisibleTaskIds.length) {
-          const extraTasks = await Task.find({
-            _id: { $in: extraVisibleTaskIds.map(id => new mongoose.Types.ObjectId(id)) },
-            isDeleted: false,
-          }).lean();
-          filteredTasks.push(...extraTasks);
-        }
-      } else if (role === "parent") {
-        // Get parent's children
-        const childIds = profiles.parent?.childIds || [];
-        
-        if (childIds.length) {
-          // Get visibility settings for all children
-          const visibilityRecords = await TaskVisibility.find({
-            toggledForUserId: { $in: childIds }
-          }).lean();
-          
-          // Create visibility map
-          const visibilityMap = {};
-          
-          visibilityRecords.forEach(record => {
-            const taskId = record.taskId.toString();
-            const childId = record.toggledForUserId.toString();
-            
-            if (!visibilityMap[taskId]) {
-              visibilityMap[taskId] = {
-                visibleChildren: new Set(),
-                hiddenChildren: new Set()
-              };
-            }
-            
-            if (record.isVisible) {
-              visibilityMap[taskId].visibleChildren.add(childId);
-            } else {
-              visibilityMap[taskId].hiddenChildren.add(childId);
-            }
-          });
-          
-          // Add visibility information to each task
-          filteredTasks = filteredTasks.map(task => {
-            const taskId = task._id.toString();
-            const visibility = visibilityMap[taskId] || { visibleChildren: new Set(), hiddenChildren: new Set() };
-            
-            // Start with an empty set of visible children
-            const visibleToChildren = new Set();
-            
-            // Add children based on task assignment rules
-            if (task.assignedTo?.role === "student") {
-              if (!task.assignedTo.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0) {
-                // Task assigned to all students - all children can see by default unless explicitly hidden
-                childIds.forEach(childId => {
-                  const childIdStr = childId.toString();
-                  if (!visibility.hiddenChildren.has(childIdStr)) {
-                    visibleToChildren.add(childIdStr);
-                  }
-                });
-              } else {
-                // Task assigned to specific students - only those children can see by default
-                childIds.forEach(childId => {
-                  const childIdStr = childId.toString();
-                  const isAssigned = task.assignedTo.selectedPeopleIds.some(id => id.toString() === childIdStr);
-                  
-                  if (isAssigned && !visibility.hiddenChildren.has(childIdStr)) {
-                    visibleToChildren.add(childIdStr);
-                  }
-                });
-              }
-            }
-            
-            // Add explicitly visible children
-            visibility.visibleChildren.forEach(childId => {
-              visibleToChildren.add(childId);
-            });
-            
-            // Return enhanced task with simple visibility array
-            return { 
-              ...task, 
-              visibleToChildren: Array.from(visibleToChildren)
-            };
-          });
-        }
-      }
-      
+
+      // For administrative roles, we can include some enhanced information
+      const enhancedTasks = tasks.map(task => {
+        // Add computed fields that might be useful for admins
+        const enhancedTask = {
+          ...task,
+          // Add assignment summary
+          assignmentSummary: {
+            role: task.assignedTo?.role,
+            isAssignedToAll: !task.assignedTo?.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0,
+            specificAssignmentCount: task.assignedTo?.selectedPeopleIds?.length || 0
+          },
+          // Add status info
+          isOverdue: task.dueDate && new Date(task.dueDate) < new Date() && task.status === "pending",
+          daysUntilDue: task.dueDate ? Math.ceil((new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24)) : null
+        };
+
+        return enhancedTask;
+      });
+
       res.json({
         success: true,
-        data: filteredTasks,
+        data: enhancedTasks,
         pagination: {
           total,
           page: parsedPage,
           limit: parsedLimit,
           pages: Math.ceil(total / parsedLimit),
         },
+        filters: {
+          role,
+          assignedTo,
+          createdBy,
+          category,
+          subCategory,
+          status,
+          schoolId,
+          classId,
+          startDate,
+          endDate,
+          dueDate
+        }
       });
     } catch (err) {
       console.error("Error fetching tasks:", err);
@@ -1467,6 +1569,52 @@ const taskController = {
   },
 
   /**
+   * Award points for a task completion using TaskCompletion model
+   * This is a helper method used internally
+   */
+  awardPointsForTaskCompletion: async (req, task, taskCompletion) => {
+    try {
+      // Only award points for approved task completions
+      if (taskCompletion.status !== "approved") {
+        return;
+      }
+
+      console.log(taskCompletion, task)
+
+      // Call the points service to award points
+      const pointsServiceUrl =
+        process.env.POINTS_SERVICE_URL || "http://localhost:3004";
+
+      await axios.post(`${pointsServiceUrl}/api/points/transactions`, {
+        studentId: taskCompletion.studentId,
+        amount: task.pointValue,
+        type: "earned",
+        source: task.category === "attendance" ? "attendance" : "task",
+        sourceId: taskCompletion._id.toString(), // Use completion ID as source
+        description: `Completed task: ${task.title}`,
+        awardedBy: taskCompletion.approvedBy || "system", // Handle null approvedBy
+        awardedByRole: taskCompletion.approverRole,
+        metadata: {
+          taskId: task._id.toString(),
+          taskCategory: task.category,
+          taskSubCategory: task.subCategory,
+          difficulty: task.difficulty,
+          submissionId: taskCompletion._id.toString(),
+        },
+      }, {
+        headers: {
+          Authorization: req.headers.authorization,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Award points for task completion error:");
+      return false;
+    }
+  },
+
+  /**
    * Get task statistics
    */
   getTaskStatistics: async (req, res) => {
@@ -1708,7 +1856,476 @@ const taskController = {
       console.error("Error toggling task visibility:", err);
       res.status(500).json({ success: false, message: "Server error." });
     }
+  },
+
+  /**
+   * Get tasks for a student with completion status
+   */
+  getStudentTasks: async (req, res) => {
+    try {
+      const { profiles, roles } = req.user;
+      const { role } = req.query;
+
+      if (!role || role !== "student" || !roles.includes("student")) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role. This endpoint is for students only.',
+        });
+      }
+
+      const {
+        category,
+        subCategory,
+        startDate,
+        endDate,
+        dueDate,
+        status,
+        schoolId,
+        classId,
+        page = 1,
+        limit = 20,
+        sort = "dueDate",
+        order = "asc",
+      } = req.query;
+
+      const currentProfileId = profiles[role]?._id;
+      const parsedPage = parseInt(page);
+      const parsedLimit = parseInt(limit);
+      const skip = (parsedPage - 1) * parsedLimit;
+
+      // Build query for tasks assigned to the student
+      let query = { 
+        isDeleted: false,
+        $or: [
+          {
+            "assignedTo.role": "student",
+            $or: [
+              { "assignedTo.selectedPeopleIds": { $exists: false } },
+              { "assignedTo.selectedPeopleIds": { $size: 0 } },
+              { "assignedTo.selectedPeopleIds": { $in: [currentProfileId] } },
+            ],
+          }
+        ]
+      };
+
+      // Apply filters (excluding status - we'll handle that separately)
+      if (category) query.category = category;
+      if (subCategory) query.subCategory = subCategory;
+      if (schoolId) query.schoolId = schoolId;
+      if (classId) query.classId = classId;
+
+      if (dueDate) query.dueDate = new Date(dueDate);
+      if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) query.createdAt.$gte = new Date(startDate);
+        if (endDate) query.createdAt.$lte = new Date(endDate);
+      }
+
+      // Fetch tasks first (without status filter)
+      const tasks = await Task.find(query)
+        .sort({ [sort]: order === "desc" ? -1 : 1 })
+        .lean();
+
+      // Get task IDs for fetching completion statuses
+      const taskIds = tasks.map(task => task._id);
+      
+      // Fetch completion status for all tasks
+      const taskCompletions = await TaskCompletion.find({
+        taskId: { $in: taskIds },
+        studentId: currentProfileId
+      }).lean();
+      
+      // Create a map of task completions
+      const completionMap = {};
+      taskCompletions.forEach(completion => {
+        completionMap[completion.taskId.toString()] = completion;
+      });
+      
+      // Apply TaskVisibility filter
+      const visibilities = await TaskVisibility.find({
+        toggledForUserId: currentProfileId,
+      }).select("taskId isVisible");
+      
+      const hiddenSet = new Set();
+      const visibleSet = new Set();
+      
+      visibilities.forEach(tv => {
+        const id = tv.taskId.toString();
+        if (tv.isVisible) visibleSet.add(id);
+        else hiddenSet.add(id);
+      });
+      
+      // Exclude hidden tasks
+      let filteredTasks = tasks.filter(task => !hiddenSet.has(task._id.toString()));
+      
+      // Include extra tasks made visible by parent for student
+      const taskIdsSet = new Set(taskIds.map(id => id.toString()));
+      const extraVisibleTaskIds = [...visibleSet].filter(id => !taskIdsSet.has(id));
+      
+      if (extraVisibleTaskIds.length) {
+        const extraTasks = await Task.find({
+          _id: { $in: extraVisibleTaskIds.map(id => new mongoose.Types.ObjectId(id)) },
+          isDeleted: false,
+        }).lean();
+        
+        // Get completion status for extra tasks too
+        const extraTaskCompletions = await TaskCompletion.find({
+          taskId: { $in: extraTasks.map(t => t._id) },
+          studentId: currentProfileId
+        }).lean();
+        
+        extraTaskCompletions.forEach(completion => {
+          completionMap[completion.taskId.toString()] = completion;
+        });
+        
+        filteredTasks.push(...extraTasks);
+      }
+      
+      // Enhance tasks with completion status
+      let enhancedTasks = filteredTasks.map(task => {
+        const taskId = task._id.toString();
+        const completion = completionMap[taskId];
+        
+        return {
+          ...task,
+          completionStatus: completion ? {
+            status: completion.status,
+            completedAt: completion.completedAt,
+            note: completion.note,
+            evidence: completion.evidence,
+            approvalDate: completion.approvalDate,
+            hasSubmitted: !!completion
+          } : {
+            status: "pending",
+            hasSubmitted: false
+          }
+        };
+      });
+      
+      // Apply status filter after enhancement (if provided)
+      if (status) {
+        enhancedTasks = enhancedTasks.filter(task => 
+          task.completionStatus.status === status
+        );
+      }
+      
+      // Apply pagination to filtered results
+      const totalFiltered = enhancedTasks.length;
+      const paginatedTasks = enhancedTasks.slice(skip, skip + parsedLimit);
+      
+      res.json({
+        success: true,
+        data: paginatedTasks,
+        pagination: {
+          total: totalFiltered,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(totalFiltered / parsedLimit),
+        },
+      });
+    } catch (err) {
+      console.error("Error fetching student tasks:", err);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  },
+
+  /**
+   * Get a specific task by ID for a student with completion status
+   */
+  getStudentTaskById: async (req, res) => {
+    try {
+      const { profiles, roles } = req.user;
+      const { role } = req.query;
+      const { id } = req.params;
+
+      if (!role || role !== "student" || !roles.includes("student")) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role. This endpoint is for students only.',
+        });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid task ID format",
+        });
+      }
+
+      const currentProfileId = profiles[role]?._id;
+
+      // Find the task
+      const task = await Task.findById(id).lean();
+
+      if (!task || task.isDeleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Task not found",
+        });
+      }
+
+      // Check task visibility first
+      const visibility = await TaskVisibility.findOne({
+        taskId: id,
+        toggledForUserId: currentProfileId,
+      });
+
+      // If task is explicitly hidden by parent, deny access
+      if (visibility && !visibility.isVisible) {
+        return res.status(403).json({
+          success: false,
+          message: "This task is not available to you",
+        });
+      }
+
+      // Check if student has access to this task
+      let hasAccess = false;
+
+      // Check if task is explicitly made visible by parent
+      if (visibility && visibility.isVisible) {
+        hasAccess = true;
+      } else {
+        // Check normal assignment rules
+        if (task.assignedTo?.role === "student") {
+          // If no specific students selected, it's assigned to all students
+          if (!task.assignedTo.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0) {
+            hasAccess = true;
+          } else {
+            // Check if current student is in the selected list
+            hasAccess = task.assignedTo.selectedPeopleIds.some(
+              assignedId => assignedId.toString() === currentProfileId.toString()
+            );
+          }
+        }
+      }
+
+      if (!hasAccess) {
+        return res.status(403).json({
+          success: false,
+          message: "You don't have permission to view this task",
+        });
+      }
+
+      // Get completion status for this student
+      const completion = await TaskCompletion.findOne({
+        taskId: id,
+        studentId: currentProfileId
+      }).lean();
+
+      // Enhance task with completion status
+      const enhancedTask = {
+        ...task,
+        completionStatus: completion ? {
+          status: completion.status,
+          completedAt: completion.completedAt,
+          note: completion.note,
+          evidence: completion.evidence,
+          approvalDate: completion.approvalDate,
+          approvedBy: completion.approvedBy,
+          approverRole: completion.approverRole,
+          hasSubmitted: !!completion
+        } : {
+          status: "pending",
+          hasSubmitted: false
+        }
+      };
+
+      return res.status(200).json({
+        success: true,
+        data: enhancedTask,
+      });
+
+    } catch (error) {
+      console.error("Get student task by ID error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to get task",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Get tasks for a parent with visibility information
+   */
+  getParentTasks: async (req, res) => {
+    try {
+      const { profiles, roles } = req.user;
+      const { role } = req.query;
+
+      if (!role || role !== "parent" || !roles.includes("parent")) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role. This endpoint is for parents only.',
+        });
+      }
+
+      const {
+        category,
+        subCategory,
+        startDate,
+        endDate,
+        dueDate,
+        status,
+        schoolId,
+        classId,
+        page = 1,
+        limit = 20,
+        sort = "dueDate",
+        order = "asc",
+      } = req.query;
+
+      const currentProfileId = profiles[role]?._id;
+      const childIds = profiles.parent?.childIds || [];
+      const parsedPage = parseInt(page);
+      const parsedLimit = parseInt(limit);
+      const skip = (parsedPage - 1) * parsedLimit;
+
+      // Build query for tasks assigned to parent or their children
+      let query = { isDeleted: false };
+      let conditions = [];
+
+      // Tasks assigned to the parent
+      conditions.push({
+        "assignedTo.role": "parent",
+        $or: [
+          { "assignedTo.selectedPeopleIds": { $exists: false } },
+          { "assignedTo.selectedPeopleIds": { $size: 0 } },
+          { "assignedTo.selectedPeopleIds": { $in: [currentProfileId] } },
+        ],
+      });
+
+      // Tasks assigned to children of the parent
+      if (childIds.length) {
+        conditions.push(
+          {
+            "assignedTo.role": "student",
+            "assignedTo.selectedPeopleIds": { $in: childIds },
+          },
+          {
+            "assignedTo.role": "student",
+            $or: [
+              { "assignedTo.selectedPeopleIds": { $exists: false } },
+              { "assignedTo.selectedPeopleIds": { $size: 0 } },
+            ],
+          }
+        );
+      }
+
+      query.$or = conditions;
+
+      // Apply filters
+      if (category) query.category = category;
+      if (subCategory) query.subCategory = subCategory;
+      if (schoolId) query.schoolId = schoolId;
+      if (classId) query.classId = classId;
+      if (status) query.status = status;
+
+      if (dueDate) query.dueDate = new Date(dueDate);
+      if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) query.createdAt.$gte = new Date(startDate);
+        if (endDate) query.createdAt.$lte = new Date(endDate);
+      }
+
+      // Fetch tasks
+      const tasks = await Task.find(query)
+        .sort({ [sort]: order === "desc" ? -1 : 1 })
+        .lean();
+
+      let filteredTasks = tasks;
+
+      // Apply TaskVisibility logic for parent view
+      if (childIds.length) {
+        // Get visibility settings for all children
+        const visibilityRecords = await TaskVisibility.find({
+          toggledForUserId: { $in: childIds }
+        }).lean();
+        
+        // Create visibility map
+        const visibilityMap = {};
+        
+        visibilityRecords.forEach(record => {
+          const taskId = record.taskId.toString();
+          const childId = record.toggledForUserId.toString();
+          
+          if (!visibilityMap[taskId]) {
+            visibilityMap[taskId] = {
+              visibleChildren: new Set(),
+              hiddenChildren: new Set()
+            };
+          }
+          
+          if (record.isVisible) {
+            visibilityMap[taskId].visibleChildren.add(childId);
+          } else {
+            visibilityMap[taskId].hiddenChildren.add(childId);
+          }
+        });
+        
+        // Add visibility information to each task
+        filteredTasks = filteredTasks.map(task => {
+          const taskId = task._id.toString();
+          const visibility = visibilityMap[taskId] || { visibleChildren: new Set(), hiddenChildren: new Set() };
+          
+          // Start with an empty set of visible children
+          const visibleToChildren = new Set();
+          
+          // Add children based on task assignment rules
+          if (task.assignedTo?.role === "student") {
+            if (!task.assignedTo.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0) {
+              // Task assigned to all students - all children can see by default unless explicitly hidden
+              childIds.forEach(childId => {
+                const childIdStr = childId.toString();
+                if (!visibility.hiddenChildren.has(childIdStr)) {
+                  visibleToChildren.add(childIdStr);
+                }
+              });
+            } else {
+              // Task assigned to specific students - only those children can see by default
+              childIds.forEach(childId => {
+                const childIdStr = childId.toString();
+                const isAssigned = task.assignedTo.selectedPeopleIds.some(id => id.toString() === childIdStr);
+                
+                if (isAssigned && !visibility.hiddenChildren.has(childIdStr)) {
+                  visibleToChildren.add(childIdStr);
+                }
+              });
+            }
+          }
+          
+          // Add explicitly visible children
+          visibility.visibleChildren.forEach(childId => {
+            visibleToChildren.add(childId);
+          });
+          
+          // Return enhanced task with simple visibility array
+          return { 
+            ...task, 
+            visibleToChildren: Array.from(visibleToChildren)
+          };
+        });
+      }
+
+      // Apply pagination to filtered results
+      const totalFiltered = filteredTasks.length;
+      const paginatedTasks = filteredTasks.slice(skip, skip + parsedLimit);
+      
+      res.json({
+        success: true,
+        data: paginatedTasks,
+        pagination: {
+          total: totalFiltered,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(totalFiltered / parsedLimit),
+        },
+      });
+    } catch (err) {
+      console.error("Error fetching parent tasks:", err);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
   }
 };
 
-module.exports = taskController;
+module.exports = taskController;  

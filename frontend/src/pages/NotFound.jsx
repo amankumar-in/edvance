@@ -1,5 +1,6 @@
 import { Heading, Text, Button, Flex } from '@radix-ui/themes';
 import { Link } from 'react-router';
+import { ArrowLeft } from 'lucide-react';
 
 export default function NotFound() {
   return (
@@ -13,8 +14,10 @@ export default function NotFound() {
       <Text size="3" color="gray" mb="6">
         Sorry, the page you are looking for does not exist or has been moved.
       </Text>
-      <Button asChild size="4" color="purple" variant="solid" radius="full">
-        <Link to="/">Go to Home</Link>
+      <Button asChild size="3" color="purple" variant="solid" radius="full">
+        <Link to={-1}>
+          <ArrowLeft /> Go Back
+        </Link>
       </Button>
     </Flex>
   );

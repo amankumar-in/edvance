@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTask, toggleTaskVisibility } from "./task.api";
+import { createTask, submitTask, toggleTaskVisibility } from "./task.api";
 
+// Create a task
 export const useCreateTask = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -11,6 +12,7 @@ export const useCreateTask = () => {
     });
 }
 
+// Toggle the visibility of a task
 export const useToggleTaskVisibility = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -20,3 +22,18 @@ export const useToggleTaskVisibility = () => {
         },
     });
 }
+
+// Submit a task
+export const useSubmitTask = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: submitTask,
+        onSuccess: async (_data, variables) => {
+            return Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+                queryClient.invalidateQueries({ queryKey: ["task", "student", variables.id] }),
+            ])
+        },
+    });
+}
+

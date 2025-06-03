@@ -1,7 +1,7 @@
 import { Badge, Box, Button, Callout, Card, Flex, Grid, Heading, Separator, Tabs, Text } from '@radix-ui/themes';
 import { AlertCircleIcon, CheckCircle, Clock, Users } from 'lucide-react';
 import React, { useState } from 'react';
-import { useGetTasks } from '../../api/task/task.queries';
+import { useGetParentTasks } from '../../api/task/task.queries';
 import { Container, Loader } from '../../components';
 import ManageTaskVisibilityModal from '../../components/parent/ManageTaskVisibilityModal';
 import { formatDate } from '../../utils/helperFunctions';
@@ -11,7 +11,7 @@ function ParentTasks() {
   const [openVisibilityModal, setOpenVisibilityModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [visibleToChildren, setVisibleToChildren] = useState([]);
-  const { data, isLoading, isError, error, } = useGetTasks({
+  const { data, isLoading, isError, error, isFetching } = useGetParentTasks({
     role: 'parent',
   });
   const { data: tasks = [] } = data ?? {};
@@ -161,8 +161,8 @@ function ParentTasks() {
         ) : (
           <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
             {tasks.map(task => (
-                <TaskCard key={task?._id || `task-${Math.random()}`} task={task} />
-              ))
+              <TaskCard key={task?._id || `task-${Math.random()}`} task={task} />
+            ))
             }
           </Grid>
         )}

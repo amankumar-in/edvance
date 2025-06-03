@@ -1,40 +1,33 @@
-import { Badge, Box, Callout, Card, Flex, Grid, Heading, Separator, Tabs, Text } from '@radix-ui/themes';
-import { AlertCircleIcon, CheckCircle, Clock } from 'lucide-react';
+import { Badge, Box, Callout, Card, Flex, Grid, Heading, IconButton, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { AlertCircleIcon, Clock, Filter, RefreshCw } from 'lucide-react';
 import React, { useState } from 'react';
-import { useGetTasks } from '../../api/task/task.queries';
-import { Container, Loader } from '../../components';
+import { Link } from 'react-router';
+import { useGetStudentTasks } from '../../api/task/task.queries';
+import { EmptyStateCard, Loader } from '../../components';
 import { formatDate } from '../../utils/helperFunctions';
 
+const statusOptions = [
+  { value: null, label: 'All Tasks', color: 'gray' },
+  { value: 'pending', label: 'Pending', color: 'blue' },
+  { value: 'pending_approval', label: 'Pending Approval', color: 'orange' },
+  { value: 'approved', label: 'Approved', color: 'green' },
+  { value: 'rejected', label: 'Rejected', color: 'red' },
+]
+
 function StudentTasks() {
-  const [filter, setFilter] = useState('all');
-  const { data, isLoading, isError, error, isFetching } = useGetTasks({
+  const [filter, setFilter] = useState(null);
+  const { data, isLoading, isError, error, isFetching, refetch } = useGetStudentTasks({
     role: 'student',
+    status: filter,
   })
   const { data: tasks = [] } = data ?? {}
 
   // Get status badge color
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'blue';
-      case 'completed': return 'yellow';
-      case 'pending_approval': return 'orange';
-      case 'approved': return 'green';
-      case 'rejected': return 'red';
-      default: return 'gray';
-    }
+    const statusOption = statusOptions.find(option => option.value === status);
+    return statusOption?.color || 'gray';
   };
 
-  // Get status badge text
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'pending': return 'To Do';
-      case 'completed': return 'Completed';
-      case 'pending_approval': return 'Awaiting Approval';
-      case 'approved': return 'Approved';
-      case 'rejected': return 'Rejected';
-      default: return status;
-    }
-  };
 
   // Get category color
   const getCategoryColor = (category) => {
@@ -52,13 +45,13 @@ function StudentTasks() {
   const getDifficultyBadge = (difficulty) => {
     switch (difficulty) {
       case 'easy':
-        return <Badge color="green" variant="soft">Easy</Badge>;
+        return <Badge color="green" variant="outline">Easy</Badge>;
       case 'medium':
-        return <Badge color="yellow" variant="soft">Medium</Badge>;
+        return <Badge color="yellow" variant="outline">Medium</Badge>;
       case 'hard':
-        return <Badge color="orange" variant="soft">Hard</Badge>;
+        return <Badge color="orange" variant="outline">Hard</Badge>;
       case 'challenging':
-        return <Badge color="red" variant="soft">Challenging</Badge>;
+        return <Badge color="red" variant="outline">Challenging</Badge>;
       default:
         return null;
     }
@@ -68,117 +61,149 @@ function StudentTasks() {
 
   // Task Card Component
   const TaskCard = ({ task }) => {
-    const isPastDue = task.status === 'pending' && task.dueDate < new Date();
-
     return (
-      <Card size="2">
-        <Flex direction="column" gap="3">
-          <Flex justify="between" align="start">
-            <Flex direction="column" gap="1">
+      <Card size="2" asChild className={`transition-shadow hover:shadow-md`}>
+        <Link to={`/student/tasks/${task._id}`}>
+          <Flex direction="column" gap="3">
+            <Flex justify="between" align="start">
+              <Flex direction="column" gap="1">
+                <Flex gap="2" align="center">
+                  <Badge color={getCategoryColor(task.category)} variant="surface">{task.category}</Badge>
+                </Flex>
+                <Heading size="3" style={{ marginTop: '6px' }}>{task.title}</Heading>
+              </Flex>
+            </Flex>
+
+            <Text size="2" className="line-clamp-2">{task.description}</Text>
+
+            <Separator size="4" />
+
+            <Flex justify="between" align="center">
               <Flex gap="2" align="center">
-                <Badge color={getCategoryColor(task.category)} variant="soft">{task.category}</Badge>
+                <Text weight="bold" size="4">{task.pointValue}</Text>
+                <Text size="1">points</Text>
               </Flex>
-              <Heading size="3" style={{ marginTop: '6px' }}>{task.title}</Heading>
-            </Flex>
-          </Flex>
 
-          <Text size="2" color="gray" className="line-clamp-2">{task.description}</Text>
-
-          <Separator size="4" />
-
-          <Flex justify="between" align="center">
-            <Flex gap="3" align="center">
-              <Text weight="bold" size="4" color="blue">{task.pointValue}</Text>
-              <Text size="1" color="gray">points</Text>
-            </Flex>
-
-            <Flex gap="3" align="center">
-              <Flex gap="1" align="center">
-                <Clock size={14} className={isPastDue ? 'text-[--red-9]' : 'text-[--gray-9]'} />
-                <Text size="1" color={isPastDue ? 'red' : 'gray'}>
-                  {formatDate(task.dueDate)}
-                </Text>
+              <Flex gap="3" align="center">
+                <Flex gap="1" align="center">
+                  <Clock size={14} />
+                  <Text size="1">
+                    {formatDate(task.dueDate)}
+                  </Text>
+                </Flex>
+                {getDifficultyBadge(task.difficulty)}
               </Flex>
-              {getDifficultyBadge(task.difficulty)}
             </Flex>
-          </Flex>
 
-          <Flex justify="between" align="center" mt="1">
-            <Text size="1" color="gray">Assigned by: {task.createdBy}</Text>
+            <Flex justify="between" align="center" mt="1">
+              <Text size="1">Assigned by: {task.createdBy}</Text>
+              <Badge className='capitalize' color={getStatusColor(task.completionStatus.status)} >{task.completionStatus.status}</Badge>
+            </Flex>
+
           </Flex>
-        </Flex>
+        </Link>
       </Card>
     );
   };
 
   if (isLoading) return (
-    <Container>
-      <Flex justify='center' align='center'>
-        <Loader className='size-8' borderWidth={2} borderColor='var(--accent-9)' />
-      </Flex>
-    </Container>
+    <Flex justify='center' align='center'>
+      <Loader className='size-8' borderWidth={2} borderColor='var(--accent-9)' />
+    </Flex>
   );
 
   if (isError) return (
-    <Container>
-      <Callout.Root color='red'>
-        <Callout.Icon>
-          <AlertCircleIcon size={16} />
-        </Callout.Icon>
-        <Callout.Text>
-          {error?.response?.data?.message || error?.message || 'Something went wrong while fetching user details'}
-        </Callout.Text>
-      </Callout.Root>
-    </Container>
+    <Callout.Root color='red'>
+      <Callout.Icon>
+        <AlertCircleIcon size={16} />
+      </Callout.Icon>
+      <Callout.Text>
+        {error?.response?.data?.message || error?.message || 'Something went wrong while fetching user details'}
+      </Callout.Text>
+    </Callout.Root>
   );
 
 
   return (
-    <Container>
-      <Box>
-        {/* Header Section */}
-        <Flex justify="between" align="center" mb="5">
-          <Heading as="h1" size="6" weight="bold" color="indigo">My Tasks</Heading>
-        </Flex>
+    <Box>
+      {/* Header Section */}
+      <Flex justify="between" align="center" mb="5">
+        <Heading as="h1" size="6" weight="bold">My Tasks</Heading>
+      </Flex>
 
-        {/* Filters and Controls */}
-        <Card mb="5">
-          <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align="center" gap="4" p="3">
-            <Flex gap="4" wrap="wrap">
-              <Tabs.Root defaultValue="all" value={filter} onValueChange={setFilter}>
-                <Tabs.List>
-                  <Tabs.Trigger value="all">All Tasks</Tabs.Trigger>
-                  {/* <Tabs.Trigger value="pending">To Do</Tabs.Trigger>
-                  <Tabs.Trigger value="completed">Completed</Tabs.Trigger>
-                  <Tabs.Trigger value="overdue">Overdue</Tabs.Trigger>
-                  <Tabs.Trigger value="starred">Starred</Tabs.Trigger> */}
-                </Tabs.List>
-              </Tabs.Root>
+      {/* Status Helper */}
+      <Callout.Root variant='surface' mb="5" color="blue">
+        <Callout.Icon>
+          <AlertCircleIcon size={16} />
+        </Callout.Icon>
+        <Callout.Text className='space-y-2'>
+          <Text weight="medium">Task Status Guide:</Text>
+        </Callout.Text>
+        <Flex direction="column" gap="2">
+          <Text as='p' size="1"><Badge color="blue" size="1">Pending</Badge> - Task is waiting to be started</Text>
+          <Text as='p' size="1"><Badge color="yellow" size="1">Completed</Badge> - Task completed but not yet submitted for approval</Text>
+          <Text as='p' size="1"><Badge color="orange" size="1">Pending Approval</Badge> - Task submitted and awaiting approval</Text>
+          <Text as='p' size="1"><Badge color="green" size="1">Approved</Badge> - Task approved and points awarded</Text>
+          <Text as='p' size="1"><Badge color="red" size="1">Rejected</Badge> - Task needs to be redone</Text>
+        </Flex>
+      </Callout.Root>
+
+      {/* Filters and Controls */}
+      <Card mb="5">
+        <Flex justify="between" align="center" wrap="wrap" gap="4" p="3">
+          <Flex gap="4" wrap="wrap">
+            <Tabs.Root defaultValue="all">
+              <Tabs.List>
+                <Tabs.Trigger value="all">All Tasks ({tasks.length})</Tabs.Trigger>
+              </Tabs.List>
+            </Tabs.Root>
+          </Flex>
+          <Flex gap="4" align="center">
+            <Tooltip content="Refresh tasks">
+              <IconButton
+                variant='ghost'
+                color='gray'
+                onClick={refetch}
+                disabled={isFetching}
+                aria-label="Refresh tasks"
+              >
+                <span className={`${isFetching ? 'animate-spin' : ''}`}>
+                  <RefreshCw size={16} />
+                </span>
+              </IconButton>
+            </Tooltip>
+            <Filter size={16} />
+            <Flex gap="2" align="center">
+              <Text as='span' size="2">Status</Text>
+              <Select.Root disabled={isFetching} value={filter} onValueChange={setFilter}>
+                <Select.Trigger placeholder='Filter by status' />
+                <Select.Content position="popper" variant='soft'>
+                  {statusOptions.map((option) => (
+                    <Select.Item key={option.value} value={option.value}>{option.label}</Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
             </Flex>
           </Flex>
-        </Card>
+        </Flex>
+      </Card>
 
-        {/* Tasks Display */}
-        {tasks.length === 0 ? (
-          <Card size="3" className="p-8 text-center">
-            <Flex direction="column" align="center" gap="3">
-              <Box className="p-3 rounded-full bg-[--accent-a3]">
-                <CheckCircle size={32} className="text-[--accent-9]" />
-              </Box>
-              <Heading size="4">No Tasks Found</Heading>
-              <Text size="2" color="gray">You don't have any tasks right now.</Text>
-            </Flex>
-          </Card>
-        ) :(
-          <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
-            {tasks.map(task => (
-              <TaskCard key={task.id} task={task} />
-            ))}
-          </Grid>
-        )}
+      {/* Tasks Display */}
+      {tasks.length === 0 ? (
+        <EmptyStateCard
+          title="No Tasks Found"
+          description="You don't have any tasks right now."
+          icon={<Filter size={32} className="text-[--accent-9]" />}
+        />
+      ) : (
+        <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
+          {tasks.map(task => (
+            <TaskCard key={task._id} task={task} />
+          ))}
+        </Grid>
+      )}
 
-      </Box>
-    </Container>
+    </Box>
   );
 }
 

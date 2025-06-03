@@ -459,6 +459,220 @@ router.delete(
 
 /**
  * @openapi
+ * /tasks/by-role/student:
+ *   get:
+ *     summary: Get tasks for a student with completion status
+ *     description: Retrieves tasks assigned to the student with their completion information and visibility filtering
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: role
+ *         in: query
+ *         description: User role (must be "student")
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [student]
+ *       - name: category
+ *         in: query
+ *         description: Task category
+ *         schema:
+ *           type: string
+ *       - name: subCategory
+ *         in: query
+ *         description: Task subcategory
+ *         schema:
+ *           type: string
+ *       - name: status
+ *         in: query
+ *         description: Task status
+ *         schema:
+ *           type: string
+ *           enum: [pending, completed, pending_approval, approved, rejected, expired]
+ *       - name: startDate
+ *         in: query
+ *         description: Filter tasks created after this date (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         description: Filter tasks created before this date (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: dueDate
+ *         in: query
+ *         description: Filter tasks due on this date (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: schoolId
+ *         in: query
+ *         description: Filter by school ID
+ *         schema:
+ *           type: string
+ *       - name: classId
+ *         in: query
+ *         description: Filter by class ID
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - name: sort
+ *         in: query
+ *         description: Field to sort by
+ *         schema:
+ *           type: string
+ *           default: dueDate
+ *       - name: order
+ *         in: query
+ *         description: Sort order (asc or desc)
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *     responses:
+ *       '200':
+ *         description: Tasks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Task'
+ *                       - type: object
+ *                         properties:
+ *                           completionStatus:
+ *                             type: object
+ *                             properties:
+ *                               status:
+ *                                 type: string
+ *                               completedAt:
+ *                                 type: string
+ *                                 format: date-time
+ *                               hasSubmitted:
+ *                                 type: boolean
+ *       '400':
+ *         description: Invalid role or missing parameters
+ *       '500':
+ *         description: Server error
+ */
+router.get(
+  "/by-role/student",
+  authMiddleware.checkRoles(["student"]),
+  taskController.getStudentTasks
+);
+
+/**
+ * @openapi
+ * /tasks/by-role/student/{id}:
+ *   get:
+ *     summary: Get a specific task for a student with completion status
+ *     description: Retrieves a specific task assigned to the student with completion information and visibility checks
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the task to retrieve
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: role
+ *         in: query
+ *         description: User role (must be "student")
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [student]
+ *     responses:
+ *       '200':
+ *         description: Task retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Task'
+ *                     - type: object
+ *                       properties:
+ *                         completionStatus:
+ *                           type: object
+ *                           properties:
+ *                             status:
+ *                               type: string
+ *                               enum: [pending, completed, pending_approval, approved, rejected]
+ *                             completedAt:
+ *                               type: string
+ *                               format: date-time
+ *                             note:
+ *                               type: string
+ *                             evidence:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   type:
+ *                                     type: string
+ *                                     enum: [image, document, link, text]
+ *                                   url:
+ *                                     type: string
+ *                                   content:
+ *                                     type: string
+ *                             approvalDate:
+ *                               type: string
+ *                               format: date-time
+ *                             approvedBy:
+ *                               type: string
+ *                             approverRole:
+ *                               type: string
+ *                             hasSubmitted:
+ *                               type: boolean
+ *       '400':
+ *         description: Invalid role or task ID format
+ *       '403':
+ *         description: Not authorized to view this task or task is hidden
+ *       '404':
+ *         description: Task not found
+ *       '500':
+ *         description: Server error
+ */
+router.get(
+  "/by-role/student/:id",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRoles(["student"]),
+  taskController.getStudentTaskById
+);
+
+/**
+ * @openapi
  * /tasks:
  *   get:
  *     summary: Get tasks with filtering
@@ -654,6 +868,246 @@ router.get("/", taskController.getTasks);
  *         description: Failed to complete task
  */
 router.post("/:id/complete", taskController.completeTask);
+
+/**
+ * @openapi
+ * /tasks/by-role/student/{id}/submit:
+ *   post:
+ *     summary: Submit task completion using TaskCompletion model
+ *     description: Student submits task completion with evidence and notes, creating individual tracking record
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the task to submit completion for
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Task completion details
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               note:
+ *                 type: string
+ *                 description: Student's note about task completion
+ *                 example: "I completed all exercises and checked my answers twice"
+ *               evidence:
+ *                 type: array
+ *                 description: Evidence of task completion
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       enum: [image, document, link, text]
+ *                       example: "image"
+ *                     url:
+ *                       type: string
+ *                       example: "https://example.com/completed-worksheet.jpg"
+ *                     content:
+ *                       type: string
+ *                       example: "Photo of completed math worksheet"
+ *     responses:
+ *       '200':
+ *         description: Task completion submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Task submitted successfully, awaiting approval"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     task:
+ *                       $ref: '#/components/schemas/Task'
+ *                     completion:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         taskId:
+ *                           type: string
+ *                         studentId:
+ *                           type: string
+ *                         status:
+ *                           type: string
+ *                           enum: [pending_approval, approved]
+ *                         note:
+ *                           type: string
+ *                         evidence:
+ *                           type: array
+ *                         completedAt:
+ *                           type: string
+ *                           format: date-time
+ *                         approvalDate:
+ *                           type: string
+ *                           format: date-time
+ *       '400':
+ *         description: Invalid task ID, student profile not found, or task already approved
+ *       '403':
+ *         description: Not authorized to submit this task or task is hidden
+ *       '404':
+ *         description: Task not found
+ *       '500':
+ *         description: Failed to submit task completion
+ */
+router.post(
+  "/by-role/student/:id/submit",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRoles(["student"]),
+  taskController.submitTaskCompletion
+);
+
+/**
+ * @openapi
+ * /tasks/by-role/parent:
+ *   get:
+ *     summary: Get tasks for a parent with visibility information
+ *     description: Retrieves tasks assigned to the parent and their children with visibility control information
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: role
+ *         in: query
+ *         description: User role (must be "parent")
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [parent]
+ *       - name: category
+ *         in: query
+ *         description: Task category
+ *         schema:
+ *           type: string
+ *           enum: [academic, home, behavior, extracurricular, attendance, system]
+ *       - name: subCategory
+ *         in: query
+ *         description: Task subcategory
+ *         schema:
+ *           type: string
+ *       - name: status
+ *         in: query
+ *         description: Task status
+ *         schema:
+ *           type: string
+ *           enum: [pending, completed, pending_approval, approved, rejected, expired]
+ *       - name: startDate
+ *         in: query
+ *         description: Filter tasks created after this date (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         description: Filter tasks created before this date (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: dueDate
+ *         in: query
+ *         description: Filter tasks due on this date (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: schoolId
+ *         in: query
+ *         description: Filter by school ID
+ *         schema:
+ *           type: string
+ *       - name: classId
+ *         in: query
+ *         description: Filter by class ID
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - name: sort
+ *         in: query
+ *         description: Field to sort by
+ *         schema:
+ *           type: string
+ *           default: dueDate
+ *       - name: order
+ *         in: query
+ *         description: Sort order (asc or desc)
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *     responses:
+ *       '200':
+ *         description: Tasks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Task'
+ *                       - type: object
+ *                         properties:
+ *                           visibleToChildren:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                             description: Array of child IDs who can see this task
+ *                             example: ["60f8a9b5e6b3f32f8c9a8d7e", "60f8a9b5e6b3f32f8c9a8d7f"]
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       example: 25
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 20
+ *                     pages:
+ *                       type: integer
+ *                       example: 2
+ *       '400':
+ *         description: Invalid role or missing parameters
+ *       '500':
+ *         description: Server error
+ */
+router.get(
+  "/by-role/parent",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRoles(["parent"]),
+  taskController.getParentTasks
+);
 
 /**
  * @openapi

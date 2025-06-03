@@ -39,7 +39,6 @@ function StudentLayout() {
             <Text size="3" weight="bold" align="center">
               {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Student'}
             </Text>
-            {/* <Badge color="indigo" variant="soft">Level 2</Badge> */}
           </Flex>
 
           <Separator size="4" />
@@ -105,9 +104,11 @@ function StudentLayout() {
       </Box >
 
       {/* Main Content */}
-      <Container>
-        <Outlet />
-      </Container>
+      <div className='flex-1'>
+        <Container>
+          <Outlet />
+        </Container>
+      </div>
     </Flex >
   );
 }
