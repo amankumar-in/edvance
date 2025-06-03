@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <QueryProvider>
     <AuthProvider>     
-        <Theme accentColor="purple" grayColor="slate">
+        <Theme accentColor="cyan" grayColor="slate">
           <Toaster position="top-right" richColors />
           <ReactQueryDevtools initialIsOpen={false} />
           <AppRouter />

@@ -1,4 +1,4 @@
-import { Avatar, Badge, Box, Button, Callout, Flex, ScrollArea, Separator, Tabs, Text, TextField, Theme, Tooltip } from '@radix-ui/themes';
+import { Avatar, Badge, Box, Button, Callout, Flex, ScrollArea, Separator, Tabs, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { AlertCircle, Building, CheckCircle, Clock, GraduationCap, HelpCircle, Info, Link, Link2, Link2Off, Mail, School, Shield, UserPlus, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -24,7 +24,7 @@ function LinkedAccounts() {
   const [parentEmail, setParentEmail] = useState('');
   const [schoolCode, setSchoolCode] = useState('');
   const [schoolRequestCode, setSchoolRequestCode] = useState('');
-  
+
   // Confirmation dialog states
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -127,7 +127,7 @@ function LinkedAccounts() {
   // Handle unlinking a parent
   const handleUnlinkParent = (parentId, parentName) => {
     if (!parentId) return;
-    
+
     setSelectedParentId(parentId);
     setSelectedParentToUnlink(parentName);
     setUnlinkParentDialogOpen(true);
@@ -168,7 +168,7 @@ function LinkedAccounts() {
   // Handle unlinking a school
   const handleUnlinkSchool = (schoolName) => {
     if (!student?._id) return;
-    
+
     setSchoolToUnlink(schoolName || 'your school');
     setUnlinkSchoolDialogOpen(true);
   };
@@ -199,7 +199,7 @@ function LinkedAccounts() {
   // Confirm and execute the cancellation
   const confirmCancelLinkRequest = () => {
     if (!selectedRequestId) return;
-    
+
     cancelLinkRequestMutation.mutate(selectedRequestId, {
       onSuccess: () => {
         toast.success("Link request canceled successfully");
@@ -251,7 +251,7 @@ function LinkedAccounts() {
   }
 
   return (
-    <Theme accentColor="blue">
+    <div>
       <Box className="max-w-4xl">
         {/* HEADER */}
         <Flex direction="column" className="mb-6">
@@ -311,7 +311,6 @@ function LinkedAccounts() {
                                 src={parent?.avatar}
                                 fallback={parent?.firstName?.[0] || ""}
                                 radius="full"
-                                color="blue"
                               />
                               <Flex direction="column" gap="1">
                                 <Text size="2" weight="medium">
@@ -690,7 +689,7 @@ function LinkedAccounts() {
                                 <Flex wrap="wrap" gap="3" className="text-sm">
                                   <Box>
                                     <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                      <Text size="1" color="gray">Code:</Text>  
+                                      <Text size="1" color="gray">Code:</Text>
                                       <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
                                     </Box>
                                   </Box>
@@ -823,7 +822,7 @@ function LinkedAccounts() {
           </Tabs.Content>
         </Tabs.Root>
       </Box>
-      
+
       {/* Confirmation Dialogs */}
       <ConfirmationDialog
         open={rejectDialogOpen}
@@ -840,7 +839,7 @@ function LinkedAccounts() {
         isLoading={respondToParentLinkMutation.isPending}
         onConfirm={() => confirmRespondToParentLinkRequest(selectedRequestId, 'reject')}
       />
-      
+
       <ConfirmationDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
@@ -888,7 +887,8 @@ function LinkedAccounts() {
         isLoading={unlinkSchoolMutation.isPending}
         onConfirm={confirmUnlinkSchool}
       />
-    </Theme>
+    </div>
+    // </Theme>
   );
 }
 

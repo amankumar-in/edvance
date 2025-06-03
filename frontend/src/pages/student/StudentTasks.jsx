@@ -74,7 +74,7 @@ function StudentTasks() {
               </Flex>
             </Flex>
 
-            <Text size="2" className="line-clamp-2">{task.description}</Text>
+            <Text size="2" className="line-clamp-2" color="gray">{task.description}</Text>
 
             <Separator size="4" />
 
@@ -86,7 +86,7 @@ function StudentTasks() {
 
               <Flex gap="3" align="center">
                 <Flex gap="1" align="center">
-                  <Clock size={14} />
+                  <Clock size={14} color='var(--gray-10)' />
                   <Text size="1">
                     {formatDate(task.dueDate)}
                   </Text>
@@ -96,7 +96,7 @@ function StudentTasks() {
             </Flex>
 
             <Flex justify="between" align="center" mt="1">
-              <Text size="1">Assigned by: {task.createdBy}</Text>
+              <Text size="1" color='gray'>Assigned by: {task.createdBy}</Text>
               <Badge className='capitalize' color={getStatusColor(task.completionStatus.status)} >{task.completionStatus.status}</Badge>
             </Flex>
 

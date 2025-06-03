@@ -131,7 +131,7 @@ function StudentTaskDetail() {
           <Flex direction="column" gap="4">
             <Heading size="4">🎉 Well Done!</Heading>
 
-            <Callout.Root color="green" size="1">
+            <Callout.Root variant='surface' color="green" size="1">
               <Callout.Icon>
                 <CheckCircle size={16} />
               </Callout.Icon>
@@ -152,7 +152,7 @@ function StudentTaskDetail() {
           <Flex direction="column" gap="4">
             <Heading size="4">⏳ Under Review</Heading>
 
-            <Callout.Root color="blue" size="1">
+            <Callout.Root variant='surface' color="blue" size="1">
               <Callout.Icon>
                 <Eye size={16} />
               </Callout.Icon>
@@ -173,7 +173,7 @@ function StudentTaskDetail() {
           <Flex direction="column" gap="4">
             <Heading size="4">🔄 Resubmission Needed</Heading>
 
-            <Callout.Root color="red" size="1">
+            <Callout.Root variant='surface' color="red" size="1">
               <Callout.Icon>
                 <XCircle size={16} />
               </Callout.Icon>
@@ -271,7 +271,7 @@ function StudentTaskDetail() {
               {task?.requiresApproval && (
                 <>
                   <Separator size="4" />
-                  <Callout.Root color="blue" size="1">
+                  <Callout.Root variant='surface' color="blue" size="1">
                     <Callout.Icon>
                       <CheckCircle size={16} />
                     </Callout.Icon>
@@ -291,7 +291,7 @@ function StudentTaskDetail() {
               {!task?.requiresApproval && (
                 <>
                   <Separator size="4" />
-                  <Callout.Root color="green" size="1">
+                  <Callout.Root variant='surface' color="green" size="1">
                     <Callout.Icon>
                       <CheckCircle size={16} />
                     </Callout.Icon>
@@ -481,7 +481,7 @@ function StudentTaskDetail() {
               <Flex direction="column" gap="4">
                 <Heading size="4">📤 Submission Help</Heading>
 
-                <Callout.Root color="amber" size="1">
+                <Callout.Root variant='surface' color="amber" size="1">
                   <Callout.Icon>
                     <Upload size={16} />
                   </Callout.Icon>

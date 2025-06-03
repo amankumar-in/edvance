@@ -1,7 +1,7 @@
 import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from "react-router";
 import App from "../src/App";
 import { ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
-import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, TeacherDashboard,  } from "../src/pages";
+import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, TeacherDashboard, } from "../src/pages";
 import ParentLayout from "../src/pages/parent/ParentLayout";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
 import ParentTasks from "../src/pages/parent/ParentTasks";
@@ -13,6 +13,9 @@ import StudentTasks from "../src/pages/student/StudentTasks";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentLayout from "../src/pages/student/StudentLayout";
 import StudentDashboard from "../src/pages/student/StudentDashboard";
+import StudentNotifications from "../src/pages/student/StudentNotifications";
+import StudentPoints from "../src/pages/student/StudentPoints";
+import NotificationSettings from "../src/pages/student/settings/NotificationSettings";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -58,11 +61,14 @@ const router = createBrowserRouter(
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="tasks" element={<StudentTasks />} />
               <Route path="tasks/:id" element={<StudentTaskDetail />} />
+              <Route path="notifications" element={<StudentNotifications />} />
+              <Route path="points" element={<StudentPoints />} />
             </Route>
             <Route path="create-profile" element={<CreateStudentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >
               <Route index element={<Navigate to="linked-accounts" replace />} />
               <Route path="linked-accounts" element={<StudentLinkedAccounts />} />
+              <Route path="notifications" element={<NotificationSettings />} />
             </Route>
           </Route>
           <Route path="teacher" >

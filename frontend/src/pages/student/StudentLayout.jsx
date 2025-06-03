@@ -1,17 +1,26 @@
+import { Avatar, Box, Button, Flex, Separator, Text } from '@radix-ui/themes';
+import { BarChart3, Bell, BookOpen, Calendar, CreditCard, Home, LogOut, Medal, Settings, TrendingUp, User } from 'lucide-react';
 import React from 'react';
-import { Text, Card, Flex, Box, Progress, Badge, Button, IconButton, Separator, Avatar, Theme } from '@radix-ui/themes';
+import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
 import { Container } from '../../components';
-import { BarChart3, BookOpen, Calendar, CreditCard, Home, LogOut, Medal, Settings, TrendingUp, User } from 'lucide-react';
-import { Link, NavLink, Outlet } from 'react-router';
 
 function StudentLayout() {
   const { user, handleLogout, isLoggingOut } = useAuth();
+
+  // Mock unread notifications count - replace with actual data
+  const unreadNotifications = 3;
 
   // Sidebar navigation items
   const navItems = [
     { icon: <Home size={20} />, label: 'Dashboard', href: '/student/dashboard' },
     { icon: <BookOpen size={20} />, label: 'Tasks', href: '/student/tasks' },
+    { 
+      icon: <Bell size={20} />, 
+      label: 'Notifications', 
+      href: '/student/notifications',
+      badge: unreadNotifications > 0 ? unreadNotifications : null
+    },
     { icon: <Calendar size={20} />, label: 'Schedule', href: '/student/schedule' },
     { icon: <Medal size={20} />, label: 'Achievements', href: '/student/achievements' },
     { icon: <TrendingUp size={20} />, label: 'Progress', href: '/student/progress' },
@@ -51,13 +60,18 @@ function StudentLayout() {
                 to={item.href}
                 className={({ isActive }) =>
                   `${isActive ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
-                  py-[6px] text-sm px-4 rounded-lg flex items-center gap-2 mb-1`
+                  py-[6px] text-sm px-4 rounded-lg flex items-center gap-2 mb-1 relative`
                 }
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center flex-1 gap-2">
                   {item.icon}
                   {item.label}
                 </span>
+                {item.badge && (
+                  <span className="flex items-center justify-center h-5 px-1 text-xs text-white bg-red-500 rounded-full min-w-5">
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                )}
               </NavLink>
             ))}
           </Flex>
@@ -84,7 +98,7 @@ function StudentLayout() {
             <NavLink
               key={index}
               to={item.href || '#'}
-              className={({ isActive }) => `flex flex-col items-center gap-1 px-2 ${isActive ? 'text-[--accent-11]' : 'text-[--gray-11] hover:text-[--gray-12]'
+              className={({ isActive }) => `flex flex-col items-center gap-1 px-2 relative ${isActive ? 'text-[--accent-11]' : 'text-[--gray-11] hover:text-[--gray-12]'
                 }`}
             >
               <Box className={({ isActive }) =>
@@ -98,13 +112,18 @@ function StudentLayout() {
               >
                 {item.label}
               </Text>
+              {item.badge && (
+                <span className="absolute flex items-center justify-center h-4 text-xs text-white bg-red-500 rounded-full -top-1 -right-1 min-w-4">
+                  {item.badge > 9 ? '9+' : item.badge}
+                </span>
+              )}
             </NavLink>
           ))}
         </Flex>
       </Box >
 
       {/* Main Content */}
-      <div className='flex-1'>
+      <div className='flex-1 pb-16'>
         <Container>
           <Outlet />
         </Container>
