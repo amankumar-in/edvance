@@ -5,7 +5,7 @@ import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStude
 import ParentLayout from "../src/pages/parent/ParentLayout";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
 import ParentTasks from "../src/pages/parent/ParentTasks";
-import { Overview, Parents, PlatformAdminDashboardLayout, SchoolAdmins, SocialWorkers, Students, Teachers, UserDetails, Users, CreateTask, Tasks } from "../src/pages/platform-admin";
+import { Overview, Parents, PlatformAdminDashboardLayout, SchoolAdmins, SocialWorkers, Students, Teachers, UserDetails, Users, CreateTask, Tasks, TaskCategories, CreateEditCategory } from "../src/pages/platform-admin";
 import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
@@ -97,6 +97,9 @@ const router = createBrowserRouter(
             </Route>
             <Route path="tasks" element={<Tasks />} />
             <Route path="tasks/create" element={<CreateTask />} />
+            <Route path="task-categories" element={<TaskCategories />} />
+            <Route path="task-categories/create" element={<CreateEditCategory />} />
+            <Route path="task-categories/edit/:id" element={<CreateEditCategory />} />
             <Route path="users/user/:id" element={<UserDetails />} />
           </Route>
         </Route>

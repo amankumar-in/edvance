@@ -24,11 +24,12 @@ const taskCategoryController = {
         gradeLevel,
         visibility,
         displayOrder,
+        role
       } = req.body;
 
       // Extract user info from authentication middleware
       const createdBy = req.user.id;
-      const creatorRole = req.user.role;
+      const creatorRole = role;
 
       // Validate required fields
       if (!name || !type) {
@@ -36,6 +37,25 @@ const taskCategoryController = {
           success: false,
           message: "Missing required fields: name and type are required",
         });
+      }
+
+      // Validate parentCategory if provided and not empty
+      if (parentCategory && parentCategory.trim() !== '') {
+        if (!mongoose.Types.ObjectId.isValid(parentCategory)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid parent category ID format",
+          });
+        }
+
+        // Check if parent category exists
+        const parentExists = await TaskCategory.findById(parentCategory);
+        if (!parentExists || !parentExists.isActive) {
+          return res.status(400).json({
+            success: false,
+            message: "Parent category not found",
+          });
+        }
       }
 
       // Check if category with same name already exists for this creator
@@ -52,12 +72,11 @@ const taskCategoryController = {
       }
 
       // Create new category
-      const category = new TaskCategory({
+      const categoryData = {
         name,
         description,
         icon,
         color,
-        parentCategory,
         createdBy,
         creatorRole,
         type,
@@ -69,9 +88,19 @@ const taskCategoryController = {
         visibility: visibility || "private",
         displayOrder: displayOrder || 0,
         isActive: true,
-      });
+      };
+
+      // Only include parentCategory if it's provided and not empty
+      if (parentCategory && parentCategory.trim() !== '') {
+        categoryData.parentCategory = parentCategory;
+      }
+
+      const category = new TaskCategory(categoryData);
 
       await category.save();
+
+      // Populate the parent category before returning
+      await category.populate('parentCategory', 'name icon color type');
 
       return res.status(201).json({
         success: true,
@@ -102,7 +131,8 @@ const taskCategoryController = {
         });
       }
 
-      const category = await TaskCategory.findById(id);
+      const category = await TaskCategory.findById(id)
+        .populate('parentCategory', 'name icon color type');
 
       if (!category || !category.isActive) {
         return res.status(404).json({
@@ -213,6 +243,39 @@ const taskCategoryController = {
         });
       }
 
+      // Handle parentCategory in update data
+      if ('parentCategory' in updateData) {
+        if (updateData.parentCategory && updateData.parentCategory.trim() !== '') {
+          // Validate parentCategory format
+          if (!mongoose.Types.ObjectId.isValid(updateData.parentCategory)) {
+            return res.status(400).json({
+              success: false,
+              message: "Invalid parent category ID format",
+            });
+          }
+
+          // Check if parent category exists
+          const parentExists = await TaskCategory.findById(updateData.parentCategory);
+          if (!parentExists || !parentExists.isActive) {
+            return res.status(400).json({
+              success: false,
+              message: "Parent category not found",
+            });
+          }
+
+          // Prevent circular references (category cannot be its own parent)
+          if (updateData.parentCategory === id) {
+            return res.status(400).json({
+              success: false,
+              message: "Category cannot be its own parent",
+            });
+          }
+        } else {
+          // If empty string or null, remove the parent category
+          updateData.parentCategory = null;
+        }
+      }
+
       // Don't allow changing certain fields
       const protectedFields = [
         "createdBy",
@@ -230,7 +293,7 @@ const taskCategoryController = {
         id,
         { $set: updateData },
         { new: true }
-      );
+      ).populate('parentCategory', 'name icon color type');
 
       return res.status(200).json({
         success: true,
@@ -331,10 +394,18 @@ const taskCategoryController = {
         subject,
         gradeLevel,
         search,
+        role
       } = req.query;
 
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRole = role;
+      
+      if (!userRole) {
+        return res.status(400).json({
+          success: false,
+          message: "User role is required",
+        });
+      }
 
       // Build filter
       const filter = { isActive: true };
@@ -346,7 +417,7 @@ const taskCategoryController = {
       if (schoolId) filter.schoolId = schoolId;
       if (isSystem !== undefined) filter.isSystem = isSystem === "true";
       if (subject) filter.subject = subject;
-      if (gradeLevel) filter.gradeLevel = Number(gradeLevel);
+      if (gradeLevel) filter.gradeLevel = gradeLevel;
 
       // Search by name
       if (search) {
@@ -378,11 +449,13 @@ const taskCategoryController = {
       }
       // Platform admins can see all categories
 
-      // Get the categories
-      const categories = await TaskCategory.find(filter).sort({
-        displayOrder: 1,
-        name: 1,
-      });
+      // Get the categories with populated parent category
+      const categories = await TaskCategory.find(filter)
+        .populate('parentCategory', 'name icon color type')
+        .sort({
+          displayOrder: 1,
+          name: 1,
+        });
 
       return res.status(200).json({
         success: true,
@@ -405,7 +478,7 @@ const taskCategoryController = {
   createDefaultCategories: async (req, res) => {
     try {
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRole = req.body.role;
 
       // Only platform admin can create system categories
       if (userRole !== "platform_admin") {

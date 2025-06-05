@@ -184,7 +184,7 @@ function Tasks() {
                     </Table.Row>
                   ) : (
                     tasks.map((task) => (
-                      <Table.Row key={task._id} className='hover:bg-[--gray-a3] even:bg-[--gray-a2]'>
+                      <Table.Row key={task._id} className='hover:bg-[--gray-a2]'>
                         <Table.Cell>{task._id}</Table.Cell>
                         <Table.Cell>
                             <Text title={task.title} className='line-clamp-2 min-w-[250px]'>{task.title}</Text>

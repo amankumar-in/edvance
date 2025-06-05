@@ -1,0 +1,458 @@
+import { Badge, Box, Button, Callout, DropdownMenu, Flex, Heading, IconButton, Select, Table, Text, TextField } from '@radix-ui/themes';
+import { Activity, AlertCircleIcon, Book, Calculator, Calendar, Database, Droplet, Edit, FunnelX, Home, Microscope, MoreVertical, Music, Pen, Plus, RefreshCw, Search, Settings, ThumbsUp, Trash2, TreePine } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Link } from 'react-router';
+import { BarLoader } from 'react-spinners';
+import { toast } from 'sonner';
+import { useCreateDefaultTaskCategories, useDeleteTaskCategory } from '../../api/task-category/taskCategory.mutations';
+import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
+import { ConfirmationDialog, EmptyStateCard, Loader, StatusGuide } from '../../components';
+import { useDebounce } from '../../hooks/useDebounce';
+
+
+// Icon mapping for categories
+const iconMap = {
+  'calculator': Calculator,
+  'book': Book,
+  'microscope': Microscope,
+  'pen': Pen,
+  'home': Home,
+  'droplet': Droplet,
+  'thumbs-up': ThumbsUp,
+  'calendar': Calendar,
+  'activity': Activity,
+  'music': Music,
+  'settings': Settings,
+};
+
+const TaskCategories = () => {
+  const [filterType, setFilterType] = useState(null);
+  const [filterVisibility, setFilterVisibility] = useState(null);
+  const [filterStatus, setFilterStatus] = useState(null);
+  const [defaultCategoriesDialogOpen, setDefaultCategoriesDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Use debounced search only for API calls, not for the input value
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
+  const { data: taskCategories, isLoading: isTaskCategoriesLoading, isError: isTaskCategoriesError, error, isFetching, refetch } = useGetTaskCategories({
+    type: filterType,
+    visibility: filterVisibility,
+    isSystem: filterStatus,
+    search: debouncedSearch,
+    role: 'platform-admin'
+  });
+
+  const createDefaultCategories = useCreateDefaultTaskCategories();
+  const deleteTaskCategory = useDeleteTaskCategory();
+
+  // Memoize expensive calculations
+  const typeOptions = useMemo(() => [
+    { value: null, label: 'All Types' },
+    { value: 'academic', label: 'Academic' },
+    { value: 'home', label: 'Home' },
+    { value: 'behavior', label: 'Behavior' },
+    { value: 'extracurricular', label: 'Extracurricular' },
+    { value: 'attendance', label: 'Attendance' },
+    { value: 'custom', label: 'Custom' },
+  ], []);
+
+  const visibilityOptions = useMemo(() => [
+    { value: null, label: 'All Visibility' },
+    { value: 'private', label: 'Private' },
+    { value: 'family', label: 'Family' },
+    { value: 'class', label: 'Class' },
+    { value: 'school', label: 'School' },
+    { value: 'public', label: 'Public' },
+  ], []);
+
+  const statusOptions = useMemo(() => [
+    { value: null, label: 'All Categories' },
+    { value: 'true', label: 'System Categories' },
+    { value: 'false', label: 'Custom Categories' },
+  ], []);
+
+  const handleCreateDefaultCategories = useCallback(() => {
+    createDefaultCategories.mutate('platform_admin', {
+      onSuccess: ({ message }) => {
+        setDefaultCategoriesDialogOpen(false);
+        toast.success(message || 'Default categories created successfully');
+      },
+      onError: (error) => {
+        console.error(error);
+        toast.error(error?.response?.data?.message || error?.message || 'Something went wrong');
+      }
+    });
+  }, [createDefaultCategories]);
+
+  const handleDeleteCategory = useCallback(() => {
+    if (!categoryToDelete) return;
+
+    deleteTaskCategory.mutate(categoryToDelete._id, {
+      onSuccess: ({ message }) => {
+        setDeleteDialogOpen(false);
+        setCategoryToDelete(null);
+        toast.success(message || 'Category deleted successfully');
+      },
+      onError: (error) => {
+        console.error(error);
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to delete category');
+      }
+    });
+  }, [deleteTaskCategory, categoryToDelete]);
+
+  const openDeleteDialog = useCallback((category) => {
+    setCategoryToDelete(category);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  // No need for complex grouping since backend returns populated parent data
+
+  const renderIcon = useCallback((iconName) => {
+    const IconComponent = iconMap[iconName];
+    return IconComponent ? <IconComponent size={16} /> : <Settings size={16} />;
+  }, []);
+
+  const formatDate = useCallback((dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }, []);
+
+  const renderCategoryRow = useCallback((category) => (
+    <Table.Row key={category._id} className='hover:bg-[--gray-a2]'>
+      <Table.Cell>
+        <Flex align="center" gap="3" className='text-nowrap'>
+          {category.parentCategory && (
+            <Box style={{ width: '20px', display: 'flex', justifyContent: 'center' }}>
+              <TreePine size={16} color="var(--gray-8)" />
+            </Box>
+          )}
+          <Flex
+            align="center"
+            justify="center"
+            style={{
+              width: '32px',
+              height: '32px',
+              backgroundColor: category.color,
+              borderRadius: '6px',
+              color: 'white'
+            }}
+          >
+            {renderIcon(category.icon)}
+          </Flex>
+          <Box>
+            <Text weight="medium">
+              {category.name}
+            </Text>
+            {category.parentCategory && (
+              <Text size="1" color="gray" style={{ display: 'block' }}>
+                Parent: {category.parentCategory.name}
+              </Text>
+            )}
+            {category.description && (
+              <Text size="1" color="gray" style={{ display: 'block' }}>
+                {category.description.length > 50
+                  ? category.description.substring(0, 50) + '...'
+                  : category.description}
+              </Text>
+            )}
+            {category.subject && (
+              <Badge size="1" color="blue" variant="soft" style={{ marginTop: '2px' }}>
+                {category.subject} - Grade {category.gradeLevel}
+              </Badge>
+            )}
+          </Box>
+        </Flex>
+      </Table.Cell>
+
+      <Table.Cell className='capitalize'>
+        {category.type}
+      </Table.Cell>
+
+      <Table.Cell>
+        {category.defaultPointValue}
+      </Table.Cell>
+
+      <Table.Cell>
+        <Badge
+          color={category.visibility === 'public' ? 'green' :
+            category.visibility === 'school' ? 'blue' : 'gray'}
+          variant="outline"
+        >
+          {category.visibility}
+        </Badge>
+      </Table.Cell>
+
+      <Table.Cell>
+        <Text>{category.tasksCount || 0}</Text>
+      </Table.Cell>
+
+      <Table.Cell>
+        <Flex align="center" gap="2">
+          <Badge
+            color={category.isActive ? 'green' : 'red'}
+            variant="soft"
+          >
+            {category.isActive ? 'Active' : 'Inactive'}
+          </Badge>
+          {category.isSystem && (
+            <Badge color="orange" variant="surface">
+              System
+            </Badge>
+          )}
+          {category.parentCategory && (
+            <Badge color="purple" variant="soft" size="1">
+              Sub
+            </Badge>
+          )}
+        </Flex>
+      </Table.Cell>
+
+      <Table.Cell className='text-nowrap'>
+        {formatDate(category.createdAt)}
+      </Table.Cell>
+
+      <Table.Cell>
+        {!category.isSystem && <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <IconButton variant="ghost" color="gray">
+              <MoreVertical size={16} />
+            </IconButton>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content variant='soft'>
+            <DropdownMenu.Item asChild>
+              <Link to={`/platform-admin/dashboard/task-categories/edit/${category._id}`}>
+                <Edit size={14} /> Edit Category
+              </Link>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item color="red" onClick={() => openDeleteDialog(category)}>
+              <Trash2 size={14} />
+              Delete Category
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>}
+      </Table.Cell>
+    </Table.Row>
+  ), [renderIcon, formatDate, openDeleteDialog]);
+
+  return (
+    <div>
+      {isFetching && !isTaskCategoriesLoading && <div className='fixed left-0 right-0 top-16'>
+        <BarLoader
+          color='#0090ff'
+          width={'100%'}
+          height={'4px'}
+        />
+      </div>}
+      <Box className='px-4 py-8 lg:px-8 xl:px-12'>
+        <Flex direction="column" gap='3'>
+          {/* Header */}
+          <Flex justify="between" align="center" gap="4" wrap="wrap" mb="6">
+            <Box className='space-y-1'>
+              <Heading size="6" weight={'medium'}>Task Categories Management</Heading>
+              <Text as="p" color="gray" size="2">
+                Create, organize, and manage task categories across the platform
+              </Text>
+            </Box>
+            <Flex align="center" gap="2" wrap="wrap">
+              {/* Initialize Defaults */}
+              <Button
+                variant="soft"
+                color="orange"
+                size="2"
+                onClick={() => setDefaultCategoriesDialogOpen(true)}
+              >
+                <Database size={16} /> Initialize Defaults
+              </Button>
+
+              {/* Create Category */}
+              <Button asChild>
+                <Link to="/platform-admin/dashboard/task-categories/create">
+                  <Plus size={16} />  Create Category
+                </Link>
+              </Button>
+            </Flex>
+          </Flex>
+
+          {/* Advanced Filters */}
+          <Box>
+            <Flex direction="column" gap="4">
+              <Flex gap="4" align="end" wrap="wrap" justify="between">
+                {/* Search Categories */}
+                <label className='flex-1 min-w-[240px] max-w-xl'>
+                  <Text as='p' size="2" mb="1" weight="medium">
+                    Search Categories
+                  </Text>
+                  <TextField.Root
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  >
+                    <TextField.Slot>
+                      <Search size={16} />
+                    </TextField.Slot>
+                  </TextField.Root>
+                </label>
+
+                <Flex align="center" gap="4" wrap="wrap">
+                  {/* Filter by Type */}
+                  <Flex align="center" gap="2"  >
+                    <Text as='label' size="2" mb="1" weight="medium">Type</Text>
+                    <Select.Root disabled={isFetching} value={filterType} onValueChange={setFilterType}>
+                      <Select.Trigger />
+                      <Select.Content variant='soft' position='popper'>
+
+                        {typeOptions.map(option => (
+                          <Select.Item key={option.value} value={option.value}>
+                            {option.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+
+                  {/* Filter by Visibility */}
+                  <Flex align="center" gap="2"  >
+                    <Text size="2" mb="1" weight="medium">Visibility</Text>
+                    <Select.Root disabled={isFetching} value={filterVisibility} onValueChange={setFilterVisibility}>
+                      <Select.Trigger />
+                      <Select.Content variant='soft' position='popper'>
+                        {visibilityOptions.map(option => (
+                          <Select.Item key={option.value} value={option.value}>
+                            {option.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+
+                  {/* Filter by Status */}
+                  <Flex align="center" gap="2"  >
+                    <Text size="2" mb="1" weight="medium">Status</Text>
+                    <Select.Root disabled={isFetching} value={filterStatus} onValueChange={setFilterStatus}>
+                      <Select.Trigger />
+                      <Select.Content variant='soft' position='popper'>
+                        {statusOptions.map(option => (
+                          <Select.Item key={option.value} value={option.value}>
+                            {option.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+
+                  {/* Refresh */}
+                  <Button disabled={isFetching} title="Refresh" aria-label="Refresh" variant="ghost" color="gray"
+                    onClick={() => {
+                      setFilterType(null);
+                      setFilterVisibility(null);
+                      setFilterStatus(null);
+                      setSearchTerm('');
+                      refetch();
+                    }}
+                  >
+                    <RefreshCw size={16} />
+                  </Button>
+
+                  {/* Reset Filters */}
+                  <Button variant="soft" color="gray"
+                    onClick={() => {
+                      setFilterType(null);
+                      setFilterVisibility(null);
+                      setFilterStatus(null);
+                      setSearchTerm('');
+                    }}
+                  >
+                    <FunnelX size={16} />
+                    Reset
+                  </Button>
+                </Flex>
+
+              </Flex>
+
+            </Flex>
+
+            {/* Status Information Section */}
+            <div className='mt-4'>
+              <StatusGuide />
+            </div>
+          </Box>
+
+
+          {isTaskCategoriesLoading ? (
+            <Flex justify="center">
+              <Loader />
+            </Flex>
+          ) : isTaskCategoriesError ? (
+            <Callout.Root color='red'>
+              <Callout.Icon>
+                <AlertCircleIcon size={16} />
+              </Callout.Icon>
+              <Callout.Text>
+                {error?.response?.data?.message || error?.message || 'Something went wrong'}
+              </Callout.Text>
+            </Callout.Root>
+          ) : taskCategories?.data?.length > 0 ? (
+            < Table.Root variant='surface'>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell className='font-medium capitalize' key='category'>Category ({taskCategories?.data?.length > 0 && taskCategories?.data?.length})</Table.ColumnHeaderCell>
+                  {['type', 'points', 'visibility', 'tasks', 'status', 'created', 'actions'].map((header) => (
+                    <Table.ColumnHeaderCell className='font-medium capitalize' key={header}>{header}</Table.ColumnHeaderCell>
+                  ))}
+                </Table.Row>
+              </Table.Header>
+
+              <Table.Body>
+                {taskCategories?.data?.map((category) => (
+                  renderCategoryRow(category)
+                ))}
+              </Table.Body>
+            </Table.Root>
+          ) : (
+            <EmptyStateCard
+              title="No categories found"
+              description="No categories found matching your criteria."
+              icon={<Database size={16} />}
+            />
+          )}
+
+        </Flex>
+
+        {/* Create Default Categories Dialog */}
+        <ConfirmationDialog
+          open={defaultCategoriesDialogOpen}
+          onOpenChange={setDefaultCategoriesDialogOpen}
+          title="Confirm Default Categories"
+          description="Initialize the system default categories (Math, Reading, Science, Writing, Chores, Hygiene, Positive Behavior, Attendance, Sports, Arts) if they don\'t already exist. This action is typically performed once during system setup."
+          onConfirm={handleCreateDefaultCategories}
+          confirmIcon={<Database size={16} />}
+          confirmText="Initialize Default Categories"
+          isLoading={createDefaultCategories.isPending}
+          confirmColor="orange"
+        />
+
+        {/* Delete Category Dialog */}
+        <ConfirmationDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Delete Category"
+          description={`Are you sure you want to delete "${categoryToDelete?.name}"? This action cannot be undone and will remove the category from the system.`}
+          onConfirm={handleDeleteCategory}
+          confirmIcon={<Trash2 size={16} />}
+          confirmText="Delete Category"
+          isLoading={deleteTaskCategory.isPending}
+          confirmColor="red"
+        />
+
+      </Box >
+    </div>
+  );
+};
+
+export default TaskCategories;

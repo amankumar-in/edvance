@@ -41,8 +41,8 @@ function ConfirmationDialog({
               color={confirmColor}
               disabled={isLoading}
             >
-              {isLoading ? 'Processing...' : confirmText}
               {!isLoading && confirmIcon}
+              {isLoading ? 'Processing...' : confirmText}
             </Button>
           </AlertDialog.Action>
         </Flex>

@@ -1,11 +1,10 @@
-import { Box, Button, Callout, Flex, IconButton, Select, Separator, Table, Text, Tooltip } from '@radix-ui/themes';
-import { AlertCircleIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown, ChevronUp, EyeIcon, Icon, PencilIcon, TrashIcon } from 'lucide-react';
+import { Box, Callout, Flex, IconButton, Select, Separator, Table, Text, Tooltip } from '@radix-ui/themes';
+import { AlertCircleIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown, ChevronUp, EyeIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React, { useState } from 'react';
-import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
-import { BarLoader } from 'react-spinners';
-import { Loader } from '../../components';
 import { Link } from 'react-router';
-import { useUsersByRole } from '../../api/user/user.queries'
+import { BarLoader } from 'react-spinners';
+import { useUsersByRole } from '../../api/user/user.queries';
+import { Loader } from '../../components';
 
 // Reusable sort icon component
 export const SortIcon = ({ currentSort, columnName }) => {
@@ -99,7 +98,7 @@ const UserTable = ({ role }) => {
     return (
       <>
         <Flex justify="center" align="center">
-          <Loader className='size-6' borderWidth={2} borderColor='var(--accent-9)' />
+          <Loader />
         </Flex>
       </>
     );
@@ -167,7 +166,7 @@ const UserTable = ({ role }) => {
               </Table.Row>
             ) : (
               users.map((user) => (
-                <Table.Row key={user._id} className='hover:bg-[--gray-a3] even:bg-[--gray-a2]'>
+                <Table.Row key={user._id} className='hover:bg-[--gray-a2]'>
                   <Table.Cell>{user._id}</Table.Cell>
                   <Table.Cell className='text-nowrap'>{user.name}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>

@@ -45,9 +45,9 @@ app.get("/health", (req, res) => {
 });
 
 // API Routes - include full path prefixes to match gateway routing
-app.use("/api/tasks", taskRoutes);
 app.use("/api/tasks/categories", taskCategoryRoutes);
 app.use("/api/tasks/templates", taskTemplateRoutes);
+app.use("/api/tasks", taskRoutes);
 
 // MongoDB connection
 const connectDB = async () => {

@@ -27,7 +27,8 @@ const taskCategorySchema = new mongoose.Schema(
     },
     // Parent category if this is a subcategory
     parentCategory: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TaskCategory',
     },
     // Who created this category
     createdBy: {
@@ -76,7 +77,7 @@ const taskCategorySchema = new mongoose.Schema(
     },
     // For grade-level specific categories
     gradeLevel: {
-      type: Number,
+      type: String,
     },
     // Is this a system category that cannot be modified
     isSystem: {

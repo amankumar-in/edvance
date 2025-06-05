@@ -1,4 +1,4 @@
-import { Flex, Theme } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 import { ThemeProvider } from 'next-themes'
 import React, { useState } from 'react'
 import { Outlet } from 'react-router'
@@ -17,19 +17,17 @@ function PlatformAdminDashboardLayout() {
       disableTransitionOnChange
       defaultTheme='light'
     >
-      <Theme accentColor="blue" grayColor="slate">
-        <div className="flex flex-col min-h-screen">
-          <Header toggleSidebar={toggleSidebar} />
+      <div className="flex flex-col min-h-screen">
+        <Header toggleSidebar={toggleSidebar} />
 
-          <Flex className="flex-1">
-            <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <Flex className="flex-1">
+          <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-            <div className="flex-1" style={{ minWidth: 0 }}>
-              <Outlet />
-            </div>
-          </Flex>
-        </div>
-      </Theme>
+          <div className="flex-1" style={{ minWidth: 0 }}>
+            <Outlet />
+          </div>
+        </Flex>
+      </div>
     </ThemeProvider>
   )
 }

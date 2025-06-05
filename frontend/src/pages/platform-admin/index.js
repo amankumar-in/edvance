@@ -11,3 +11,6 @@ export { default as SocialWorkers } from './tabs/socialWorkers'
 export { default as SchoolAdmins } from './tabs/schoolAdmins'
 
 export { default as UserDetails } from './UserDetails'
+
+export { default as TaskCategories } from './TaskCategories'
+export { default as CreateEditCategory } from './CreateEditCategory'

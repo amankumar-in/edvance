@@ -124,6 +124,80 @@ router.use(authMiddleware.verifyToken);
 /**
  * @openapi
  * /tasks/categories:
+ *   get:
+ *     summary: Get task categories with filtering
+ *     description: Retrieves task categories based on various filter criteria
+ *     tags:
+ *       - Task Categories
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: type
+ *         in: query
+ *         description: Category type
+ *         schema:
+ *           type: string
+ *           enum: [academic, home, behavior, extracurricular, attendance, system, custom]
+ *       - name: createdBy
+ *         in: query
+ *         description: ID of user who created categories
+ *         schema:
+ *           type: string
+ *       - name: visibility
+ *         in: query
+ *         description: Category visibility
+ *         schema:
+ *           type: string
+ *           enum: [private, family, class, school, public]
+ *       - name: schoolId
+ *         in: query
+ *         description: Filter by school ID
+ *         schema:
+ *           type: string
+ *       - name: isSystem
+ *         in: query
+ *         description: Filter system categories
+ *         schema:
+ *           type: boolean
+ *       - name: subject
+ *         in: query
+ *         description: Filter by subject
+ *         schema:
+ *           type: string
+ *       - name: gradeLevel
+ *         in: query
+ *         description: Filter by grade level
+ *         schema:
+ *           type: number
+ *       - name: search
+ *         in: query
+ *         description: Search by name
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Categories retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/TaskCategory'
+ *       '500':
+ *         description: Failed to get categories
+ */
+router.get("/", taskCategoryController.getCategories);
+
+
+/**
+ * @openapi
+ * /tasks/categories:
  *   post:
  *     summary: Create a new task category
  *     description: Creates a new category for organizing tasks
@@ -339,79 +413,6 @@ router.put("/:id", taskCategoryController.updateCategory);
  *         description: Failed to delete category
  */
 router.delete("/:id", taskCategoryController.deleteCategory);
-
-/**
- * @openapi
- * /tasks/categories:
- *   get:
- *     summary: Get task categories with filtering
- *     description: Retrieves task categories based on various filter criteria
- *     tags:
- *       - Task Categories
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: type
- *         in: query
- *         description: Category type
- *         schema:
- *           type: string
- *           enum: [academic, home, behavior, extracurricular, attendance, system, custom]
- *       - name: createdBy
- *         in: query
- *         description: ID of user who created categories
- *         schema:
- *           type: string
- *       - name: visibility
- *         in: query
- *         description: Category visibility
- *         schema:
- *           type: string
- *           enum: [private, family, class, school, public]
- *       - name: schoolId
- *         in: query
- *         description: Filter by school ID
- *         schema:
- *           type: string
- *       - name: isSystem
- *         in: query
- *         description: Filter system categories
- *         schema:
- *           type: boolean
- *       - name: subject
- *         in: query
- *         description: Filter by subject
- *         schema:
- *           type: string
- *       - name: gradeLevel
- *         in: query
- *         description: Filter by grade level
- *         schema:
- *           type: number
- *       - name: search
- *         in: query
- *         description: Search by name
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: Categories retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/TaskCategory'
- *       '500':
- *         description: Failed to get categories
- */
-router.get("/", taskCategoryController.getCategories);
 
 /**
  * @openapi
