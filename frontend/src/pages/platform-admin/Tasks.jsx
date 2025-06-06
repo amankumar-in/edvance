@@ -1,10 +1,10 @@
 import { Button, Callout, Flex, Heading, IconButton, Select, Separator, Table, Text, Tooltip } from '@radix-ui/themes'
-import { AlertCircleIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, PencilIcon, Plus, TrashIcon } from 'lucide-react'
+import { AlertCircleIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClipboardList, PencilIcon, Plus, TrashIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
 import { useGetTasks } from '../../api/task/task.queries'
-import { Loader } from '../../components'
+import { EmptyStateCard, Loader } from '../../components'
 import { SortIcon } from '../../components/platform-admin/UserTable'
 import { formatDate } from '../../utils/helperFunctions'
 
@@ -125,184 +125,190 @@ function Tasks() {
           height={'4px'}
         />
       </div>}
-      <div className='relative px-4 py-8 space-y-4 lg:px-8 xl:px-12'>
+      <div className='relative px-4 py-8 space-y-6 lg:px-8 xl:px-12'>
 
+        {/* Heading */}
         <Flex justify='between' align='center'>
-          <Heading as='h1' size='6' weight='medium'>Tasks</Heading>
+          <div>
+            <Heading as='h1' size='6' weight='medium' mb={'1'}>Tasks Management</Heading>
+            <Text as="p" color="gray" size="2">
+              Create, assign, and manage tasks across the platform
+            </Text>
+          </div>
+
+          {/* Create task button */}
           <Button asChild>
             <Link to='create'>
               <Plus size={16} /> Add Task
             </Link>
           </Button>
         </Flex>
-        <div>
-          <Table.Root variant='surface' layout={'auto'}>
-            <Table.Header>
-              <Table.Row>
-                {columns.map((column) => (
-                  <Table.ColumnHeaderCell key={column.accessorKey} className='font-medium text-nowrap'
-                    onClick={() => handleSort(column.accessorKey)}
-                    style={column.sortable ? { cursor: 'pointer' } : undefined}
-                  >
-                    <Flex align="center" gap="2" className='font-medium'>
-                      {column.header}
-                      {column.sortable && (
-                        <SortIcon currentSort={currentSort} columnName={column.accessorKey} />
-                      )}
-                    </Flex>
-                  </Table.ColumnHeaderCell>
-                ))}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {isLoading ? (
-                <Table.Row >
-                  <Table.Cell colSpan={columns.length + 1}>
-                    <Loader className='size-6' borderWidth={2} borderColor='var(--accent-9)' />
-                  </Table.Cell>
+
+        <Separator size={'4'} />
+
+        {isLoading ? (
+          // Loading state
+          <Flex justify="center">
+            <Loader />
+          </Flex>
+        ) : isError ? (
+          // Error state
+          <Callout.Root color='red'>
+            <Callout.Icon>
+              <AlertCircleIcon size={16} />
+            </Callout.Icon>
+            <Callout.Text>
+              {error?.response?.data?.message || error?.message || 'Something went wrong'}
+            </Callout.Text>
+          </Callout.Root>
+
+        ) : tasks.length > 0 ? (
+          // Main data table
+          <div>
+            <Table.Root variant='surface' layout={'auto'}>
+              <Table.Header>
+                <Table.Row>
+                  {columns.map((column) => (
+                    <Table.ColumnHeaderCell key={column.accessorKey} className='font-medium text-nowrap'
+                      onClick={() => handleSort(column.accessorKey)}
+                      style={column.sortable ? { cursor: 'pointer' } : undefined}
+                    >
+                      <Flex align="center" gap="2" className='font-medium'>
+                        {column.header}
+                        {column.sortable && (
+                          <SortIcon currentSort={currentSort} columnName={column.accessorKey} />
+                        )}
+                      </Flex>
+                    </Table.ColumnHeaderCell>
+                  ))}
                 </Table.Row>
-              ) : (
-                isError ? (
-                  <Table.Row>
-                    <Table.Cell colSpan={columns.length + 1}>
-                      <Callout.Root color='red'>
-                        <Callout.Icon>
-                          <AlertCircleIcon size={16} />
-                        </Callout.Icon>
-                        <Callout.Text>
-                          {error?.response?.data?.message || error?.message || 'Something went wrong'}
-                        </Callout.Text>
-                      </Callout.Root>
+              </Table.Header>
+              <Table.Body>
+                {tasks.map((task) => (
+                  <Table.Row key={task._id} className='hover:bg-[--gray-a2]'>
+                    <Table.Cell>{task._id}</Table.Cell>
+                    <Table.Cell>
+                      <Text title={task.title} className='line-clamp-2 min-w-[250px]'>{task.title}</Text>
+                    </Table.Cell>
+                    <Table.Cell >
+                      <Text title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description}</Text>
+                    </Table.Cell>
+                    <Table.Cell>{task.category}</Table.Cell>
+                    <Table.Cell>{task.subCategory || '-'}</Table.Cell>
+                    <Table.Cell>{task.pointValue}</Table.Cell>
+                    <Table.Cell>{task.createdBy}</Table.Cell>
+                    <Table.Cell>{task.assignedTo?.role || '-'}</Table.Cell>
+                    <Table.Cell className='text-nowrap'>{formatDate(task.dueDate) || '-'}</Table.Cell>
+                    <Table.Cell>{task.requiresApproval ? 'Yes' : 'No'}</Table.Cell>
+                    <Table.Cell>{task.approverType || '-'}</Table.Cell>
+                    <Table.Cell>{task.difficulty || '-'}</Table.Cell>
+                    <Table.Cell>{task.isFeatured ? 'Yes' : 'No'}</Table.Cell>
+                    <Table.Cell className='text-nowrap'>{formatDate(task.createdAt) || '-'}</Table.Cell>
+                    <Table.Cell>
+                      <Flex gap="2" align={'center'}>
+                        <Tooltip content='Edit task'>
+                          <IconButton
+                            size={'1'}
+                            variant='soft'
+                            highContrast
+                          >
+                            <PencilIcon size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Separator orientation={'vertical'} />
+                        <Tooltip content='Delete user'>
+                          <IconButton
+                            // variant='ghost'
+                            color='red'
+                            size={'1'}
+                            variant='soft'
+                            highContrast
+                          >
+                            <TrashIcon size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      </Flex>
                     </Table.Cell>
                   </Table.Row>
-                ) : (
-                  tasks.length === 0 ? (
-                    <Table.Row>
-                      <Table.Cell colSpan={columns.length + 1}>
-                        <Text align="center">No tasks found</Text>
-                      </Table.Cell>
-                    </Table.Row>
-                  ) : (
-                    tasks.map((task) => (
-                      <Table.Row key={task._id} className='hover:bg-[--gray-a2]'>
-                        <Table.Cell>{task._id}</Table.Cell>
-                        <Table.Cell>
-                            <Text title={task.title} className='line-clamp-2 min-w-[250px]'>{task.title}</Text>
-                        </Table.Cell>
-                        <Table.Cell >
-                          <Text title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description}</Text>
-                        </Table.Cell>
-                        <Table.Cell>{task.category}</Table.Cell>
-                        <Table.Cell>{task.subCategory || '-'}</Table.Cell>
-                        <Table.Cell>{task.pointValue}</Table.Cell>
-                        <Table.Cell>{task.createdBy}</Table.Cell>
-                        <Table.Cell>{task.assignedTo?.role || '-'}</Table.Cell>
-                        <Table.Cell className='text-nowrap'>{formatDate(task.dueDate) || '-'}</Table.Cell>
-                        <Table.Cell>{task.requiresApproval ? 'Yes' : 'No'}</Table.Cell>
-                        <Table.Cell>{task.approverType || '-'}</Table.Cell>
-                        <Table.Cell>{task.difficulty || '-'}</Table.Cell>
-                        <Table.Cell>{task.isFeatured ? 'Yes' : 'No'}</Table.Cell>
-                        <Table.Cell className='text-nowrap'>{formatDate(task.createdAt) || '-'}</Table.Cell>
-                        <Table.Cell>
-                          <Flex gap="2" align={'center'}>
-                            <Tooltip content='Edit task'>
-                              <IconButton
-                                size={'1'}
-                                variant='soft'
-                                highContrast
-                              >
-                                <PencilIcon size={14} />
-                              </IconButton>
-                            </Tooltip>
-                            <Separator orientation={'vertical'} />
-                            <Tooltip content='Delete user'>
-                              <IconButton
-                                // variant='ghost'
-                                color='red'
-                                size={'1'}
-                                variant='soft'
-                                highContrast
-                              >
-                                <TrashIcon size={14} />
-                              </IconButton>
-                            </Tooltip>
-                          </Flex>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))
-                  )
-                )
-              )}
-            </Table.Body>
-          </Table.Root>
+                ))}
+              </Table.Body>
+            </Table.Root>
 
-          {/* Pagination Controls */}
-          {!isLoading && !isError && tasks.length > 0 && (
-            <Flex justify="between" align="center" mt="4" wrap={'wrap'} gap={'2'}>
-              <Flex align="center" gap="2">
-                <Text size="2">Rows per page:</Text>
-                <Select.Root value={String(limit)} onValueChange={handleLimitChange}>
-                  <Select.Trigger />
-                  <Select.Content variant='soft' position={'popper'}> 
-                    <Select.Group>
-                      <Select.Item value="10">10</Select.Item>
-                      <Select.Item value="20">20</Select.Item>
-                      <Select.Item value="50">50</Select.Item>
-                      <Select.Item value="100">100</Select.Item>
-                    </Select.Group>
-                  </Select.Content>
-                </Select.Root>
-              </Flex>
+            {/* Pagination Controls */}
+            {!isLoading && !isError && tasks.length > 0 && (
+              <Flex justify="between" align="center" mt="4" wrap={'wrap'} gap={'2'}>
+                <Flex align="center" gap="2">
+                  <Text size="2">Rows per page:</Text>
+                  <Select.Root value={String(limit)} onValueChange={handleLimitChange}>
+                    <Select.Trigger />
+                    <Select.Content variant='soft' position={'popper'}>
+                      <Select.Group>
+                        <Select.Item value="10">10</Select.Item>
+                        <Select.Item value="20">20</Select.Item>
+                        <Select.Item value="50">50</Select.Item>
+                        <Select.Item value="100">100</Select.Item>
+                      </Select.Group>
+                    </Select.Content>
+                  </Select.Root>
+                </Flex>
 
-              <Flex align="center" gap="2">
-                <Text size="2">
-                  {pagination.page > 0 ? ((pagination.page - 1) * pagination.limit) + 1 : 0}-
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total || 0}
-                </Text>
-                <IconButton
-                  color='gray'  
-                  aria-label='First'
-                  title='First'
-                  variant="ghost"
-                  disabled={pagination.page <= 1}
-                  onClick={() => setPage(1)}
-                >
-                  <ChevronsLeft size={16} />
-                </IconButton>
-                <IconButton
-                  color='gray'
-                  aria-label='Previous'
-                  title='Previous'
-                  variant="ghost"
-                  disabled={pagination.page <= 1}
-                  onClick={handlePreviousPage}
-                >
-                  <ChevronLeft size={16} />
-                </IconButton>
-                <IconButton
-                  color='gray'
-                  aria-label='Next'
-                  title='Next'
-                  variant="ghost"
-                  disabled={pagination.page >= pagination.pages}
-                  onClick={handleNextPage}
-                >
-                  <ChevronRight size={16} />
-                </IconButton>
-                <IconButton
-                  color='gray'
-                  aria-label='Last'
-                  title='Last'
-                  variant="ghost"
-                  disabled={pagination.page >= pagination.pages}
-                  onClick={() => setPage(pagination.pages)}
-                >
-                  <ChevronsRight size={16} />
-                </IconButton>
+                <Flex align="center" gap="2">
+                  <Text size="2">
+                    {pagination.page > 0 ? ((pagination.page - 1) * pagination.limit) + 1 : 0}-
+                    {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total || 0}
+                  </Text>
+                  <IconButton
+                    color='gray'
+                    aria-label='First'
+                    title='First'
+                    variant="ghost"
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage(1)}
+                  >
+                    <ChevronsLeft size={16} />
+                  </IconButton>
+                  <IconButton
+                    color='gray'
+                    aria-label='Previous'
+                    title='Previous'
+                    variant="ghost"
+                    disabled={pagination.page <= 1}
+                    onClick={handlePreviousPage}
+                  >
+                    <ChevronLeft size={16} />
+                  </IconButton>
+                  <IconButton
+                    color='gray'
+                    aria-label='Next'
+                    title='Next'
+                    variant="ghost"
+                    disabled={pagination.page >= pagination.pages}
+                    onClick={handleNextPage}
+                  >
+                    <ChevronRight size={16} />
+                  </IconButton>
+                  <IconButton
+                    color='gray'
+                    aria-label='Last'
+                    title='Last'
+                    variant="ghost"
+                    disabled={pagination.page >= pagination.pages}
+                    onClick={() => setPage(pagination.pages)}
+                  >
+                    <ChevronsRight size={16} />
+                  </IconButton>
+                </Flex>
               </Flex>
-            </Flex>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          // Empty state
+          <EmptyStateCard
+            title="No tasks found"
+            description="No tasks found matching your criteria."
+            icon={<ClipboardList size={16} />}
+          />
+        )}
       </div>
     </div>
   )

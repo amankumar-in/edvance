@@ -1,22 +1,23 @@
 import { Avatar, Box, Button, Flex, Separator, Text } from '@radix-ui/themes';
-import { BarChart3, BookOpen, Calendar, Home, LogOut, Settings, User } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, ClipboardCheck, Home, LogOut, Settings, User } from 'lucide-react';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
 
 function ParentLayout() {
   const { user, handleLogout, isLoggingOut } = useAuth();
-  
+
   // Sidebar navigation items
   const navItems = [
     { icon: <Home size={20} />, label: 'Dashboard', href: '/parent/dashboard' },
     { icon: <BookOpen size={20} />, label: 'Tasks', href: '/parent/tasks' },
+    { icon: <ClipboardCheck size={20} />, label: 'Claims', href: '/parent/claims' },
     { icon: <User size={20} />, label: 'Children', href: '/parent/children' },
     { icon: <Calendar size={20} />, label: 'Schedule', href: '/parent/schedule' },
     { icon: <BarChart3 size={20} />, label: 'Progress', href: '/parent/progress' },
     { icon: <Settings size={20} />, label: 'Settings', href: '/parent/settings' },
   ];
-  
+
   return (
     <Flex>
       {/* Desktop Sidebar */}
@@ -36,18 +37,18 @@ function ParentLayout() {
               {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Parent'}
             </Text>
           </Flex>
-          
+
           <Separator size="4" />
-          
+
           {/* Navigation Items */}
           <Flex direction="column" className="flex-grow px-3">
             {navItems.map((item, index) => (
               <NavLink
                 key={index}
                 to={item.href || '#'}
-                className={({ isActive }) => 
+                className={({ isActive }) =>
                   `${isActive ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
-                  py-[6px] text-sm px-4 rounded-lg flex items-center gap-2 mb-1`
+                  py-2 text-sm px-4 rounded-lg flex items-center gap-2`
                 }
               >
                 <span className="flex items-center gap-2">
@@ -57,7 +58,7 @@ function ParentLayout() {
               </NavLink>
             ))}
           </Flex>
-          
+
           {/* Logout Button */}
           <Box className="px-4 py-4 mt-auto">
             <Button variant="outline" color="gray" className='w-full'
@@ -71,7 +72,7 @@ function ParentLayout() {
           </Box>
         </Flex>
       </Box>
-      
+
       {/* Mobile Bottom Navigation */}
       <Box className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ borderTop: '1px solid var(--gray-6)', background: 'var(--color-background)' }}>
         <Flex justify="between" className="px-2 py-3">
@@ -79,17 +80,16 @@ function ParentLayout() {
             <NavLink
               key={index}
               to={item.href || '#'}
-              className={({ isActive }) => `flex flex-col items-center gap-1 px-2 ${
-                isActive ? 'text-[--accent-11]' : 'text-[--gray-11] hover:text-[--gray-12]'
-              }`}
+              className={({ isActive }) => `flex flex-col items-center gap-1 px-2 ${isActive ? 'text-[--accent-11]' : 'text-[--gray-11] hover:text-[--gray-12]'
+                }`}
             >
-              <Box className={({ isActive }) => 
+              <Box className={({ isActive }) =>
                 isActive ? 'bg-[--accent-a3] p-1 rounded-md' : 'p-1'
               }>
                 {item.icon}
               </Box>
-              <Text 
-                size="1" 
+              <Text
+                size="1"
                 weight={({ isActive }) => isActive ? "medium" : "regular"}
               >
                 {item.label}
@@ -98,7 +98,7 @@ function ParentLayout() {
           ))}
         </Flex>
       </Box>
-      
+
       {/* Main Content */}
       <Box className="flex-1 md:ml-64">
         <Outlet />

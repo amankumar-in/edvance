@@ -23,14 +23,6 @@ const taskSchema = new mongoose.Schema(
     // Primary category
     category: {
       type: String,
-      enum: [
-        "academic",
-        "home",
-        "behavior",
-        "extracurricular",
-        "attendance",
-        "system",
-      ],
       required: true,
     },
     // More specific subcategory (e.g., "math", "reading", "chore", etc.)
@@ -50,8 +42,8 @@ const taskSchema = new mongoose.Schema(
       required: true,
     },
     // Role of the creator
-    creatorRoles: {
-      type: [String],
+    creatorRole: {
+      type: String,
       enum: [
         "student",
         "parent",

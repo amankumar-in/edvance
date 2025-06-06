@@ -317,7 +317,7 @@ const taskCategoryController = {
     try {
       const { id } = req.params;
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRole = req.query.role;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({

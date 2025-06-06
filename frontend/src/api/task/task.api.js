@@ -53,6 +53,20 @@ export const toggleTaskVisibility = async (data) => {
     return response.data;
 }
 
+// Get list of tasks for approval
+export const getTasksForApproval = async (params = {}) => {
+    // role param is necessary to include
+    const response = await apiClient.get(`/tasks/approval`, { params })
+    return response.data;
+}
+
+// Review Task for approval (Approve or Reject)
+export const reviewTask = async ({ id, data }) => {
+    const response = await apiClient.post(`/tasks/${id}/review`, data);
+
+    return response.data;
+}
+
 export default {
     createTask,
     getTasks,

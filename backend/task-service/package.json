@@ -19,6 +19,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.0",
+    "mongoose-aggregate-paginate-v2": "^1.1.4",
     "morgan": "^1.10.0"
   },
   "devDependencies": {

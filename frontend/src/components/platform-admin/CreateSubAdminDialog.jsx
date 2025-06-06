@@ -59,7 +59,7 @@ const CreateSubAdmin = () => {
       setIsOpen(o);
     }}>
       <Dialog.Trigger>
-        <Button color="blue" onClick={() => setIsOpen(true)}>
+        <Button onClick={() => setIsOpen(true)}>
           Create Sub Admin
         </Button>
       </Dialog.Trigger>
@@ -72,7 +72,7 @@ const CreateSubAdmin = () => {
 
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <Callout.Root color="blue" >
+          <Callout.Root variant='surface' color="blue" >
             <Callout.Icon>
               <Info size={16} />
             </Callout.Icon>
@@ -237,7 +237,7 @@ const CreateSubAdmin = () => {
             </div>
           </Flex>
 
-          <Callout.Root color="amber" size="1">
+          <Callout.Root variant='surface' color="amber" size="1">
             <Callout.Icon>
               <AlertTriangle size={14} />
             </Callout.Icon>

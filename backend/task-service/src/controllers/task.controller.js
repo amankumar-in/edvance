@@ -34,11 +34,18 @@ const taskController = {
         classId,
         // visibility,
         metadata,
+        role: creatorRole
       } = req.body;
 
       // Extract user info from authentication middleware
       const createdBy = req.user.id;
-      const creatorRoles = req.user.roles; // [parent, teacher]
+
+      if (!creatorRole) {
+        return res.status(400).json({
+          success: false,
+          message: "Creator role is required",
+        });
+      }
 
       // Validate required fields
       if (!title || !category || !assignedTo || pointValue === undefined) {
@@ -57,7 +64,7 @@ const taskController = {
         subCategory,
         pointValue: Number(pointValue),
         createdBy,
-        creatorRoles,
+        creatorRole,
         assignedTo,
         status: "pending",
         dueDate: dueDate ? new Date(dueDate) : undefined,
@@ -67,12 +74,12 @@ const taskController = {
           requiresApproval !== undefined ? requiresApproval : true,
         approverType:
           approverType ||
-          (creatorRoles.includes("parent")
+          (creatorRole === "parent"
             ? "parent"
-            : creatorRoles.includes("teacher") || creatorRoles.includes("school_admin")
+            : creatorRole === "teacher" || creatorRole === "school_admin"
               ? "teacher"
               : "none"),
-        specificApproverId: specificApproverId || createdBy,
+        specificApproverId: specificApproverId,
         externalResource,
         attachments,
         difficulty,
@@ -248,7 +255,7 @@ const taskController = {
         task.isRecurring !== updateData.isRecurring ||
         (updateData.recurringSchedule &&
           JSON.stringify(task.recurringSchedule) !==
-            JSON.stringify(updateData.recurringSchedule))
+          JSON.stringify(updateData.recurringSchedule))
       ) {
         // Handle recurrence change - this might require regenerating instances
         // For simplicity, we'll just note it here
@@ -266,7 +273,7 @@ const taskController = {
       if (
         (updateData.dueDate &&
           task.dueDate?.toString() !==
-            new Date(updateData.dueDate).toString()) ||
+          new Date(updateData.dueDate).toString()) ||
         (updateData.pointValue &&
           Math.abs(task.pointValue - updateData.pointValue) > 5)
       ) {
@@ -605,7 +612,7 @@ const taskController = {
 
       // Determine the status based on approval requirements
       const newStatus = task.requiresApproval ? "pending_approval" : "approved";
-      
+
       // Prepare completion data
       const completionData = {
         taskId: id,
@@ -635,7 +642,7 @@ const taskController = {
         // Resubmission case - update existing completion
         isResubmission = true;
         console.log(`Student resubmitting task ${id}, previous status: ${taskCompletion.status}`);
-        
+
         taskCompletion = await TaskCompletion.findByIdAndUpdate(
           taskCompletion._id,
           { $set: completionData },
@@ -717,9 +724,9 @@ const taskController = {
   reviewTask: async (req, res) => {
     try {
       const { id } = req.params;
-      const { action, feedback } = req.body;
+      const { action, feedback, role } = req.body;
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRole = role;
 
       if (!["approve", "reject"].includes(action)) {
         return res.status(400).json({
@@ -735,9 +742,9 @@ const taskController = {
         });
       }
 
-      const task = await Task.findById(id);
+      const taskSubmission = await TaskCompletion.findById(id);
 
-      if (!task || task.isDeleted) {
+      if (!taskSubmission) {
         return res.status(404).json({
           success: false,
           message: "Task not found",
@@ -745,12 +752,14 @@ const taskController = {
       }
 
       // Check if task is awaiting approval
-      if (task.status !== "pending_approval") {
+      if (taskSubmission.status !== "pending_approval") {
         return res.status(400).json({
           success: false,
           message: "Task is not awaiting approval",
         });
       }
+
+      const task = await Task.findById(taskSubmission.taskId)
 
       // Check if user is authorized to approve/reject
       let isAuthorized = false;
@@ -758,7 +767,7 @@ const taskController = {
       if (task.approverType === "parent" && userRole === "parent") {
         isAuthorized = task.specificApproverId
           ? task.specificApproverId === userId
-          : task.createdBy === userId;
+          : true;
       } else if (
         task.approverType === "teacher" &&
         (userRole === "teacher" || userRole === "school_admin")
@@ -781,26 +790,16 @@ const taskController = {
         approvedBy: userId,
         approverRole: userRole,
         approvalDate: new Date(),
+        feedback: feedback || ''
       };
 
-      // Add feedback as a comment if provided
-      if (feedback) {
-        updateData.$push = {
-          comments: {
-            text: feedback,
-            createdBy: userId,
-            creatorRole: userRole,
-          },
-        };
-      }
-
-      const updatedTask = await Task.findByIdAndUpdate(id, updateData, {
+      const updatedTask = await TaskCompletion.findByIdAndUpdate(id, updateData, {
         new: true,
       });
 
       // If approved, award points
       if (action === "approve") {
-        await taskController.awardPointsForTask(updatedTask);
+        await taskController.awardPointsForTaskCompletion(req, task, updatedTask);
       }
 
       // Send notification to student
@@ -900,12 +899,12 @@ const taskController = {
         const teacherConditions = [
           { createdBy: currentProfileId }
         ];
-        
+
         // If teacher has class assignments, include those
         if (currentProfileId) {
           teacherConditions.push({ classId: currentProfileId });
         }
-        
+
         query.$or = teacherConditions;
       }
       // platform_admin and sub_admin can see all tasks (no additional restrictions)
@@ -924,7 +923,7 @@ const taskController = {
           ];
         }
       }
-      
+
       if (createdBy) query.createdBy = createdBy;
       if (category) query.category = category;
       if (subCategory) query.subCategory = subCategory;
@@ -1894,7 +1893,7 @@ const taskController = {
       const skip = (parsedPage - 1) * parsedLimit;
 
       // Build query for tasks assigned to the student
-      let query = { 
+      let query = {
         isDeleted: false,
         $or: [
           {
@@ -1928,64 +1927,64 @@ const taskController = {
 
       // Get task IDs for fetching completion statuses
       const taskIds = tasks.map(task => task._id);
-      
+
       // Fetch completion status for all tasks
       const taskCompletions = await TaskCompletion.find({
         taskId: { $in: taskIds },
         studentId: currentProfileId
       }).lean();
-      
+
       // Create a map of task completions
       const completionMap = {};
       taskCompletions.forEach(completion => {
         completionMap[completion.taskId.toString()] = completion;
       });
-      
+
       // Apply TaskVisibility filter
       const visibilities = await TaskVisibility.find({
         toggledForUserId: currentProfileId,
       }).select("taskId isVisible");
-      
+
       const hiddenSet = new Set();
       const visibleSet = new Set();
-      
+
       visibilities.forEach(tv => {
         const id = tv.taskId.toString();
         if (tv.isVisible) visibleSet.add(id);
         else hiddenSet.add(id);
       });
-      
+
       // Exclude hidden tasks
       let filteredTasks = tasks.filter(task => !hiddenSet.has(task._id.toString()));
-      
+
       // Include extra tasks made visible by parent for student
       const taskIdsSet = new Set(taskIds.map(id => id.toString()));
       const extraVisibleTaskIds = [...visibleSet].filter(id => !taskIdsSet.has(id));
-      
+
       if (extraVisibleTaskIds.length) {
         const extraTasks = await Task.find({
           _id: { $in: extraVisibleTaskIds.map(id => new mongoose.Types.ObjectId(id)) },
           isDeleted: false,
         }).lean();
-        
+
         // Get completion status for extra tasks too
         const extraTaskCompletions = await TaskCompletion.find({
           taskId: { $in: extraTasks.map(t => t._id) },
           studentId: currentProfileId
         }).lean();
-        
+
         extraTaskCompletions.forEach(completion => {
           completionMap[completion.taskId.toString()] = completion;
         });
-        
+
         filteredTasks.push(...extraTasks);
       }
-      
+
       // Enhance tasks with completion status
       let enhancedTasks = filteredTasks.map(task => {
         const taskId = task._id.toString();
         const completion = completionMap[taskId];
-        
+
         return {
           ...task,
           completionStatus: completion ? {
@@ -2001,18 +2000,18 @@ const taskController = {
           }
         };
       });
-      
+
       // Apply status filter after enhancement (if provided)
       if (status) {
-        enhancedTasks = enhancedTasks.filter(task => 
+        enhancedTasks = enhancedTasks.filter(task =>
           task.completionStatus.status === status
         );
       }
-      
+
       // Apply pagination to filtered results
       const totalFiltered = enhancedTasks.length;
       const paginatedTasks = enhancedTasks.slice(skip, skip + parsedLimit);
-      
+
       res.json({
         success: true,
         data: paginatedTasks,
@@ -2123,6 +2122,7 @@ const taskController = {
           approvalDate: completion.approvalDate,
           approvedBy: completion.approvedBy,
           approverRole: completion.approverRole,
+          feedback: completion.feedback,
           hasSubmitted: !!completion
         } : {
           status: "pending",
@@ -2241,36 +2241,36 @@ const taskController = {
         const visibilityRecords = await TaskVisibility.find({
           toggledForUserId: { $in: childIds }
         }).lean();
-        
+
         // Create visibility map
         const visibilityMap = {};
-        
+
         visibilityRecords.forEach(record => {
           const taskId = record.taskId.toString();
           const childId = record.toggledForUserId.toString();
-          
+
           if (!visibilityMap[taskId]) {
             visibilityMap[taskId] = {
               visibleChildren: new Set(),
               hiddenChildren: new Set()
             };
           }
-          
+
           if (record.isVisible) {
             visibilityMap[taskId].visibleChildren.add(childId);
           } else {
             visibilityMap[taskId].hiddenChildren.add(childId);
           }
         });
-        
+
         // Add visibility information to each task
         filteredTasks = filteredTasks.map(task => {
           const taskId = task._id.toString();
           const visibility = visibilityMap[taskId] || { visibleChildren: new Set(), hiddenChildren: new Set() };
-          
+
           // Start with an empty set of visible children
           const visibleToChildren = new Set();
-          
+
           // Add children based on task assignment rules
           if (task.assignedTo?.role === "student") {
             if (!task.assignedTo.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0) {
@@ -2286,22 +2286,22 @@ const taskController = {
               childIds.forEach(childId => {
                 const childIdStr = childId.toString();
                 const isAssigned = task.assignedTo.selectedPeopleIds.some(id => id.toString() === childIdStr);
-                
+
                 if (isAssigned && !visibility.hiddenChildren.has(childIdStr)) {
                   visibleToChildren.add(childIdStr);
                 }
               });
             }
           }
-          
+
           // Add explicitly visible children
           visibility.visibleChildren.forEach(childId => {
             visibleToChildren.add(childId);
           });
-          
+
           // Return enhanced task with simple visibility array
-          return { 
-            ...task, 
+          return {
+            ...task,
             visibleToChildren: Array.from(visibleToChildren)
           };
         });
@@ -2310,7 +2310,7 @@ const taskController = {
       // Apply pagination to filtered results
       const totalFiltered = filteredTasks.length;
       const paginatedTasks = filteredTasks.slice(skip, skip + parsedLimit);
-      
+
       res.json({
         success: true,
         data: paginatedTasks,
@@ -2324,6 +2324,186 @@ const taskController = {
     } catch (err) {
       console.error("Error fetching parent tasks:", err);
       res.status(500).json({ success: false, message: "Server error" });
+    }
+  },
+
+  /**
+   * Get tasks for approval
+   */
+  getTasksForApproval: async (req, res) => {
+    try {
+      const role = req.query.role;
+      const { profiles } = req.user;
+      const { status = 'all', sortBy = 'updatedAt', order = 'desc' } = req.query;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const validRoles = ["parent", "teacher", "social_worker", "platform_admin", "school_admin"];
+      const validStatuses = ["pending", "pending_approval", "approved", "rejected", "expired", "all"];
+      const validSortFields = ["createdAt", "updatedAt", "status"];
+      const validSortOrders = ["asc", "desc"];
+
+      // Validation: Role must be provided
+      if (!role) {
+        return res.status(400).json({ success: false, message: "Role is required" });
+      }
+
+      // Validation: Role must be one of the supported roles
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({ success: false, message: "Invalid role" });
+      }
+
+      // Validation: Status must be one of the defined values
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ success: false, message: "Invalid status" });
+      }
+
+      // Validation: sortBy must be a valid sortable field
+      if (!validSortFields.includes(sortBy)) {
+        return res.status(400).json({ success: false, message: "Invalid sortBy field" });
+      }
+
+      // Validation: order must be either asc or desc
+      if (!validSortOrders.includes(order)) {
+        return res.status(400).json({ success: false, message: "Invalid order, use 'asc' or 'desc'" });
+      }
+
+      // Logic for parent role
+      if (role === 'parent') {
+        const childIds = profiles[role]?.childIds;
+
+        // Convert childIds to ObjectId format for querying
+        const objectIds = childIds.map(id => new mongoose.Types.ObjectId(id));
+
+        // Base match stage to get task completions submitted by children
+        const matchStage = {
+          studentId: { $in: objectIds }
+        };
+
+        // If status is provided and not "all", apply filter
+        if (status && status !== 'all') {
+          matchStage.status = status;
+        }
+
+        /**
+         * Aggregation pipeline:
+         * 1. Match TaskCompletions by child (studentId) and optional status
+         * 2. Lookup student details and their linked user info
+         * 3. Flatten nested user inside student
+         * 4. Lookup task details
+         * 5. Filter tasks that require parent approval and are not deleted
+         * 6. Project only required fields
+         */
+        const aggregationPipeline = [
+          { $match: matchStage },
+          {
+            $lookup: {
+              from: "students",
+              localField: "studentId",
+              foreignField: "_id",
+              as: "childDetails",
+              pipeline: [
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user"
+                  }
+                },
+                {
+                  $addFields: {
+                    user: { $arrayElemAt: ["$user", 0] },
+                  }
+                }
+              ]
+            }
+          },
+          // Flatten childDetails array
+          {
+            $addFields: {
+              childDetails: { $arrayElemAt: ["$childDetails", 0] }
+            }
+          },
+          {
+            $addFields: {
+              childDetails: {
+                $mergeObjects: [
+                  "$childDetails",
+                  "$childDetails.user"
+                ]
+              },
+            }
+          },
+          // Lookup task details
+          {
+            $lookup: {
+              from: "tasks",
+              localField: "taskId",
+              foreignField: "_id",
+              as: "task"
+            }
+          },
+          {
+            $addFields: {
+              task: { $arrayElemAt: ["$task", 0] }
+            }
+          },
+          // Ensure only tasks that require parent approval and are not deleted are included
+          { $match: { "task.approverType": "parent", "task.isDeleted": false } },
+
+          // Final projection: send only necessary fields to the client
+          {
+            $project: {
+              taskId: 1,
+              studentId: 1,
+              completedAt: 1,
+              note: 1,
+              evidence: 1,
+              status: 1,
+              approvedBy: 1,
+              approverRole: 1,
+              approvalDate: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              task: 1,
+              childDetails: {
+                userId: 1,
+                firstName: 1,
+                lastName: 1,
+                avatar: 1,
+                email: 1,
+                grade: 1
+              }
+            }
+          }
+        ]
+
+        // Pagination options
+        const options = {
+          page,
+          limit,
+          sort: { [sortBy]: order === 'asc' ? 1 : -1 }
+        }
+
+        // Execute the aggregation with pagination
+        const approvalRequest = await TaskCompletion.aggregatePaginate(
+          TaskCompletion.aggregate(aggregationPipeline),
+          options
+        );
+
+        return res.status(200).json({ success: true, data: approvalRequest })
+      }
+
+      // TODO: Implement similar logic for other roles (e.g., teacher, school_admin etc.)
+
+    } catch (error) {
+      console.log('Server error: ', error)
+
+      if (process.env.NODE_ENV === 'development') {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+      }
+
+      return res.status(500).json({ success: false, message: "Server error" });
     }
   }
 };

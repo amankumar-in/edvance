@@ -71,7 +71,7 @@ function SideBar({ isOpen, toggleSidebar }) {
 
       {/* Sidebar */}
       <div
-        className={`fixed md:sticky top-16 h-[calc(100svh-64px)] sm:h-[calc(100vh-64px)] bg-[--color-background]  z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`fixed border-r border-[--gray-a6] md:sticky top-16 h-[calc(100svh-64px)] sm:h-[calc(100vh-64px)] bg-[--color-background]  z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
           } md:left-0 w-72 p-4 md:p-6 flex flex-col`}
       >
 

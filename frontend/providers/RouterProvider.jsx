@@ -16,6 +16,7 @@ import StudentDashboard from "../src/pages/student/StudentDashboard";
 import StudentNotifications from "../src/pages/student/StudentNotifications";
 import StudentPoints from "../src/pages/student/StudentPoints";
 import NotificationSettings from "../src/pages/student/settings/NotificationSettings";
+import ParentClaims from "../src/pages/parent/ParentClaims";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -43,6 +44,7 @@ const router = createBrowserRouter(
             <Route element={<ParentLayout />} >
               <Route path="dashboard" element={<ParentDashboard />} />
               <Route path="tasks" element={<ParentTasks />} />
+              <Route path="claims" element={<ParentClaims />} />
             </Route>
             <Route path="create-profile" element={<CreateParentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTask, submitTask, toggleTaskVisibility } from "./task.api";
+import { createTask, reviewTask, submitTask, toggleTaskVisibility } from "./task.api";
 
 // Create a task
 export const useCreateTask = () => {
@@ -35,5 +35,17 @@ export const useSubmitTask = () => {
             ])
         },
     });
+}
+
+// Review a task
+export const useReviewTask = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: reviewTask,
+        onSuccess: () => {
+            return queryClient.invalidateQueries({ queryKey: ["tasks", "approval"] });
+        }
+    })
 }
 

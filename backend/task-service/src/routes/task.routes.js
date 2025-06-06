@@ -279,6 +279,9 @@ router.post(
   taskController.createTask
 );
 
+router.route('/approval').get(taskController.getTasksForApproval)
+
+
 /**
  * @openapi
  * /tasks/{id}:

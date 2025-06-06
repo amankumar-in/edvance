@@ -106,7 +106,7 @@ function ParentTasks() {
   if (isLoading) return (
     <Container>
       <Flex justify='center' align='center'>
-        <Loader className='size-8' borderWidth={2} borderColor='var(--accent-9)' />
+        <Loader />
       </Flex>
     </Container>
   );
@@ -129,7 +129,7 @@ function ParentTasks() {
       <Box className=''>
         {/* Header Section */}
         <Flex justify="between" align="center" mb="5">
-          <Heading as="h1" size="6" weight="bold" color="indigo">Family Tasks</Heading>
+          <Heading as="h1" size="6" weight="bold">Family Tasks</Heading>
         </Flex>
 
         {/* Filters and Controls */}

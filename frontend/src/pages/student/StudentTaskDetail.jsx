@@ -94,7 +94,7 @@ function StudentTaskDetail() {
 
   if (isLoading) return (
     <Flex justify='center' align='center'>
-      <Loader className='size-8' borderWidth={2} borderColor='var(--accent-9)' />
+      <Loader />
     </Flex>
   );
 
@@ -177,10 +177,20 @@ function StudentTaskDetail() {
               <Callout.Icon>
                 <XCircle size={16} />
               </Callout.Icon>
-              <Callout.Text>
-                <Text size="2">
-                  Your submission needs revision. Check the comments below for feedback, make the necessary changes, and resubmit when ready.
+              <Callout.Text className='flex flex-col gap-1'>
+                <Text as='span' size="2">
+                  Your submission needs revision. Check the feedback, make the necessary changes, and resubmit when ready.
                 </Text>
+                {task?.completionStatus?.feedback &&
+                  <>
+                    <Text as='span'>
+                      <strong>Feedback: </strong>
+                    </Text>
+                    <Text as='span' className='whitespace-pre-wrap'>
+                      {task?.completionStatus?.feedback}
+                    </Text>
+                  </>
+                }
               </Callout.Text>
             </Callout.Root>
           </Flex>
@@ -233,7 +243,7 @@ function StudentTaskDetail() {
 
               <Separator size="4" />
 
-              <Text as="p" size="3">
+              <Text as="p" size="3" className='whitespace-pre-wrap'>
                 {task?.description}
               </Text>
             </Flex>

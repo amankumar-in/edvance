@@ -13,7 +13,7 @@ import {
   TextField
 } from '@radix-ui/themes';
 import { ArrowLeft, Info, Plus } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router';
 import AsyncSelect from 'react-select/async';
@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { searchParents, searchStudents } from '../../api/search/search.api';
 import { useCreateTask } from '../../api/task/task.mutations';
 import { Container } from '../../components';
+import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 
 // Mock categories - replace with API data
 const CATEGORIES = [
@@ -48,20 +49,30 @@ const CreateTask = () => {
       title: '',
       description: '',
       category: [],
-      pointValue: 10,
+      pointValue: undefined,
       dueDate: new Date(),
       requiresApproval: true,
       approverType: 'none',
       category: '',
       selectedPeople: [],
-      assigned: ''
+      assigned: '',
     },
   });
 
   const requiresApproval = watch('requiresApproval') === 'true';
   const assigned = watch('assigned')
+  const category = watch('category')
 
   const { mutate: createTask, isPending, isError, error } = useCreateTask();
+
+  const { data: taskCategories } = useGetTaskCategories({ role: 'platform_admin' })
+
+  useEffect(() => {
+    if (taskCategories?.data) {
+      const pointsValue = taskCategories?.data.filter(cat => cat.name === category)?.[0]?.defaultPointValue
+      setValue('pointValue', pointsValue)
+    }
+  }, [category, taskCategories])
 
   const onSubmit = async (data) => {
     const requiresApproval = data.requiresApproval === 'true';
@@ -81,13 +92,10 @@ const CreateTask = () => {
     delete data.selectedPeople;
     delete data.assigned;
 
-
     data.requiresApproval = requiresApproval;
     data.assignedTo = assignedTo;
 
-    console.log(data);
-
-    createTask(data, {
+    createTask({ ...data, role: 'platform_admin' }, {
       onSuccess: () => {
         toast.success('Task created successfully');
         navigate('/platform-admin/dashboard/tasks');
@@ -119,7 +127,7 @@ const CreateTask = () => {
 
   return (
     <Container>
-      <div className="pb-8 space-y-6">
+      <div className="pb-8 space-y-8 ">
         {/* Header */}
         <Box>
           <Button
@@ -133,175 +141,201 @@ const CreateTask = () => {
               <ArrowLeft size={16} /> Back to Tasks
             </Link>
           </Button>
-          <Heading as="h1" size="6" weight="medium">Create New Task</Heading>
-          <Text color="gray" size="2" className="mt-1">
-            Create a new task for students to complete and earn scholarship points.
-          </Text>
+          <Flex justify={'between'} align={'start'}>
+            <Flex direction={'column'}>
+              <Heading as="h1" size="6" weight="medium">Create New Task</Heading>
+              <Text color="gray" size="2" className="mt-1">
+                Create a new task for students to complete and earn scholarship points.
+              </Text>
+            </Flex>
+
+            {/* Create Task Button */}
+            <Button
+              type="submit"
+              color="grass"
+              disabled={isPending}
+              onClick={handleSubmit(onSubmit)}
+            >
+              <Plus size={16} /> {isPending ? 'Creating...' : 'Create Task'}
+            </Button>
+          </Flex>
         </Box>
 
-        <Separator size="4" />
-
-        {
-          (isError) && (
-            <Callout.Root
-              color="red"
-              variant="surface"
-            >
-              <Callout.Icon>
-                <Info size={16} />
-              </Callout.Icon>
-              <Callout.Text>
-                {error?.response?.data?.message ||
-                  "Failed to create task."}
-              </Callout.Text>
-            </Callout.Root>
-          )
-        }
-
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <Flex gap="4" className="flex-col md:flex-row">
-            <div className="flex-1">
-              <label>
-                <Text as="div" size="2" mb="2" weight="medium">
-                  Task Title
-                </Text>
-                <TextField.Root placeholder="Enter task title" className="w-full" {...register('title', {
-                  required: "Task title is required"
-                })} />
-                <Text as="p" size="1" color="gray" mt="1">
-                  Choose a clear, descriptive title that explains what students need to do
-                </Text>
-                {errors.title && (
-                  <Text
-                    as="p"
-                    size={"2"}
-                    color="red"
-                    className='flex items-center gap-1 mt-1'
-                  >
-                    <Info size={14} /> {errors.title.message}
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl space-y-10">
+          {
+            (isError) && (
+              <Callout.Root
+                color="red"
+                variant="surface"
+              >
+                <Callout.Icon>
+                  <Info size={16} />
+                </Callout.Icon>
+                <Callout.Text>
+                  {error?.response?.data?.message ||
+                    "Failed to create task."}
+                </Callout.Text>
+              </Callout.Root>
+            )
+          }
+          {/* Task Info - title, description, scholarship points, due date */}
+          <FormSection title={'Task Info'} >
+            <Flex gap="4" className="flex-col md:flex-row">
+              {/* Task title */}
+              <div className="flex-1">
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Task Title
                   </Text>
-                )}
-              </label>
-            </div>
-
-            <div className="flex-1">
-              <label>
-                <Text as="div" size="2" mb="2" weight="medium">
-                  Scholarship Points
-                </Text>
-                <TextField.Root type="number" placeholder="Enter points" className="w-full" {...register('pointValue', {
-                  valueAsNumber: true,
-                  required: "Scholarship points are required",
-                  min: {
-                    value: 1,
-                    message: "Points must be greater than 0"
-                  }
-                })} />
-                <Text as="p" size="1" color="gray" mt="1">
-                  Assign point values based on task complexity and effort required
-                </Text>
-                {errors.pointValue && (
-                  <Text
-                    as="p"
-                    size={"2"}
-                    color="red"
-                    className='flex items-center gap-1 mt-1'
-                  >
-                    <Info size={14} /> {errors.pointValue.message}
+                  <TextField.Root placeholder="Enter task title" className="w-full" {...register('title', {
+                    required: "Task title is required"
+                  })} />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    Choose a clear, descriptive title that explains what students need to do
                   </Text>
-                )}
-              </label>
-            </div>
-          </Flex>
-          <Flex gap="4" className="flex-col md:flex-row">
-            <div className='flex-1'>
-              <label>
-                <Text as="div" size="2" mb="2" weight="medium">
-                  Task Description
-                </Text>
-                <TextArea placeholder="Enter task description"
-                  {...register("description")}
-                  className="w-full" />
-                <Text as="p" size="1" color="gray" mt="1">
-                  Provide clear instructions and all details needed to complete the task successfully
-                </Text>
-              </label>
-            </div>
-
-            <div className='flex-1'>
-              <label>
-                <Text as="div" size="2" mb="2" weight="medium">
-                  Task Category
-                </Text>
-                <Controller
-                  name="category"
-                  control={control}
-                  rules={{ required: 'Please select a category' }}
-                  render={({ field }) => (
-                    <Select.Root value={field.value} onValueChange={field.onChange}>
-                      <Select.Trigger placeholder="Select category" className="w-full" />
-                      <Select.Content variant="soft" position="popper">
-                        {CATEGORIES.map((category) => (
-                          <Select.Item key={category.value} value={category.value}>
-                            {category.label}
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
+                  {errors.title && (
+                    <Text
+                      as="p"
+                      size={"2"}
+                      color="red"
+                      className='flex items-center gap-1 mt-1'
+                    >
+                      <Info size={14} /> {errors.title.message}
+                    </Text>
                   )}
-                />
-              </label>
-              <Text as="p" size="1" color="gray" mt="1">
-                Select the category that best describes the task
-              </Text>
-              {errors.category && (
-                <Text
-                  as="p"
-                  size={"2"}
-                  color="red"
-                  className='flex items-center gap-1 mt-1'
-                >
-                  <Info size={14} /> {errors.category.message}
-                </Text>
-              )}
-            </div>
+                </label>
+              </div>
 
-          </Flex>
-          <Flex gap="4" className="flex-col md:flex-row">
-            <div className="flex-1">
-              <label>
-                <Text as="div" size="2" mb="2" weight="medium">
-                  Due Date
-                </Text>
-                <TextField.Root type="date" className="w-full" {...register('dueDate', {
-                  valueAsDate: true,
-                  validate: (value) => {
-                    if (!value) return true;
+              {/* Scholarship points */}
+              <div className="flex-1">
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Scholarship Points
+                  </Text>
+                  <TextField.Root type="number" placeholder="Enter points" className="w-full" {...register('pointValue', {
+                    valueAsNumber: true,
+                    required: "Scholarship points are required",
+                    min: {
+                      value: 1,
+                      message: "Points must be greater than 0"
+                    }
+                  })} />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    This field will automatically fill based on the Task category selected
+                  </Text>
+                  {errors.pointValue && (
+                    <Text
+                      as="p"
+                      size={"2"}
+                      color="red"
+                      className='flex items-center gap-1 mt-1'
+                    >
+                      <Info size={14} /> {errors.pointValue.message}
+                    </Text>
+                  )}
+                </label>
+              </div>
 
-                    if (!(value instanceof Date) || isNaN(value.getTime())) return true
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0); // zero out time
-                    return value >= today || "Due date must be today or in the future";
-                  },
-                })} />
+            </Flex>
+            <Flex gap="4" className="flex-col md:flex-row">
+              {/* Task description */}
+              <div className='flex-1'>
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Task Description
+                  </Text>
+                  <TextArea placeholder="Enter task description"
+                    {...register("description")}
+                    className="w-full" />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    Provide clear instructions and all details needed to complete the task successfully
+                  </Text>
+                </label>
+              </div>
+
+              {/* Due date */}
+              <div className="flex-1">
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Due Date
+                  </Text>
+                  <TextField.Root type="date" className='w-max' {...register('dueDate', {
+                    valueAsDate: true,
+                    validate: (value) => {
+                      if (!value) return true;
+
+                      if (!(value instanceof Date) || isNaN(value.getTime())) return true
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0); // zero out time
+                      return value >= today || "Due date must be today or in the future";
+                    },
+                  })} />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    Set a reasonable deadline that gives students enough time to complete the task
+                  </Text>
+                  {errors.dueDate && (
+                    <Text
+                      as="p"
+                      size={"2"}
+                      color="red"
+                      className='flex items-center gap-1 mt-1'
+                    >
+                      <Info size={14} /> {errors.dueDate.message}
+                    </Text>
+                  )}
+                </label>
+              </div>
+            </Flex>
+          </FormSection>
+
+          {/* Categorization - category */}
+          <FormSection title={'Categorization'}>
+            <Flex gap="4" className="flex-col md:flex-row">
+              {/* Task Category */}
+              <div className='w-1/2'>
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Task Category
+                  </Text>
+                  <Controller
+                    name="category"
+                    control={control}
+                    rules={{ required: 'Please select a category' }}
+                    render={({ field }) => (
+                      <Select.Root value={field.value} onValueChange={field.onChange}>
+                        <Select.Trigger placeholder="Select category" className="w-full" />
+                        <Select.Content variant="soft" position="popper">
+                          {taskCategories?.data?.map((category) => (
+                            <Select.Item key={category._id} value={category.name}>
+                              {category.name}
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Root>
+                    )}
+                  />
+                </label>
                 <Text as="p" size="1" color="gray" mt="1">
-                  Set a reasonable deadline that gives students enough time to complete the task
+                  Select the category that best describes the task
                 </Text>
-                {errors.dueDate && (
+                {errors.category && (
                   <Text
                     as="p"
                     size={"2"}
                     color="red"
                     className='flex items-center gap-1 mt-1'
                   >
-                    <Info size={14} /> {errors.dueDate.message}
+                    <Info size={14} /> {errors.category.message}
                   </Text>
                 )}
-              </label>
-            </div>
+              </div>
+            </Flex>
+          </FormSection>
 
-
+          {/* Assignment - assigned to */}
+          <FormSection title={'Assignment'}>
+            {/* Assigned to */}
             <div className="flex-1">
               <Text as="label" htmlFor='assigned' size="2" mb="2" weight="medium">
                 Assigned To
@@ -379,86 +413,100 @@ const CreateTask = () => {
                 )}
               </div>
             </div>
-          </Flex>
+          </FormSection>
 
-          <Flex gap="4" className="flex-col md:flex-row">
-            <div className="flex-1">
-              <label>
-                <Text as="div" size="2" mb="2" weight="medium">
-                  Requires Approval
-                </Text>
-                <Flex align="start" gap="4">
-                  <Flex asChild gap="2">
-                    <Text as="label" size="2">
-                      <Radio {...register('requiresApproval')} value={true} defaultChecked />
-                      Yes
-                    </Text>
+          {/* Approval settings - requires approval, who can approve this task */}
+          <FormSection title={'Approval Settings'}>
+            <Flex gap="4" className="flex-col md:flex-row">
+              {/* Requires approval */}
+              <div className="flex-1">
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Requires Approval
+                  </Text>
+                  <Flex align="start" gap="4">
+                    <Flex asChild gap="2">
+                      <Text as="label" size="2">
+                        <Radio {...register('requiresApproval')} value={true} defaultChecked />
+                        Yes
+                      </Text>
+                    </Flex>
+
+                    <Flex asChild gap="2">
+                      <Text as="label" size="2">
+                        <Radio {...register('requiresApproval')} value={false} />
+                        No
+                      </Text>
+                    </Flex>
                   </Flex>
-
-                  <Flex asChild gap="2">
-                    <Text as="label" size="2">
-                      <Radio {...register('requiresApproval')} value={false} />
-                      No
-                    </Text>
-                  </Flex>
-                </Flex>
-              </label>
-              <Text as="p" size="1" color="gray" mt="1">
-                Select whether the task requires approval or not
-              </Text>
-            </div>
-
-            {requiresApproval && <div className='flex-1'>
-              <label>
-                <Text as="div" size="2" mb="2" weight="medium">
-                  Who can approve this task?
-                </Text>
-                <Controller
-                  name="approverType"
-                  control={control}
-                  rules={{ required: "Approver type is required" }}
-                  render={({ field }) => (
-                    <RadioGroup.Root
-                      defaultValue="none"
-                      name="approverType"
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      <Flex gap='2' wrap='wrap'>
-                        <RadioGroup.Item value="parent">Parent</RadioGroup.Item>
-                        <RadioGroup.Item value="teacher">Teacher</RadioGroup.Item>
-                        <RadioGroup.Item value="school_admin">School Admin</RadioGroup.Item>
-                        <RadioGroup.Item value="social_worker">Social Worker</RadioGroup.Item>
-                        <RadioGroup.Item value="platform_admin">Platform Admin</RadioGroup.Item>
-                        <RadioGroup.Item value="system">System</RadioGroup.Item>
-                        <RadioGroup.Item value="none">None</RadioGroup.Item>
-                      </Flex>
-                    </RadioGroup.Root>
-                  )}
-                />
-
+                </label>
                 <Text as="p" size="1" color="gray" mt="1">
-                  Select all user roles that should be allowed to approve task
+                  Select whether the task requires approval or not
                 </Text>
-              </label>
-            </div>}
-          </Flex>
+              </div>
+
+              {requiresApproval && (
+                // Approver type
+                < div className='flex-1'>
+                  <label>
+                    <Text as="div" size="2" mb="2" weight="medium">
+                      Who can approve this task?
+                    </Text>
+                    <Controller
+                      name="approverType"
+                      control={control}
+                      rules={{ required: "Approver type is required" }}
+                      render={({ field }) => (
+                        <RadioGroup.Root
+                          defaultValue="none"
+                          name="approverType"
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <Flex gap='2' wrap='wrap'>
+                            <RadioGroup.Item value="parent">Parent</RadioGroup.Item>
+                            <RadioGroup.Item value="teacher">Teacher</RadioGroup.Item>
+                            <RadioGroup.Item value="school_admin">School Admin</RadioGroup.Item>
+                            <RadioGroup.Item value="social_worker">Social Worker</RadioGroup.Item>
+                            <RadioGroup.Item value="platform_admin">Platform Admin</RadioGroup.Item>
+                            <RadioGroup.Item value="system">System</RadioGroup.Item>
+                            <RadioGroup.Item value="none">None</RadioGroup.Item>
+                          </Flex>
+                        </RadioGroup.Root>
+                      )}
+                    />
+
+                    <Text as="p" size="1" color="gray" mt="1">
+                      Select all user roles that should be allowed to approve task
+                    </Text>
+                  </label>
+                </div>
+              )}
+            </Flex>
+
+          </FormSection>
 
 
-
-          <Flex gap="3" align="center" mt="4">
-            <Button
-              type="submit"
-              color="grass"
-              disabled={isPending}
-            >
-              <Plus size={16} /> {isPending ? 'Creating...' : 'Create Task'}
-            </Button>
-          </Flex>
         </form>
       </div >
-    </Container>
+    </Container >
   );
 };
 
-export default CreateTask; 
+export default CreateTask;
+
+export const FormSection = ({ title, children }) => {
+  return (
+    <section>
+      <Flex direction={'column'} gap={'3'} mb={'4'}>
+        <Text size="4" weight="medium">
+          {title}
+        </Text>
+        <Separator size={'4'} />
+      </Flex>
+      <div className='space-y-4'>
+        {children}
+      </div>
+    </section>
+  )
+} 

@@ -108,7 +108,7 @@ function StudentTasks() {
 
   if (isLoading) return (
     <Flex justify='center' align='center'>
-      <Loader className='size-8' borderWidth={2} borderColor='var(--accent-9)' />
+      <Loader />
     </Flex>
   );
 

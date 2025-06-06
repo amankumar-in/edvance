@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Callout, DropdownMenu, Flex, Heading, IconButton, Select, Table, Text, TextField } from '@radix-ui/themes';
+import { Badge, Box, Button, Callout, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes';
 import { Activity, AlertCircleIcon, Book, Calculator, Calendar, Database, Droplet, Edit, FunnelX, Home, Microscope, MoreVertical, Music, Pen, Plus, RefreshCw, Search, Settings, ThumbsUp, Trash2, TreePine } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router';
@@ -250,9 +250,9 @@ const TaskCategories = () => {
         />
       </div>}
       <Box className='px-4 py-8 lg:px-8 xl:px-12'>
-        <Flex direction="column" gap='3'>
+        <Flex direction="column" className='gap-6'>
           {/* Header */}
-          <Flex justify="between" align="center" gap="4" wrap="wrap" mb="6">
+          <Flex justify="between" align="center" gap="4" wrap="wrap">
             <Box className='space-y-1'>
               <Heading size="6" weight={'medium'}>Task Categories Management</Heading>
               <Text as="p" color="gray" size="2">
@@ -278,6 +278,8 @@ const TaskCategories = () => {
               </Button>
             </Flex>
           </Flex>
+
+          <Separator size={'4'} />
 
           {/* Advanced Filters */}
           <Box>

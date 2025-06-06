@@ -1,5 +1,5 @@
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getParentTasks, getStudentTaskById, getStudentTasks, submitTask, getTasks } from "./task.api";
+import { keepPreviousData, useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { getParentTasks, getStudentTaskById, getStudentTasks, submitTask, getTasks, getTasksForApproval } from "./task.api";
 
 // Get all tasks(for platform admin, school admin, teacher)
 export const useGetTasks = (params = {}) => {
@@ -49,5 +49,16 @@ export const useGetParentTasks = (params = {}) => {
   return useQuery({
     queryKey: ["tasks", "parent", params],
     queryFn: () => getParentTasks(params),
+  });
+};
+
+// Get all tasks for approval
+export const useGetTasksForApproval = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: ["tasks", "approval", params],
+    queryFn: ({ pageParam = 1 }) => getTasksForApproval({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => { lastPage?.data?.nextPage || null },
+    placeholderData: keepPreviousData,
+    keepPreviousData: true
   });
 };
