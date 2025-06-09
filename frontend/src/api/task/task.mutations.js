@@ -32,6 +32,7 @@ export const useSubmitTask = () => {
             return Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["tasks"] }),
                 queryClient.invalidateQueries({ queryKey: ["task", "student", variables.id] }),
+                queryClient.invalidateQueries({ queryKey: ['points'] })
             ])
         },
     });

@@ -331,167 +331,6 @@ router.post(
 
 /**
  * @openapi
- * /points/configuration/{version}:
- *   get:
- *     summary: Get specific configuration version
- *     description: Retrieves a specific version of the configuration (platform admin only)
- *     tags:
- *       - Point Configuration
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: version
- *         in: path
- *         description: Configuration version number
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       '200':
- *         description: Configuration version retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   $ref: '#/components/schemas/PointConfiguration'
- *       '403':
- *         description: Access denied - platform admin only
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Access denied: platform admin only"
- *       '404':
- *         description: Configuration version not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Configuration version not found"
- *       '500':
- *         description: Failed to get configuration version
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Failed to get configuration version"
- *                 error:
- *                   type: string
- */
-router.get(
-  "/:version",
-  authMiddleware.verifyToken,
-  authMiddleware.checkRole(["platform_admin"]),
-  pointConfigurationController.getConfigurationVersion
-);
-
-/**
- * @openapi
- * /points/configuration/{version}/activate:
- *   post:
- *     summary: Activate a specific configuration version
- *     description: Sets a specific configuration version as the active one (platform admin only)
- *     tags:
- *       - Point Configuration
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: version
- *         in: path
- *         description: Configuration version number to activate
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       '200':
- *         description: Configuration version activated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Configuration version 5 activated successfully"
- *                 data:
- *                   $ref: '#/components/schemas/PointConfiguration'
- *       '403':
- *         description: Access denied - platform admin only
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Only platform administrators can activate configuration versions"
- *       '404':
- *         description: Configuration version not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Configuration version not found"
- *       '500':
- *         description: Failed to activate configuration version
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Failed to activate configuration version"
- *                 error:
- *                   type: string
- */
-router.post(
-  "/:version/activate",
-  authMiddleware.verifyToken,
-  authMiddleware.checkRole(["platform_admin"]),
-  pointConfigurationController.activateConfigurationVersion
-);
-
-/**
- * @openapi
  * /points/configuration/levels:
  *   get:
  *     summary: Get all levels information
@@ -742,6 +581,167 @@ router.delete(
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["platform_admin"]),
   pointConfigurationController.deleteLevel
+);
+
+/**
+ * @openapi
+ * /points/configuration/{version}:
+ *   get:
+ *     summary: Get specific configuration version
+ *     description: Retrieves a specific version of the configuration (platform admin only)
+ *     tags:
+ *       - Point Configuration
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: version
+ *         in: path
+ *         description: Configuration version number
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Configuration version retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/PointConfiguration'
+ *       '403':
+ *         description: Access denied - platform admin only
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Access denied: platform admin only"
+ *       '404':
+ *         description: Configuration version not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Configuration version not found"
+ *       '500':
+ *         description: Failed to get configuration version
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get configuration version"
+ *                 error:
+ *                   type: string
+ */
+router.get(
+  "/:version",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["platform_admin"]),
+  pointConfigurationController.getConfigurationVersion
+);
+
+/**
+ * @openapi
+ * /points/configuration/{version}/activate:
+ *   post:
+ *     summary: Activate a specific configuration version
+ *     description: Sets a specific configuration version as the active one (platform admin only)
+ *     tags:
+ *       - Point Configuration
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: version
+ *         in: path
+ *         description: Configuration version number to activate
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Configuration version activated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Configuration version 5 activated successfully"
+ *                 data:
+ *                   $ref: '#/components/schemas/PointConfiguration'
+ *       '403':
+ *         description: Access denied - platform admin only
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Only platform administrators can activate configuration versions"
+ *       '404':
+ *         description: Configuration version not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Configuration version not found"
+ *       '500':
+ *         description: Failed to activate configuration version
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to activate configuration version"
+ *                 error:
+ *                   type: string
+ */
+router.post(
+  "/:version/activate",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["platform_admin"]),
+  pointConfigurationController.activateConfigurationVersion
 );
 
 module.exports = router;
