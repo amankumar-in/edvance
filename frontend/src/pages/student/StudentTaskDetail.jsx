@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Callout, Card, Flex, Grid, Heading, Separator, Text, TextArea } from '@radix-ui/themes';
-import { AlertCircle, AlertCircleIcon, ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileImage, FileText, Link as LinkIcon, MessageSquare, Star, Target, Upload, User, XCircle } from 'lucide-react';
+import { AlertCircle, AlertCircleIcon, ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileImage, FileText, Link as LinkIcon, MessageSquare, Target, Upload, User, XCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -127,7 +127,7 @@ function StudentTaskDetail() {
 
       {/* Success Message */}
       {task?.completionStatus?.status === 'approved' && (
-        <Card size="3" mb="5">
+        <Card size="2" mb="5">
           <Flex direction="column" gap="4">
             <Heading size="4">🎉 Well Done!</Heading>
 
@@ -148,7 +148,7 @@ function StudentTaskDetail() {
 
       {/* Approval Status Info */}
       {task?.completionStatus?.status === 'pending_approval' && (
-        <Card size="3" mb="5">
+        <Card size="2" mb="5">
           <Flex direction="column" gap="4">
             <Heading size="4">⏳ Under Review</Heading>
 
@@ -169,7 +169,7 @@ function StudentTaskDetail() {
 
       {/* Rejection Help */}
       {task?.completionStatus?.status === 'rejected' && (
-        <Card size="3" mb="5">
+        <Card size="2" mb="5">
           <Flex direction="column" gap="4">
             <Heading size="4">🔄 Resubmission Needed</Heading>
 
@@ -197,47 +197,43 @@ function StudentTaskDetail() {
         </Card>
       )}
 
-      <Grid columns={{ initial: '1', lg: '3' }} gap="6">
+      <Grid columns={{ initial: '1', lg: '3' }} gap="5">
         {/* Main Content */}
         <Box gridColumn={{ lg: '1 / 3' }}>
           {/* Task Header */}
-          <Card size="3" mb="5">
+          <Card size="2" mb="5">
             <Flex direction="column" gap="4">
               <Flex justify="between" align="start" gap="4">
                 <Flex direction="column" gap="2" style={{ flex: 1 }}>
-                  <Flex gap="2" align="center" wrap="wrap">
+                  <Flex gap="2" align="center" justify={'between'} wrap="wrap">
                     <Badge color={getCategoryColor(task?.category)} variant="surface" className='capitalize'>
                       {task?.category}
                     </Badge>
-                    {task?.subCategory && <Badge color="gray" variant="outline">
-                      {task?.subCategory}
-                    </Badge>}
-                    {getDifficultyBadge(task?.difficulty)}
+                    <Flex align="center" gap="2">
+                      <Badge
+                        color={getStatusColor(task?.completionStatus?.status)}
+                        variant="soft"
+                        size="3"
+                        className="capitalize"
+                      >
+                        <Flex align="center" gap="1">
+                          {getStatusIcon(task?.completionStatus?.status)}
+                          {task?.completionStatus?.status}
+                        </Flex>
+                      </Badge>
+                      <Flex align="center" gap="2" className="bg-[--accent-a3] px-3 py-1 rounded-full">
+                        <Target size={16} className="text-[--accent-9]" />
+                        <Text as="p" weight="bold" size="4">
+                          {task?.pointValue}
+                        </Text>
+                        <Text as="p" size="2">points</Text>
+                      </Flex>
+                    </Flex>
+
                   </Flex>
-                  <Heading size="6" weight="bold">
+                  <Heading size={{initial: '4', sm: '5'}} weight="bold">
                     {task?.title}
                   </Heading>
-                </Flex>
-
-                <Flex direction="column" align="end" gap="2">
-                  <Badge
-                    color={getStatusColor(task?.completionStatus?.status)}
-                    variant="soft"
-                    size="3"
-                    className="capitalize"
-                  >
-                    <Flex align="center" gap="1">
-                      {getStatusIcon(task?.completionStatus?.status)}
-                      {task?.completionStatus?.status}
-                    </Flex>
-                  </Badge>
-                  <Flex align="center" gap="2" className="bg-[--accent-a3] px-3 py-1 rounded-full">
-                    <Target size={16} className="text-[--accent-9]" />
-                    <Text as="p" weight="bold" size="4">
-                      {task?.pointValue}
-                    </Text>
-                    <Text as="p" size="2">points</Text>
-                  </Flex>
                 </Flex>
               </Flex>
 
@@ -250,11 +246,11 @@ function StudentTaskDetail() {
           </Card>
 
           {/* Task Details */}
-          <Card size="3" mb="5">
+          <Card size="2" mb="5">
             <Flex direction="column" gap="4">
               <Heading size="4">Task Details</Heading>
 
-              <Grid columns="2" gap="4">
+              <Grid columns={{initial: '1', xs: '2'}} gap="4">
                 <Flex direction="column" gap="2">
                   <Text size="1" weight="medium" color="gray">DUE DATE</Text>
                   <Flex align="center" gap="2">
@@ -322,7 +318,7 @@ function StudentTaskDetail() {
                   <Flex direction="column" gap="3">
                     <Text size="2" weight="medium">Attachments</Text>
                     {task?.attachments?.map((attachment, index) => (
-                      <Card key={index} variant="surface" size="1">
+                      <Card key={index} variant="surface" size="2">
                         <Flex align="center" gap="3" p="2">
                           <FileText size={16} className="text-[--gray-9]" />
                           <Text size="2" style={{ flex: 1 }}>{attachment?.name}</Text>
@@ -337,7 +333,7 @@ function StudentTaskDetail() {
           </Card>
 
           {/* Comments Section */}
-          <Card size="3">
+          <Card size="2">
             <Flex direction="column" gap="4">
               <Heading size="4">Comments</Heading>
 
@@ -384,7 +380,7 @@ function StudentTaskDetail() {
         {/* Sidebar */}
         <Box>
           {/* Action Panel */}
-          <Card size="3" mb="5">
+          <Card size="2" mb="5">
             <Flex direction="column" gap="3">
               <Heading size="4">Actions</Heading>
 
@@ -405,15 +401,19 @@ function StudentTaskDetail() {
                   Submit for Approval
                 </Button>
               )}
-              <Button size="2" variant="surface">
-                <Star size={16} />
-                Add to Favorites
-              </Button>
+              {
+                task?.completionStatus?.status !== 'pending' && task?.completionStatus?.status !== 'rejected' && (
+                  <Text as='p' size="2" weight="medium" color="gray">
+                    No further action required.
+                  </Text>
+                )
+              }
+
             </Flex>
           </Card>
 
           {/* Task Progress */}
-          <Card size="3" mb="5">
+          <Card size="2" mb="5">
             <Flex direction="column" gap="4">
               <Heading size="4">Progress</Heading>
 
@@ -425,15 +425,51 @@ function StudentTaskDetail() {
                   </Badge>
                 </Flex>
 
+                {task?.completionStatus?.status !== 'pending' && task?.completionStatus?.completedAt && <Flex align="center" gap="2" justify="between" wrap="wrap">
+                  <Text as='p' size="2">
+                    Submitted on:
+                  </Text>
+                  <Text as='p' size="2" weight="medium">
+                    {formatDate(task?.completionStatus?.completedAt, {
+                      dateStyle: 'medium',
+                      timeStyle: 'medium',
+                    })}
+                  </Text>
+                </Flex>}
+
+                {task?.completionStatus?.status === 'approved' && task?.completionStatus?.approvalDate && <Flex align="center" gap="2" justify="between" wrap="wrap">
+                  <Text as='p' size="2">
+                    Approved on:
+                  </Text>
+                  <Text as='p' size="2" weight="medium">
+                    {formatDate(task?.completionStatus?.approvalDate, {
+                      dateStyle: 'medium',
+                      timeStyle: 'medium',
+                    })}
+                  </Text>
+                </Flex>}
+
+                {task?.completionStatus?.status === 'rejected' && task?.completionStatus?.rejectionDate && <Flex align="center" gap="2" justify="between" wrap="wrap">
+                  <Text as='p' size="2">
+                    Rejected on:
+                  </Text>
+                  <Text as='p' size="2" weight="medium">
+                    {formatDate(task?.completionStatus?.rejectionDate, {
+                      dateStyle: 'medium',
+                      timeStyle: 'medium',
+                    })}
+                  </Text>
+                </Flex>}
+
                 <Separator size="4" />
 
                 <Flex justify="between" align="center">
-                  <Text size="2">Points Value</Text>
-                  <Text size="2" weight="bold">{task?.pointValue}</Text>
+                  <Text as='p' size="2">Points Value</Text>
+                  <Text as='p' size="2" weight="medium">{task?.pointValue}</Text>
                 </Flex>
 
                 <Flex justify="between" align="center">
-                  <Text size="2">Difficulty</Text>
+                  <Text as='p' size="2">Difficulty</Text>
                   {getDifficultyBadge(task?.difficulty) || '-'}
                 </Flex>
               </Flex>
@@ -441,7 +477,7 @@ function StudentTaskDetail() {
           </Card>
 
           {/* Status Guide */}
-          <Card size="3" mb="5">
+          <Card size="2" mb="5">
             <Flex direction="column" gap="4">
               <Heading size="4">Status Guide</Heading>
 
@@ -468,7 +504,7 @@ function StudentTaskDetail() {
 
           {/* Completion Tips */}
           {task?.completionStatus?.status === 'pending' && (
-            <Card size="3" mb="5">
+            <Card size="2" mb="5">
               <Flex direction="column" gap="4">
                 <Heading size="4">💡 Completion Tips</Heading>
 
@@ -487,7 +523,7 @@ function StudentTaskDetail() {
 
           {/* Submission Help */}
           {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
-            <Card size="3" mb="5">
+            <Card size="2" mb="5">
               <Flex direction="column" gap="4">
                 <Heading size="4">📤 Submission Help</Heading>
 
@@ -508,7 +544,7 @@ function StudentTaskDetail() {
 
           {/* Evidence Guide */}
           {task?.completionStatus?.status === 'pending' && (
-            <Card size="3" mb="5">
+            <Card size="2" mb="5">
               <Flex direction="column" gap="4">
                 <Heading size="4">📋 Evidence Types</Heading>
 

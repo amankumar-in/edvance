@@ -26,7 +26,7 @@ const LevelsTab = ({ pointAccount }) => {
   );
 
   return (
-    <Card className="p-6">
+    <Card size='2'>
       <Text as='p' size="5" weight="bold" className="mb-6" style={{ color: 'var(--gray-12)' }}>
         Level Progression
       </Text>
@@ -39,7 +39,8 @@ const LevelsTab = ({ pointAccount }) => {
           return (
             <Card
               key={level?.level}
-              className={`p-4 transition-all ${isCurrentLevel ? 'shadow-md border bg-[--accent-a3] border-[--focus-8]' : 'border-transparent'}`}
+              className={` transition-all ${isCurrentLevel ? 'shadow-md border bg-[--accent-a3] border-[--focus-8]' : 'border-transparent'}`}
+              size='2'
             >
               <Flex align="start" gap="4">
                 <div
@@ -50,17 +51,17 @@ const LevelsTab = ({ pointAccount }) => {
                     : <Text as='p' weight="bold">{level?.level}</Text>
                   }
                 </div>
-                <div className="flex-1">
-                  <Flex align="center" gap="2" className="mb-1">
-                    <Text as='p' weight="bold">
+                <div className="flex-1 space-y-1">
+                  <Flex align="center" gap="2">
+                    <Text as='p' size="2">
                       Level {level?.level}
                     </Text>
                     {isCurrentLevel && <Badge color="cyan" variant="solid">Current</Badge>}
                     {isNext && <Badge color="orange" variant="soft">Next</Badge>}
                     {isAchieved && !isCurrentLevel && <Badge color="green" variant="soft">Achieved</Badge>}
                   </Flex>
-                  <Text as='p' size="2">{level?.name}</Text>
-                  <Text as='p' size="1" color="gray">{level?.threshold?.toLocaleString()} points required</Text>
+                  <Text as='p' size="4" weight="medium">{level?.name}</Text>
+                  <Text as='p' size="2" color="gray">{level?.threshold?.toLocaleString()} points required</Text>
                 </div>
               </Flex>
             </Card>

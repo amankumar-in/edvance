@@ -1908,8 +1908,8 @@ const taskController = {
       };
 
       // Apply filters (excluding status - we'll handle that separately)
-      if (category) query.category = category;
-      if (subCategory) query.subCategory = subCategory;
+      if (category) query.category = category?.toLowerCase();
+      if (subCategory) query.subCategory = subCategory?.toLowerCase();
       if (schoolId) query.schoolId = schoolId;
       if (classId) query.classId = classId;
 
@@ -1962,10 +1962,25 @@ const taskController = {
       const extraVisibleTaskIds = [...visibleSet].filter(id => !taskIdsSet.has(id));
 
       if (extraVisibleTaskIds.length) {
-        const extraTasks = await Task.find({
+        // Build the same filter criteria for extra tasks
+        let extraTaskQuery = {
           _id: { $in: extraVisibleTaskIds.map(id => new mongoose.Types.ObjectId(id)) },
           isDeleted: false,
-        }).lean();
+        };
+
+        // Apply the same filters as the main query
+        if (category) extraTaskQuery.category = category?.toLowerCase();
+        if (subCategory) extraTaskQuery.subCategory = subCategory?.toLowerCase();
+        if (schoolId) extraTaskQuery.schoolId = schoolId;
+        if (classId) extraTaskQuery.classId = classId;
+        if (dueDate) extraTaskQuery.dueDate = new Date(dueDate);
+        if (startDate || endDate) {
+          extraTaskQuery.createdAt = {};
+          if (startDate) extraTaskQuery.createdAt.$gte = new Date(startDate);
+          if (endDate) extraTaskQuery.createdAt.$lte = new Date(endDate);
+        }
+
+        const extraTasks = await Task.find(extraTaskQuery).lean();
 
         // Get completion status for extra tasks too
         const extraTaskCompletions = await TaskCompletion.find({

@@ -1,5 +1,5 @@
-import { Badge, Card, Flex, Progress, Skeleton, Tabs, Text } from '@radix-ui/themes';
-import { ArrowDownRight, ArrowUpRight, Award, Calendar, Coins, Minus, Star, Target, TrendingUp, Trophy, Zap } from 'lucide-react';
+import { Callout, Card, Flex, Progress, Skeleton, Tabs, Text } from '@radix-ui/themes';
+import { AlertCircleIcon, ArrowDownRight, ArrowUpRight, Award, Calendar, Coins, Minus, Star, Target, TrendingUp, Trophy, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 import { useGetStudentTransaction, usePointsDetailsById } from '../../api/points/points.queries';
 import { useAuth } from '../../Context/AuthContext';
@@ -15,7 +15,7 @@ const StudentPoints = () => {
   const { profiles } = useAuth();
   const studentId = profiles?.student?._id;
 
-  const { data, isLoading } = usePointsDetailsById(studentId);
+  const { data, isLoading, isError, error } = usePointsDetailsById(studentId);
   const pointAccount = data?.data ?? {};
 
   const { data: transactionData,
@@ -26,46 +26,11 @@ const StudentPoints = () => {
     limit: 5
   });
 
+  // Transactions for the activity tab
   const transactions = transactionData?.pages?.flatMap(page => page?.data?.transactions || []);
 
-
-  // Calculate statistics from transaction data
-  const calculateStatistics = () => {
-    if (transactions?.length > 0) {
-      const now = new Date();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-      const weeklyTransactions = transactions.filter(t => new Date(t.createdAt) >= weekAgo);
-      const monthlyTransactions = transactions.filter(t => new Date(t.createdAt) >= monthAgo);
-
-      const weeklyEarned = weeklyTransactions.filter(t => t.type === 'earned').reduce((sum, t) => sum + t.amount, 0);
-      const weeklySpent = Math.abs(weeklyTransactions.filter(t => t.type === 'spent').reduce((sum, t) => sum + t.amount, 0));
-      const monthlyEarned = monthlyTransactions.filter(t => t.type === 'earned').reduce((sum, t) => sum + t.amount, 0);
-      const monthlySpent = Math.abs(monthlyTransactions.filter(t => t.type === 'spent').reduce((sum, t) => sum + t.amount, 0));
-
-      const sources = ['task', 'attendance', 'badge', 'behavior', 'redemption', 'manual_adjustment'];
-      const bySource = sources.map(source => {
-        const sourceTransactions = transactions.filter(t => t.source === source && t.type === 'earned');
-        const amount = sourceTransactions.reduce((sum, t) => sum + t.amount, 0);
-        const total = transactions.filter(t => t.type === 'earned').reduce((sum, t) => sum + t.amount, 0);
-        return {
-          source,
-          amount,
-          percentage: total > 0 ? Math.round((amount / total) * 100) : 0,
-          transactions: sourceTransactions.length
-        };
-      }).filter(s => s.amount > 0);
-
-      return {
-        weekly: { earned: weeklyEarned, spent: weeklySpent, net: weeklyEarned - weeklySpent, transactions: weeklyTransactions.length },
-        monthly: { earned: monthlyEarned, spent: monthlySpent, net: monthlyEarned - monthlySpent, transactions: monthlyTransactions.length },
-        bySource
-      };
-    }
-  };
-
-  const statistics = calculateStatistics();
+  // Statistics for the overview tab 
+  const statistics = pointAccount?.statistics;
 
   // Utility functions
   const getTransactionIcon = (type) => {
@@ -128,15 +93,26 @@ const StudentPoints = () => {
         {/* Header */}
         <div className="text-center sm:text-left">
           <Text size="7" weight="bold" style={{ color: 'var(--gray-12)' }} className="block">
-            My Points
+            Scholarship Points
           </Text>
           <Text size="3" color="gray" className="block mt-2">
             Track your academic achievements and rewards
           </Text>
         </div>
 
+        {isError && (
+          <Callout.Root color='red'>
+            <Callout.Icon>
+              <AlertCircleIcon size={16} />
+            </Callout.Icon>
+            <Callout.Text>
+              {error?.response?.data?.message || error?.message || 'Something went wrong while fetching user details'}
+            </Callout.Text>
+          </Callout.Root>
+        )}
+
         {/* Main Balance Card */}
-        <Card className="relative p-6 overflow-hidden text-center sm:p-8">
+        <Card className="relative overflow-hidden text-center" size='2'>
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
           <div className="relative">
             <Text size="2" color="gray" className="font-medium tracking-wide uppercase">
@@ -177,7 +153,7 @@ const StudentPoints = () => {
 
         {/* Overview Cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="p-4 sm:p-6">
+          <Card size='2'>
             <Flex align="center" gap="3" className="mb-3">
               <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--green-a3)' }}>
                 <TrendingUp className="w-5 h-5" style={{ color: 'var(--green-9)' }} />
@@ -193,7 +169,7 @@ const StudentPoints = () => {
             </Flex>
           </Card>
 
-          <Card className="p-4 sm:p-6">
+          <Card size='2'>
             <Flex align="center" gap="3" className="mb-3">
               <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--red-a3)' }}>
                 <ArrowDownRight className="w-5 h-5" style={{ color: 'var(--red-9)' }} />
@@ -209,7 +185,7 @@ const StudentPoints = () => {
             </Flex>
           </Card>
 
-          <Card className="p-4 sm:p-6">
+          <Card size='2'>
             <Flex align="center" gap="3" className="mb-3">
               <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--blue-a3)' }}>
                 <Calendar className="w-5 h-5" style={{ color: 'var(--blue-9)' }} />
@@ -218,14 +194,14 @@ const StudentPoints = () => {
                 <Text as='p' size="1" color="gray" className="tracking-wide uppercase">This Week</Text>
                 <Skeleton loading={isLoading}>
                   <Text as='p' size="4" weight="bold" style={{ color: 'var(--blue-11)' }}>
-                    +{statistics?.weekly.earned}
+                    +{statistics?.weekly?.earned || 0}
                   </Text>
                 </Skeleton>
               </div>
             </Flex>
           </Card>
 
-          <Card className="p-4 sm:p-6">
+          <Card size='2'>
             <Flex align="center" gap="3" className="mb-3">
               <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--purple-a3)' }}>
                 <Target className="w-5 h-5" style={{ color: 'var(--purple-9)' }} />
@@ -234,7 +210,7 @@ const StudentPoints = () => {
                 <Text as='p' size="1" color="gray" className="tracking-wide uppercase">This Month</Text>
                 <Skeleton loading={isLoading}>
                   <Text as='p' size="4" weight="bold" style={{ color: 'var(--purple-11)' }}>
-                    +{statistics?.monthly.earned}
+                    +{statistics?.monthly?.earned || 0}
                   </Text>
                 </Skeleton>
               </div>

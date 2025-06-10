@@ -51,11 +51,11 @@ const formatLabel = (role) => {
     .join(" "); // Join the words with spaces
 };
 
-export const formatDate = (date, options = {
-  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  dateStyle: "medium",
-}) => {
-  return date ? new Date(date).toLocaleString("en-IN", options) : '-' 
+export const formatDate = (date, options = { dateStyle: 'medium'}) => {
+  return date ? new Date(date).toLocaleString("en-IN", {
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ...options,
+  }) : '-'
 }
 
 

@@ -24,6 +24,7 @@ const taskSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
+      lowercase: true,
     },
     // More specific subcategory (e.g., "math", "reading", "chore", etc.)
     subCategory: {

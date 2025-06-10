@@ -1,5 +1,5 @@
-import { Button, Callout, Flex, Heading, IconButton, Select, Separator, Table, Text, Tooltip } from '@radix-ui/themes'
-import { AlertCircleIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClipboardList, PencilIcon, Plus, TrashIcon } from 'lucide-react'
+import { Badge, Button, Callout, Card, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField, Tooltip } from '@radix-ui/themes'
+import { AlertCircleIcon, BookOpen, Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClipboardList, Filter, PencilIcon, Plus, Tag, TrashIcon, Users, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
@@ -14,6 +14,26 @@ function Tasks() {
   const [sort, setSort] = useState('dueDate');
   const [order, setOrder] = useState('asc');
   const currentSort = { field: sort, order: order };
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    search: '',
+    assignedTo: '',
+    createdBy: '',
+    category: '',
+    subCategory: '',
+    status: '',
+    difficulty: '',
+    requiresApproval: '',
+    isFeatured: '',
+    schoolId: '',
+    classId: '',
+    startDate: '',
+    endDate: '',
+    dueDate: ''
+  });
+
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data, isLoading, isError, error, isFetching } = useGetTasks({
     page,
@@ -50,6 +70,36 @@ function Tasks() {
       setSort(field);
       setOrder('asc');
     }
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      assignedTo: '',
+      createdBy: '',
+      category: '',
+      subCategory: '',
+      status: '',
+      difficulty: '',
+      requiresApproval: '',
+      isFeatured: '',
+      schoolId: '',
+      classId: '',
+      startDate: '',
+      endDate: '',
+      dueDate: ''
+    });
+  };
+
+  const getActiveFiltersCount = () => {
+    return Object.values(filters).filter(value => value !== '').length;
   };
 
   const columns = [
@@ -145,6 +195,276 @@ function Tasks() {
         </Flex>
 
         <Separator size={'4'} />
+
+        {/* Search and Filter Controls */}
+        <Flex direction="column" gap="4" className='max-w-4xl'>
+          {/* Search and Filter Toggle Row */}
+          <Flex justify="between" align="center" gap="3">
+
+            <Flex align="center" gap="4">
+              <Button
+                variant={showFilters ? "solid" : "soft"}
+                color={!showFilters && "gray"}
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter size={16} />
+                Filters
+              </Button>
+
+              {getActiveFiltersCount() > 0 && (
+                <Button variant="ghost" color="gray" onClick={clearFilters}>
+                  <X size={16} />
+                  Clear
+                </Button>
+              )}
+            </Flex>
+          </Flex>
+
+          {showFilters && <Card className='flex flex-col gap-4' size='2'>
+
+            {/* Advanced Filters Panel */}
+            {showFilters && (
+              <>
+                <div>
+                  <Text size="3" weight="medium" mb="3" style={{ display: 'block' }}>
+                    <Tag size={16} style={{ display: 'inline', marginRight: '8px' }} />
+                    Filter Options
+                  </Text>
+
+                  <Flex direction="column" gap="4">
+                    {/* Row 1: Assignment and Creation */}
+                    <Flex gap="4" wrap="wrap">
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text as='p' size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          <Users size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                          Assigned To
+                        </Text>
+                        <Select.Root value={filters.assignedTo || "all"} onValueChange={(value) => handleFilterChange('assignedTo', value === "all" ? "" : value)}>
+                          <Select.Trigger placeholder="Select assignment type" />
+                          <Select.Content variant='soft' position='popper'>
+                            <Select.Item value="all">All Assignments</Select.Item>
+                            <Select.Item value="student">Students</Select.Item>
+                            <Select.Item value="parent">Parents</Select.Item>
+                            <Select.Item value="teacher">Teachers</Select.Item>
+                            <Select.Item value="unassigned">Unassigned</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          Created By
+                        </Text>
+                        <TextField.Root
+                          placeholder="Creator ID or name"
+                          value={filters.createdBy}
+                          onChange={(e) => handleFilterChange('createdBy', e.target.value)}
+                          className='w-full'
+                        />
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          Status
+                        </Text>
+                        <Select.Root value={filters.status || "all"} onValueChange={(value) => handleFilterChange('status', value === "all" ? "" : value)}>
+                          <Select.Trigger placeholder="Select status" />
+                          <Select.Content variant='soft' position='popper'>
+                            <Select.Item value="all">All Statuses</Select.Item>
+                            <Select.Item value="pending">Pending</Select.Item>
+                            <Select.Item value="in_progress">In Progress</Select.Item>
+                            <Select.Item value="completed">Completed</Select.Item>
+                            <Select.Item value="overdue">Overdue</Select.Item>
+                            <Select.Item value="cancelled">Cancelled</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </div>
+                    </Flex>
+
+                    {/* Row 2: Categories and Properties */}
+                    <Flex gap="4" wrap="wrap">
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text as='p' size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          <BookOpen size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                          Category
+                        </Text>
+                        <Select.Root value={filters.category || "all"} onValueChange={(value) => handleFilterChange('category', value === "all" ? "" : value)}>
+                          <Select.Trigger placeholder="Select category" />
+                          <Select.Content variant='soft' position='popper'>
+                            <Select.Item value="all">All Categories</Select.Item>
+                            <Select.Item value="academic">Academic</Select.Item>
+                            <Select.Item value="behavioral">Behavioral</Select.Item>
+                            <Select.Item value="extracurricular">Extracurricular</Select.Item>
+                            <Select.Item value="community">Community Service</Select.Item>
+                            <Select.Item value="personal">Personal Development</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          Sub Category
+                        </Text>
+                        <TextField.Root
+                          placeholder="Enter sub category"
+                          value={filters.subCategory}
+                          onChange={(e) => handleFilterChange('subCategory', e.target.value)}
+                        />
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text as='p' size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          Difficulty
+                        </Text>
+                        <Select.Root value={filters.difficulty || "all"} onValueChange={(value) => handleFilterChange('difficulty', value === "all" ? "" : value)}>
+                          <Select.Trigger placeholder="Select difficulty" />
+                          <Select.Content variant='soft' position='popper'>
+                            <Select.Item value="all">All Difficulties</Select.Item>
+                            <Select.Item value="easy">Easy</Select.Item>
+                            <Select.Item value="medium">Medium</Select.Item>
+                            <Select.Item value="hard">Hard</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </div>
+                    </Flex>
+
+                    {/* Row 3: Approval and Features */}
+                    <Flex gap="4" wrap="wrap">
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text as='p' size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          Requires Approval
+                        </Text>
+                        <Select.Root value={filters.requiresApproval || "all"} onValueChange={(value) => handleFilterChange('requiresApproval', value === "all" ? "" : value)}>
+                          <Select.Trigger placeholder="Select approval requirement" />
+                          <Select.Content variant='soft' position='popper'>
+                            <Select.Item value="all">All Tasks</Select.Item>
+                            <Select.Item value="true">Requires Approval</Select.Item>
+                            <Select.Item value="false">No Approval Required</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          Featured Tasks
+                        </Text>
+                        <Select.Root value={filters.isFeatured || "all"} onValueChange={(value) => handleFilterChange('isFeatured', value === "all" ? "" : value)}>
+                          <Select.Trigger placeholder="Select featured status" />
+                          <Select.Content variant='soft' position='popper'>
+                            <Select.Item value="all">All Tasks</Select.Item>
+                            <Select.Item value="true">Featured Only</Select.Item>
+                            <Select.Item value="false">Non-Featured Only</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          School ID
+                        </Text>
+                        <TextField.Root
+                          placeholder="Enter school ID"
+                          value={filters.schoolId}
+                          onChange={(e) => handleFilterChange('schoolId', e.target.value)}
+                        />
+                      </div>
+                    </Flex>
+
+                    {/* Row 4: Dates */}
+                    <Flex gap="4" wrap="wrap">
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text as='p' size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          <Calendar size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                          Start Date
+                        </Text>
+                        <TextField.Root
+                          type="date"
+                          value={filters.startDate}
+                          onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                          className='w-max'
+                        />
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          End Date
+                        </Text>
+                        <TextField.Root
+                          type="date"
+                          value={filters.endDate}
+                          onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                          className='w-max'
+                        />
+                      </div>
+
+                      <div style={{ minWidth: '200px', flex: 1 }}>
+                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                          Due Date
+                        </Text>
+                        <TextField.Root
+                          type="date"
+                          value={filters.dueDate}
+                          onChange={(e) => handleFilterChange('dueDate', e.target.value)}
+                          className='w-max'
+                        />
+                      </div>
+                    </Flex>
+                  </Flex>
+                </div>
+              </>
+            )}
+
+            {/* Active Filters Display */}
+            {getActiveFiltersCount() > 0 && (
+              <>
+                <Separator size={'4'} />
+                <div>
+                  <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
+                    Active Filters ({getActiveFiltersCount()})
+                  </Text>
+                  <Flex gap="2" wrap="wrap">
+                    {Object.entries(filters).map(([key, value]) => {
+                      if (!value) return null;
+
+                      const filterLabels = {
+                        search: 'Search',
+                        assignedTo: 'Assigned To',
+                        createdBy: 'Created By',
+                        category: 'Category',
+                        subCategory: 'Sub Category',
+                        status: 'Status',
+                        difficulty: 'Difficulty',
+                        requiresApproval: 'Requires Approval',
+                        isFeatured: 'Featured',
+                        schoolId: 'School ID',
+                        classId: 'Class ID',
+                        startDate: 'Start Date',
+                        endDate: 'End Date',
+                        dueDate: 'Due Date'
+                      };
+
+                      return (
+                        <Badge key={key} size={'2'} highContrast >
+                          {filterLabels[key]}: {value}
+                          <IconButton
+                            size="1"
+                            variant="ghost"
+                            color="gray"
+                            onClick={() => handleFilterChange(key, '')}
+                            style={{ marginLeft: '4px' }}
+                          >
+                            <X size={12} />
+                          </IconButton>
+                        </Badge>
+                      );
+                    })}
+                  </Flex>
+                </div>
+              </>
+            )}
+          </Card>}
+
+        </Flex>
 
         {isLoading ? (
           // Loading state

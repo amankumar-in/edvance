@@ -1,7 +1,8 @@
-import { Badge, Box, Callout, Card, Flex, Grid, Heading, IconButton, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { Badge, Box, Callout, Card, Flex, Grid, Heading, IconButton, ScrollArea, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { AlertCircleIcon, Clock, Filter, RefreshCw } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
+import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { useGetStudentTasks } from '../../api/task/task.queries';
 import { EmptyStateCard, Loader } from '../../components';
 import { formatDate } from '../../utils/helperFunctions';
@@ -16,11 +17,16 @@ const statusOptions = [
 
 function StudentTasks() {
   const [filter, setFilter] = useState(null);
+  const [category, setCategory] = useState('all');
   const { data, isLoading, isError, error, isFetching, refetch } = useGetStudentTasks({
     role: 'student',
     status: filter,
+    category: category === 'all' ? null : category,
   })
   const { data: tasks = [] } = data ?? {}
+
+  const { data: taskCategoriesData } = useGetTaskCategories({ role: 'student' })
+  const { data: taskCategories = [] } = taskCategoriesData ?? {}
 
   // Get status badge color
   const getStatusColor = (status) => {
@@ -149,16 +155,18 @@ function StudentTasks() {
       </Callout.Root>
 
       {/* Filters and Controls */}
-      <Card mb="5">
-        <Flex justify="between" align="center" wrap="wrap" gap="4" p="3">
-          <Flex gap="4" wrap="wrap">
+      <Card mb="5" size="2">
+        <Flex justify="between" align="center" wrap="wrap" gap="4" >
+          <ScrollArea className='w-max'>
             <Tabs.Root defaultValue="all">
               <Tabs.List>
                 <Tabs.Trigger value="all">All Tasks ({tasks.length})</Tabs.Trigger>
               </Tabs.List>
             </Tabs.Root>
-          </Flex>
-          <Flex gap="4" align="center">
+          </ScrollArea>
+          <Flex gap="4" align="center" wrap="wrap">
+            
+            {/* Refresh Tasks Button */}
             <Tooltip content="Refresh tasks">
               <IconButton
                 variant='ghost'
@@ -172,7 +180,11 @@ function StudentTasks() {
                 </span>
               </IconButton>
             </Tooltip>
+            
+            {/* Filter Icon */}
             <Filter size={16} />
+            
+            {/* Status Filter */}
             <Flex gap="2" align="center">
               <Text as='span' size="2">Status</Text>
               <Select.Root disabled={isFetching} value={filter} onValueChange={setFilter}>
@@ -184,6 +196,22 @@ function StudentTasks() {
                 </Select.Content>
               </Select.Root>
             </Flex>
+            
+            {/* Category Filter */}
+            {taskCategories?.length > 0 && <Flex gap="2" align="center">
+              <Text as='span' size="2">Category</Text>
+              <Select.Root disabled={isFetching} value={category} onValueChange={setCategory}>
+                <Select.Trigger placeholder='Filter by status' />
+                <Select.Content position="popper" variant='soft'>
+                  <Select.Item value='all' key='all'>
+                    All
+                  </Select.Item>
+                  {taskCategories?.map((option) => (
+                    <Select.Item key={option._id} value={option.name} className='capitalize'>{option.name}</Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            </Flex>}
           </Flex>
         </Flex>
       </Card>

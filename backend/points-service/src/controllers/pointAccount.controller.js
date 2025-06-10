@@ -93,12 +93,150 @@ exports.getAccountByStudentId = async (req, res) => {
           100
         : 100;
 
+    // Calculate date ranges for statistics
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Aggregate weekly statistics
+    const weeklyStats = await PointTransaction.aggregate([
+      {
+        $match: {
+          studentId,
+          createdAt: { $gte: weekAgo }
+        }
+      },
+      {
+        $group: {
+          _id: "$type",
+          total: { $sum: "$amount" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Aggregate monthly statistics
+    const monthlyStats = await PointTransaction.aggregate([
+      {
+        $match: {
+          studentId,
+          createdAt: { $gte: monthAgo }
+        }
+      },
+      {
+        $group: {
+          _id: "$type",
+          total: { $sum: "$amount" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Aggregate statistics by source
+    const sourceStats = await PointTransaction.aggregate([
+      {
+        $match: {
+          studentId,
+          type: "earned"
+        }
+      },
+      {
+        $group: {
+          _id: "$source",
+          amount: { $sum: "$amount" },
+          transactions: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "pointtransactions",
+          pipeline: [
+            { $match: { studentId, type: "earned" } },
+            { $group: { _id: null, totalEarned: { $sum: "$amount" } } }
+          ],
+          as: "totalInfo"
+        }
+      },
+      {
+        $addFields: {
+          percentage: {
+            $multiply: [
+              {
+                $divide: [
+                  "$amount",
+                  { $ifNull: [{ $first: "$totalInfo.totalEarned" }, 1] }
+                ]
+              },
+              100
+            ]
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          source: "$_id",
+          amount: 1,
+          transactions: 1,
+          percentage: { $round: ["$percentage", 0] }
+        }
+      },
+      {
+        $match: {
+          amount: { $gt: 0 }
+        }
+      }
+    ]);
+
+    // Process weekly statistics
+    const weeklyProcessed = {
+      earned: 0,
+      spent: 0,
+      net: 0,
+      transactions: 0
+    };
+
+    weeklyStats.forEach(stat => {
+      if (stat._id === 'earned') {
+        weeklyProcessed.earned = stat.total;
+        weeklyProcessed.transactions += stat.count;
+      } else if (stat._id === 'spent') {
+        weeklyProcessed.spent = Math.abs(stat.total);
+        weeklyProcessed.transactions += stat.count;
+      }
+    });
+    weeklyProcessed.net = weeklyProcessed.earned - weeklyProcessed.spent;
+
+    // Process monthly statistics
+    const monthlyProcessed = {
+      earned: 0,
+      spent: 0,
+      net: 0,
+      transactions: 0
+    };
+
+    monthlyStats.forEach(stat => {
+      if (stat._id === 'earned') {
+        monthlyProcessed.earned = stat.total;
+        monthlyProcessed.transactions += stat.count;
+      } else if (stat._id === 'spent') {
+        monthlyProcessed.spent = Math.abs(stat.total);
+        monthlyProcessed.transactions += stat.count;
+      }
+    });
+    monthlyProcessed.net = monthlyProcessed.earned - monthlyProcessed.spent;
+
     res.status(200).json({
       success: true,
       data: {
         ...account.toObject(),
         pointsToNextLevel,
         progressPercentage: Math.min(100, Math.max(0, progressPercentage)),
+        statistics: {
+          weekly: weeklyProcessed,
+          monthly: monthlyProcessed,
+          bySource: sourceStats
+        }
       },
     });
   } catch (error) {

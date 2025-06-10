@@ -1,5 +1,5 @@
-import { Badge, Button, Callout, Card, Flex, IconButton, Select, Spinner, Text, TextField, Tooltip } from '@radix-ui/themes';
-import { AlertCircleIcon, Filter, FunnelX, Inbox, Search } from 'lucide-react';
+import { Badge, Button, Callout, Card, Flex, IconButton, Select, Spinner, Text, Tooltip } from '@radix-ui/themes';
+import { AlertCircleIcon, Filter, FunnelX, Inbox } from 'lucide-react';
 import React, { useState } from 'react';
 import { useGetStudentTransaction } from '../../../api/points/points.queries';
 import { EmptyStateCard, Loader } from '../../../components';
@@ -40,7 +40,7 @@ const ActivityTab = ({
   );
 
   return (
-    <Card className="p-6 space-y-6">
+    <Card className="space-y-6" size='2'>
       {/* Filters */}
       <div>
         <Flex justify="between" align="center" className="mb-4">
@@ -51,9 +51,9 @@ const ActivityTab = ({
             {transactions?.length} {transactions?.length === 1 ? "activity" : "activities"}
           </Text>
         </Flex>
-        <div className="flex flex-col items-center gap-3 sm:flex-row">
+        <div className="flex flex-wrap items-center gap-3">
           <Select.Root disabled={isFetching} value={transactionFilter} onValueChange={setTransactionFilter}>
-            <Select.Trigger placeholder="Type" className="w-full sm:w-32" />
+            <Select.Trigger placeholder="Type" />
             <Select.Content variant='soft' position='popper'>
               <Select.Item value="all">All Types</Select.Item>
               <Select.Item value="earned">Earned</Select.Item>
@@ -62,7 +62,7 @@ const ActivityTab = ({
             </Select.Content>
           </Select.Root>
           <Select.Root disabled={isFetching} value={sourceFilter} onValueChange={setSourceFilter}>
-            <Select.Trigger placeholder="Source" className="w-full sm:w-40" />
+            <Select.Trigger placeholder="Source" />
             <Select.Content variant='soft' position='popper'>
               <Select.Item value="all">All Sources</Select.Item>
               <Select.Item value="task">Task</Select.Item>
@@ -92,8 +92,8 @@ const ActivityTab = ({
       {/* Activity Cards */}
       <div className="space-y-3">
         {transactions?.map(transaction => (
-          <Card key={transaction?._id} className="p-4 transition-shadow hover:shadow-md">
-            <Flex justify="between" align="start">
+          <Card key={transaction?._id} className="transition-shadow hover:shadow-md" size='2'>
+            <Flex justify="between" align="start" wrap="wrap" gap="3">
               <Flex align="start" gap="3">
                 <div className="p-2 rounded-full" style={{
                   backgroundColor: transaction?.type === 'earned' ? 'var(--green-a3)' :
@@ -125,7 +125,7 @@ const ActivityTab = ({
                   )}
                 </div>
               </Flex>
-              <div className="flex-shrink-0 ml-4 text-right">
+              <div className="flex-1 ml-4 text-right text-nowrap">
                 <Text
                   as='p'
                   size="4"

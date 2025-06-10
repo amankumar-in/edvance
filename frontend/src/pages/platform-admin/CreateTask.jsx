@@ -1,37 +1,14 @@
-import {
-  Box,
-  Button,
-  Callout,
-  Flex,
-  Heading,
-  Radio,
-  RadioGroup,
-  Select,
-  Separator,
-  Text,
-  TextArea,
-  TextField
-} from '@radix-ui/themes';
+import { Box, Button, Callout, Flex, Heading, Radio, RadioGroup, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
 import { ArrowLeft, Info, Plus } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router';
 import AsyncSelect from 'react-select/async';
 import { toast } from 'sonner';
 import { searchParents, searchStudents } from '../../api/search/search.api';
+import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { useCreateTask } from '../../api/task/task.mutations';
 import { Container } from '../../components';
-import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
-
-// Mock categories - replace with API data
-const CATEGORIES = [
-  { value: "academic", label: "Academic" },
-  { value: "home", label: "Home" },
-  { value: "behavior", label: "Behavior" },
-  { value: "extracurricular", label: "Extracurricular" },
-  { value: "attendance", label: "Attendance" },
-  { value: "system", label: "System" },
-];
 
 const CreateTask = () => {
   const navigate = useNavigate();
@@ -40,9 +17,7 @@ const CreateTask = () => {
     handleSubmit,
     control,
     watch,
-    reset,
-    formState: { errors, isSubmitting },
-    resetField,
+    formState: { errors },
     setValue
   } = useForm({
     defaultValues: {
@@ -52,7 +27,7 @@ const CreateTask = () => {
       pointValue: undefined,
       dueDate: new Date(),
       requiresApproval: true,
-      approverType: 'none',
+      approverType: 'platform_admin',
       category: '',
       selectedPeople: [],
       assigned: '',
@@ -207,53 +182,6 @@ const CreateTask = () => {
                 </label>
               </div>
 
-              {/* Scholarship points */}
-              <div className="flex-1">
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Scholarship Points
-                  </Text>
-                  <TextField.Root type="number" placeholder="Enter points" className="w-full" {...register('pointValue', {
-                    valueAsNumber: true,
-                    required: "Scholarship points are required",
-                    min: {
-                      value: 1,
-                      message: "Points must be greater than 0"
-                    }
-                  })} />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    This field will automatically fill based on the Task category selected
-                  </Text>
-                  {errors.pointValue && (
-                    <Text
-                      as="p"
-                      size={"2"}
-                      color="red"
-                      className='flex items-center gap-1 mt-1'
-                    >
-                      <Info size={14} /> {errors.pointValue.message}
-                    </Text>
-                  )}
-                </label>
-              </div>
-
-            </Flex>
-            <Flex gap="4" className="flex-col md:flex-row">
-              {/* Task description */}
-              <div className='flex-1'>
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Task Description
-                  </Text>
-                  <TextArea placeholder="Enter task description"
-                    {...register("description")}
-                    className="w-full" />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    Provide clear instructions and all details needed to complete the task successfully
-                  </Text>
-                </label>
-              </div>
-
               {/* Due date */}
               <div className="flex-1">
                 <label>
@@ -286,6 +214,25 @@ const CreateTask = () => {
                   )}
                 </label>
               </div>
+
+
+            </Flex>
+            <Flex gap="4" className="flex-col md:flex-row">
+              {/* Task description */}
+              <div className='flex-1'>
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Task Description
+                  </Text>
+                  <TextArea placeholder="Enter task description"
+                    {...register("description")}
+                    className="w-full" />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    Provide clear instructions and all details needed to complete the task successfully
+                  </Text>
+                </label>
+              </div>
+
             </Flex>
           </FormSection>
 
@@ -293,7 +240,7 @@ const CreateTask = () => {
           <FormSection title={'Categorization'}>
             <Flex gap="4" className="flex-col md:flex-row">
               {/* Task Category */}
-              <div className='w-1/2'>
+              <div className='flex-1'>
                 <label>
                   <Text as="div" size="2" mb="2" weight="medium">
                     Task Category
@@ -330,57 +277,92 @@ const CreateTask = () => {
                   </Text>
                 )}
               </div>
+
+              {/* Scholarship points */}
+              <div className="flex-1">
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Scholarship Points
+                  </Text>
+                  <TextField.Root type="number" placeholder="Enter points" className="w-full" {...register('pointValue', {
+                    valueAsNumber: true,
+                    required: "Scholarship points are required",
+                    min: {
+                      value: 1,
+                      message: "Points must be greater than 0"
+                    }
+                  })} />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    This field will automatically fill based on the Task category selected
+                  </Text>
+                  {errors.pointValue && (
+                    <Text
+                      as="p"
+                      size={"2"}
+                      color="red"
+                      className='flex items-center gap-1 mt-1'
+                    >
+                      <Info size={14} /> {errors.pointValue.message}
+                    </Text>
+                  )}
+                </label>
+              </div>
+
             </Flex>
           </FormSection>
 
           {/* Assignment - assigned to */}
           <FormSection title={'Assignment'}>
             {/* Assigned to */}
-            <div className="flex-1">
-              <Text as="label" htmlFor='assigned' size="2" mb="2" weight="medium">
-                Assigned To
-              </Text>
-              <div>
-                <Flex align="start" gap="4">
-                  <Flex asChild gap="2">
-                    <Text as="label" size="2">
-                      <Radio id='assigned' {...register('assigned', {
-                        required: "Assigned to is required"
-                      })} value="parent" />
-                      Parent
-                    </Text>
-                  </Flex>
+            <Flex gap="4" className="flex-col lg:flex-row">
+              <div className="flex-1">
+                <Text as="label" htmlFor='assigned' size="2" weight="medium">
+                  Assigned To
+                </Text>
+                <div className='mt-2'>
+                  <Flex align="start" gap="4">
+                    <Flex asChild gap="2">
+                      <Text as="label" size="2">
+                        <Radio id='assigned' {...register('assigned', {
+                          required: "Assigned to is required"
+                        })} value="parent" />
+                        Parent
+                      </Text>
+                    </Flex>
 
-                  <Flex asChild gap="2">
-                    <Text as="label" size="2">
-                      <Radio id='assigned' {...register('assigned', {
-                        required: "Assigned to is required"
-                      })} value="student" />
-                      Student
-                    </Text>
-                  </Flex>
+                    <Flex asChild gap="2">
+                      <Text as="label" size="2">
+                        <Radio id='assigned' {...register('assigned', {
+                          required: "Assigned to is required"
+                        })} value="student" />
+                        Student
+                      </Text>
+                    </Flex>
 
-                  <Flex asChild gap="2">
-                    <Text as="label" size="2">
-                      <Radio id='assigned' {...register('assigned', {
-                        required: "Assigned to is required"
-                      })} value="school" />
-                      School
-                    </Text>
+                    <Flex asChild gap="2">
+                      <Text as="label" size="2">
+                        <Radio id='assigned' {...register('assigned', {
+                          required: "Assigned to is required"
+                        })} value="school" />
+                        School
+                      </Text>
+                    </Flex>
                   </Flex>
-                </Flex>
-                {errors.assigned && (
-                  <Text
-                    as="p"
-                    size={"2"}
-                    color="red"
-                    className='flex items-center gap-1 mt-1'
-                  >
-                    <Info size={14} /> {errors.assigned.message}
-                  </Text>
-                )}
-                {!!assigned && (
-                  <Callout.Root variant='surface' mt={'4'}>
+                  {errors.assigned && (
+                    <Text
+                      as="p"
+                      size={"2"}
+                      color="red"
+                      className='flex items-center gap-1 mt-1'
+                    >
+                      <Info size={14} /> {errors.assigned.message}
+                    </Text>
+                  )}
+                </div>
+              </div>
+              {!!assigned && (
+                <div className='flex-1'>
+                  <Callout.Root variant='surface'>
                     <Callout.Icon>
                       <Info size={16} />
                     </Callout.Icon>
@@ -389,8 +371,6 @@ const CreateTask = () => {
                       To assign it to specific {assigned}s only, select them from the list below.
                     </Callout.Text>
                   </Callout.Root>
-                )}
-                {!!assigned && (
                   <div className='mt-4'>
                     <Controller
                       name="selectedPeople"
@@ -410,9 +390,9 @@ const CreateTask = () => {
                       )}
                     />
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              )}
+            </Flex>
           </FormSection>
 
           {/* Approval settings - requires approval, who can approve this task */}
@@ -458,7 +438,6 @@ const CreateTask = () => {
                       rules={{ required: "Approver type is required" }}
                       render={({ field }) => (
                         <RadioGroup.Root
-                          defaultValue="none"
                           name="approverType"
                           onValueChange={field.onChange}
                           value={field.value}
@@ -469,8 +448,6 @@ const CreateTask = () => {
                             <RadioGroup.Item value="school_admin">School Admin</RadioGroup.Item>
                             <RadioGroup.Item value="social_worker">Social Worker</RadioGroup.Item>
                             <RadioGroup.Item value="platform_admin">Platform Admin</RadioGroup.Item>
-                            <RadioGroup.Item value="system">System</RadioGroup.Item>
-                            <RadioGroup.Item value="none">None</RadioGroup.Item>
                           </Flex>
                         </RadioGroup.Root>
                       )}
@@ -479,6 +456,18 @@ const CreateTask = () => {
                     <Text as="p" size="1" color="gray" mt="1">
                       Select all user roles that should be allowed to approve task
                     </Text>
+
+                    {errors.approverType && (
+                      <Text
+                        as="p"
+                        size={"2"}
+                        color="red"
+                        className='flex items-center gap-1 mt-1'
+                      >
+                        <Info size={14} /> {errors.approverType.message}
+                      </Text>
+                    )}
+
                   </label>
                 </div>
               )}
