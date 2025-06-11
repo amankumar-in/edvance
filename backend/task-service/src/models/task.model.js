@@ -24,12 +24,22 @@ const taskSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      lowercase: true,
+      enum: [
+        "academic",
+        "home",
+        "behavior",
+        "extracurricular",
+        "attendance",
+        "system",
+        "custom",
+      ],
     },
     // More specific subcategory (e.g., "math", "reading", "chore", etc.)
     subCategory: {
       type: String,
       trim: true,
+      lowercase: true,
+      required: true,
     },
     // Points awarded upon completion
     pointValue: {
@@ -61,12 +71,12 @@ const taskSchema = new mongoose.Schema(
       role: {
         type: String,
         enum: [
-          'parent',
-          'student',
-          'school',
-        ]
+          "parent",
+          "student",
+          "school",
+        ],
       },
-      selectedPeopleIds: [mongoose.Schema.Types.ObjectId]
+      selectedPeopleIds: [mongoose.Schema.Types.ObjectId],
     },
     // Due date for the task
     dueDate: {
@@ -121,9 +131,8 @@ const taskSchema = new mongoose.Schema(
         "social_worker",
         "platform_admin",
         "system",
-        "none",
       ],
-      default: "none",
+      default: "system",
     },
     // If this approverType is "parent", which specific parent ID should approve
     specificApproverId: {

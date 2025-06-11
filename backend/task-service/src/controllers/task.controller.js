@@ -37,8 +37,8 @@ const taskController = {
         role: creatorRole
       } = req.body;
 
-      // Extract user info from authentication middleware
-      const createdBy = req.user.id;
+      // if creatorRole is platform_admin or sub_admin, set createdBy to 'system' else set it to the user's first and last name
+      const createdBy = creatorRole === 'platform_admin' || creatorRole === 'sub_admin' ? 'system' : req.user.firstName + ' ' + req.user.lastName;
 
       if (!creatorRole) {
         return res.status(400).json({
@@ -78,7 +78,7 @@ const taskController = {
             ? "parent"
             : creatorRole === "teacher" || creatorRole === "school_admin"
               ? "teacher"
-              : "none"),
+              : "system"),
         specificApproverId: specificApproverId,
         externalResource,
         attachments,

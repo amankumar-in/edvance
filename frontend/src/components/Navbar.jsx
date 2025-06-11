@@ -1,5 +1,5 @@
 import { Button, Flex, IconButton, Text } from '@radix-ui/themes';
-import { Moon, Sun } from 'lucide-react';
+import { LogOut, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuth } from '../Context/AuthContext';
 
@@ -12,17 +12,18 @@ export default function Navbar() {
       <Text weight="bold" size="5" color="purple">
         Univance
       </Text>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
         <IconButton variant='ghost' color='gray' size='3' highContrast onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </IconButton>
-        <Button
+        <IconButton
           disabled={isLoggingOut}
-          color="red" variant="soft"
+          variant="ghost"
+          color='gray'
           onClick={handleLogout}
         >
-          Logout
-        </Button>
+          <LogOut size={16} />
+        </IconButton>
       </div>
     </Flex>
   );

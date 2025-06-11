@@ -1,6 +1,6 @@
-import { Box, Button, Callout, Flex, Heading, Radio, RadioGroup, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
-import { ArrowLeft, Info, Plus } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { Box, Button, Callout, Flex, Heading, Radio, RadioGroup, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
+import { ArrowLeft, Eye, Info, Plus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router';
 import AsyncSelect from 'react-select/async';
@@ -9,67 +9,88 @@ import { searchParents, searchStudents } from '../../api/search/search.api';
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { useCreateTask } from '../../api/task/task.mutations';
 import { Container } from '../../components';
+import PreviewTaskForm from './components/PreviewTaskForm';
 
 const CreateTask = () => {
   const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
     control,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
+    getValues,
     setValue
   } = useForm({
     defaultValues: {
       title: '',
       description: '',
-      category: [],
       pointValue: undefined,
       dueDate: new Date(),
       requiresApproval: true,
       approverType: 'platform_admin',
-      category: '',
+      subCategory: '',
       selectedPeople: [],
       assigned: '',
     },
   });
 
+  // watch form values
   const requiresApproval = watch('requiresApproval') === 'true';
   const assigned = watch('assigned')
-  const category = watch('category')
+  const subCategory = watch('subCategory')
 
+  // preview task form
+  const [previewTaskFormOpen, setPreviewTaskFormOpen] = useState(false);
+
+  // create task
   const { mutate: createTask, isPending, isError, error } = useCreateTask();
 
+  // get all task categories
   const { data: taskCategories } = useGetTaskCategories({ role: 'platform_admin' })
 
+  console.log(taskCategories)
+
+  // set point value based on category
   useEffect(() => {
     if (taskCategories?.data) {
-      const pointsValue = taskCategories?.data.filter(cat => cat.name === category)?.[0]?.defaultPointValue
+      const pointsValue = taskCategories?.data.filter(cat => cat.name === subCategory)?.[0]?.defaultPointValue
       setValue('pointValue', pointsValue)
     }
-  }, [category, taskCategories])
+  }, [subCategory, taskCategories])
 
+  // on submit
   const onSubmit = async (data) => {
+    // convert requiresApproval to boolean
     const requiresApproval = data.requiresApproval === 'true';
     const assignedTo = {};
     assignedTo['role'] = assigned;
 
+    // if selectedPeople is not empty, set assignedTo to selectedPeople
     if (data.selectedPeople.length > 0) {
       assignedTo['selectedPeopleIds'] = data.selectedPeople.map(person => person.value);
     } else {
       assignedTo['selectedPeopleIds'] = [];
     }
 
+    // if requiresApproval is false, delete approverType
     if (!requiresApproval) {
       delete data.approverType;
     }
 
+    // delete selectedPeople and assigned
     delete data.selectedPeople;
     delete data.assigned;
 
+    // set requiresApproval, assignedTo, category
     data.requiresApproval = requiresApproval;
     data.assignedTo = assignedTo;
+    data.category = taskCategories?.data.filter(cat => cat.name === subCategory)?.[0]?.type;
 
+    console.log(data)
+
+    // create task
     createTask({ ...data, role: 'platform_admin' }, {
       onSuccess: () => {
         toast.success('Task created successfully');
@@ -81,8 +102,11 @@ const CreateTask = () => {
     });
   };
 
+  // load options for async select
   const loadOptions = async (inputValue) => {
     if (!inputValue) return [];
+
+    // search students
     if (assigned === 'student') {
       const response = await searchStudents({ email: inputValue });
       console.log(response.data.students);
@@ -91,6 +115,7 @@ const CreateTask = () => {
         value: student._id,
       }));
     }
+    // search parents
     if (assigned === 'parent') {
       const response = await searchParents({ email: inputValue });
       return response.data.parents.map((parent) => ({
@@ -116,7 +141,7 @@ const CreateTask = () => {
               <ArrowLeft size={16} /> Back to Tasks
             </Link>
           </Button>
-          <Flex justify={'between'} align={'start'}>
+          <Flex justify={'between'} align={'start'} wrap='wrap' gap='2'>
             <Flex direction={'column'}>
               <Heading as="h1" size="6" weight="medium">Create New Task</Heading>
               <Text color="gray" size="2" className="mt-1">
@@ -124,17 +149,35 @@ const CreateTask = () => {
               </Text>
             </Flex>
 
-            {/* Create Task Button */}
-            <Button
-              type="submit"
-              color="grass"
-              disabled={isPending}
-              onClick={handleSubmit(onSubmit)}
-            >
-              <Plus size={16} /> {isPending ? 'Creating...' : 'Create Task'}
-            </Button>
+            <Flex gap='2' align='center' wrap='wrap' >
+              {/* Preview Task Button */}
+              <Tooltip content={!isValid ? "Fill required fields to enable preview" : "Preview task before creating"}>
+                <Button
+                  type='button'
+                  variant='outline'
+                  color='gray'
+                  disabled={!isValid}
+                  onClick={() => setPreviewTaskFormOpen(true)}
+                >
+                  <Eye size={16} /> Preview Task
+                </Button>
+              </Tooltip>
+
+              {/* Create Task Button */}
+              <Button
+                type="submit"
+                color="grass"
+                disabled={isPending}
+                onClick={handleSubmit(onSubmit)}
+              >
+                <Plus size={16} /> {isPending ? 'Creating...' : 'Create Task'}
+              </Button>
+            </Flex>
           </Flex>
         </Box>
+        <Text as="p" size="1" color="gray" className='italic'>
+          * Required fields
+        </Text>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl space-y-10">
@@ -161,7 +204,7 @@ const CreateTask = () => {
               <div className="flex-1">
                 <label>
                   <Text as="div" size="2" mb="2" weight="medium">
-                    Task Title
+                    Task Title *
                   </Text>
                   <TextField.Root placeholder="Enter task title" className="w-full" {...register('title', {
                     required: "Task title is required"
@@ -188,7 +231,7 @@ const CreateTask = () => {
                   <Text as="div" size="2" mb="2" weight="medium">
                     Due Date
                   </Text>
-                  <TextField.Root type="date" className='w-max' {...register('dueDate', {
+                  <TextField.Root type="datetime-local" className='w-max' {...register('dueDate', {
                     valueAsDate: true,
                     validate: (value) => {
                       if (!value) return true;
@@ -225,6 +268,7 @@ const CreateTask = () => {
                     Task Description
                   </Text>
                   <TextArea placeholder="Enter task description"
+                    resize={'vertical'}
                     {...register("description")}
                     className="w-full" />
                   <Text as="p" size="1" color="gray" mt="1">
@@ -243,37 +287,57 @@ const CreateTask = () => {
               <div className='flex-1'>
                 <label>
                   <Text as="div" size="2" mb="2" weight="medium">
-                    Task Category
+                    Task Category *
                   </Text>
                   <Controller
-                    name="category"
+                    name="subCategory"
                     control={control}
                     rules={{ required: 'Please select a category' }}
-                    render={({ field }) => (
-                      <Select.Root value={field.value} onValueChange={field.onChange}>
-                        <Select.Trigger placeholder="Select category" className="w-full" />
-                        <Select.Content variant="soft" position="popper">
-                          {taskCategories?.data?.map((category) => (
-                            <Select.Item key={category._id} value={category.name}>
-                              {category.name}
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Root>
-                    )}
+                    render={({ field }) => {
+                      // Group categories by type
+                      const groupedCategories = taskCategories?.data?.reduce((acc, category) => {
+                        const type = category.type || 'Other';
+                        if (!acc[type]) {
+                          acc[type] = [];
+                        }
+                        acc[type].push(category);
+                        return acc;
+                      }, {}) || {};
+
+                      return (
+                        <Select.Root value={field.value} onValueChange={field.onChange}>
+                          <Select.Trigger placeholder="Select category" className="w-full" />
+                          <Select.Content variant="soft" position="popper">
+                            {Object.entries(groupedCategories).map(([type, categories], index) => (
+                              <Select.Group key={type}>
+                                <Select.Label className='text-xs capitalize'>
+                                  {type}
+                                </Select.Label>
+                                {categories.map((category) => (
+                                  <Select.Item key={category._id} value={category.name} className='capitalize'>
+                                    {category.name}
+                                  </Select.Item>
+                                ))}
+                                <Select.Separator className={index === Object.entries(groupedCategories).length - 1 ? 'hidden' : ''} />
+                              </Select.Group>
+                            ))}
+                          </Select.Content>
+                        </Select.Root>
+                      );
+                    }}
                   />
                 </label>
                 <Text as="p" size="1" color="gray" mt="1">
                   Select the category that best describes the task
                 </Text>
-                {errors.category && (
+                {errors.subCategory && (
                   <Text
                     as="p"
                     size={"2"}
                     color="red"
                     className='flex items-center gap-1 mt-1'
                   >
-                    <Info size={14} /> {errors.category.message}
+                    <Info size={14} /> {errors.subCategory.message}
                   </Text>
                 )}
               </div>
@@ -282,7 +346,7 @@ const CreateTask = () => {
               <div className="flex-1">
                 <label>
                   <Text as="div" size="2" mb="2" weight="medium">
-                    Scholarship Points
+                    Scholarship Points *
                   </Text>
                   <TextField.Root type="number" placeholder="Enter points" className="w-full" {...register('pointValue', {
                     valueAsNumber: true,
@@ -317,7 +381,7 @@ const CreateTask = () => {
             <Flex gap="4" className="flex-col lg:flex-row">
               <div className="flex-1">
                 <Text as="label" htmlFor='assigned' size="2" weight="medium">
-                  Assigned To
+                  Assigned To *
                 </Text>
                 <div className='mt-2'>
                   <Flex align="start" gap="4">
@@ -375,16 +439,15 @@ const CreateTask = () => {
                     <Controller
                       name="selectedPeople"
                       control={control}
-                      defaultValue={[]} // 👈 ensure this default is set
+                      defaultValue={[]}
                       render={({ field }) => (
                         <AsyncSelect
                           {...field}
                           isMulti
-                          cacheOptions
                           defaultOptions={false}
                           loadOptions={loadOptions}
                           onChange={field.onChange}
-                          value={field.value} // 👈 critical: ensure the value is managed
+                          value={field.value}
                           placeholder={`Search and select ${assigned}s...`}
                         />
                       )}
@@ -402,7 +465,7 @@ const CreateTask = () => {
               <div className="flex-1">
                 <label>
                   <Text as="div" size="2" mb="2" weight="medium">
-                    Requires Approval
+                    Requires Approval *
                   </Text>
                   <Flex align="start" gap="4">
                     <Flex asChild gap="2">
@@ -430,7 +493,7 @@ const CreateTask = () => {
                 < div className='flex-1'>
                   <label>
                     <Text as="div" size="2" mb="2" weight="medium">
-                      Who can approve this task?
+                      Who can approve this task? *
                     </Text>
                     <Controller
                       name="approverType"
@@ -477,6 +540,12 @@ const CreateTask = () => {
 
 
         </form>
+
+        <PreviewTaskForm
+          open={previewTaskFormOpen}
+          setOpen={setPreviewTaskFormOpen}
+          task={getValues()}
+        />
       </div >
     </Container >
   );

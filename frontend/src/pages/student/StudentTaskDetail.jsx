@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useSubmitTask } from '../../api/task/task.mutations';
 import { useGetStudentTaskById } from '../../api/task/task.queries';
 import { Loader, TaskSubmissionDialog } from '../../components';
+import { taskCategoryOptions, taskDifficultyOptions } from '../../utils/constants';
 import { formatDate } from '../../utils/helperFunctions';
 
 function StudentTaskDetail() {
@@ -45,30 +46,14 @@ function StudentTaskDetail() {
 
   // Get category color
   const getCategoryColor = (category) => {
-    switch (category) {
-      case 'academic': return 'indigo';
-      case 'home': return 'cyan';
-      case 'behavior': return 'purple';
-      case 'extracurricular': return 'green';
-      case 'attendance': return 'blue';
-      default: return 'gray';
-    }
+    const categoryOption = taskCategoryOptions.find(option => option.value === category);
+    return categoryOption?.color;
   };
 
   // Get difficulty badge
   const getDifficultyBadge = (difficulty) => {
-    switch (difficulty) {
-      case 'easy':
-        return <Badge color="green" variant="outline">Easy</Badge>;
-      case 'medium':
-        return <Badge color="yellow" variant="outline">Medium</Badge>;
-      case 'hard':
-        return <Badge color="orange" variant="outline">Hard</Badge>;
-      case 'challenging':
-        return <Badge color="red" variant="outline">Challenging</Badge>;
-      default:
-        return null;
-    }
+    const difficultyOption = taskDifficultyOptions.find(option => option.value === difficulty);
+    return difficultyOption ? <Badge color={difficultyOption?.color} variant="outline">{difficultyOption?.label}</Badge> : null;
   };
 
   // Get status icon
@@ -206,9 +191,14 @@ function StudentTaskDetail() {
               <Flex justify="between" align="start" gap="4">
                 <Flex direction="column" gap="2" style={{ flex: 1 }}>
                   <Flex gap="2" align="center" justify={'between'} wrap="wrap">
-                    <Badge color={getCategoryColor(task?.category)} variant="surface" className='capitalize'>
-                      {task?.category}
-                    </Badge>
+                    <Flex align="center" gap="2">
+                      <Badge color={getCategoryColor(task?.category)} variant="surface" className='capitalize'>
+                        {taskCategoryOptions.find(option => option.value === task?.category)?.label || task?.category}
+                      </Badge>
+                      <Text as='span' size="2" color="gray" className='capitalize'>
+                        {task?.subCategory}
+                      </Text>
+                    </Flex>
                     <Flex align="center" gap="2">
                       <Badge
                         color={getStatusColor(task?.completionStatus?.status)}
@@ -231,7 +221,7 @@ function StudentTaskDetail() {
                     </Flex>
 
                   </Flex>
-                  <Heading size={{initial: '4', sm: '5'}} weight="bold">
+                  <Heading size={{ initial: '4', sm: '5' }} weight="bold">
                     {task?.title}
                   </Heading>
                 </Flex>
@@ -250,12 +240,15 @@ function StudentTaskDetail() {
             <Flex direction="column" gap="4">
               <Heading size="4">Task Details</Heading>
 
-              <Grid columns={{initial: '1', xs: '2'}} gap="4">
+              <Grid columns={{ initial: '1', xs: '2' }} gap="4">
                 <Flex direction="column" gap="2">
                   <Text size="1" weight="medium" color="gray">DUE DATE</Text>
                   <Flex align="center" gap="2">
                     <Calendar size={16} className="text-[--gray-9]" />
-                    <Text size="2">{formatDate(task?.dueDate)}</Text>
+                    <Text size="2">{formatDate(task?.dueDate, {
+                      dateStyle: 'medium',
+                      timeStyle: 'medium',
+                    })}</Text>
                   </Flex>
                 </Flex>
 
@@ -514,7 +507,7 @@ function StudentTaskDetail() {
                   <Text size="2">• <strong>Add evidence:</strong> Photos, documents, or detailed descriptions help</Text>
                   <Text size="2">• <strong>Ask questions:</strong> Use comments if you need clarification</Text>
                   {task?.dueDate && (
-                    <Text size="2">• <strong>Due date:</strong> Complete before {formatDate(task.dueDate)}</Text>
+                    <Text size="2">• <strong>Due date:</strong> Complete before {formatDate(new Date(task.dueDate))}</Text>
                   )}
                 </Flex>
               </Flex>

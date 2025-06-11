@@ -6,6 +6,7 @@ import { useGetTaskCategories } from '../../api/task-category/taskCategory.queri
 import { useGetStudentTasks } from '../../api/task/task.queries';
 import { EmptyStateCard, Loader } from '../../components';
 import { formatDate } from '../../utils/helperFunctions';
+import { taskCategoryOptions, taskDifficultyOptions } from '../../utils/constants';
 
 const statusOptions = [
   { value: null, label: 'All Tasks', color: 'gray' },
@@ -34,33 +35,10 @@ function StudentTasks() {
     return statusOption?.color || 'gray';
   };
 
-
-  // Get category color
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case 'academic': return 'indigo';
-      case 'home': return 'cyan';
-      case 'behavior': return 'purple';
-      case 'extracurricular': return 'green';
-      case 'attendance': return 'blue';
-      default: return 'gray';
-    }
-  };
-
   // Get difficulty badge
   const getDifficultyBadge = (difficulty) => {
-    switch (difficulty) {
-      case 'easy':
-        return <Badge color="green" variant="outline">Easy</Badge>;
-      case 'medium':
-        return <Badge color="yellow" variant="outline">Medium</Badge>;
-      case 'hard':
-        return <Badge color="orange" variant="outline">Hard</Badge>;
-      case 'challenging':
-        return <Badge color="red" variant="outline">Challenging</Badge>;
-      default:
-        return null;
-    }
+    const difficultyOption = taskDifficultyOptions.find(option => option.value === difficulty);
+    return <Badge color={difficultyOption?.color} variant="outline">{difficultyOption?.label}</Badge>;
   };
 
 
@@ -74,7 +52,10 @@ function StudentTasks() {
             <Flex justify="between" align="start">
               <Flex direction="column" gap="1">
                 <Flex gap="2" align="center">
-                  <Badge color={getCategoryColor(task.category)} variant="surface">{task.category}</Badge>
+                  <Badge color={taskCategoryOptions.find(option => option.value === task.category)?.color} variant="surface">{taskCategoryOptions.find(option => option.value === task.category)?.label}</Badge>
+                  <Text as='span' size="1" color="gray" className='capitalize'>
+                    {task.subCategory}
+                  </Text>
                 </Flex>
                 <Heading size="3" style={{ marginTop: '6px' }}>{task.title}</Heading>
               </Flex>
@@ -97,7 +78,7 @@ function StudentTasks() {
                     {formatDate(task.dueDate)}
                   </Text>
                 </Flex>
-                {getDifficultyBadge(task.difficulty)}
+                {task.difficulty && getDifficultyBadge(task.difficulty)}
               </Flex>
             </Flex>
 
@@ -165,7 +146,7 @@ function StudentTasks() {
             </Tabs.Root>
           </ScrollArea>
           <Flex gap="4" align="center" wrap="wrap">
-            
+
             {/* Refresh Tasks Button */}
             <Tooltip content="Refresh tasks">
               <IconButton
@@ -180,10 +161,10 @@ function StudentTasks() {
                 </span>
               </IconButton>
             </Tooltip>
-            
+
             {/* Filter Icon */}
             <Filter size={16} />
-            
+
             {/* Status Filter */}
             <Flex gap="2" align="center">
               <Text as='span' size="2">Status</Text>
@@ -196,9 +177,9 @@ function StudentTasks() {
                 </Select.Content>
               </Select.Root>
             </Flex>
-            
+
             {/* Category Filter */}
-            {taskCategories?.length > 0 && <Flex gap="2" align="center">
+            <Flex gap="2" align="center">
               <Text as='span' size="2">Category</Text>
               <Select.Root disabled={isFetching} value={category} onValueChange={setCategory}>
                 <Select.Trigger placeholder='Filter by status' />
@@ -206,12 +187,12 @@ function StudentTasks() {
                   <Select.Item value='all' key='all'>
                     All
                   </Select.Item>
-                  {taskCategories?.map((option) => (
-                    <Select.Item key={option._id} value={option.name} className='capitalize'>{option.name}</Select.Item>
+                  {taskCategoryOptions && taskCategoryOptions.map((option) => (
+                    <Select.Item key={option.value} value={option.value} className='capitalize'>{option.label}</Select.Item>
                   ))}
                 </Select.Content>
               </Select.Root>
-            </Flex>}
+            </Flex>
           </Flex>
         </Flex>
       </Card>
