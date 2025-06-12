@@ -22,12 +22,7 @@ const authMiddleware = async (req, res, next) => {
       const decoded = jwt.verify(token, JWT_SECRET);
 
       // Add user information to request object
-      req.user = {
-        id: decoded.userId,
-        email: decoded.email,
-        roles: decoded.roles || [],
-        schoolId: decoded.schoolId,
-      };
+      req.user = decoded;
 
       // Add convenience method to check if user has a role
       req.user.hasRole = function (role) {
