@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Callout, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes';
-import { Activity, AlertCircleIcon, Book, Calculator, Calendar, Database, Droplet, Edit, FunnelX, Home, Microscope, MoreVertical, Music, Pen, Plus, RefreshCw, Search, Settings, ThumbsUp, Trash2, TreePine } from 'lucide-react';
+import { Activity, AlertCircleIcon, Book, Calculator, Calendar, Database, Droplet, Edit, FunnelX, Home, ListTodo, Microscope, MoreVertical, Music, Pen, Plus, RefreshCw, Search, Settings, ThumbsUp, Trash2, TreePine } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { BarLoader } from 'react-spinners';
@@ -189,10 +189,6 @@ const TaskCategories = () => {
       </Table.Cell>
 
       <Table.Cell>
-        <Text>{category.tasksCount || 0}</Text>
-      </Table.Cell>
-
-      <Table.Cell>
         <Flex align="center" gap="2">
           <Badge
             color={category.isActive ? 'green' : 'red'}
@@ -271,11 +267,7 @@ const TaskCategories = () => {
               </Button>
 
               {/* Create Category */}
-              <Button asChild>
-                <Link to="/platform-admin/dashboard/task-categories/create">
-                  <Plus size={16} />  Create Category
-                </Link>
-              </Button>
+              <CreateCategoryButton />
             </Flex>
           </Flex>
 
@@ -303,50 +295,49 @@ const TaskCategories = () => {
 
                 <Flex align="center" gap="4" wrap="wrap">
                   {/* Filter by Type */}
-                  <Flex align="center" gap="2"  >
-                    <Text as='label' size="2" mb="1" weight="medium">Type</Text>
-                    <Select.Root disabled={isFetching} value={filterType} onValueChange={setFilterType}>
-                      <Select.Trigger />
-                      <Select.Content variant='soft' position='popper'>
-
+                  <Select.Root disabled={isFetching} value={filterType} onValueChange={setFilterType}>
+                    <Select.Trigger />
+                    <Select.Content variant='soft' position='popper'>
+                      <Select.Group>
+                        <Select.Label>Type</Select.Label>
                         {typeOptions.map(option => (
                           <Select.Item key={option.value} value={option.value}>
                             {option.label}
                           </Select.Item>
                         ))}
-                      </Select.Content>
-                    </Select.Root>
-                  </Flex>
+                      </Select.Group>
+                    </Select.Content>
+                  </Select.Root>
 
                   {/* Filter by Visibility */}
-                  <Flex align="center" gap="2"  >
-                    <Text size="2" mb="1" weight="medium">Visibility</Text>
-                    <Select.Root disabled={isFetching} value={filterVisibility} onValueChange={setFilterVisibility}>
-                      <Select.Trigger />
-                      <Select.Content variant='soft' position='popper'>
+                  <Select.Root disabled={isFetching} value={filterVisibility} onValueChange={setFilterVisibility}>
+                    <Select.Trigger />
+                    <Select.Content variant='soft' position='popper'>
+                      <Select.Group>
+                        <Select.Label>Visibility</Select.Label>
                         {visibilityOptions.map(option => (
                           <Select.Item key={option.value} value={option.value}>
                             {option.label}
                           </Select.Item>
                         ))}
-                      </Select.Content>
-                    </Select.Root>
-                  </Flex>
+                      </Select.Group>
+                    </Select.Content>
+                  </Select.Root>
 
                   {/* Filter by Status */}
-                  <Flex align="center" gap="2"  >
-                    <Text size="2" mb="1" weight="medium">Status</Text>
-                    <Select.Root disabled={isFetching} value={filterStatus} onValueChange={setFilterStatus}>
-                      <Select.Trigger />
-                      <Select.Content variant='soft' position='popper'>
+                  <Select.Root disabled={isFetching} value={filterStatus} onValueChange={setFilterStatus}>
+                    <Select.Trigger />
+                    <Select.Content variant='soft' position='popper'>
+                      <Select.Group>
+                        <Select.Label>Status</Select.Label>
                         {statusOptions.map(option => (
                           <Select.Item key={option.value} value={option.value}>
                             {option.label}
                           </Select.Item>
                         ))}
-                      </Select.Content>
-                    </Select.Root>
-                  </Flex>
+                      </Select.Group>
+                    </Select.Content>
+                  </Select.Root>
 
                   {/* Refresh */}
                   <Button disabled={isFetching} title="Refresh" aria-label="Refresh" variant="ghost" color="gray"
@@ -404,7 +395,7 @@ const TaskCategories = () => {
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeaderCell className='font-medium capitalize' key='category'>Category ({taskCategories?.data?.length > 0 && taskCategories?.data?.length})</Table.ColumnHeaderCell>
-                  {['type', 'points', 'visibility', 'tasks', 'status', 'created', 'actions'].map((header) => (
+                  {['type', 'points', 'visibility', 'status', 'created', 'actions'].map((header) => (
                     <Table.ColumnHeaderCell className='font-medium capitalize' key={header}>{header}</Table.ColumnHeaderCell>
                   ))}
                 </Table.Row>
@@ -420,7 +411,8 @@ const TaskCategories = () => {
             <EmptyStateCard
               title="No categories found"
               description="No categories found matching your criteria."
-              icon={<Database size={16} />}
+              icon={<ListTodo size={16} />}
+              action={<CreateCategoryButton />}
             />
           )}
 
@@ -431,7 +423,7 @@ const TaskCategories = () => {
           open={defaultCategoriesDialogOpen}
           onOpenChange={setDefaultCategoriesDialogOpen}
           title="Confirm Default Categories"
-          description="Initialize the system default categories (Math, Reading, Science, Writing, Chores, Hygiene, Positive Behavior, Attendance, Sports, Arts) if they don\'t already exist. This action is typically performed once during system setup."
+          description="Initialize the system default categories (Math, Reading, Science, Writing, Chores, Hygiene, Positive Behavior, Attendance, Sports, Arts) if they don't already exist. This action is typically performed once during system setup."
           onConfirm={handleCreateDefaultCategories}
           confirmIcon={<Database size={16} />}
           confirmText="Initialize Default Categories"
@@ -458,3 +450,13 @@ const TaskCategories = () => {
 };
 
 export default TaskCategories;
+
+function CreateCategoryButton() {
+  return (
+    <Button asChild>
+      <Link to="/platform-admin/dashboard/task-categories/create">
+        <Plus size={16} />  Create Category
+      </Link>
+    </Button>
+  );
+}

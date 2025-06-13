@@ -3,6 +3,7 @@ const Reward = require("../models/reward.model");
 const RewardCategory = require("../models/rewardCategory.model");
 const mongoose = require("mongoose");
 const axios = require("axios");
+const { getFileUrl } = require("../middleware/upload.middleware");
 
 // Helper function to get user details
 async function getUserDetails(userId, authHeader) {
@@ -22,20 +23,31 @@ async function getUserDetails(userId, authHeader) {
 // Helper function to handle category resolution
 async function resolveCategory(req) {
   let categoryId = req.body.categoryId;
-  let categoryType = req.body.category;
-  let subcategoryType = req.body.subcategory;
+  let categoryType = req.body.category; // DEPRECATED
+  let subcategoryType = req.body.subcategory; // DEPRECATED
 
-  // If categoryId is provided, use it to get category info
+  // NEW: Prioritize categoryId (recommended approach)
   if (categoryId) {
     const category = await RewardCategory.findById(categoryId);
     if (!category || category.isDeleted) {
       throw new Error("Invalid category ID");
     }
+    // Use the actual category data from the database
     categoryType = category.type;
     subcategoryType = category.subcategoryType;
+    return { 
+      categoryId: category._id, 
+      categoryType: category.type, 
+      subcategoryType: category.subcategoryType,
+      categoryName: category.name 
+    };
   }
+  
+  // DEPRECATED: Fallback for backward compatibility
   // If no categoryId but category/subcategory provided, attempt to find matching category
   else if (categoryType && subcategoryType) {
+    console.warn("Using deprecated category/subcategory fields. Please use categoryId instead.");
+    
     // Look for a system category that matches
     const category = await RewardCategory.findOne({
       type: categoryType,
@@ -46,10 +58,17 @@ async function resolveCategory(req) {
 
     if (category) {
       categoryId = category._id;
+      return { 
+        categoryId: category._id, 
+        categoryType: category.type, 
+        subcategoryType: category.subcategoryType,
+        categoryName: category.name 
+      };
     }
   }
 
-  return { categoryId, categoryType, subcategoryType };
+  // If neither categoryId nor valid category/subcategory provided
+  throw new Error("Category information is required. Please provide categoryId.");
 }
 
 const rewardController = {
@@ -63,13 +82,18 @@ const rewardController = {
         limitedQuantity,
         quantity,
         expiryDate,
-        image,
         redemptionInstructions,
         restrictions,
         schoolId,
         classId,
         metadata,
       } = req.body;
+
+      // Handle image upload
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = getFileUrl(req.file.filename);
+      }
 
       // Extract user info from authentication middleware
       const creatorId = req.user.id;
@@ -103,7 +127,7 @@ const rewardController = {
         });
       }
 
-      // Handle category resolution
+      // Handle category resolution (NEW: prioritizes categoryId)
       let categoryData;
       try {
         categoryData = await resolveCategory(req);
@@ -111,17 +135,6 @@ const rewardController = {
         return res.status(400).json({
           success: false,
           message: error.message,
-        });
-      }
-
-      // Validate category is provided either through ID or legacy fields
-      if (
-        !categoryData.categoryId &&
-        (!categoryData.categoryType || !categoryData.subcategoryType)
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "Category information is required",
         });
       }
 
@@ -137,10 +150,12 @@ const rewardController = {
       const reward = new Reward({
         title,
         description,
-        category: categoryData.categoryType, // For backward compatibility
-        subcategory: categoryData.subcategoryType, // For backward compatibility
+        // DEPRECATED: For backward compatibility only
+        category: categoryData.categoryType,
+        subcategory: categoryData.subcategoryType,
+        // NEW: Primary category fields
         categoryId: categoryData.categoryId,
-        categoryName: categoryData.categoryType,
+        categoryName: categoryData.categoryName || categoryData.categoryType,
         subcategoryName: categoryData.subcategoryType,
         pointsCost,
         creatorId,
@@ -153,7 +168,7 @@ const rewardController = {
         limitedQuantity: limitedQuantity || false,
         quantity: limitedQuantity ? quantity : undefined,
         expiryDate: expiryDate ? new Date(expiryDate) : undefined,
-        image,
+        image: imageUrl,
         redemptionInstructions,
         restrictions,
         metadata,
@@ -206,19 +221,23 @@ const rewardController = {
         ],
       };
 
-      // Apply filters
+      // Apply filters (NEW: prioritizes categoryId, maintains backward compatibility)
       if (categoryId) {
+        // NEW: Primary filtering by categoryId
         filter.categoryId = categoryId;
       } else if (category) {
-        // Backward compatibility: also search by categoryName
-        filter.$or = [{ category: category }, { categoryName: category }];
+        // DEPRECATED: Backward compatibility - search by both old and new fields
+        filter.$or = [
+          { category: category }, // DEPRECATED field
+          { categoryName: category } // NEW field
+        ];
       }
 
       if (subcategory) {
-        // Backward compatibility: also search by subcategoryName
+        // DEPRECATED: Backward compatibility - search by both old and new fields
         filter.$or = [
-          { subcategory: subcategory },
-          { subcategoryName: subcategory },
+          { subcategory: subcategory }, // DEPRECATED field
+          { subcategoryName: subcategory } // NEW field
         ];
       }
 
@@ -490,6 +509,11 @@ const rewardController = {
         });
       }
 
+      // Handle image upload if new file provided
+      if (req.file) {
+        updateData.image = getFileUrl(req.file.filename);
+      }
+
       // Don't allow changing certain fields after creation
       const protectedFields = [
         "creatorId",
@@ -501,7 +525,7 @@ const rewardController = {
         if (updateData[field]) delete updateData[field];
       });
 
-      // Handle category update if provided
+      // Handle category update if provided (NEW: prioritizes categoryId)
       if (
         updateData.categoryId ||
         updateData.category ||
@@ -509,11 +533,13 @@ const rewardController = {
       ) {
         try {
           const categoryData = await resolveCategory({ body: updateData });
+          // NEW: Primary fields
           updateData.categoryId = categoryData.categoryId;
+          updateData.categoryName = categoryData.categoryName || categoryData.categoryType;
+          updateData.subcategoryName = categoryData.subcategoryType;
+          // DEPRECATED: For backward compatibility
           updateData.category = categoryData.categoryType;
           updateData.subcategory = categoryData.subcategoryType;
-          updateData.categoryName = categoryData.categoryType;
-          updateData.subcategoryName = categoryData.subcategoryType;
         } catch (error) {
           return res.status(400).json({
             success: false,

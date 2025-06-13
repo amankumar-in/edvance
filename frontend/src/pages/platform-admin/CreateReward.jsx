@@ -3,24 +3,27 @@ import {
   Button,
   Flex,
   Heading,
+  IconButton,
   RadioGroup,
   Select,
   Separator,
   Text,
   TextArea,
-  TextField,
-  Tooltip
+  TextField
 } from '@radix-ui/themes';
 import {
   ArrowLeft,
-  Eye,
+  Image as ImageIcon,
   Plus,
-  Upload
+  Upload,
+  X
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { useCreateReward } from '../../api/rewards/rewards.mutations';
+import { useGetRewardCategories } from '../../api/rewards/rewards.queries';
 import { Container } from '../../components';
 
 const CreateReward = () => {
@@ -31,8 +34,7 @@ const CreateReward = () => {
     handleSubmit,
     control,
     watch,
-    formState: { errors, isValid },
-    getValues,
+    formState: { errors },
     setValue
   } = useForm({
     defaultValues: {
@@ -55,115 +57,134 @@ const CreateReward = () => {
 
   // watch form values
   const limitedQuantity = watch('limitedQuantity');
-  const category = watch('category');
-  const subcategory = watch('subcategory');
 
-  // preview reward form
-  const [previewRewardFormOpen, setPreviewRewardFormOpen] = useState(false);
+  // Image upload state
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
-  // Mock category data - replace with actual API call
-  const mockCategories = [
-    {
-      _id: '1',
-      name: 'Family Privileges',
-      type: 'family',
-      subcategoryType: 'privilege',
-      description: 'Special privileges and rewards earned at home',
-      minPointValue: 10,
-      maxPointValue: 100
-    },
-    {
-      _id: '2',
-      name: 'School Store Items',
-      type: 'school',
-      subcategoryType: 'item',
-      description: 'Physical items available from the school store',
-      minPointValue: 25,
-      maxPointValue: 250
-    },
-    {
-      _id: '3',
-      name: 'Digital Rewards',
-      type: 'sponsor',
-      subcategoryType: 'digital',
-      description: 'Online content, games, and digital subscriptions',
-      minPointValue: 50,
-      maxPointValue: 500
-    },
-    {
-      _id: '4',
-      name: 'School Experiences',
-      type: 'school',
-      subcategoryType: 'experience',
-      description: 'Special activities and experiences at school',
-      minPointValue: 75,
-      maxPointValue: 300
-    },
-    {
-      _id: '5',
-      name: 'Family Time',
-      type: 'family',
-      subcategoryType: 'experience',
-      description: 'Quality time activities with family members',
-      minPointValue: 100,
-      maxPointValue: 400
-    },
-    {
-      _id: '6',
-      name: 'Learning Materials',
-      type: 'school',
-      subcategoryType: 'item',
-      description: 'Educational books, supplies, and learning tools',
-      minPointValue: 30,
-      maxPointValue: 150
+  // Get reward categories from API
+  const { data, isLoading: categoriesLoading, isError: categoriesError, error: categoriesErrorDetails } = useGetRewardCategories();
+
+  // Debug logging
+  console.log('Categories API Response:', { data, categoriesLoading, categoriesError });
+
+  // Safely extract categories with fallback
+  const rewardCategories = data?.data?.categories || data?.categories || [];
+
+  console.log('Extracted rewardCategories:', rewardCategories);
+
+  // Create reward mutation
+  const { mutate: createReward, isPending, isError, error } = useCreateReward();
+
+  // Handle file selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Only JPG, JPEG, PNG, GIF, or WebP files are allowed');
+        return;
+      }
+
+      // Validate file size (5MB max)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+      // Create preview URL
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
     }
-  ];
+  };
+
+  // Remove selected image
+  const removeImage = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
 
   // Set suggested point value based on category
   useEffect(() => {
     const categoryId = watch('categoryId');
-    if (mockCategories && categoryId) {
-      const selectedCategory = mockCategories.find(cat => cat._id === categoryId);
+    if (rewardCategories && categoryId) {
+      const selectedCategory = rewardCategories.find(cat => cat._id === categoryId);
       if (selectedCategory) {
         setValue('pointsCost', selectedCategory.minPointValue);
         setValue('category', selectedCategory.type);
         setValue('subcategory', selectedCategory.subcategoryType);
       }
     }
-  }, [watch('categoryId'), mockCategories, setValue]);
+  }, [watch('categoryId'), rewardCategories, setValue]);
+
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   // on submit
   const onSubmit = async (data) => {
-    // Convert form data to match backend schema
-    const rewardData = {
-      title: data.title,
-      description: data.description,
-      pointsCost: parseInt(data.pointsCost),
-      categoryId: data.categoryId,
-      category: data.category,
-      subcategory: data.subcategory,
-      limitedQuantity: data.limitedQuantity,
-      quantity: data.limitedQuantity ? parseInt(data.quantity) : undefined,
-      expiryDate: data.expiryDate ? new Date(data.expiryDate).toISOString() : undefined,
-      image: data.image,
-      redemptionInstructions: data.redemptionInstructions,
-      restrictions: data.restrictions,
-      schoolId: data.schoolId,
-      classId: data.classId,
-      metadata: {}
-    };
+    // Create FormData for file upload
+    const formData = new FormData();
 
-    console.log('Creating reward:', rewardData);
+    // Add form fields
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('pointsCost', parseInt(data.pointsCost));
+    formData.append('categoryId', data.categoryId);
+    formData.append('limitedQuantity', data.limitedQuantity);
 
-    // Mock API call - replace with actual implementation
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Reward created successfully');
-      navigate('/platform-admin/dashboard/rewards');
-    } catch (error) {
-      toast.error('Failed to create reward');
+    if (data.limitedQuantity && data.quantity) {
+      formData.append('quantity', parseInt(data.quantity));
     }
+
+    if (data.expiryDate) {
+      formData.append('expiryDate', new Date(data.expiryDate).toISOString());
+    }
+
+    if (data.redemptionInstructions) {
+      formData.append('redemptionInstructions', data.redemptionInstructions);
+    }
+
+    if (data.restrictions) {
+      formData.append('restrictions', data.restrictions);
+    }
+
+    if (data.schoolId) {
+      formData.append('schoolId', data.schoolId);
+    }
+
+    if (data.classId) {
+      formData.append('classId', data.classId);
+    }
+
+    // Add image file if selected
+    if (selectedFile) {
+      formData.append('image', selectedFile);
+    }
+
+    console.log('Creating reward with FormData');
+
+    // Create reward using API
+    createReward(formData, {
+      onSuccess: () => {
+        toast.success('Reward created successfully');
+        navigate('/platform-admin/dashboard/rewards');
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to create reward');
+      }
+    });
   };
 
   return (
@@ -191,26 +212,14 @@ const CreateReward = () => {
             </Flex>
 
             <Flex gap='2' align='center' wrap='wrap'>
-              {/* Preview Reward Button */}
-              <Tooltip content={!isValid ? "Fill required fields to enable preview" : "Preview reward before creating"}>
-                <Button
-                  type='button'
-                  variant='outline'
-                  color='gray'
-                  disabled={!isValid}
-                  onClick={() => setPreviewRewardFormOpen(true)}
-                >
-                  <Eye size={16} /> Preview Reward
-                </Button>
-              </Tooltip>
-
               {/* Create Reward Button */}
               <Button
                 type="submit"
                 color="grass"
+                disabled={isPending}
                 onClick={handleSubmit(onSubmit)}
               >
-                <Plus size={16} /> Create Reward
+                <Plus size={16} /> {isPending ? 'Creating...' : 'Create Reward'}
               </Button>
             </Flex>
           </Flex>
@@ -266,28 +275,6 @@ const CreateReward = () => {
                   </Text>
                 )}
               </div>
-
-              {/* Points Cost */}
-              <div>
-                <Text as="label" size="2" weight="medium" htmlFor="pointsCost">
-                  Points Cost *
-                </Text>
-                <TextField.Root
-                  id="pointsCost"
-                  type="number"
-                  placeholder="Enter points cost"
-                  {...register('pointsCost', {
-                    required: 'Points cost is required',
-                    min: { value: 1, message: 'Points cost must be at least 1' }
-                  })}
-                  className="mt-2"
-                />
-                {errors.pointsCost && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.pointsCost.message}
-                  </Text>
-                )}
-              </div>
             </div>
           </FormSection>
 
@@ -309,12 +296,14 @@ const CreateReward = () => {
                       onValueChange={field.onChange}
                     >
                       <Select.Trigger placeholder="Select category" className="w-full mt-2" />
-                      <Select.Content>
-                        {mockCategories.map((category) => (
-                          <Select.Item key={category._id} value={category._id}>
-                            {category.name} ({category.minPointValue}-{category.maxPointValue} pts)
-                          </Select.Item>
-                        ))}
+                      <Select.Content variant='soft' position='popper'>
+                        {rewardCategories && rewardCategories.length > 0 ? (
+                          rewardCategories.map((category) => (
+                            <Select.Item key={category._id} value={category._id}>
+                              {category.name} ({category.minPointValue}-{category.maxPointValue || '∞'} pts)
+                            </Select.Item>
+                          ))
+                        ) : null}
                       </Select.Content>
                     </Select.Root>
                   )}
@@ -327,13 +316,13 @@ const CreateReward = () => {
               </div>
 
               {/* Category Info Display */}
-              {watch('categoryId') && (
+              {watch('categoryId') && rewardCategories && (
                 <div className="p-4 bg-[--gray-2] rounded-md">
                   <Text size="2" weight="medium" className="block mb-2">
                     Category Details
                   </Text>
                   {(() => {
-                    const selectedCategory = mockCategories.find(cat => cat._id === watch('categoryId'));
+                    const selectedCategory = rewardCategories.find(cat => cat._id === watch('categoryId'));
                     return selectedCategory ? (
                       <div>
                         <Text size="1" color="gray" className="block">
@@ -351,6 +340,28 @@ const CreateReward = () => {
                 </div>
               )}
             </div>
+            {/* Points Cost */}
+            <div>
+              <Text as="label" size="2" weight="medium" htmlFor="pointsCost">
+                Points Cost *
+              </Text>
+              <TextField.Root
+                id="pointsCost"
+                type="number"
+                placeholder="Enter points cost"
+                {...register('pointsCost', {
+                  required: 'Points cost is required',
+                  min: { value: 1, message: 'Points cost must be at least 1' }, 
+                })}
+                className="mt-2"
+              />
+              {errors.pointsCost && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.pointsCost.message}
+                </Text>
+              )}
+            </div>
+
           </FormSection>
 
           {/* Availability Settings */}
@@ -436,20 +447,67 @@ const CreateReward = () => {
             <div className="space-y-6">
               {/* Image Upload */}
               <div>
-                <Text as="label" size="2" weight="medium" htmlFor="image">
+                <Text as="label" size="2" weight="medium">
                   Reward Image (Optional)
                 </Text>
-                <div className="mt-2 border-2 border-dashed border-[--gray-6] rounded-lg p-6 text-center">
-                  <Upload size={24} className="mx-auto mb-2 text-[--gray-9]" />
-                  <Text size="2" color="gray">
-                    Upload an image or enter image URL
+                <div className="mt-2 space-y-4">
+                  {/* Image Preview */}
+                  {previewUrl ? (
+                    <div className="relative w-full max-w-md">
+                      <img
+                        src={previewUrl}
+                        alt="Reward preview"
+                        className="w-full h-48 object-cover rounded-lg border border-[--gray-6]"
+                      />
+                      <IconButton
+                        type="button"
+                        variant="solid"
+                        color="red"
+                        size="1"
+                        className="absolute top-2 right-2"
+                        onClick={removeImage}
+                      >
+                        <X size={14} />
+                      </IconButton>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-[--gray-6] rounded-lg p-8 text-center">
+                      <ImageIcon size={32} className="mx-auto mb-3 text-[--gray-9]" />
+                      <Text size="2" color="gray" className="block mb-3">
+                        Select an image file to upload
+                      </Text>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        asChild
+                        className="cursor-pointer"
+                      >
+                        <label>
+                          <Upload size={16} />
+                          Choose File
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                            className="hidden"
+                            onChange={handleFileChange}
+                          />
+                        </label>
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* File Info */}
+                  {selectedFile && (
+                    <div className="p-3 bg-[--gray-2] rounded-md">
+                      <Text size="1" color="gray">
+                        Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </Text>
+                    </div>
+                  )}
+
+                  <Text size="1" color="gray">
+                    Supported formats: JPG, PNG, GIF, WebP (max 5MB)
                   </Text>
-                  <TextField.Root
-                    id="image"
-                    placeholder="https://example.com/image.jpg"
-                    {...register('image')}
-                    className="mt-2"
-                  />
                 </div>
               </div>
 
@@ -474,7 +532,7 @@ const CreateReward = () => {
                 </Text>
                 <TextArea
                   id="restrictions"
-                  placeholder="Any restrictions or conditions for this reward?"
+                  placeholder="Any restrictions or requirements for this reward?"
                   {...register('restrictions')}
                   className="mt-2"
                   rows={3}
@@ -517,8 +575,10 @@ const CreateReward = () => {
               </div>
             </div>
           </FormSection>
+
         </form>
       </div>
+
     </Container>
   );
 };

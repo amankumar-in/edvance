@@ -187,11 +187,7 @@ function Tasks() {
           </div>
 
           {/* Create task button */}
-          <Button asChild>
-            <Link to='create'>
-              <Plus size={16} /> Add Task
-            </Link>
-          </Button>
+          <CreateTaskButton />
         </Flex>
 
         <Separator size={'4'} />
@@ -627,6 +623,7 @@ function Tasks() {
             title="No tasks found"
             description="No tasks found matching your criteria."
             icon={<ClipboardList size={16} />}
+            action={<CreateTaskButton />}
           />
         )}
       </div>
@@ -635,3 +632,13 @@ function Tasks() {
 }
 
 export default Tasks
+
+function CreateTaskButton() {
+  return (
+    <Button asChild>
+      <Link to='create'>
+        <Plus size={16} /> Add Task
+      </Link>
+    </Button>
+  );
+}

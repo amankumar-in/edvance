@@ -7,6 +7,7 @@ const {
   canManageRewards,
   authorizeRoles,
 } = require("../middleware/auth.middleware");
+const { uploadSingle, handleUploadError } = require("../middleware/upload.middleware");
 
 /**
  * @openapi
@@ -302,7 +303,7 @@ router.use(authMiddleware);
  *                 error:
  *                   type: string
  */
-router.post("/", canManageRewards, rewardController.createReward);
+router.post("/", canManageRewards, uploadSingle, handleUploadError, rewardController.createReward);
 
 /**
  * @openapi
@@ -603,7 +604,7 @@ router.get("/:id", rewardController.getRewardById);
  *                 error:
  *                   type: string
  */
-router.put("/:id", canManageRewards, rewardController.updateReward);
+router.put("/:id", canManageRewards, uploadSingle, handleUploadError, rewardController.updateReward);
 
 /**
  * @openapi

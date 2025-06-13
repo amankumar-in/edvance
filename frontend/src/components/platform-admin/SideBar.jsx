@@ -1,6 +1,18 @@
 import { Button, Select, TextField } from '@radix-ui/themes'
 import {
-  Search
+  Search, 
+  LayoutDashboard,
+  Users,
+  CheckSquare,
+  ListTodo,
+  Gift,
+  Award,
+  BarChart3,
+  School,
+  MessageCircle,
+  Megaphone,
+  FileBarChart,
+  Settings
 } from 'lucide-react'
 import React from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
@@ -9,52 +21,64 @@ const sideBarItems = [
   {
     label: 'Overview',
     href: '',
+    Icon: LayoutDashboard,
   },
   {
     label: 'Users',
     href: 'users',
+    Icon: Users,
   },
   {
     label: 'Tasks',
     href: 'tasks',
+    Icon: CheckSquare,
   },
   {
     label: "Task Categories",
     href: 'task-categories',
+    Icon: ListTodo,
   },
   {
     label: "Rewards",
     href: 'rewards',
+    Icon: Gift,
   },
   {
     label: "Badges",
     href: 'badges',
+    Icon: Award,
   },
   {
     label: "Scholarship Points",
     href: 'scholarship-points',
+    Icon: BarChart3,
   },
   {
     label: 'Schools',
     href: 'schools',
+    Icon: School,
   },
   {
     label: "Communications",
     href: 'communications',
+    Icon: MessageCircle,
   },
   {
     label: "Promotions",
     href: 'promotions',
+    Icon: Megaphone,
   },
   {
     label: 'Reports',
     href: 'reports',
+    Icon: FileBarChart,
   },
   {
     label: 'Settings',
     href: 'settings',
+    Icon: Settings,
   },
-]
+];
 
 function SideBar({ isOpen, toggleSidebar }) {
   const { pathname } = useLocation();
@@ -110,7 +134,7 @@ function SideBar({ isOpen, toggleSidebar }) {
 
 
 
-        {sideBarItems.map(({ label, href}) => {
+        {sideBarItems.map(({ label, href, Icon}) => {
           if (label === 'Overview') {
             return (
               <NavLink
@@ -119,6 +143,7 @@ function SideBar({ isOpen, toggleSidebar }) {
                 onClick={() => window.innerWidth < 768 && toggleSidebar()}
                 className={`${pathname === '/platform-admin/dashboard' || pathname === '/platform-admin/dashboard/' ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
               >
+                {Icon && <Icon className='size-5' />}
                 <span>{label}</span>
               </NavLink>
             );
@@ -130,6 +155,7 @@ function SideBar({ isOpen, toggleSidebar }) {
               onClick={() => window.innerWidth < 768 && toggleSidebar()}
               className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
             >
+              {Icon && <Icon className='size-5' />}
               <span>{label}</span>
             </NavLink>
           );

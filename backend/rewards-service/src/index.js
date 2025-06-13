@@ -3,6 +3,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
+const path = require("path");
 require("dotenv").config();
 
 // Import routes
@@ -32,7 +33,8 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // Increased limit for image uploads
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
 
 // Health check route
@@ -43,6 +45,11 @@ app.get("/health", (req, res) => {
     environment: NODE_ENV,
   });
 });
+
+// Serve uploaded files in development mode
+if (process.env.NODE_ENV !== "production") {
+  app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+}
 
 // API Routes - include full path prefixes to match gateway routing
 app.use("/api/rewards/redemptions", redemptionRoutes);

@@ -427,11 +427,7 @@ const RewardCategories = () => {
               <RefreshCw size={16} />
               Initialize
             </Button>
-            <Button asChild>
-              <Link to='create'>
-                <Plus size={16} /> Add Category
-              </Link>
-            </Button>
+            <CreateCategoryButton />
           </Flex>
         </Flex>
 
@@ -458,7 +454,7 @@ const RewardCategories = () => {
               <Select.Content variant='soft' position='popper'>
                 <Select.Group>
                   <Select.Label>
-                     Select type
+                    Select type
                   </Select.Label>
                   {typeOptions.map(option => (
                     <Select.Item key={option.value} value={option.value}>
@@ -475,7 +471,7 @@ const RewardCategories = () => {
               <Select.Content variant='soft' position='popper'>
                 <Select.Group>
                   <Select.Label>
-                   Select visibility
+                    Select visibility
                   </Select.Label>
                   {visibilityOptions.map(option => (
                     <Select.Item key={option.value} value={option.value}>
@@ -492,7 +488,7 @@ const RewardCategories = () => {
               <Select.Content variant='soft' position='popper'>
                 <Select.Group>
                   <Select.Label>
-                   Select status
+                    Select status
                   </Select.Label>
                   {statusOptions.map(option => (
                     <Select.Item key={option.value} value={option.value}>
@@ -536,13 +532,7 @@ const RewardCategories = () => {
             title="No categories found"
             description="Create your first reward category to get started"
             icon={<Folder size={48} />}
-            action={
-              <Button asChild>
-                <Link to="create">
-                  <Plus size={16} /> Create Category
-                </Link>
-              </Button>
-            }
+            action={<CreateCategoryButton />}
           />
         ) : (
           <>
@@ -624,4 +614,14 @@ const RewardCategories = () => {
   );
 };
 
-export default RewardCategories; 
+export default RewardCategories;
+
+function CreateCategoryButton() {
+  return (
+    <Button asChild>
+      <Link to='create'>
+        <Plus size={16} /> Add Category
+      </Link>
+    </Button>
+  );
+}

@@ -3,9 +3,12 @@ import {
   createDefaultRewardCategories,
   createRewardCategory,
   deleteRewardCategory,
-  updateRewardCategory
+  updateRewardCategory,
+  createReward,
+  updateReward,
+  deleteReward
 } from "./rewards.api";
-import { REWARD_CATEGORIES_QUERY_KEY } from "./rewards.queries";
+import { REWARD_CATEGORIES_QUERY_KEY, REWARDS_QUERY_KEY } from "./rewards.queries";
 
 /**
  * Create a new reward category
@@ -68,6 +71,59 @@ const useCreateDefaultRewardCategories = () => {
   });
 };
 
+/**
+ * Create a new reward
+ */
+const useCreateReward = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createReward,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.all });
+    },
+  });
+};
+
+/**
+ * Update an existing reward
+ */
+const useUpdateReward = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateReward,
+    onSuccess: (data, variables) => {
+      Promise.all([
+        // Invalidate the list query
+        queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.all }),
+        // Invalidate the specific reward query
+        queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.detail(variables.id) }),
+      ]);
+    },
+  });
+};
+
+/**
+ * Delete a reward
+ */
+const useDeleteReward = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteReward,
+    onSuccess: () => {
+      return queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.all });
+    },
+  });
+};
+
 export {
-  useCreateDefaultRewardCategories, useCreateRewardCategory, useDeleteRewardCategory, useUpdateRewardCategory
+  useCreateDefaultRewardCategories, 
+  useCreateRewardCategory, 
+  useDeleteRewardCategory, 
+  useUpdateRewardCategory,
+  useCreateReward,
+  useUpdateReward,
+  useDeleteReward
 };

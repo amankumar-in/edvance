@@ -56,7 +56,65 @@ const getRewardCategoryHierarchy = async (params = {}) => {
   return response.data;
 };
 
+/**
+ * Get all rewards
+ */
+const getRewards = async (params = {}) => {
+  const response = await apiClient.get(`/rewards`, { params });
+  return response.data;
+};
+
+/**
+ * Get reward by ID
+ */
+const getRewardById = async (id) => {
+  const response = await apiClient.get(`/rewards/${id}`);
+  return response.data;
+};
+
+/**
+ * Create a new reward
+ */
+const createReward = async (formData) => {
+  const response = await apiClient.post(`/rewards`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
+ * Update an existing reward
+ */
+const updateReward = async ({ id, formData }) => {
+  const response = await apiClient.put(`/rewards/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
+ * Delete a reward (soft delete)
+ */
+const deleteReward = async (id) => {
+  const response = await apiClient.delete(`/rewards/${id}`);
+  return response.data;
+};
+
 export {
-  createDefaultRewardCategories, createRewardCategory, deleteRewardCategory, getRewardCategories,
-  getRewardCategoryById, getRewardCategoryHierarchy, updateRewardCategory
+  createDefaultRewardCategories, 
+  createRewardCategory, 
+  deleteRewardCategory, 
+  getRewardCategories,
+  getRewardCategoryById, 
+  getRewardCategoryHierarchy, 
+  updateRewardCategory, 
+  getRewards,
+  getRewardById,
+  createReward,
+  updateReward,
+  deleteReward
 };
