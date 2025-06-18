@@ -58,6 +58,20 @@ const taskCompletionSchema = new mongoose.Schema({
       content: {
         type: String,
       },
+
+      // File-specific fields for uploaded evidence
+      fileName: {
+        type: String,
+      },
+
+      contentType: {
+        type: String,
+      },
+
+      fileType: {
+        type: String,
+        enum: ['image', 'document']
+      },
     }
   ],
 

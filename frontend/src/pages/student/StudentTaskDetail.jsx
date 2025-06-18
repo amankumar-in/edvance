@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Callout, Card, Flex, Grid, Heading, Separator, Text, TextArea } from '@radix-ui/themes';
+import { Badge, Box, Button, Callout, Card, Flex, Grid, Heading, Separator, Text } from '@radix-ui/themes';
 import { AlertCircle, AlertCircleIcon, ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileImage, FileText, Link as LinkIcon, MessageSquare, Target, Upload, User, XCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router';
@@ -6,25 +6,27 @@ import { toast } from 'sonner';
 import { useSubmitTask } from '../../api/task/task.mutations';
 import { useGetStudentTaskById } from '../../api/task/task.queries';
 import { Loader, TaskSubmissionDialog } from '../../components';
+import AttachmentCard from '../../components/AttachmentCard';
 import { taskCategoryOptions, taskDifficultyOptions } from '../../utils/constants';
 import { formatDate } from '../../utils/helperFunctions';
 
+
 function StudentTaskDetail() {
   const { id } = useParams();
-  const [newComment, setNewComment] = useState('');
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
 
   const { data, isLoading, isError, error } = useGetStudentTaskById(id);
   const { data: task } = data ?? {};
+  console.log(task)
 
   const { mutateAsync: submitTask, isPending: isSubmitting, isError: isSubmissionError, error: submissionError } = useSubmitTask()
 
   // Handle task submission
   const handleTaskSubmission = async (submissionData) => {
-    const { note, evidence, taskId } = submissionData
+    const { taskId, data } = submissionData;
 
     try {
-      await submitTask({ id: taskId, data: { note, evidence } })
+      await submitTask({ id: taskId, data });
       toast.success('Task submitted successfully');
       setIsSubmissionOpen(false);
     } catch (error) {
@@ -309,65 +311,115 @@ function StudentTaskDetail() {
                 <>
                   <Separator size="4" />
                   <Flex direction="column" gap="3">
-                    <Text size="2" weight="medium">Attachments</Text>
+                    <Text size="2" weight="medium">Attachments ({task?.attachments?.length})</Text>
                     {task?.attachments?.map((attachment, index) => (
-                      <Card key={index} variant="surface" size="2">
-                        <Flex align="center" gap="3" p="2">
-                          <FileText size={16} className="text-[--gray-9]" />
-                          <Text size="2" style={{ flex: 1 }}>{attachment?.name}</Text>
-                          <Button size="1" variant="ghost">Download</Button>
-                        </Flex>
-                      </Card>
+                      <AttachmentCard
+                        key={index}
+                        attachment={attachment}
+                        showDownload={true}
+                      />
                     ))}
+                  </Flex>
+                </>
+              )}
+
+              {/* External Resource */}
+              {task?.externalResource && task?.externalResource?.url && task?.externalResource?.platform && task?.externalResource?.resourceId && (
+                <>
+                  <Separator size="4" />
+                  <Flex direction="column" gap="3">
+                    <Text size="2" weight="medium">External Resource</Text>
+                    <ExternalResourcePreview
+                      url={task.externalResource.url}
+                      resource={task.externalResource}
+                    />
                   </Flex>
                 </>
               )}
             </Flex>
           </Card>
 
-          {/* Comments Section */}
-          <Card size="2">
-            <Flex direction="column" gap="4">
-              <Heading size="4">Comments</Heading>
+          {/* Your Submission - Show after task is submitted */}
+          {task?.completionStatus?.hasSubmitted && (
+            <Card size="2">
+              <Flex direction="column" gap="4">
+                <Heading size="4">Your Submission</Heading>
 
-              {/* Existing Comments */}
-              {/* <Flex direction="column" gap="3">
-                {task?.comments?.map((comment, index) => (
-                  <Card key={index} variant="surface" size="2">
-                    <Flex direction="column" gap="2">
-                      <Flex justify="between" align="center">
-                        <Flex align="center" gap="2">
-                          <Avatar size="1" fallback={comment?.createdBy[0]} />
-                          <Text size="2" weight="medium">{comment?.createdBy}</Text>
-                          <Badge variant="outline" size="1">{comment?.creatorRole}</Badge>
-                        </Flex>
-                        <Text size="1" color="gray">{formatDate(comment?.createdAt)}</Text>
-                      </Flex>
-                      <Text size="2">{comment?.text}</Text>
+                {/* Submission Note */}
+                {task?.completionStatus?.note && (
+                  <Flex direction="column" gap="2">
+                    <Text size="2" weight="medium">Notes</Text>
+                    <Card variant="surface" size="1">
+                      <Text as="p" size="2" className="whitespace-pre-wrap">
+                        {task.completionStatus.note}
+                      </Text>
+                    </Card>
+                  </Flex>
+                )}
+
+                {/* Evidence */}
+                {task?.completionStatus?.evidence && task.completionStatus.evidence.length > 0 && (
+                  <Flex direction="column" gap="3">
+                    <Text size="2" weight="medium">Evidence ({task.completionStatus.evidence.length})</Text>
+                    <Flex direction="column" gap="3">
+                      {task.completionStatus.evidence.map((evidence, index) => (
+                        <Card key={index} variant="surface" size="1">
+                          <Flex align="start" gap="3">
+                            {evidence.type === 'image' && <FileImage size={14} />}
+                            {evidence.type === 'document' && <FileText size={14} />}
+                            {evidence.type === 'link' && <LinkIcon size={14} />}
+                            {evidence.type === 'text' && <MessageSquare size={14} />}
+
+                            <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
+                              <Text as='p' size="1" weight="medium" className="leading-none capitalize">
+                                {evidence.type}
+                              </Text>
+
+                              {evidence.type === 'text' && evidence.content && (
+                                <Text as="p" size="2" className="whitespace-pre-wrap break-words">
+                                  {evidence.content}
+                                </Text>
+                              )}
+
+                              {evidence.type === 'link' && evidence.url && (
+                                <Text as="p" size="2" color="blue" className="break-all line-clamp-1 hover:underline" asChild>
+                                  <a href={evidence.url} target="_blank" rel="noopener noreferrer">
+                                    {evidence.url}
+                                  </a>
+                                </Text>
+                              )}
+
+                              {(evidence.type === 'image' || evidence.type === 'document') && evidence.url && (
+                                <Flex direction="column" gap="1">
+                                   <Text as="p" size="2" color="blue" className="break-all line-clamp-1 hover:underline" asChild>
+                                  <a href={evidence.url} target="_blank" rel="noopener noreferrer">
+                                    {evidence.fileName || 'View File'}
+                                  </a>
+                                </Text>
+                                  {evidence.contentType && (
+                                    <Text as='p' size="1" color="gray">
+                                      {evidence.contentType}
+                                    </Text>
+                                  )}
+                                </Flex>
+                              )}
+                            </Flex>
+                          </Flex>
+                        </Card>
+                      ))}
                     </Flex>
-                  </Card>
-                ))}
-              </Flex> */}
+                  </Flex>
+                )}
 
-              {/* Add Comment */}
-              <Separator size="4" />
-              <Flex direction="column" gap="3">
-                <Text size="2" weight="medium">Add a comment</Text>
-                <TextArea
-                  placeholder="Ask a question or share your progress..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  rows={3}
-                />
-                <Flex justify="end">
-                  <Button size="2">
-                    <MessageSquare size={16} />
-                    Post Comment
-                  </Button>
-                </Flex>
+                {/* If no notes or evidence */}
+                {(!task?.completionStatus?.note && (!task?.completionStatus?.evidence || task.completionStatus.evidence.length === 0)) && (
+                  <Text as="p" size="2" color="gray" style={{ fontStyle: 'italic' }}>
+                    No additional notes or evidence provided with this submission.
+                  </Text>
+                )}
               </Flex>
-            </Flex>
-          </Card>
+            </Card>
+          )}
         </Box>
 
         {/* Sidebar */}
@@ -379,9 +431,7 @@ function StudentTaskDetail() {
 
               {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
                 <Button
-                  size="3"
                   onClick={() => setIsSubmissionOpen(true)}
-                  color={task?.completionStatus?.status === 'rejected' ? 'red' : undefined}
                 >
                   <CheckCircle size={16} />
                   {getSubmitButtonText(task?.completionStatus?.status)}
@@ -442,12 +492,12 @@ function StudentTaskDetail() {
                   </Text>
                 </Flex>}
 
-                {task?.completionStatus?.status === 'rejected' && task?.completionStatus?.rejectionDate && <Flex align="center" gap="2" justify="between" wrap="wrap">
+                {task?.completionStatus?.status === 'rejected' && task?.completionStatus?.approvalDate && <Flex align="center" gap="2" justify="between" wrap="wrap">
                   <Text as='p' size="2">
                     Rejected on:
                   </Text>
                   <Text as='p' size="2" weight="medium">
-                    {formatDate(task?.completionStatus?.rejectionDate, {
+                    {formatDate(task?.completionStatus?.approvalDate, {
                       dateStyle: 'medium',
                       timeStyle: 'medium',
                     })}
@@ -580,4 +630,44 @@ function StudentTaskDetail() {
   );
 }
 
-export default StudentTaskDetail; 
+export default StudentTaskDetail;
+
+// Smart External Resource Preview Component
+const ExternalResourcePreview = ({ url, resource }) => {
+  return (
+    <Card variant="surface" size="2">
+      <Flex direction="column" gap="2">
+        <Flex align="center" gap="3">
+          <div className="flex items-center justify-center size-12 bg-[--blue-a2] rounded-lg">
+            <LinkIcon size={24} className="text-[--blue-11]" />
+          </div>
+          <div className="flex-1">
+            <Text as='p' size="3" weight="medium" className="block">
+              {resource?.platform || 'External Link'}
+            </Text>
+            <Text as='p' size="2" color="gray" className="block">
+              {resource?.resourceId || 'Click to open resource'}
+            </Text>
+          </div>
+        </Flex>
+
+        <Text size="2" color="gray" className="break-all line-clamp-1">
+          {url}
+        </Text>
+
+        <Flex justify="between" align="center" gap="2" wrap="wrap">
+          <Button asChild className={"ml-auto"}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <LinkIcon size={16} />
+              Open Resource
+            </a>
+          </Button>
+        </Flex>
+      </Flex>
+    </Card>
+  );
+};

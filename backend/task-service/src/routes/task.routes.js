@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const taskController = require("../controllers/task.controller");
 const authMiddleware = require("../middleware/auth.middleware");
+const { uploadMultiple } = require("../middleware/upload.middleware");
 
 /**
  * @openapi
@@ -276,6 +277,7 @@ router.post(
     "social_worker",
     "platform_admin",
   ]),
+  uploadMultiple,
   taskController.createTask
 );
 
@@ -405,6 +407,7 @@ router.put(
     "social_worker",
     "platform_admin",
   ]),
+  uploadMultiple,
   taskController.updateTask
 );
 
@@ -970,6 +973,7 @@ router.post(
   "/by-role/student/:id/submit",
   authMiddleware.verifyToken,
   authMiddleware.checkRoles(["student"]),
+  uploadMultiple, // Add file upload middleware for evidence files
   taskController.submitTaskCompletion
 );
 

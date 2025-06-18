@@ -1,16 +1,18 @@
 import { Badge, Button, Callout, Card, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField, Tooltip } from '@radix-ui/themes'
-import { AlertCircleIcon, BookOpen, Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClipboardList, Filter, PencilIcon, Plus, Tag, TrashIcon, Users, X } from 'lucide-react'
+import { AlertCircleIcon, BookOpen, Calendar, ClipboardList, Filter, PencilIcon, Plus, Tag, TrashIcon, Users, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
+import { toast } from 'sonner'
+import { useDeleteTask } from '../../api/task/task.mutations'
 import { useGetTasks } from '../../api/task/task.queries'
-import { EmptyStateCard, Loader } from '../../components'
+import { ConfirmationDialog, EmptyStateCard, Loader, Pagination } from '../../components'
 import { SortIcon } from '../../components/platform-admin/UserTable'
 import { formatDate } from '../../utils/helperFunctions'
 
 function Tasks() {
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(20)
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('dueDate');
   const [order, setOrder] = useState('asc');
   const currentSort = { field: sort, order: order };
@@ -34,6 +36,9 @@ function Tasks() {
   });
 
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteTaskId, setDeleteTaskId] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   const { data, isLoading, isError, error, isFetching } = useGetTasks({
     page,
@@ -42,24 +47,20 @@ function Tasks() {
     order
   })
 
+  const { mutate: deleteTask, isPending: isDeleting } = useDeleteTask();
+
   const { data: tasks = [], pagination = {} } = data ?? {}
 
-  const handlePreviousPage = () => {
-    if (pagination.page > 1) {
-      setPage(pagination.page - 1)
-    }
-  }
+  // function to handle page change
+  const handlePageChange = (page) => {
+    setPage(page);
+  };
 
-  const handleNextPage = () => {
-    if (pagination.page < pagination.pages) {
-      setPage(pagination.page + 1)
-    }
-  }
-
-  const handleLimitChange = (newLimit) => {
-    setLimit(Number(newLimit))
-    setPage(1) // Reset to first page when changing limit
-  }
+  // function to handle items per page change
+  const handleItemsPerPageChange = (newItemsPerPage, newCurrentPage) => {
+    setLimit(newItemsPerPage);
+    setPage(newCurrentPage);
+  };
 
   const handleSort = (field) => {
     if (sort === field) {
@@ -100,6 +101,34 @@ function Tasks() {
 
   const getActiveFiltersCount = () => {
     return Object.values(filters).filter(value => value !== '').length;
+  };
+
+  const handleDeleteClick = (task) => {
+    setTaskToDelete(task);
+    setDeleteTaskId(task._id);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteTaskId) {
+      deleteTask(deleteTaskId, {
+        onSuccess: () => {
+          toast.success('Task deleted successfully');
+          setDeleteTaskId(null);
+          setTaskToDelete(null);
+          setShowDeleteDialog(false);
+        },
+        onError: (error) => {
+          toast.error(error?.response?.data?.message || error?.message || 'Failed to delete task');
+        }
+      });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteTaskId(null);
+    setTaskToDelete(null);
+    setShowDeleteDialog(false);
   };
 
   const columns = [
@@ -168,7 +197,7 @@ function Tasks() {
   ]
   return (
     <div>
-      {isFetching && !isLoading && <div className='fixed left-0 right-0 top-16'>
+      {isFetching && !isLoading && <div className='fixed right-0 left-0 top-16'>
         <BarLoader
           color='#0090ff'
           width={'100%'}
@@ -527,18 +556,22 @@ function Tasks() {
                             size={'1'}
                             variant='soft'
                             highContrast
+                            asChild
                           >
-                            <PencilIcon size={14} />
+                            <Link to={`edit/${task._id}`}>
+                              <PencilIcon size={14} />
+                            </Link>
                           </IconButton>
                         </Tooltip>
                         <Separator orientation={'vertical'} />
-                        <Tooltip content='Delete user'>
+                        <Tooltip content='Delete task'>
                           <IconButton
-                            // variant='ghost'
                             color='red'
                             size={'1'}
                             variant='soft'
                             highContrast
+                            disabled={isDeleting && deleteTaskId === task._id}
+                            onClick={() => handleDeleteClick(task)}
                           >
                             <TrashIcon size={14} />
                           </IconButton>
@@ -550,72 +583,23 @@ function Tasks() {
               </Table.Body>
             </Table.Root>
 
-            {/* Pagination Controls */}
-            {!isLoading && !isError && tasks.length > 0 && (
-              <Flex justify="between" align="center" mt="4" wrap={'wrap'} gap={'2'}>
-                <Flex align="center" gap="2">
-                  <Text size="2">Rows per page:</Text>
-                  <Select.Root value={String(limit)} onValueChange={handleLimitChange}>
-                    <Select.Trigger />
-                    <Select.Content variant='soft' position={'popper'}>
-                      <Select.Group>
-                        <Select.Item value="10">10</Select.Item>
-                        <Select.Item value="20">20</Select.Item>
-                        <Select.Item value="50">50</Select.Item>
-                        <Select.Item value="100">100</Select.Item>
-                      </Select.Group>
-                    </Select.Content>
-                  </Select.Root>
-                </Flex>
-
-                <Flex align="center" gap="2">
-                  <Text size="2">
-                    {pagination.page > 0 ? ((pagination.page - 1) * pagination.limit) + 1 : 0}-
-                    {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total || 0}
-                  </Text>
-                  <IconButton
-                    color='gray'
-                    aria-label='First'
-                    title='First'
-                    variant="ghost"
-                    disabled={pagination.page <= 1}
-                    onClick={() => setPage(1)}
-                  >
-                    <ChevronsLeft size={16} />
-                  </IconButton>
-                  <IconButton
-                    color='gray'
-                    aria-label='Previous'
-                    title='Previous'
-                    variant="ghost"
-                    disabled={pagination.page <= 1}
-                    onClick={handlePreviousPage}
-                  >
-                    <ChevronLeft size={16} />
-                  </IconButton>
-                  <IconButton
-                    color='gray'
-                    aria-label='Next'
-                    title='Next'
-                    variant="ghost"
-                    disabled={pagination.page >= pagination.pages}
-                    onClick={handleNextPage}
-                  >
-                    <ChevronRight size={16} />
-                  </IconButton>
-                  <IconButton
-                    color='gray'
-                    aria-label='Last'
-                    title='Last'
-                    variant="ghost"
-                    disabled={pagination.page >= pagination.pages}
-                    onClick={() => setPage(pagination.pages)}
-                  >
-                    <ChevronsRight size={16} />
-                  </IconButton>
-                </Flex>
-              </Flex>
-            )}
+            {/* Pagination */}
+            <Pagination
+              currentPage={page}
+              totalPages={pagination?.pages ?? 1}
+              totalItems={pagination?.total ?? 0}
+              itemsPerPage={limit}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              showItemsPerPage={true}
+              showPageInfo={true}
+              showFirstLast={true}
+              showPrevNext={true}
+              itemsPerPageOptions={[5, 10, 20, 50, 100]}
+              itemLabel="tasks"
+              disabled={isLoading || isFetching}
+              className='mt-6'
+            />
           </div>
         ) : (
           // Empty state
@@ -626,6 +610,19 @@ function Tasks() {
             action={<CreateTaskButton />}
           />
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmationDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          title="Delete Task"
+          description={`Are you sure you want to delete "${taskToDelete?.title}"? This action cannot be undone.`}
+          onConfirm={handleDeleteConfirm}
+          confirmText="Delete Task"
+          cancelText="Cancel"
+          isLoading={isDeleting}
+          confirmColor="red"
+        />
       </div>
     </div>
   )

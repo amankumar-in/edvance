@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTask, reviewTask, submitTask, toggleTaskVisibility } from "./task.api";
+import { createTask, deleteTask, reviewTask, submitTask, toggleTaskVisibility, updateTask } from "./task.api";
 
 // Create a task
 export const useCreateTask = () => {
@@ -48,5 +48,30 @@ export const useReviewTask = () => {
             return queryClient.invalidateQueries({ queryKey: ["tasks", "approval"] });
         }
     })
+}
+
+// Update a task
+export const useUpdateTask = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }) => updateTask(id, data),
+        onSuccess: (_, variables) => {
+            Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+                queryClient.invalidateQueries({ queryKey: ["task", variables.id] })
+            ]);
+        },
+    });
+}
+
+// Delete a task
+export const useDeleteTask = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: deleteTask,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        },
+    });
 }
 

@@ -88,11 +88,10 @@ const StudentPoints = () => {
   };
 
   return (
-    <div >
-      <div className="mx-auto space-y-6 max-w-7xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="text-center sm:text-left">
-          <Text size="7" weight="bold" style={{ color: 'var(--gray-12)' }} className="block">
+          <Text size="7" weight="bold">
             Scholarship Points
           </Text>
           <Text size="3" color="gray" className="block mt-2">
@@ -144,7 +143,7 @@ const StudentPoints = () => {
                 </Flex>
                 <Progress value={pointAccount?.progressPercentage ?? 0} className="w-full" />
                 <Text size="1" color="gray" className="mt-1">
-                  {pointAccount?.progressPercentage}% progress to next level
+                  {pointAccount?.progressPercentage?.toFixed(2)}% progress to next level
                 </Text>
               </div>
             )}
@@ -268,7 +267,6 @@ const StudentPoints = () => {
           </Tabs.Content>
         </Tabs.Root>
       </div>
-    </div>
   );
 };
 

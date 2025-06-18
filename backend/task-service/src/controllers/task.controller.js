@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const axios = require("axios");
 const TaskVisibility = require("../models/taskVisibility.model");
 const TaskCompletion = require("../models/taskCompletion.model");
+const { getFileUrl, getFileType } = require("../middleware/upload.middleware");
 
 /**
  * Task Controller
@@ -14,29 +15,47 @@ const taskController = {
    */
   createTask: async (req, res) => {
     try {
+      // Helper function to parse JSON strings from FormData
+      const parseField = (field) => {
+        if (typeof field === 'string') {
+          try {
+            return JSON.parse(field);
+          } catch {
+            return field;
+          }
+        }
+        return field;
+      };
+
       const {
         title,
         description,
         category,
         subCategory,
         pointValue,
-        assignedTo,
+        assignedTo: rawAssignedTo,
         dueDate,
         isRecurring,
-        recurringSchedule,
+        recurringSchedule: rawRecurringSchedule,
         requiresApproval,
         approverType,
         specificApproverId,
-        externalResource,
+        externalResource: rawExternalResource,
         attachments,
         difficulty,
         schoolId,
         classId,
         // visibility,
-        metadata,
+        metadata: rawMetadata,
         role: creatorRole
       } = req.body;
 
+      // Parse complex objects that might be JSON strings from FormData
+      const assignedTo = parseField(rawAssignedTo);
+      const recurringSchedule = parseField(rawRecurringSchedule);
+      const externalResource = parseField(rawExternalResource);
+      const metadata = parseField(rawMetadata);
+      
       // if creatorRole is platform_admin or sub_admin, set createdBy to 'system' else set it to the user's first and last name
       const createdBy = creatorRole === 'platform_admin' || creatorRole === 'sub_admin' ? 'system' : req.user.firstName + ' ' + req.user.lastName;
 
@@ -56,6 +75,20 @@ const taskController = {
         });
       }
 
+      // Process uploaded files if any
+      let processedAttachments = [];
+      if (req.files && req.files.length > 0) {
+        processedAttachments = req.files.map(file => ({
+          type: getFileType(file.filename),
+          url: getFileUrl(file.filename),
+          name: file.originalname,
+          contentType: file.mimetype,
+        }));
+      } else if (attachments && Array.isArray(attachments)) {
+        // Handle attachments from form data (if no files uploaded)
+        processedAttachments = attachments;
+      }
+
       // Create new task
       const task = new Task({
         title,
@@ -68,10 +101,10 @@ const taskController = {
         assignedTo,
         status: "pending",
         dueDate: dueDate ? new Date(dueDate) : undefined,
-        isRecurring: isRecurring || false,
-        recurringSchedule: isRecurring ? recurringSchedule : undefined,
+        isRecurring: isRecurring === 'true' || isRecurring === true,
+        recurringSchedule: (isRecurring === 'true' || isRecurring === true) ? recurringSchedule : undefined,
         requiresApproval:
-          requiresApproval !== undefined ? requiresApproval : true,
+          requiresApproval !== undefined ? requiresApproval === 'true' || requiresApproval === true : true,
         approverType:
           approverType ||
           (creatorRole === "parent"
@@ -81,7 +114,7 @@ const taskController = {
               : "system"),
         specificApproverId: specificApproverId,
         externalResource,
-        attachments,
+        attachments: processedAttachments,
         difficulty,
         schoolId,
         classId,
@@ -92,7 +125,7 @@ const taskController = {
       await task.save();
 
       // If this is a recurring task, create the first instance
-      if (isRecurring && recurringSchedule) {
+      if ((isRecurring === 'true' || isRecurring === true) && recurringSchedule) {
         await taskController.createRecurringTaskInstance(task);
       }
 
@@ -166,15 +199,15 @@ const taskController = {
 
       // For now, basic check: user is creator, assigned student, or approved role (admin, etc.)
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRole = req.user.roles;
 
       const isAuthorized =
         task.createdBy === userId ||
         task.assignedTo === userId ||
-        userRole === "platform_admin" ||
-        (userRole === "school_admin" && task.schoolId) ||
-        (userRole === "teacher" && task.classId) ||
-        (userRole === "parent" && task.assignedTo === req.query.childId);
+        userRole.includes("platform_admin") ||
+        (userRole.includes("school_admin") && task.schoolId) ||
+        (userRole.includes("teacher") && task.classId) ||
+        (userRole.includes("parent") && task.assignedTo === req.query.childId);
 
       if (!isAuthorized) {
         return res.status(403).json({
@@ -202,10 +235,22 @@ const taskController = {
    */
   updateTask: async (req, res) => {
     try {
+      // Helper function to parse JSON strings from FormData
+      const parseField = (field) => {
+        if (typeof field === 'string') {
+          try {
+            return JSON.parse(field);
+          } catch {
+            return field;
+          }
+        }
+        return field;
+      };
+
       const { id } = req.params;
-      const updateData = req.body;
+      const updateData = { ...req.body };
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRole = req.user.roles;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -226,9 +271,9 @@ const taskController = {
       // Check authorization - only creator or approved roles can update
       const isAuthorized =
         task.createdBy === userId ||
-        userRole === "platform_admin" ||
-        (userRole === "school_admin" && task.schoolId) ||
-        (userRole === "teacher" &&
+        userRole.includes("platform_admin") ||
+        (userRole.includes("school_admin") && task.schoolId) ||
+        (userRole.includes("teacher") &&
           task.classId &&
           task.creatorRole === "teacher");
 
@@ -237,6 +282,54 @@ const taskController = {
           success: false,
           message: "Not authorized to update this task",
         });
+      }
+
+      // Handle attachments
+      let finalAttachments = [];
+      
+      // Get existing attachments if provided
+      if (updateData.existingAttachments) {
+        const existingAttachments = parseField(updateData.existingAttachments);
+        if (Array.isArray(existingAttachments)) {
+          finalAttachments = [...existingAttachments];
+        }
+        delete updateData.existingAttachments; // Remove from updateData
+      } else {
+        // If no existing attachments specified, keep current ones
+        finalAttachments = [...(task.attachments || [])];
+      }
+
+      // Process new uploaded files if any
+      if (req.files && req.files.length > 0) {
+        const newAttachments = req.files.map(file => ({
+          type: getFileType(file.filename),
+          url: getFileUrl(file.filename),
+          name: file.originalname,
+          contentType: file.mimetype,
+        }));
+        finalAttachments = [...finalAttachments, ...newAttachments];
+      }
+
+      // Set the final attachments
+      updateData.attachments = finalAttachments;
+
+      // Parse other complex fields
+      if (updateData.assignedTo) {
+        updateData.assignedTo = parseField(updateData.assignedTo);
+      }
+      if (updateData.externalResource) {
+        updateData.externalResource = parseField(updateData.externalResource);
+      }
+      if (updateData.recurringSchedule) {
+        updateData.recurringSchedule = parseField(updateData.recurringSchedule);
+      }
+
+      // Handle boolean conversions for FormData
+      if (updateData.requiresApproval !== undefined) {
+        updateData.requiresApproval = updateData.requiresApproval === 'true' || updateData.requiresApproval === true;
+      }
+      if (updateData.isRecurring !== undefined) {
+        updateData.isRecurring = updateData.isRecurring === 'true' || updateData.isRecurring === true;
       }
 
       // Don't allow changing certain fields after creation
@@ -322,7 +415,7 @@ const taskController = {
     try {
       const { id } = req.params;
       const userId = req.user.id;
-      const userRole = req.user.role;
+      const userRole = req.user.roles;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -343,9 +436,9 @@ const taskController = {
       // Check authorization - only creator or approved roles can delete
       const isAuthorized =
         task.createdBy === userId ||
-        userRole === "platform_admin" ||
-        (userRole === "school_admin" && task.schoolId) ||
-        (userRole === "teacher" &&
+        userRole.includes("platform_admin") ||
+        (userRole.includes("school_admin") && task.schoolId) ||
+        (userRole.includes("teacher") &&
           task.classId &&
           task.creatorRole === "teacher");
 
@@ -524,9 +617,21 @@ const taskController = {
    */
   submitTaskCompletion: async (req, res) => {
     try {
+      // Helper function to parse JSON strings from FormData
+      const parseField = (field) => {
+        if (typeof field === 'string') {
+          try {
+            return JSON.parse(field);
+          } catch {
+            return field;
+          }
+        }
+        return field;
+      };
+
       const { profiles } = req.user;
       const { id } = req.params;
-      const { note, evidence } = req.body;
+      const { note, evidence: rawEvidence } = req.body;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -610,6 +715,29 @@ const taskController = {
         });
       }
 
+      // Process evidence including file uploads
+      let processedEvidence = [];
+      
+      // Parse evidence from FormData if it exists (for text/link evidence)
+      const textEvidence = parseField(rawEvidence) || [];
+      
+      // Add text/link evidence first
+      processedEvidence = [...textEvidence];
+      
+      // Process uploaded files if any
+      if (req.files && req.files.length > 0) {
+        const fileEvidence = req.files.map(file => ({
+          type: getFileType(file.filename), // This will return 'image' or 'document'
+          url: getFileUrl(file.filename),
+          fileName: file.originalname,
+          contentType: file.mimetype,
+          fileType: getFileType(file.filename),
+        }));
+        
+        // Add file evidence to the processed evidence array
+        processedEvidence = [...processedEvidence, ...fileEvidence];
+      }
+
       // Determine the status based on approval requirements
       const newStatus = task.requiresApproval ? "pending_approval" : "approved";
 
@@ -618,7 +746,7 @@ const taskController = {
         taskId: id,
         studentId: currentProfileId,
         note: note || "",
-        evidence: evidence || [],
+        evidence: processedEvidence,
         status: newStatus,
         completedAt: new Date(),
       };
@@ -2488,7 +2616,8 @@ const taskController = {
                 avatar: 1,
                 email: 1,
                 grade: 1
-              }
+              },
+              feedback: 1
             }
           }
         ]

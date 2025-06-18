@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
-import { getParentTasks, getStudentTaskById, getStudentTasks, submitTask, getTasks, getTasksForApproval } from "./task.api";
+import { getParentTasks, getStudentTaskById, getStudentTasks, submitTask, getTasks, getTasksForApproval, getTaskById } from "./task.api";
 
 // Get all tasks(for platform admin, school admin, teacher)
 export const useGetTasks = (params = {}) => {
@@ -24,6 +24,15 @@ export const useGetStudentTaskById = (id) => {
   return useQuery({
     queryKey: ["task", "student", id],
     queryFn: () => getStudentTaskById(id),
+    enabled: !!id,
+  });
+};
+
+// Get a task by id (for admin roles)
+export const useGetTaskById = (id) => {
+  return useQuery({
+    queryKey: ["task", id],
+    queryFn: () => getTaskById(id),
     enabled: !!id,
   });
 };

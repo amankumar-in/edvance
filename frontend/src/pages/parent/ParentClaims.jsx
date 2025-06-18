@@ -1,11 +1,12 @@
 import { AlertDialog, Avatar, Badge, Box, Button, Callout, Card, DataList, Dialog, Flex, Heading, Select, Separator, Text, TextArea } from '@radix-ui/themes'
 import '@radix-ui/themes/styles.css'
-import { AlertCircleIcon, BookOpen, CheckCircle, Clock, Funnel, RotateCw, XCircle } from 'lucide-react'
+import { AlertCircleIcon, BookOpen, CheckCircle, Clock, FileImage, FileText, Funnel, Link as LinkIcon, MessageSquare, RotateCw, XCircle } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { useReviewTask } from '../../api/task/task.mutations'
 import { useGetTasksForApproval } from '../../api/task/task.queries'
 import { Container, EmptyStateCard, Loader } from '../../components'
+import { formatDate } from '../../utils/helperFunctions'
 
 function ParentClaims() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -23,7 +24,7 @@ function ParentClaims() {
     role: 'parent',
     sortBy,
     order: sortOrder,
-    status: statusFilter
+    status: statusFilter,
   });
 
   const allTasks = data?.pages.flatMap(p => p.data.docs) || [];
@@ -134,7 +135,6 @@ function ParentClaims() {
                   <Select.Item value='pending_approval'>Pending Approval</Select.Item>
                   <Select.Item value='approved'>Approved</Select.Item>
                   <Select.Item value='rejected'>Rejected</Select.Item>
-                  <Select.Item value='pending'>Pending</Select.Item>
                 </Select.Content>
               </Select.Root>
             </Flex>
@@ -206,8 +206,8 @@ function ParentClaims() {
                     {claim?.childDetails?.email || 'N/A'}
                   </Text>
 
-                  <Text size='2' color='gray' className='flex items-center gap-2'>
-                    <Clock size={'14'} /> {claim?.completedAt ? new Date(claim?.completedAt).toLocaleDateString() : 'N/A'}
+                  <Text size='2' color='gray' className='flex gap-1 items-center'>
+                    <Clock size={'14'} /> {claim?.completedAt ? formatDate(claim?.completedAt, { dateStyle: 'medium' }) : 'N/A'}
                   </Text>
 
 
@@ -250,7 +250,7 @@ function ParentClaims() {
       </Box>
       {/* Details Modal */}
       <Dialog.Root open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <Dialog.Content style={{ maxWidth: 650 }}>
+        <Dialog.Content className='max-w-2xl'>
           <Dialog.Title>
             {selectedClaim?.task?.title || '[Deleted Task]'}
           </Dialog.Title>
@@ -298,7 +298,7 @@ function ParentClaims() {
                   <DataList.Item>
                     <DataList.Label minWidth="88px">Completed At</DataList.Label>
                     <DataList.Value>
-                      {selectedClaim.completedAt ? new Date(selectedClaim.completedAt).toLocaleString() : 'N/A'}
+                      {selectedClaim.completedAt ? formatDate(selectedClaim.completedAt, { dateStyle: 'medium', timeStyle: 'medium' }) : 'N/A'}
                     </DataList.Value>
                   </DataList.Item>
                   <DataList.Item>
@@ -316,7 +316,57 @@ function ParentClaims() {
                   <DataList.Item>
                     <DataList.Label minWidth="88px">Evidence</DataList.Label>
                     <DataList.Value>
+                      {selectedClaim?.evidence && selectedClaim.evidence.length > 0 ? (
+                        <Flex direction="column" gap="2">
+                          {selectedClaim.evidence.map((evidence, index) => (
+                            <Card key={index} variant="surface" size="1">
+                              <Flex align="start" gap="2">
+                                {evidence.type === 'image' && <FileImage size={14} />}
+                                {evidence.type === 'document' && <FileText size={14} />}
+                                {evidence.type === 'link' && <LinkIcon size={14} />}
+                                {evidence.type === 'text' && <MessageSquare size={14} />}
 
+                                <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
+                                  <Text as="p" weight="medium" className="leading-none capitalize">
+                                    {evidence.type}
+                                  </Text>
+
+                                  {evidence.type === 'text' && evidence.content && (
+                                    <Text as="p" className="whitespace-pre-wrap">
+                                      {evidence.content}
+                                    </Text>
+                                  )}
+
+                                  {evidence.type === 'link' && evidence.url && (
+                                    <Text as="p" color="blue" className="break-all line-clamp-1 hover:underline" asChild>
+                                      <a href={evidence.url} target="_blank" rel="noopener noreferrer" >
+                                        {evidence.url}
+                                      </a>
+                                    </Text>
+                                  )}
+
+                                  {(evidence.type === 'image' || evidence.type === 'document') && evidence.url && (
+                                    <Flex direction="column" gap="1">
+                                      <Text as="p" color="blue" className="break-all line-clamp-1 hover:underline" asChild>
+                                        <a href={evidence.url} target="_blank" rel="noopener noreferrer">
+                                          {evidence.fileName || 'View File'}
+                                        </a>
+                                      </Text>
+                                      {evidence.contentType && (
+                                        <Text as='p' size='1' color="gray">
+                                          {evidence.contentType}
+                                        </Text>
+                                      )}
+                                    </Flex>
+                                  )}
+                                </Flex>
+                              </Flex>
+                            </Card>
+                          ))}
+                        </Flex>
+                      ) : (
+                        <Text as="p">No evidence provided</Text>
+                      )}
                     </DataList.Value>
                   </DataList.Item>
                 </DataList.Root>
@@ -330,10 +380,13 @@ function ParentClaims() {
                   {selectedClaim.status === 'approved' ? <CheckCircle size={16} /> : <XCircle size={16} />}
                 </Callout.Icon>
                 <Callout.Text>
-                  <Text size="2">
-                    This task was {selectedClaim.status === 'approved' ? 'Approved' : 'Rejected'} on <strong>{new Date(selectedClaim.approvalDate).toLocaleString()}</strong>
+                  <Text as='p' size="2">
+                    This task was {selectedClaim.status === 'approved' ? 'Approved' : 'Rejected'} on <strong>{formatDate(selectedClaim.approvalDate, { dateStyle: 'medium', timeStyle: 'medium' })}</strong>
                   </Text>
                 </Callout.Text>
+                <Text as='p' size="2" className='whitespace-pre-wrap'>
+                  <strong>Feedback:</strong> {selectedClaim.feedback || 'No feedback provided'}
+                </Text>
               </Callout.Root>
               }
             </div>
@@ -368,6 +421,7 @@ function ParentClaims() {
                 value={rejectFeedback}
                 onChange={(e) => setRejectFeedback(e.target.value)}
                 rows={3}
+                resize='vertical'
               />
             </label>
           </Flex>

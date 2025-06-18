@@ -101,7 +101,7 @@ const OverviewTab = ({
                     <Text size="2" color="gray">Level {pointAccount.level}</Text>
                     <Text size="2" color="gray">Level {pointAccount.level + 1}</Text>
                   </Flex>
-                  <Progress value={pointAccount?.progressPercentage ?? 0} className="h-3 mb-2" />
+                  <Progress value={pointAccount?.progressPercentage ?? 0} className="mb-2" />
                   <Text size="1" color="gray" className="text-center">
                     {pointAccount.pointsToNextLevel} points until next level
                   </Text>
@@ -116,7 +116,7 @@ const OverviewTab = ({
                   </div>
                   <div className="p-3 text-center rounded-lg" style={{ backgroundColor: 'var(--purple-a2)' }}>
                     <Text size="4" weight="bold" style={{ color: 'var(--purple-11)' }} className="block">
-                      {pointAccount.progressPercentage}%
+                      {pointAccount?.progressPercentage?.toFixed(2)}%
                     </Text>
                     <Text size="1" color="gray" className="tracking-wide uppercase">Progress</Text>
                   </div>
@@ -343,7 +343,7 @@ const OverviewTab = ({
           </Card>
 
           {/* Achievement Highlight */}
-          {pointAccount.progressPercentage > 0 && <Card className="relative overflow-hidden" style={{ backgroundColor: 'var(--amber-a2)' }} size='2'>
+          {pointAccount?.progressPercentage > 0 && <Card className="relative overflow-hidden" style={{ backgroundColor: 'var(--amber-a2)' }} size='2'>
             <div className="absolute right-0 -translate-y-1/2 top-1/2 opacity-10">
               <Trophy className="w-24 h-24" />
             </div>
@@ -352,7 +352,7 @@ const OverviewTab = ({
                 🎉 Great Job!
               </Text>
               <Text as='p' size="2" color="gray">
-                You're {pointAccount.progressPercentage}% of the way to Level {pointAccount.level + 1}!
+                You're {pointAccount?.progressPercentage?.toFixed(2)}% of the way to Level {pointAccount?.level + 1}!
               </Text>
               <Button size="2" variant="solid" color="amber" onClick={() => setSelectedTab('levels')}>
                 View All Levels
