@@ -88,6 +88,10 @@ const rewardSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
     redemptionInstructions: {
       type: String,
     },
@@ -116,6 +120,7 @@ rewardSchema.index({ classId: 1, isActive: 1 });
 rewardSchema.index({ category: 1, subcategory: 1, isActive: 1 });
 rewardSchema.index({ categoryId: 1, isActive: 1 }); // NEW INDEX
 rewardSchema.index({ expiryDate: 1, isActive: 1 });
+rewardSchema.index({ isFeatured: 1, isActive: 1 }); // INDEX for featured rewards
 
 // Methods
 rewardSchema.methods.canBeRedeemed = function () {

@@ -35,19 +35,19 @@ async function resolveCategory(req) {
     // Use the actual category data from the database
     categoryType = category.type;
     subcategoryType = category.subcategoryType;
-    return { 
-      categoryId: category._id, 
-      categoryType: category.type, 
+    return {
+      categoryId: category._id,
+      categoryType: category.type,
       subcategoryType: category.subcategoryType,
-      categoryName: category.name 
+      categoryName: category.name
     };
   }
-  
+
   // DEPRECATED: Fallback for backward compatibility
   // If no categoryId but category/subcategory provided, attempt to find matching category
   else if (categoryType && subcategoryType) {
     console.warn("Using deprecated category/subcategory fields. Please use categoryId instead.");
-    
+
     // Look for a system category that matches
     const category = await RewardCategory.findOne({
       type: categoryType,
@@ -58,11 +58,11 @@ async function resolveCategory(req) {
 
     if (category) {
       categoryId = category._id;
-      return { 
-        categoryId: category._id, 
-        categoryType: category.type, 
+      return {
+        categoryId: category._id,
+        categoryType: category.type,
         subcategoryType: category.subcategoryType,
-        categoryName: category.name 
+        categoryName: category.name
       };
     }
   }
@@ -87,6 +87,7 @@ const rewardController = {
         schoolId,
         classId,
         metadata,
+        isFeatured,
       } = req.body;
 
       // Handle image upload
@@ -172,6 +173,7 @@ const rewardController = {
         redemptionInstructions,
         restrictions,
         metadata,
+        isFeatured: isFeatured || false,
       });
 
       await reward.save();
@@ -208,6 +210,7 @@ const rewardController = {
         limit = 20,
         sort = "pointsCost",
         order = "asc",
+        isFeatured,
       } = req.query;
 
       const filter = {
@@ -252,10 +255,17 @@ const rewardController = {
       }
 
       if (search) {
-        filter.$or = [
-          { title: { $regex: search, $options: "i" } },
-          { description: { $regex: search, $options: "i" } },
-        ];
+        filter.$and = filter.$and || [];
+        filter.$and.push({
+          $or: [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+          ],
+        });
+      }
+
+      if (isFeatured !== undefined) {
+        filter.isFeatured = isFeatured === 'true';
       }
 
       // Access control based on user role
@@ -662,10 +672,10 @@ const rewardController = {
             reason: !reward.isActive
               ? "Reward is not active"
               : reward.expiryDate && reward.expiryDate < new Date()
-              ? "Reward has expired"
-              : reward.limitedQuantity && reward.quantity <= 0
-              ? "Reward is out of stock"
-              : "Unknown reason",
+                ? "Reward has expired"
+                : reward.limitedQuantity && reward.quantity <= 0
+                  ? "Reward is out of stock"
+                  : "Unknown reason",
           },
         });
       }

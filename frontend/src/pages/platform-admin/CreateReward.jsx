@@ -52,6 +52,7 @@ const CreateReward = () => {
       restrictions: '',
       schoolId: '',
       classId: '',
+      isFeatured: false,
     },
   });
 
@@ -143,6 +144,7 @@ const CreateReward = () => {
     formData.append('pointsCost', parseInt(data.pointsCost));
     formData.append('categoryId', data.categoryId);
     formData.append('limitedQuantity', data.limitedQuantity);
+    formData.append('isFeatured', data.isFeatured);
 
     if (data.limitedQuantity && data.quantity) {
       formData.append('quantity', parseInt(data.quantity));
@@ -437,6 +439,42 @@ const CreateReward = () => {
                 />
                 <Text size="1" color="gray" className="mt-1">
                   Leave empty for no expiry date
+                </Text>
+              </div>
+
+              {/* Featured Reward */}
+              <div>
+                <Text as="label" size="2" weight="medium">
+                  Featured Reward
+                </Text>
+                <Controller
+                  name="isFeatured"
+                  control={control}
+                  render={({ field }) => (
+                    <RadioGroup.Root
+                      value={field.value ? 'featured' : 'normal'}
+                      onValueChange={(value) => field.onChange(value === 'featured')}
+                      className="mt-2"
+                    >
+                      <div className="space-y-2">
+                        <Flex align="center" gap="2">
+                          <RadioGroup.Item value="normal" id="normal" />
+                          <Text as="label" htmlFor="normal" size="2">
+                            Normal reward
+                          </Text>
+                        </Flex>
+                        <Flex align="center" gap="2">
+                          <RadioGroup.Item value="featured" id="featured" />
+                          <Text as="label" htmlFor="featured" size="2">
+                            Featured reward
+                          </Text>
+                        </Flex>
+                      </div>
+                    </RadioGroup.Root>
+                  )}
+                />
+                <Text size="1" color="gray" className="mt-1">
+                  Featured rewards are highlighted and shown prominently to students
                 </Text>
               </div>
             </div>

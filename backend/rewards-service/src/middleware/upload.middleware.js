@@ -51,13 +51,15 @@ const upload = multer({
 const getFileUrl = (filename) => {
   if (!filename) return null;
 
-  const baseUrl =
-    process.env.NODE_ENV === "production"
-      ? process.env.PRODUCTION_FILE_STORAGE_URL
-      : process.env.FILE_STORAGE_URL ||
-        `http://localhost:${process.env.REWARDS_PORT || 3005}/uploads`;
+  // In production, use the production file storage URL
+  if (process.env.NODE_ENV === "production") {
+    const baseUrl = process.env.PRODUCTION_FILE_STORAGE_URL;
+    return `${baseUrl}/${filename}`;
+  }
 
-  return `${baseUrl}/${filename}`;
+  // In development, use the API gateway URL to proxy to the rewards service
+  const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3000";
+  return `${apiGatewayUrl}/api/rewards/uploads/${filename}`;
 };
 
 // Export middleware

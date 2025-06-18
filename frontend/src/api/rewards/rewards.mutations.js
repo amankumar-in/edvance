@@ -6,7 +6,8 @@ import {
   updateRewardCategory,
   createReward,
   updateReward,
-  deleteReward
+  deleteReward,
+  redeemReward
 } from "./rewards.api";
 import { REWARD_CATEGORIES_QUERY_KEY, REWARDS_QUERY_KEY } from "./rewards.queries";
 
@@ -118,12 +119,31 @@ const useDeleteReward = () => {
   });
 };
 
+
+/** 
+ * Redeem a reward
+ */
+const useRedeemReward = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: redeemReward,
+    onSuccess: () => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.all }),
+        queryClient.invalidateQueries({ queryKey: ['points'] }),
+      ])
+    },
+  });
+};
+
 export {
-  useCreateDefaultRewardCategories, 
-  useCreateRewardCategory, 
-  useDeleteRewardCategory, 
+  useCreateDefaultRewardCategories,
+  useCreateRewardCategory,
+  useDeleteRewardCategory,
   useUpdateRewardCategory,
   useCreateReward,
   useUpdateReward,
-  useDeleteReward
+  useDeleteReward,
+  useRedeemReward
 };

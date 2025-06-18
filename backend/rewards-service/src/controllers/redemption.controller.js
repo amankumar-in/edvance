@@ -48,13 +48,13 @@ const redemptionController = {
       const userRoles = req.user.roles;
       const requestedStudentId = studentId || userId;
 
-      // If user is a student, they can only redeem for themselves
-      if (userRoles.includes("student") && requestedStudentId !== userId) {
-        return res.status(403).json({
-          success: false,
-          message: "Students can only redeem rewards for themselves",
-        });
-      }
+      // // If user is a student, they can only redeem for themselves
+      // if (userRoles.includes("student") && requestedStudentId !== userId) {
+      //   return res.status(403).json({
+      //     success: false,
+      //     message: "Students can only redeem rewards for themselves",
+      //   });
+      // }
 
       if (userRoles.includes("parent")) {
         // Verify parent-child relationship

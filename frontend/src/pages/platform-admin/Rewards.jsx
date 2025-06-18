@@ -1,5 +1,5 @@
-import { Badge, Button, Callout, Card, Dialog, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, ClipboardList, Eye, Filter, Gift, MoreHorizontal, PencilIcon, Plus, Search, Tag, TrashIcon, X } from 'lucide-react';
+import { Badge, Button, Callout, Card, Dialog, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField, ScrollArea } from '@radix-ui/themes';
+import { AlertCircleIcon, ClipboardList, Eye, Filter, Gift, MoreHorizontal, PencilIcon, Plus, Scroll, Search, Tag, TrashIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { BarLoader } from 'react-spinners';
@@ -465,6 +465,7 @@ const Rewards = () => {
                           </IconButton>
                         </DropdownMenu.Trigger>
                         <DropdownMenu.Content variant='soft'>
+                          <DropdownMenu.Label className='text-xs'>  Actions </DropdownMenu.Label>
                           <DropdownMenu.Item onClick={() => handleViewDetails(reward)}>
                             <Eye size={14} /> View Details
                           </DropdownMenu.Item>
@@ -473,6 +474,7 @@ const Rewards = () => {
                               <PencilIcon size={14} /> Edit Reward
                             </Link>
                           </DropdownMenu.Item>
+                          <DropdownMenu.Separator />
                           <DropdownMenu.Item color='red' onClick={() => handleDeleteReward(reward)}>
                             <TrashIcon size={14} /> Delete Reward
                           </DropdownMenu.Item>
@@ -505,53 +507,50 @@ const Rewards = () => {
 
         {/* Details Dialog */}
         <Dialog.Root open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-          <Dialog.Content className="max-w-2xl" aria-describedby={undefined}>
+          <Dialog.Content className="max-w-xl" aria-describedby={undefined}>
             <Dialog.Title>Reward Details</Dialog.Title>
             {selectedReward && (
               <div className="space-y-4">
+                <img src={selectedReward.image} alt={selectedReward.title} className='object-cover object-center w-full rounded-lg aspect-video' />
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Title</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Title</Text>
                     <Text as='p' size="2">{selectedReward.title}</Text>
                   </div>
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Points Cost</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Points Cost</Text>
                     <Text as='p' size="2">{selectedReward.pointsCost} points</Text>
                   </div>
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Category</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Category</Text>
                     <Text as='p' size="2">{selectedReward.categoryName || selectedReward.category}</Text>
                   </div>
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Creator Type</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Creator Type</Text>
                     <Text as='p' size="2">{selectedReward.creatorType}</Text>
                   </div>
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Status</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Status</Text>
                     {getStatusBadge(selectedReward)}
                   </div>
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Quantity</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Quantity</Text>
                     <Text as='p' size="2">
                       {selectedReward.limitedQuantity ? `${selectedReward.quantity} left` : 'Unlimited'}
                     </Text>
                   </div>
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Created</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Created</Text>
                     <Text as='p' size="2">{formatDate(selectedReward.createdAt)}</Text>
-                  </div>
-                  <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Redemptions</Text>
-                    <Text as='p' size="2">{selectedReward.redemptionCount || 0}</Text>
                   </div>
                 </div>
                 <div>
-                  <Text as='p' size="1" weight="medium" mb="1">Description</Text>
+                  <Text as='p' size="1" weight="medium" mb="1" color='gray'>Description</Text>
                   <Text as='p' size="2">{selectedReward.description}</Text>
                 </div>
                 {selectedReward.expiryDate && (
                   <div>
-                    <Text as='p' size="1" weight="medium" mb="1">Expires</Text>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Expires</Text>
                     <Text as='p' size="2">{formatDate(selectedReward.expiryDate)}</Text>
                   </div>
                 )}

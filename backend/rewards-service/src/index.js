@@ -31,8 +31,15 @@ const MONGO_URI =
 const app = express();
 
 // Middleware
-app.use(helmet());
-app.use(cors());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+app.use(cors({
+  origin: true, // Allow all origins in development
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
 app.use(express.json({ limit: "10mb" })); // Increased limit for image uploads
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
@@ -48,8 +55,25 @@ app.get("/health", (req, res) => {
 
 // Serve uploaded files in development mode
 if (process.env.NODE_ENV !== "production") {
-  app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+  app.use("/uploads", (req, res, next) => {
+    // Set CORS headers for image files
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  }, express.static(path.join(__dirname, "../uploads")));
 }
+
+// API route to serve uploaded files (works through API gateway)
+app.use("/api/rewards/uploads", (req, res, next) => {
+  // Set CORS headers for image files
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, "../uploads")));
 
 // API Routes - include full path prefixes to match gateway routing
 app.use("/api/rewards/redemptions", redemptionRoutes);

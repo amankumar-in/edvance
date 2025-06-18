@@ -104,17 +104,26 @@ const deleteReward = async (id) => {
   return response.data;
 };
 
+/**
+ * Redeem a reward
+ */
+const redeemReward = async ({ id, studentId }) => {
+  const response = await apiClient.post(`/rewards/redemptions/${id}/redeem`, { studentId });
+  return response.data;
+};
+
 export {
-  createDefaultRewardCategories, 
-  createRewardCategory, 
-  deleteRewardCategory, 
+  createDefaultRewardCategories,
+  createRewardCategory,
+  deleteRewardCategory,
   getRewardCategories,
-  getRewardCategoryById, 
-  getRewardCategoryHierarchy, 
-  updateRewardCategory, 
+  getRewardCategoryById,
+  getRewardCategoryHierarchy,
+  updateRewardCategory,
   getRewards,
   getRewardById,
   createReward,
   updateReward,
-  deleteReward
+  deleteReward,
+  redeemReward
 };

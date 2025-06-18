@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Button, Flex, Separator, Text } from '@radix-ui/themes';
-import { BarChart3, Bell, BookOpen, Calendar, CreditCard, Home, LogOut, Medal, Settings, TrendingUp, User } from 'lucide-react';
+import { BarChart3, Bell, BookOpen, Calendar, CreditCard, Home, LogOut, Settings, TrendingUp, Trophy, User } from 'lucide-react';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
@@ -15,6 +15,8 @@ function StudentLayout() {
   const navItems = [
     { icon: <Home size={20} />, label: 'Dashboard', href: '/student/dashboard' },
     { icon: <BookOpen size={20} />, label: 'Tasks', href: '/student/tasks' },
+    { icon: <CreditCard size={20} />, label: 'Scholarship Points', href: '/student/points' },
+    { icon: <Trophy size={20} />, label: 'Rewards', href: '/student/rewards' },
     {
       icon: <Bell size={20} />,
       label: 'Notifications',
@@ -22,9 +24,7 @@ function StudentLayout() {
       badge: unreadNotifications > 0 ? unreadNotifications : null
     },
     { icon: <Calendar size={20} />, label: 'Schedule', href: '/student/schedule' },
-    { icon: <Medal size={20} />, label: 'Achievements', href: '/student/achievements' },
     { icon: <TrendingUp size={20} />, label: 'Progress', href: '/student/progress' },
-    { icon: <CreditCard size={20} />, label: 'Scholarship Points', href: '/student/points' },
     { icon: <BarChart3 size={20} />, label: 'Analytics', href: '/student/analytics' },
     { icon: <User size={20} />, label: 'Profile', href: '/student/profile' },
     { icon: <Settings size={20} />, label: 'Settings', href: '/student/settings' },
@@ -65,12 +65,12 @@ function StudentLayout() {
                   py-2 text-sm px-4 rounded-lg flex items-center gap-2 relative`
                 }
               >
-                <span className="flex items-center flex-1 gap-2">
+                <span className="flex flex-1 gap-2 items-center">
                   {item.icon}
                   {item.label}
                 </span>
                 {item.badge && (
-                  <span className="flex items-center justify-center h-5 px-1 text-xs text-white bg-red-500 rounded-full min-w-5">
+                  <span className="flex justify-center items-center px-1 h-5 text-xs text-white bg-red-500 rounded-full min-w-5">
                     {item.badge > 99 ? '99+' : item.badge}
                   </span>
                 )}
@@ -93,7 +93,7 @@ function StudentLayout() {
       </Box >
 
       {/* Mobile Bottom Navigation */}
-      < Box className="fixed bottom-0 left-0 right-0 z-50 flex h-16 md:hidden" style={{ borderTop: '1px solid var(--gray-6)', background: 'var(--color-background)' }
+      < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden" style={{ borderTop: '1px solid var(--gray-6)', background: 'var(--color-background)' }
       }>
         <Flex justify="between" className="items-stretch w-full">
           {navItems.slice(0, 5).map((item, index) => (

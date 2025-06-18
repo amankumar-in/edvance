@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getRewardCategories, getRewardCategoryById, getRewardCategoryHierarchy, getRewards, getRewardById } from "./rewards.api";
 
 /**
@@ -63,6 +63,28 @@ export const useGetRewards = (params = {}) => {
     placeholderData: keepPreviousData
   });
 };
+
+/**
+ * Get all rewards(for infinite scroll)
+ */
+export const useGetAllRewardsInfinite = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: REWARDS_QUERY_KEY.list(params),
+    queryFn: ({ pageParam = 1 }) => getRewards({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.data?.pagination?.page;
+      const totalPages = lastPage?.data?.pagination?.pages;
+
+      if (currentPage < totalPages) {
+        return currentPage + 1;
+      }
+
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
+  });
+}
 
 /**
  * Get reward by ID
