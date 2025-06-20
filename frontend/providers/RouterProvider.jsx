@@ -15,6 +15,7 @@ import StudentDashboard from "../src/pages/student/StudentDashboard";
 import StudentLayout from "../src/pages/student/StudentLayout";
 import StudentNotifications from "../src/pages/student/StudentNotifications";
 import StudentPoints from "../src/pages/student/StudentPoints";
+import StudentRedemptionHistory from "../src/pages/student/StudentRedemptionHistory";
 import StudentRewards from "../src/pages/student/StudentRewards";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentTasks from "../src/pages/student/StudentTasks";
@@ -71,6 +72,7 @@ const router = createBrowserRouter(
               <Route path="notifications" element={<StudentNotifications />} />
               <Route path="points" element={<StudentPoints />} />
               <Route path="rewards" element={<StudentRewards />} />
+              <Route path="redemption-history" element={<StudentRedemptionHistory />} />
             </Route>
             <Route path="create-profile" element={<CreateStudentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >

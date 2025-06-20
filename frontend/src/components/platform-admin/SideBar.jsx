@@ -6,6 +6,7 @@ import {
   CheckSquare,
   ListTodo,
   Gift,
+  Receipt,
   Award,
   BarChart3,
   School,
@@ -42,6 +43,11 @@ const sideBarItems = [
     label: "Rewards",
     href: 'rewards',
     Icon: Gift,
+  },
+  {
+    label: "Reward Redemptions",
+    href: 'reward-redemptions',
+    Icon: Receipt,
   },
   {
     label: "Badges",

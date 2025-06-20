@@ -536,7 +536,7 @@ function Tasks() {
                       <Text title={task.title} className='line-clamp-2 min-w-[250px]'>{task.title}</Text>
                     </Table.Cell>
                     <Table.Cell >
-                      <Text title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description}</Text>
+                      <Text title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description || '-'}</Text>
                     </Table.Cell>
                     <Table.Cell>{task.category}</Table.Cell>
                     <Table.Cell>{task.subCategory || '-'}</Table.Cell>

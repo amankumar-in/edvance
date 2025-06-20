@@ -29,7 +29,7 @@ function ConfirmationDialog({
           </Box>
         )}
         
-        <Flex gap="3" mt="4" justify="end">
+        <Flex gap="3" mt="4" justify="end" wrap={'wrap-reverse'}>
           <AlertDialog.Cancel>
             <Button variant="soft" color="gray" disabled={isLoading}>
               {cancelText}

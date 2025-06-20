@@ -1,5 +1,5 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getRewardCategories, getRewardCategoryById, getRewardCategoryHierarchy, getRewards, getRewardById } from "./rewards.api";
+import { getRewardCategories, getRewardCategoryById, getRewardCategoryHierarchy, getRewards, getRewardById, getRedemptionHistory, getRedemptionById } from "./rewards.api";
 
 /**
  * Query keys for reward categories
@@ -18,6 +18,15 @@ export const REWARDS_QUERY_KEY = {
   all: ['rewards'],
   list: (params) => ['rewards', params],
   detail: (id) => ['rewards', id],
+}
+
+/**
+ * Query keys for redemptions
+ */
+export const REDEMPTIONS_QUERY_KEY = {
+  all: ['redemptions'],
+  history: (params) => ['redemptions', 'history', params],
+  detail: (id) => ['redemptions', id],
 }
 
 /**
@@ -93,6 +102,61 @@ export const useGetRewardById = (id) => {
   return useQuery({
     queryKey: REWARDS_QUERY_KEY.detail(id),
     queryFn: () => getRewardById(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Get redemption history
+ */
+export const useGetRedemptionHistory = (params = {}) => {
+  return useQuery({
+    queryKey: REDEMPTIONS_QUERY_KEY.history(params),
+    queryFn: () => getRedemptionHistory(params),
+    placeholderData: keepPreviousData
+  });
+};
+
+/**
+ * Get redemptions with pagination (for platform admin)
+ */
+export const useGetRedemptions = (params = {}) => {
+  return useQuery({
+    queryKey: REDEMPTIONS_QUERY_KEY.history(params),
+    queryFn: () => getRedemptionHistory(params),
+    placeholderData: keepPreviousData
+  });
+};
+
+/**
+ * Get redemption history with infinite scroll
+ */
+export const useGetRedemptionHistoryInfinite = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: REDEMPTIONS_QUERY_KEY.history(params),
+    queryFn: ({ pageParam = 1 }) => getRedemptionHistory({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.data?.pagination?.page;
+      const totalPages = lastPage?.data?.pagination?.pages;
+
+      if (currentPage < totalPages) {
+        return currentPage + 1;
+      }
+
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
+  });
+};
+
+/**
+ * Get redemption by ID
+ */
+export const useGetRedemptionById = (id) => {
+  return useQuery({
+    queryKey: REDEMPTIONS_QUERY_KEY.detail(id),
+    queryFn: () => getRedemptionById(id),
     enabled: !!id,
   });
 };

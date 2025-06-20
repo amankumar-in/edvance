@@ -112,6 +112,38 @@ const redeemReward = async ({ id, studentId }) => {
   return response.data;
 };
 
+/**
+ * Get redemption history
+ */
+const getRedemptionHistory = async (params = {}) => {
+  const response = await apiClient.get(`/rewards/redemptions`, { params });
+  return response.data;
+};
+
+/**
+ * Get redemption by ID
+ */
+const getRedemptionById = async (id) => {
+  const response = await apiClient.get(`/rewards/redemptions/${id}`);
+  return response.data;
+};
+
+/**
+ * Cancel a redemption
+ */
+const cancelRedemption = async ({ id, reason }) => {
+  const response = await apiClient.post(`/rewards/redemptions/${id}/cancel`, { reason });
+  return response.data;
+};
+
+/**
+ * Fulfill a redemption
+ */
+const fulfillRedemption = async ({ id, feedback }) => {
+  const response = await apiClient.put(`/rewards/redemptions/${id}/fulfill`, { feedback });
+  return response.data;
+};
+
 export {
   createDefaultRewardCategories,
   createRewardCategory,
@@ -125,5 +157,9 @@ export {
   createReward,
   updateReward,
   deleteReward,
-  redeemReward
+  redeemReward,
+  getRedemptionHistory,
+  getRedemptionById,
+  cancelRedemption,
+  fulfillRedemption
 };

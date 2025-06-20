@@ -24,7 +24,7 @@ import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useCreateReward } from '../../api/rewards/rewards.mutations';
 import { useGetRewardCategories } from '../../api/rewards/rewards.queries';
-import { Container } from '../../components';
+import { Container, FormFieldErrorMessage } from '../../components';
 
 const CreateReward = () => {
   const navigate = useNavigate();
@@ -231,7 +231,7 @@ const CreateReward = () => {
         </Text>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl space-y-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 max-w-4xl">
           {/* Basic Information */}
           <FormSection title="Basic Information">
             <div className="grid grid-cols-1 gap-6">
@@ -249,11 +249,7 @@ const CreateReward = () => {
                   })}
                   className="mt-2"
                 />
-                {errors.title && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.title.message}
-                  </Text>
-                )}
+                <FormFieldErrorMessage errors={errors} field="title" />
               </div>
 
               {/* Description */}
@@ -270,12 +266,9 @@ const CreateReward = () => {
                   })}
                   className="mt-2"
                   rows={4}
+                  resize={'vertical'}
                 />
-                {errors.description && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.description.message}
-                  </Text>
-                )}
+                <FormFieldErrorMessage errors={errors} field="description" />
               </div>
             </div>
           </FormSection>
@@ -297,7 +290,7 @@ const CreateReward = () => {
                       value={field.value}
                       onValueChange={field.onChange}
                     >
-                      <Select.Trigger placeholder="Select category" className="w-full mt-2" />
+                      <Select.Trigger placeholder="Select category" className="mt-2 w-full" />
                       <Select.Content variant='soft' position='popper'>
                         {rewardCategories && rewardCategories.length > 0 ? (
                           rewardCategories.map((category) => (
@@ -310,11 +303,7 @@ const CreateReward = () => {
                     </Select.Root>
                   )}
                 />
-                {errors?.categoryId && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.categoryId.message}
-                  </Text>
-                )}
+                <FormFieldErrorMessage errors={errors} field="categoryId" />
               </div>
 
               {/* Category Info Display */}
@@ -353,15 +342,11 @@ const CreateReward = () => {
                 placeholder="Enter points cost"
                 {...register('pointsCost', {
                   required: 'Points cost is required',
-                  min: { value: 1, message: 'Points cost must be at least 1' }, 
+                  min: { value: 1, message: 'Points cost must be at least 1' },
                 })}
                 className="mt-2"
               />
-              {errors.pointsCost && (
-                <Text size="1" color="red" className="mt-1">
-                  {errors.pointsCost.message}
-                </Text>
-              )}
+              <FormFieldErrorMessage errors={errors} field="pointsCost" />
             </div>
 
           </FormSection>
@@ -418,11 +403,7 @@ const CreateReward = () => {
                     })}
                     className="mt-2"
                   />
-                  {errors.quantity && (
-                    <Text size="1" color="red" className="mt-1">
-                      {errors.quantity.message}
-                    </Text>
-                  )}
+                   <FormFieldErrorMessage errors={errors} field="quantity" />  
                 </div>
               )}
 
@@ -560,6 +541,7 @@ const CreateReward = () => {
                   {...register('redemptionInstructions')}
                   className="mt-2"
                   rows={3}
+                  resize={'vertical'}
                 />
               </div>
 
@@ -574,6 +556,7 @@ const CreateReward = () => {
                   {...register('restrictions')}
                   className="mt-2"
                   rows={3}
+                  resize={'vertical'}
                 />
               </div>
             </div>

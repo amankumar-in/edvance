@@ -7,9 +7,11 @@ import {
   createReward,
   updateReward,
   deleteReward,
-  redeemReward
+  redeemReward,
+  cancelRedemption,
+  fulfillRedemption
 } from "./rewards.api";
-import { REWARD_CATEGORIES_QUERY_KEY, REWARDS_QUERY_KEY } from "./rewards.queries";
+import { REWARD_CATEGORIES_QUERY_KEY, REWARDS_QUERY_KEY, REDEMPTIONS_QUERY_KEY } from "./rewards.queries";
 
 /**
  * Create a new reward category
@@ -132,6 +134,42 @@ const useRedeemReward = () => {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.all }),
         queryClient.invalidateQueries({ queryKey: ['points'] }),
+        queryClient.invalidateQueries({ queryKey: REDEMPTIONS_QUERY_KEY.all }),
+      ])
+    },
+  });
+};
+
+/**
+ * Cancel a redemption
+ */
+const useCancelRedemption = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: cancelRedemption,
+    onSuccess: (data, variables) => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: REDEMPTIONS_QUERY_KEY.all }),
+        queryClient.invalidateQueries({ queryKey: REDEMPTIONS_QUERY_KEY.detail(variables.id) }),
+        queryClient.invalidateQueries({ queryKey: ['points'] }),
+      ])
+    },
+  });
+};
+
+/**
+ * Fulfill a redemption
+ */
+const useFulfillRedemption = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: fulfillRedemption,
+    onSuccess: (data, variables) => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: REDEMPTIONS_QUERY_KEY.all }),
+        queryClient.invalidateQueries({ queryKey: REDEMPTIONS_QUERY_KEY.detail(variables.id) }),
       ])
     },
   });
@@ -145,5 +183,7 @@ export {
   useCreateReward,
   useUpdateReward,
   useDeleteReward,
-  useRedeemReward
+  useRedeemReward,
+  useCancelRedemption,
+  useFulfillRedemption
 };

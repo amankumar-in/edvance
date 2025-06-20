@@ -1,10 +1,10 @@
-import React from 'react'
-import { useAuth } from '../../Context/AuthContext';
 import { Avatar, Button, DropdownMenu, Flex, IconButton, Select, Separator, Text, TextField } from '@radix-ui/themes';
-import profileFallback from '../../assets/profileImage.webp';
+import { LogOut, Menu, MenuIcon, Moon, Search, Settings as SettingsIcon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import React from 'react';
 import { Link } from 'react-router';
-import { Search, LogOut, Settings as SettingsIcon, Menu, MenuIcon, Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes'
+import { useAuth } from '../../Context/AuthContext';
+import { FALLBACK_IMAGES } from '../../utils/constants';
 
 function Header({ toggleSidebar }) {
   const { handleLogout, isLoggingOut } = useAuth();
@@ -25,7 +25,7 @@ function Header({ toggleSidebar }) {
           EdVance
         </Text>
       </Flex>
-      <TextField.Root placeholder='Search' size={'3'} className='flex-1 hidden max-w-sm md:flex' radius='full'>
+      <TextField.Root placeholder='Search' size={'3'} className='hidden flex-1 max-w-sm md:flex' radius='full'>
         <TextField.Slot side="left">
           <MenuIcon size={16} color='var(--gray-9)' />
         </TextField.Slot>
@@ -74,13 +74,13 @@ function Header({ toggleSidebar }) {
                 variant='soft'
               >
                 <Avatar
-                  src={profileFallback}
+                  src={FALLBACK_IMAGES.avatar}
                   fallback="SH"
                   className='object-cover object-center w-full h-full'
                 />
               </IconButton>
             </DropdownMenu.Trigger>
-            <DropdownMenu.Content variant='soft' side='bottom' align='end' className='w-48 mt-2'>
+            <DropdownMenu.Content variant='soft' side='bottom' align='end' className='mt-2 w-48'>
               <DropdownMenu.Item
                 disabled={isLoggingOut}
                 color="red"

@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Callout, Card, Dialog, Flex, Grid, Heading, IconButton, Select, Spinner, Text, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, Clock, Gift, Heart, Search, ShoppingCart, Sparkles, Trophy } from 'lucide-react';
+import { AlertCircleIcon, Clock, Gift, Heart, History, Search, ShoppingCart, Sparkles, Trophy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -10,11 +10,14 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useAuth } from '../../Context/AuthContext';
+import { Link } from 'react-router';
 import { usePointsDetailsById } from '../../api/points/points.queries';
 import { useRedeemReward } from '../../api/rewards/rewards.mutations';
 import { useGetAllRewardsInfinite } from '../../api/rewards/rewards.queries';
 import { EmptyStateCard, Loader } from '../../components';
 import { toast } from 'sonner';
+import { FALLBACK_IMAGES } from '../../utils/constants';
+import { formatDate } from '../../utils/helperFunctions';
 
 function StudentRewards() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,13 +105,23 @@ function StudentRewards() {
                 Redeem your scholarship points for amazing rewards
               </Text>
             </div>
-            <Card>
-              <Flex align="center" gap="4">
-                <Trophy className="text-[--yellow-9]" size={24} />
-                <Text as='p' size="1" className="opacity-80">Your Points</Text>
-                <Text as='p' size="5" weight="bold">{userPoints.toLocaleString()}</Text>
-              </Flex>
-            </Card>
+            <Flex gap="3" align="center">
+              <Card>
+                <Flex align="center" gap="4">
+                  <Trophy className="text-[--yellow-9]" size={24} />
+                  <Text as='p' size="1" className="opacity-80">Your Points</Text>
+                  <Text as='p' size="5" weight="bold">{userPoints.toLocaleString()}</Text>
+                </Flex>
+              </Card>
+
+              <Link to="/student/redemption-history">
+                <Button variant="outline">
+                  <History size={16} />
+                  <Text className="hidden sm:inline">Redemption History</Text>
+                  <Text className="sm:hidden">History</Text>
+                </Button>
+              </Link>
+            </Flex>
           </Flex>
         </Flex>
       </Box>
@@ -151,7 +164,7 @@ function StudentRewards() {
                   {/* Main content */}
                   <Flex className="relative min-h-[280px] sm:min-h-[320px] md:min-h-[360px] lg:min-h-[380px] ">
                     {/* Left content section */}
-                    <Box className="flex flex-col justify-center flex-1 h-full p-4 sm:p-6 md:p-8 lg:p-12">
+                    <Box className="flex flex-col flex-1 justify-center p-4 h-full sm:p-6 md:p-8 lg:p-12">
 
                       {/* Title with modern typography */}
                       <Heading
@@ -180,7 +193,7 @@ function StudentRewards() {
                         {/* Points card */}
                         <div className='flex justify-center bg-gradient-to-r from-[--accent-9] to-[--accent-10] rounded-lg align-center text-[--accent-contrast]'>
                           <Flex align="center" gap={{ initial: '2', md: '3' }} className="px-3 py-2 md:px-4 md:py-3">
-                            <Box className="flex items-center justify-center w-8 h-8 rounded-full md:w-10 md:h-10 bg-white/20">
+                            <Box className="flex justify-center items-center w-8 h-8 rounded-full md:w-10 md:h-10 bg-white/20">
                               <Trophy size={16} className="text-white md:w-5 md:h-5" />
                             </Box>
                             <Box>
@@ -196,17 +209,20 @@ function StudentRewards() {
 
                         {/* Limited quantity warning */}
                         {reward.limitedQuantity && (
-                          <div className='flex justify-center bg-gradient-to-r from-[--red-9] to-[--red-10] rounded-lg align-center text-[--accent-contrast]'>
+                          <div className={`flex justify-center rounded-lg align-center text-[--accent-contrast] ${reward.quantity === 0
+                            ? 'bg-gradient-to-r from-[--gray-9] to-[--gray-10]'
+                            : 'bg-gradient-to-r from-[--red-9] to-[--red-10]'
+                            }`}>
                             <Flex align="center" gap={{ initial: '2', md: '3' }} className="px-3 py-2 md:px-4 md:py-3">
-                              <Box className="flex items-center justify-center w-8 h-8 rounded-full md:w-10 md:h-10 bg-white/20">
+                              <Box className="flex justify-center items-center w-8 h-8 rounded-full md:w-10 md:h-10 bg-white/20">
                                 <Clock size={16} />
                               </Box>
                               <Box>
                                 <Text as='p' size="1" className="font-medium tracking-wide uppercase">
-                                  Limited Stock
+                                  {reward.quantity === 0 ? 'Out of Stock' : 'Limited Stock'}
                                 </Text>
                                 <Text size={{ initial: '2', md: '3' }} weight="bold">
-                                  Only {reward.quantity} left
+                                  {reward.quantity === 0 ? 'Sold Out' : `Only ${reward.quantity} left`}
                                 </Text>
                               </Box>
                             </Flex>
@@ -218,19 +234,31 @@ function StudentRewards() {
                       <Flex gap={{ initial: '2', md: '3' }} align="center" direction={{ initial: 'column', sm: 'row' }}>
                         <Button
                           size={{ initial: '3', md: '4' }}
-                          className={`font-medium md:font-semibold px-4 md:px-8 py-2 md:py-3 shadow-md md:shadow-lg transition-all duration-300 w-full sm:w-auto ${canAfford(reward.pointsCost)
-                            ? 'bg-gradient-to-r from-[--accent-9] to-[--accent-10] text-white hover:shadow-xl hover:scale-105'
-                            : 'bg-[--gray-6] text-[--gray-11] cursor-not-allowed'
+                          className={`font-medium md:font-semibold px-4 md:px-8 py-2 md:py-3 shadow-md md:shadow-lg transition-all duration-300 w-full sm:w-auto ${reward.limitedQuantity && reward.quantity === 0
+                            ? 'bg-[--gray-6] text-[--gray-11] cursor-not-allowed'
+                            : canAfford(reward.pointsCost)
+                              ? 'bg-gradient-to-r from-[--accent-9] to-[--accent-10] text-white hover:shadow-xl hover:scale-105'
+                              : 'bg-[--gray-6] text-[--gray-11] cursor-not-allowed'
                             }`}
-                          disabled={!canAfford(reward.pointsCost)}
+                          disabled={!canAfford(reward.pointsCost) || (reward.limitedQuantity && reward.quantity === 0)}
                           onClick={() => setSelectedReward(reward)}
                         >
                           <ShoppingCart size={16} className="md:w-[18px] md:h-[18px]" />
                           <Text className="hidden sm:inline">
-                            {canAfford(reward.pointsCost) ? 'Redeem Now' : 'Insufficient Points'}
+                            {reward.limitedQuantity && reward.quantity === 0
+                              ? 'Out of Stock'
+                              : canAfford(reward.pointsCost)
+                                ? 'Redeem Now'
+                                : 'Insufficient Points'
+                            }
                           </Text>
                           <Text className="sm:hidden">
-                            {canAfford(reward.pointsCost) ? 'Redeem' : 'Not Enough'}
+                            {reward.limitedQuantity && reward.quantity === 0
+                              ? 'Sold Out'
+                              : canAfford(reward.pointsCost)
+                                ? 'Redeem'
+                                : 'Not Enough'
+                            }
                           </Text>
                         </Button>
 
@@ -250,10 +278,10 @@ function StudentRewards() {
                     </Box>
 
                     {/* Right image section - Hidden on mobile, visible on md+ */}
-                    <Box className="items-center justify-center hidden p-6 md:flex lg:p-8 ">
+                    <Box className="hidden justify-center items-center p-6 md:flex lg:p-8">
                       <Box className="relative">
                         {/* Main product image */}
-                        <Box className="relative overflow-hidden shadow-xl rounded-xl lg:rounded-2xl lg:shadow-2xl">
+                        <Box className="overflow-hidden relative rounded-xl shadow-xl lg:rounded-2xl lg:shadow-2xl">
                           <img
                             loading='lazy'
                             src={reward.image}
@@ -262,11 +290,11 @@ function StudentRewards() {
                           />
 
                           {/* Image overlay gradient */}
-                          <Box className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                          <Box className="absolute inset-0 bg-gradient-to-t to-transparent from-black/10" />
                         </Box>
 
                         {/* Floating elements */}
-                        <Box className="absolute flex items-center justify-center w-12 h-12 rounded-full shadow-lg -top-3 -right-3 lg:-top-4 lg:-right-4 lg:w-16 lg:h-16 bg-gradient-to-br from-yellow-400 to-orange-500 lg:shadow-xl animate-bounce">
+                        <Box className="flex absolute -top-3 -right-3 justify-center items-center w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-lg animate-bounce lg:-top-4 lg:-right-4 lg:w-16 lg:h-16 lg:shadow-xl">
                           <Sparkles size={20} className="text-white lg:w-6 lg:h-6" />
                         </Box>
 
@@ -320,7 +348,7 @@ function StudentRewards() {
 
       {/* Rewards Grid */}
       <Flex justify="between" align="center" wrap={'wrap'} gap={'2'}>
-        <Text as='p' size="2" color="gray" className='flex items-center gap-2'>
+        <Text as='p' size="2" color="gray" className='flex gap-2 items-center'>
           Showing {allRewards.length} rewards <Spinner loading={isFetching} />
         </Text>
         <Flex align="center" gap="2">
@@ -345,13 +373,12 @@ function StudentRewards() {
               >
                 <Box className="relative">
                   <img
-                    src={reward.image}
-                    alt={reward.title}
+                    src={reward?.image || FALLBACK_IMAGES.product}
+                    alt={reward?.title}
                     loading='lazy'
                     className="object-cover object-center w-full rounded-md aspect-video"
                     onError={(e) => {
-                      // Fallback to hide the image if it fails to load
-                      e.target.style.display = 'none';
+                      e.currentTarget.src = FALLBACK_IMAGES.product;
                     }}
                   />
                   {reward.badge && (
@@ -365,7 +392,7 @@ function StudentRewards() {
                     variant="soft"
                     color="gray"
                     size="1"
-                    className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm"
+                    className="absolute top-2 right-2 backdrop-blur-sm bg-black/50"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleWishlist(reward._id);
@@ -378,15 +405,19 @@ function StudentRewards() {
                   </IconButton>
                   {reward.limitedQuantity && (
                     <Box className="absolute bottom-2 left-2">
-                      <Badge color="orange" variant="solid" size="1">
+                      <Badge
+                        color={reward.quantity === 0 ? "gray" : "orange"}
+                        variant="solid"
+                        size="1"
+                      >
                         <Clock size={10} />
-                        Only {reward.quantity} left
+                        {reward.quantity === 0 ? 'Out of Stock' : `Only ${reward.quantity} left`}
                       </Badge>
                     </Box>
                   )}
                 </Box>
 
-                <Box mt={'4'} className='flex flex-col justify-between flex-1'>
+                <Box mt={'4'} className='flex flex-col flex-1 justify-between'>
                   <div>
                     <Flex align="center" gap="2" className="mb-2">
                       <Text size="1" color="gray" className="capitalize">
@@ -411,9 +442,9 @@ function StudentRewards() {
                       </Flex>
                       {reward.expiryDate && (
                         <Flex align="center" gap="1">
-                          <Clock size={12} className="text-orange-500" />
+                          <Clock size={12} className="text-[--orange-11]" />
                           <Text size="1" color="orange">
-                            Expires {new Date(reward.expiryDate).toLocaleDateString()}
+                            Expires {formatDate(reward.expiryDate)}
                           </Text>
                         </Flex>
                       )}
@@ -422,14 +453,19 @@ function StudentRewards() {
                   <Button
                     size="2"
                     className="w-full disabled:cursor-not-allowed"
-                    disabled={!canAfford(reward.pointsCost)}
+                    disabled={!canAfford(reward.pointsCost) || (reward.limitedQuantity && reward.quantity === 0)}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedReward(reward);
                     }}
                   >
                     <ShoppingCart size={16} />
-                    {canAfford(reward.pointsCost) ? 'Redeem Now' : 'Not Enough Points'}
+                    {reward.limitedQuantity && reward.quantity === 0
+                      ? 'Out of Stock'
+                      : canAfford(reward.pointsCost)
+                        ? 'Redeem Now'
+                        : 'Not Enough Points'
+                    }
                   </Button>
                 </Box>
               </Card>
@@ -465,73 +501,98 @@ function StudentRewards() {
           {selectedReward && (
             <>
               <Dialog.Title>{selectedReward.title}</Dialog.Title>
-              <Flex direction={{ initial: 'column', sm: 'row' }} gap="4" align="start">
-                <img
-                  loading='lazy'
-                  src={selectedReward.image}
-                  alt={selectedReward.title}
-                  className="object-cover object-center w-full rounded-lg md:w-1/2 aspect-video"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-
-                <div className='flex-1 space-y-2'>
-                  <Flex align="center" gap="2">
-                    <Text as='p' size="2" color="gray" className="capitalize">
-                      {selectedReward.subcategory} • {selectedReward.category}
-                    </Text>
-                    {selectedReward.badge && (
-                      <Badge color="red" variant="soft" size="1">
-                        {selectedReward.badge}
-                      </Badge>
-                    )}
-                  </Flex>
-
-                  <Text as='p'>{selectedReward.description}</Text>
-
-                  <Flex justify="between" align="center" className="p-4 bg-[--gray-a2] rounded-lg">
-                    <Box>
-                      <Text as='p' size="2" color="gray">Points Required</Text>
-                      <Flex align="center" gap="1">
-                        <Trophy size={16} />
-                        <Text as='p' size="4" weight="bold" >
-                          {selectedReward.pointsCost.toLocaleString()}
-                        </Text>
-                      </Flex>
-                    </Box>
-                    <Box className="text-right">
-                      <Text as='p' size="2" color="gray">Your Balance</Text>
-                      <Text as='p' size="3" weight="bold">
-                        {userPoints.toLocaleString()}
+              <div className='space-y-4'>
+                <Flex direction={{ initial: 'column', sm: 'row' }} align={{ sm: 'start' }} gap="4">
+                  <img
+                    loading='lazy'
+                    src={selectedReward?.image || FALLBACK_IMAGES.product}
+                    alt={selectedReward?.title}
+                    className="object-cover object-center w-full rounded-lg md:w-1/2 aspect-video"
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_IMAGES.product;
+                    }}
+                  />
+                  <div className='flex-1 space-y-3'>
+                    <Flex align="center" gap="2">
+                      <Text as='p' size="2" color="gray" className="capitalize">
+                        {selectedReward.subcategory} • {selectedReward.category}
                       </Text>
-                    </Box>
-                  </Flex>
+                      {selectedReward.badge && (
+                        <Badge color="red" variant="soft" size="1">
+                          {selectedReward.badge}
+                        </Badge>
+                      )}
+                    </Flex>
 
-                  {selectedReward.limitedQuantity && (
-                    <Callout.Root variant='surface' color='orange'>
-                      <Callout.Icon>
-                        <Clock size={16} />
-                      </Callout.Icon>
-                      <Callout.Text>
-                        Limited quantity: Only {selectedReward.quantity} remaining
-                      </Callout.Text>
-                    </Callout.Root>
-                  )}
+                    <Text as='p' className="whitespace-pre-wrap">{selectedReward.description}</Text>
 
-                  {selectedReward.expiryDate && (
-                    <Callout.Root variant='surface' color='yellow'>
-                      <Callout.Icon>
-                        <Clock size={16} />
-                      </Callout.Icon>
-                      <Callout.Text>
-                        Expires on {new Date(selectedReward.expiryDate).toLocaleDateString()}
-                      </Callout.Text>
-                    </Callout.Root>
-                  )}
-                </div>
-              </Flex>
 
+                    <Flex justify="between" align="center" className="p-4 bg-[--gray-a2] rounded-lg">
+                      <Box>
+                        <Text as='p' size="2" color="gray">Points Required</Text>
+                        <Flex align="center" gap="1">
+                          <Trophy size={16} />
+                          <Text as='p' size="4" weight="bold" >
+                            {selectedReward.pointsCost.toLocaleString()}
+                          </Text>
+                        </Flex>
+                      </Box>
+                      <Box className="text-right">
+                        <Text as='p' size="2" color="gray">Your Balance</Text>
+                        <Text as='p' size="3" weight="bold">
+                          {userPoints.toLocaleString()}
+                        </Text>
+                      </Box>
+                    </Flex>
+
+                    {selectedReward.limitedQuantity && (
+                      <Callout.Root
+                        variant='surface'
+                        color={selectedReward.quantity === 0 ? 'gray' : 'orange'}
+                      >
+                        <Callout.Icon>
+                          <Clock size={16} />
+                        </Callout.Icon>
+                        <Callout.Text>
+                          {selectedReward.quantity === 0
+                            ? 'This reward is currently out of stock'
+                            : `Limited quantity: Only ${selectedReward.quantity} remaining`
+                          }
+                        </Callout.Text>
+                      </Callout.Root>
+                    )}
+
+                    {selectedReward.expiryDate && (
+                      <Callout.Root variant='surface' color='yellow'>
+                        <Callout.Icon>
+                          <Clock size={16} />
+                        </Callout.Icon>
+                        <Callout.Text>
+                          Expires on {formatDate(selectedReward.expiryDate)}
+                        </Callout.Text>
+                      </Callout.Root>
+                    )}
+                  </div>
+
+                </Flex>
+                {selectedReward.redemptionInstructions && (
+                  <div>
+                    <Text as='p' size="2" weight="medium" mb="1" color="gray">Redemption Instructions</Text>
+                    <Text as='p' className="pl-4 whitespace-pre-wrap">
+                      {selectedReward.redemptionInstructions}
+                    </Text>
+                  </div>
+                )}
+
+                {selectedReward.restrictions && (
+                  <div>
+                    <Text as='p' size="2" weight="medium" mb="1" color="gray">Restrictions</Text>
+                    <Text as='p' className="pl-4 whitespace-pre-wrap">
+                      {selectedReward.restrictions}
+                    </Text>
+                  </div>
+                )}
+              </div>
               <Flex gap="3" mt="4" justify="end">
                 <Dialog.Close>
                   <Button disabled={isRedeemingReward} variant="soft" color="gray">
@@ -539,7 +600,11 @@ function StudentRewards() {
                   </Button>
                 </Dialog.Close>
                 <Button
-                  disabled={!canAfford(selectedReward.pointsCost) || isRedeemingReward}
+                  disabled={
+                    !canAfford(selectedReward.pointsCost) ||
+                    isRedeemingReward ||
+                    (selectedReward.limitedQuantity && selectedReward.quantity === 0)
+                  }
                   onClick={() => {
                     redeemReward({
                       id: selectedReward._id,
@@ -557,11 +622,13 @@ function StudentRewards() {
                   className='disabled:cursor-not-allowed'
                 >
                   <ShoppingCart size={16} />
-                  {canAfford(selectedReward.pointsCost)
-                    ? isRedeemingReward
-                      ? 'Processing...'
-                      : 'Confirm Redemption'
-                    : 'Not Enough Points'
+                  {selectedReward.limitedQuantity && selectedReward.quantity === 0
+                    ? 'Out of Stock'
+                    : canAfford(selectedReward.pointsCost)
+                      ? isRedeemingReward
+                        ? 'Processing...'
+                        : 'Confirm Redemption'
+                      : 'Not Enough Points'
                   }
                 </Button>
               </Flex>

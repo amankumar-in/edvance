@@ -217,11 +217,6 @@ const rewardController = {
         isActive: true,
         isDeleted: false,
         $or: [{ expiryDate: { $gt: new Date() } }, { expiryDate: null }],
-        $and: [
-          {
-            $or: [{ limitedQuantity: false }, { quantity: { $gt: 0 } }],
-          },
-        ],
       };
 
       // Apply filters (NEW: prioritizes categoryId, maintains backward compatibility)

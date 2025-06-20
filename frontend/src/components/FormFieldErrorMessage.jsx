@@ -25,11 +25,11 @@ export const FormFieldErrorMessage = ({ errors, field }) => {
   return (
     <Text
       as="p"
-      size={"2"}
+      size={"1"}
       color="red"
       className='flex gap-1 items-center mt-1'
     >
-      <Info size={14} /> {error.message}
+      <Info size={12} /> {error.message}
     </Text>
   )
 }

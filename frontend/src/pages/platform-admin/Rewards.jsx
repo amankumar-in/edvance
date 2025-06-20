@@ -1,15 +1,16 @@
-import { Badge, Button, Callout, Card, Dialog, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField, ScrollArea } from '@radix-ui/themes';
-import { AlertCircleIcon, ClipboardList, Eye, Filter, Gift, MoreHorizontal, PencilIcon, Plus, Scroll, Search, Tag, TrashIcon, X } from 'lucide-react';
+import { Badge, Button, Callout, Card, Dialog, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes';
+import { AlertCircleIcon, ClipboardList, Eye, Filter, Gift, MoreHorizontal, PencilIcon, Plus, Search, Tag, TrashIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { BarLoader } from 'react-spinners';
 import { toast } from 'sonner';
+import { useDeleteReward } from '../../api/rewards/rewards.mutations';
 import { useGetRewards } from '../../api/rewards/rewards.queries';
 import { ConfirmationDialog, EmptyStateCard, Loader, Pagination } from '../../components';
 import { SortIcon } from '../../components/platform-admin/UserTable';
-import { formatDate } from '../../utils/helperFunctions';
-import { useDeleteReward } from '../../api/rewards/rewards.mutations';
 import { useDebounce } from '../../hooks/useDebounce';
+import { FALLBACK_IMAGES } from '../../utils/constants';
+import { formatDate } from '../../utils/helperFunctions';
 
 const Rewards = () => {
   const [page, setPage] = useState(1);
@@ -198,7 +199,7 @@ const Rewards = () => {
 
   return (
     <div>
-      {isFetching && !isLoading && <div className='fixed left-0 right-0 top-16'>
+      {isFetching && !isLoading && <div className='fixed right-0 left-0 top-16'>
         <BarLoader
           color='#0090ff'
           width={'100%'}
@@ -511,8 +512,17 @@ const Rewards = () => {
             <Dialog.Title>Reward Details</Dialog.Title>
             {selectedReward && (
               <div className="space-y-4">
-                <img src={selectedReward.image} alt={selectedReward.title} className='object-cover object-center w-full rounded-lg aspect-video' />
-                <div className="grid grid-cols-2 gap-4">
+                {/* {selectedReward.image && ( */}
+                <img
+                  src={selectedReward.image || FALLBACK_IMAGES.product}
+                  alt={selectedReward.title}
+                  className='object-cover object-center w-full rounded-lg aspect-video'
+                  onError={(e) => {
+                    e.target.src = FALLBACK_IMAGES.product;
+                  }}
+                />
+                {/* )} */}
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Text as='p' size="1" weight="medium" mb="1" color='gray'>Title</Text>
                     <Text as='p' size="2">{selectedReward.title}</Text>
@@ -548,6 +558,22 @@ const Rewards = () => {
                   <Text as='p' size="1" weight="medium" mb="1" color='gray'>Description</Text>
                   <Text as='p' size="2">{selectedReward.description}</Text>
                 </div>
+                {selectedReward.redemptionInstructions && (
+                  <div>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Redemption Instructions</Text>
+                    <Text as='p' size="2" className="p-4 whitespace-pre-wrap bg-[--blue-a2] rounded-lg border border-[--blue-6]">
+                      {selectedReward.redemptionInstructions}
+                    </Text>
+                  </div>
+                )}
+                {selectedReward.restrictions && (
+                  <div>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Restrictions</Text>
+                    <Text as='p' size="2" className="whitespace-pre-wrap bg-[--orange-a2] rounded-lg border border-[--orange-6] p-4">
+                      {selectedReward.restrictions}
+                    </Text>
+                  </div>
+                )}
                 {selectedReward.expiryDate && (
                   <div>
                     <Text as='p' size="1" weight="medium" mb="1" color='gray'>Expires</Text>

@@ -3,6 +3,52 @@ const Reward = require("../models/reward.model");
 const mongoose = require("mongoose");
 const axios = require("axios");
 
+// Helper function to get student details with user info
+const getStudentDetails = async (studentId, authorization) => {
+  try {
+    const userServiceUrl = process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+    
+    const response = await axios.get(
+      `${userServiceUrl}/api/students/${studentId}`,
+      {
+        headers: {
+          Authorization: authorization,
+        },
+      }
+    );
+    
+    return response.data.data;
+  } catch (error) {
+    console.error("Failed to get student details:", error.message);
+    return null;
+  }
+};
+
+// Helper function to get parent details
+const getParentDetails = async (userId, authorization) => {
+  try {
+    const userServiceUrl = process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+    
+    const response = await axios.get(
+      `${userServiceUrl}/api/parents/by-user/${userId}`,
+      {
+        headers: {
+          Authorization: authorization,
+        },
+      }
+    );
+    
+    return response.data.data;
+  } catch (error) {
+    console.error("Failed to get parent details:", error.message);
+    return { childIds: [] };
+  }
+};
+
 const redemptionController = {
   // Redeem a reward
   redeemReward: async (req, res) => {
@@ -46,19 +92,46 @@ const redemptionController = {
       // Check authorization - students can redeem for themselves, parents can redeem for their children
       const userId = req.user.id;
       const userRoles = req.user.roles;
-      const requestedStudentId = studentId || userId;
+      let requestedStudentId = studentId || userId;
 
-      // // If user is a student, they can only redeem for themselves
-      // if (userRoles.includes("student") && requestedStudentId !== userId) {
-      //   return res.status(403).json({
-      //     success: false,
-      //     message: "Students can only redeem rewards for themselves",
-      //   });
-      // }
+      // If user is a student, get their student profile ID
+      if (userRoles.includes("student")) {
+        try {
+          const userServiceUrl = process.env.NODE_ENV === "production"
+            ? process.env.PRODUCTION_USER_SERVICE_URL
+            : process.env.USER_SERVICE_URL || "http://localhost:3002";
+          
+          const studentResponse = await axios.get(
+            `${userServiceUrl}/api/students/me`,
+            {
+              headers: {
+                Authorization: req.headers.authorization,
+              },
+            }
+          );
+          
+          requestedStudentId = studentResponse.data.data._id;
+          
+          // Students can only redeem for themselves
+          if (studentId && studentId !== requestedStudentId) {
+            return res.status(403).json({
+              success: false,
+              message: "Students can only redeem rewards for themselves",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to get student profile:", error.message);
+          return res.status(500).json({
+            success: false,
+            message: "Failed to get student profile",
+            error: error.message,
+          });
+        }
+      }
 
       if (userRoles.includes("parent")) {
         // Verify parent-child relationship
-        const parentDetails = await getParentDetails(userId);
+        const parentDetails = await getParentDetails(userId, req.headers.authorization);
         if (!parentDetails.childIds.includes(requestedStudentId)) {
           return res.status(403).json({
             success: false,
@@ -205,11 +278,26 @@ const redemptionController = {
         console.error("Failed to send redemption notification:", error.message);
       }
 
+      // Get student details for the response
+      const studentDetails = await getStudentDetails(
+        requestedStudentId,
+        req.headers.authorization
+      );
+      
+      const redemptionObj = redemption.toObject();
+      redemptionObj.studentInfo = studentDetails ? {
+        firstName: studentDetails.userId?.firstName || '',
+        lastName: studentDetails.userId?.lastName || '',
+        email: studentDetails.userId?.email || '',
+        avatar: studentDetails.userId?.avatar || null,
+        grade: studentDetails.grade || null
+      } : null;
+
       res.status(201).json({
         success: true,
         message: "Reward redeemed successfully",
         data: {
-          redemption,
+          redemption: redemptionObj,
           redemptionCode: redemption.redemptionCode,
         },
       });
@@ -246,7 +334,31 @@ const redemptionController = {
 
       if (userRoles.includes("student")) {
         // Students can only see their own redemptions
-        filter.studentId = userId;
+        // Need to get the student profile ID, not the user ID
+        try {
+          const userServiceUrl = process.env.NODE_ENV === "production"
+            ? process.env.PRODUCTION_USER_SERVICE_URL
+            : process.env.USER_SERVICE_URL || "http://localhost:3002";
+          
+          const studentResponse = await axios.get(
+            `${userServiceUrl}/api/students/me`,
+            {
+              headers: {
+                Authorization: req.headers.authorization,
+              },
+            }
+          );
+          
+          const studentProfileId = studentResponse.data.data._id;
+          filter.studentId = studentProfileId;
+        } catch (error) {
+          console.error("Failed to get student profile:", error.message);
+          return res.status(500).json({
+            success: false,
+            message: "Failed to get student profile",
+            error: error.message,
+          });
+        }
       } else if (userRoles.includes("parent")) {
         // Parents can see their children's redemptions
         // TODO: Integrate with user service to get children IDs
@@ -280,10 +392,31 @@ const redemptionController = {
 
       // Execute query with pagination
       const redemptions = await RewardRedemption.find(filter)
-        .populate("rewardId", "title category subcategory pointsCost")
+        .populate("rewardId", "title category subcategory pointsCost image")
         .sort({ [sort]: sortOrder })
         .skip(skip)
         .limit(parseInt(limit));
+
+      // Get student details for each redemption
+      const redemptionsWithStudentInfo = await Promise.all(
+        redemptions.map(async (redemption) => {
+          const studentDetails = await getStudentDetails(
+            redemption.studentId,
+            req.headers.authorization
+          );
+          
+          const redemptionObj = redemption.toObject();
+          redemptionObj.studentInfo = studentDetails ? {
+            firstName: studentDetails.userId?.firstName || '',
+            lastName: studentDetails.userId?.lastName || '',
+            email: studentDetails.userId?.email || '',
+            avatar: studentDetails.userId?.avatar || null,
+            grade: studentDetails.grade || null
+          } : null;
+          
+          return redemptionObj;
+        })
+      );
 
       // Get total count for pagination
       const total = await RewardRedemption.countDocuments(filter);
@@ -291,7 +424,7 @@ const redemptionController = {
       res.status(200).json({
         success: true,
         data: {
-          redemptions,
+          redemptions: redemptionsWithStudentInfo,
           pagination: {
             total,
             page: parseInt(page),
@@ -388,10 +521,25 @@ const redemptionController = {
         );
       }
 
+      // Get student details for the response
+      const studentDetails = await getStudentDetails(
+        redemption.studentId,
+        req.headers.authorization
+      );
+      
+      const redemptionObj = redemption.toObject();
+      redemptionObj.studentInfo = studentDetails ? {
+        firstName: studentDetails.userId?.firstName || '',
+        lastName: studentDetails.userId?.lastName || '',
+        email: studentDetails.userId?.email || '',
+        avatar: studentDetails.userId?.avatar || null,
+        grade: studentDetails.grade || null
+      } : null;
+
       res.status(200).json({
         success: true,
         message: "Redemption fulfilled successfully",
-        data: redemption,
+        data: redemptionObj,
       });
     } catch (error) {
       console.error("Fulfill redemption error:", error);
