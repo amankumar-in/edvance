@@ -1,6 +1,7 @@
 // src/controllers/reward.controller.js
 const Reward = require("../models/reward.model");
 const RewardCategory = require("../models/rewardCategory.model");
+const RewardWishlist = require("../models/rewardWishlist.model");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const { getFileUrl } = require("../middleware/upload.middleware");
@@ -211,6 +212,7 @@ const rewardController = {
         sort = "pointsCost",
         order = "asc",
         isFeatured,
+        wishlistOnly,
       } = req.query;
 
       const filter = {
@@ -285,33 +287,92 @@ const rewardController = {
           );
 
           const studentData = studentResponse.data.data;
+          const studentId = studentData._id;
 
-          // Students can see:
-          // 1. Sponsor rewards
-          // 2. System rewards
-          // 3. School rewards for their school
-          // 4. Class rewards for their classes
-          // 5. Family rewards created by their parents
-          filter.$or = [
-            { category: "sponsor" },
-            { creatorType: "system" },
-            { schoolId: studentData.schoolId },
-            { classId: { $in: studentData.classIds || [] } },
-            { creatorId: { $in: studentData.parentIds || [] } },
-          ];
+          // Handle wishlist-only filter
+          if (wishlistOnly === 'true') {
+            // Get all wishlist items for this student
+            const wishlistItems = await RewardWishlist.find({ studentId });
+            const wishlistedRewardIds = wishlistItems.map(item => item.rewardId);
+            
+            if (wishlistedRewardIds.length === 0) {
+              // No wishlist items, return empty result
+              return res.status(200).json({
+                success: true,
+                data: {
+                  rewards: [],
+                  pagination: {
+                    total: 0,
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    pages: 0,
+                  },
+                },
+              });
+            }
 
-          // If student has a social worker, include their rewards too
-          if (studentData.socialWorkerId) {
-            filter.$or.push({ creatorId: studentData.socialWorkerId });
+            // Filter to only include wishlisted rewards
+            filter._id = { $in: wishlistedRewardIds };
+          } else {
+            // Normal filtering logic for students
+            // Students can see:
+            // 1. Sponsor rewards
+            // 2. System rewards
+            // 3. School rewards for their school
+            // 4. Class rewards for their classes
+            // 5. Family rewards created by their parents
+            filter.$or = [
+              { category: "sponsor" },
+              { creatorType: "system" },
+              { schoolId: studentData.schoolId },
+              { classId: { $in: studentData.classIds || [] } },
+              { creatorId: { $in: studentData.parentIds || [] } },
+            ];
+
+            // If student has a social worker, include their rewards too
+            if (studentData.socialWorkerId) {
+              filter.$or.push({ creatorId: studentData.socialWorkerId });
+            }
           }
         } catch (error) {
           console.error(
             "Error getting student details:",
             error.response?.data || error.message
           );
+          
+          if (wishlistOnly === 'true') {
+            // If we can't get student details and wishlist is requested, return empty
+            return res.status(200).json({
+              success: true,
+              data: {
+                rewards: [],
+                pagination: {
+                  total: 0,
+                  page: parseInt(page),
+                  limit: parseInt(limit),
+                  pages: 0,
+                },
+              },
+            });
+          }
+          
           // Fallback if user service fails - show basic rewards
           filter.$or = [{ category: "sponsor" }, { creatorType: "system" }];
         }
+      } else if (wishlistOnly === 'true') {
+        // Non-students requesting wishlist should get empty results
+        return res.status(200).json({
+          success: true,
+          data: {
+            rewards: [],
+            pagination: {
+              total: 0,
+              page: parseInt(page),
+              limit: parseInt(limit),
+              pages: 0,
+            },
+          },
+        });
       } else if (userRoles.includes("parent")) {
         try {
           // Get parent details from user service
@@ -411,10 +472,59 @@ const rewardController = {
       // Get total count for pagination
       const total = await Reward.countDocuments(filter);
 
+      // Add wishlist status for students
+      let rewardsWithWishlistStatus = rewards;
+      if (userRoles.includes("student")) {
+        try {
+          // Get student ID from user service
+          const userServiceUrl =
+            process.env.NODE_ENV === "production"
+              ? process.env.PRODUCTION_USER_SERVICE_URL
+              : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+          const studentResponse = await axios.get(
+            `${userServiceUrl}/api/students/me`,
+            {
+              headers: {
+                Authorization: req.headers.authorization,
+              },
+            }
+          );
+
+          const studentId = studentResponse.data.data._id;
+
+          // Get all wishlist items for this student
+          const wishlistItems = await RewardWishlist.find({ studentId });
+          const wishlistedRewardIds = new Set(
+            wishlistItems.map(item => item.rewardId.toString())
+          );
+
+          // Add isInWishlist field to each reward
+          rewardsWithWishlistStatus = rewards.map(reward => ({
+            ...reward.toObject(),
+            isInWishlist: wishlistedRewardIds.has(reward._id.toString())
+          }));
+
+        } catch (error) {
+          console.error("Error adding wishlist status:", error);
+          // If we can't get wishlist status, just return rewards without it
+          rewardsWithWishlistStatus = rewards.map(reward => ({
+            ...reward.toObject(),
+            isInWishlist: false
+          }));
+        }
+      } else {
+        // For non-students, set isInWishlist to false
+        rewardsWithWishlistStatus = rewards.map(reward => ({
+          ...reward.toObject(),
+          isInWishlist: false
+        }));
+      }
+
       res.status(200).json({
         success: true,
         data: {
-          rewards,
+          rewards: rewardsWithWishlistStatus,
           pagination: {
             total,
             page: parseInt(page),
@@ -725,6 +835,163 @@ const rewardController = {
       });
     }
   },
+
+  // Add reward to wishlist
+  addToWishlist: async (req, res) => {
+    console.log('this is the add to wishlist controller');
+    try {
+      const { rewardId } = req.params;
+      const { studentId } = req.body;
+
+      // Validate reward ID
+      if (!mongoose.Types.ObjectId.isValid(rewardId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid reward ID format",
+        });
+      }
+
+      // Check if reward exists
+      const reward = await Reward.findById(rewardId);
+      if (!reward || reward.isDeleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Reward not found",
+        });
+      }
+
+      // Check if already in wishlist
+      const existingWishlist = await RewardWishlist.findOne({
+        studentId,
+        rewardId
+      });
+
+      if (existingWishlist) {
+        return res.status(409).json({
+          success: false,
+          message: "Reward already in wishlist",
+        });
+      }
+
+      // Add to wishlist
+      const wishlistItem = new RewardWishlist({
+        studentId,
+        rewardId
+      });
+
+      await wishlistItem.save();
+
+      res.status(201).json({
+        success: true,
+        message: "Reward added to wishlist",
+        data: wishlistItem
+      });
+
+    } catch (error) {
+      console.error("Add to wishlist error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to add reward to wishlist",
+        error: error.message,
+      });
+    }
+  },
+
+  // Remove reward from wishlist
+  removeFromWishlist: async (req, res) => {
+    try {
+      const { rewardId } = req.params;
+      const { studentId } = req.body;
+
+      // Validate reward ID
+      if (!mongoose.Types.ObjectId.isValid(rewardId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid reward ID format",
+        });
+      }
+
+      // Find and remove from wishlist
+      const wishlistItem = await RewardWishlist.findOneAndDelete({
+        studentId,
+        rewardId
+      });
+
+      if (!wishlistItem) {
+        return res.status(404).json({
+          success: false,
+          message: "Reward not found in wishlist",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Reward removed from wishlist"
+      });
+
+    } catch (error) {
+      console.error("Remove from wishlist error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to remove reward from wishlist",
+        error: error.message,
+      });
+    }
+  },
+
+  // Get student's wishlist
+  getWishlist: async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const { page = 1, limit = 20 } = req.query;
+
+      // Pagination
+      const skip = (parseInt(page) - 1) * parseInt(limit);
+
+      // Get wishlist with populated reward data
+      const wishlistItems = await RewardWishlist.find({ studentId })
+        .populate({
+          path: 'rewardId',
+          match: { isDeleted: false, isActive: true }, // Only show active rewards
+          populate: {
+            path: 'categoryId',
+            select: 'name type subcategoryType'
+          }
+        })
+        .sort({ createdAt: -1 }) // Most recently added first
+        .skip(skip)
+        .limit(parseInt(limit));
+
+      // Filter out items where reward was deleted/deactivated
+      const validWishlistItems = wishlistItems.filter(item => item.rewardId);
+
+      // Get total count
+      const total = await RewardWishlist.countDocuments({ studentId });
+
+      res.status(200).json({
+        success: true,
+        data: {
+          wishlist: validWishlistItems,
+          pagination: {
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            pages: Math.ceil(total / parseInt(limit)),
+          },
+        },
+      });
+
+    } catch (error) {
+      console.error("Get wishlist error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to get wishlist",
+        error: error.message,
+      });
+    }
+  },
+
+
 };
 
 module.exports = rewardController;

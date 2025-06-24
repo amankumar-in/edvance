@@ -425,7 +425,7 @@ function StudentTaskDetail() {
         {/* Sidebar */}
         <Box>
           {/* Action Panel */}
-          <Card size="2" mb="5">
+          <Card size="2" mb="5" className='xl:sticky xl:top-[72px] z-10 bg-[--color-background]'>
             <Flex direction="column" gap="3">
               <Heading size="4">Actions</Heading>
 
@@ -549,7 +549,7 @@ function StudentTaskDetail() {
           {task?.completionStatus?.status === 'pending' && (
             <Card size="2" mb="5">
               <Flex direction="column" gap="4">
-                <Heading size="4">💡 Completion Tips</Heading>
+                <Heading size="4">Completion Tips</Heading>
 
                 <Flex direction="column" gap="2">
                   <Text size="2">• <strong>Read carefully:</strong> Make sure you understand all requirements</Text>
@@ -568,7 +568,7 @@ function StudentTaskDetail() {
           {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
             <Card size="2" mb="5">
               <Flex direction="column" gap="4">
-                <Heading size="4">📤 Submission Help</Heading>
+                <Heading size="4">Submission Help</Heading>
 
                 <Callout.Root variant='surface' color="amber" size="1">
                   <Callout.Icon>
@@ -589,7 +589,7 @@ function StudentTaskDetail() {
           {task?.completionStatus?.status === 'pending' && (
             <Card size="2" mb="5">
               <Flex direction="column" gap="4">
-                <Heading size="4">📋 Evidence Types</Heading>
+                <Heading size="4">Evidence Types</Heading>
 
                 <Flex direction="column" gap="2">
                   <Flex align="center" gap="2">

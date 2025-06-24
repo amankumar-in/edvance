@@ -1,12 +1,24 @@
-import { Avatar, Badge, Box, Button, Flex, Separator, Text } from '@radix-ui/themes';
+import { Avatar, Badge, Box, Button, Flex, Separator, Skeleton, Text } from '@radix-ui/themes';
 import { BarChart3, Bell, BookOpen, Calendar, CreditCard, Home, LogOut, Settings, TrendingUp, Trophy, User } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
 import { Container } from '../../components';
+import { usePointsDetailsById } from '../../api/points/points.queries';
+import { toast } from 'sonner';
 
 function StudentLayout() {
-  const { user, handleLogout, isLoggingOut } = useAuth();
+  const { user, handleLogout, isLoggingOut, profiles } = useAuth();
+  const studentId = profiles?.student?._id;
+
+  const { data, isLoading, isError, error } = usePointsDetailsById(studentId);
+  const pointAccount = data?.data ?? {};
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error?.response?.data?.message || 'Error fetching points details');
+    }
+  }, [isError, error])
 
   // Mock unread notifications count - replace with actual data
   const unreadNotifications = 3;
@@ -50,6 +62,11 @@ function StudentLayout() {
             <Badge highContrast>
               Student
             </Badge>
+            <Skeleton loading={isLoading} className='w-28'>
+              <Text as='p' size="1" color="gray">
+                Level {pointAccount.level} {pointAccount.levelName}
+              </Text>
+            </Skeleton>
           </Flex>
 
           <Separator size="4" />

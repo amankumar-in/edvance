@@ -2,11 +2,10 @@ import { Badge, Box, Callout, Card, Flex, Grid, Heading, IconButton, ScrollArea,
 import { AlertCircleIcon, Clock, Filter, RefreshCw } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
-import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { useGetStudentTasks } from '../../api/task/task.queries';
 import { EmptyStateCard, Loader } from '../../components';
+import { FALLBACK_IMAGES, taskCategoryOptions, taskDifficultyOptions } from '../../utils/constants';
 import { formatDate } from '../../utils/helperFunctions';
-import { taskCategoryOptions, taskDifficultyOptions } from '../../utils/constants';
 
 const statusOptions = [
   { value: null, label: 'All Tasks', color: 'gray' },
@@ -25,9 +24,6 @@ function StudentTasks() {
     category: category === 'all' ? null : category,
   })
   const { data: tasks = [] } = data ?? {}
-
-  const { data: taskCategoriesData } = useGetTaskCategories({ role: 'student' })
-  const { data: taskCategories = [] } = taskCategoriesData ?? {}
 
   // Get status badge color
   const getStatusColor = (status) => {
@@ -49,16 +45,27 @@ function StudentTasks() {
       <Card size="2" asChild className={`transition-shadow hover:shadow-md`}>
         <Link to={`/student/tasks/${task._id}`}>
           <Flex direction="column" gap="3">
-            <Flex justify="between" align="start">
-              <Flex direction="column" gap="1">
-                <Flex gap="2" align="center">
-                  <Badge color={taskCategoryOptions.find(option => option.value === task.category)?.color} variant="surface">{taskCategoryOptions.find(option => option.value === task.category)?.label}</Badge>
-                  <Text as='span' size="1" color="gray" className='capitalize'>
-                    {task.subCategory}
-                  </Text>
-                </Flex>
-                <Heading size="3" style={{ marginTop: '6px' }}>{task.title}</Heading>
+            <Flex direction="column" gap="1">
+              <Flex gap="2" align="center">
+                <Badge color={taskCategoryOptions.find(option => option.value === task.category)?.color} variant="surface">{taskCategoryOptions.find(option => option.value === task.category)?.label}</Badge>
+                <Text as='span' size="1" color="gray" className='capitalize'>
+                  {task.subCategory}
+                </Text>
               </Flex>
+              {/* Display first image attachment if available */}
+              {task.attachments && task.attachments?.length > 0 &&
+                task.attachments.find(attachment => attachment.type === 'image') && (
+                  <img
+                    src={task.attachments.find(attachment => attachment.type === 'image').url || FALLBACK_IMAGES.landscape}
+                    alt={task.attachments.find(attachment => attachment.type === 'image').name || 'Task attachment'}
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_IMAGES.landscape;
+                    }}
+                    className="object-cover object-center mt-2 w-full rounded-md aspect-video"
+                  />
+                )
+              }
+              <Heading size="3" style={{ marginTop: '6px' }}>{task.title}</Heading>
             </Flex>
 
             <Text size="2" className="line-clamp-2" color="gray">{task.description}</Text>
@@ -205,7 +212,7 @@ function StudentTasks() {
           icon={<Filter size={32} className="text-[--accent-9]" />}
         />
       ) : (
-        <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
+        <Grid columns={{ initial: '1', xs: '2', sm: '1', md: '2', lg: '3', xl: '4' }} gap="4">
           {tasks.map(task => (
             <TaskCard key={task._id} task={task} />
           ))}

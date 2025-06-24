@@ -9,7 +9,9 @@ import {
   deleteReward,
   redeemReward,
   cancelRedemption,
-  fulfillRedemption
+  fulfillRedemption,
+  addToWishlist,
+  removeFromWishlist
 } from "./rewards.api";
 import { REWARD_CATEGORIES_QUERY_KEY, REWARDS_QUERY_KEY, REDEMPTIONS_QUERY_KEY } from "./rewards.queries";
 
@@ -175,6 +177,40 @@ const useFulfillRedemption = () => {
   });
 };
 
+/**
+ * Add reward to wishlist
+ */
+const useAddToWishlist = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: addToWishlist,
+    onSuccess: () => {
+      // Invalidate rewards queries to update isInWishlist status
+      queryClient.invalidateQueries({
+        queryKey: REWARDS_QUERY_KEY.all
+      });
+    },
+  });
+};
+
+/**
+ * Remove reward from wishlist
+ */
+const useRemoveFromWishlist = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeFromWishlist,
+    onSuccess: () => {
+      // Invalidate rewards queries to update isInWishlist status
+      queryClient.invalidateQueries({
+        queryKey: REWARDS_QUERY_KEY.all
+      });
+    },
+  });
+};
+
 export {
   useCreateDefaultRewardCategories,
   useCreateRewardCategory,
@@ -185,5 +221,7 @@ export {
   useDeleteReward,
   useRedeemReward,
   useCancelRedemption,
-  useFulfillRedemption
+  useFulfillRedemption,
+  useRemoveFromWishlist,
+  useAddToWishlist,
 };

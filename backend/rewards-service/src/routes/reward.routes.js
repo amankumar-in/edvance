@@ -384,6 +384,12 @@ router.post("/", canManageRewards, uploadSingle, handleUploadError, rewardContro
  *           type: string
  *           enum: [asc, desc]
  *           default: "asc"
+ *       - name: wishlistOnly
+ *         in: query
+ *         description: Show only rewards in student's wishlist (students only)
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
  *     responses:
  *       '200':
  *         description: Rewards retrieved successfully
@@ -787,5 +793,200 @@ router.post(
   "/:id/check-eligibility",
   rewardController.checkRedemptionEligibility
 );
+
+/**
+ * @openapi
+ * /rewards/{id}/wishlist:
+ *   post:
+ *     summary: Add reward to wishlist
+ *     description: Adds a reward to the student's wishlist
+ *     tags:
+ *       - Wishlist
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the reward to add to wishlist
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Student ID for wishlist
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - studentId
+ *             properties:
+ *               studentId:
+ *                 type: string
+ *                 description: ID of the student
+ *                 example: "60f8a9b5e6b3f32f8c9a8d7e"
+ *     responses:
+ *       '201':
+ *         description: Reward added to wishlist successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Reward added to wishlist"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     studentId:
+ *                       type: string
+ *                     rewardId:
+ *                       type: string
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *       '400':
+ *         description: Invalid reward ID format
+ *       '404':
+ *         description: Reward not found
+ *       '409':
+ *         description: Reward already in wishlist
+ *       '500':
+ *         description: Failed to add reward to wishlist
+ */
+router.post("/:rewardId/wishlist", rewardController.addToWishlist);
+
+/**
+ * @openapi
+ * /rewards/{id}/wishlist:
+ *   delete:
+ *     summary: Remove reward from wishlist
+ *     description: Removes a reward from the student's wishlist
+ *     tags:
+ *       - Wishlist
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the reward to remove from wishlist
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Student ID for wishlist
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - studentId
+ *             properties:
+ *               studentId:
+ *                 type: string
+ *                 description: ID of the student
+ *                 example: "60f8a9b5e6b3f32f8c9a8d7e"
+ *     responses:
+ *       '200':
+ *         description: Reward removed from wishlist successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Reward removed from wishlist"
+ *       '400':
+ *         description: Invalid reward ID format
+ *       '404':
+ *         description: Reward not found in wishlist
+ *       '500':
+ *         description: Failed to remove reward from wishlist
+ */
+router.delete("/:rewardId/wishlist", rewardController.removeFromWishlist);
+
+/**
+ * @openapi
+ * /rewards/wishlist/{studentId}:
+ *   get:
+ *     summary: Get student's wishlist
+ *     description: Retrieves all rewards in a student's wishlist with pagination
+ *     tags:
+ *       - Wishlist
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: studentId
+ *         in: path
+ *         description: ID of the student
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       '200':
+ *         description: Wishlist retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     wishlist:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           studentId:
+ *                             type: string
+ *                           rewardId:
+ *                             $ref: '#/components/schemas/Reward'
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         pages:
+ *                           type: integer
+ *       '500':
+ *         description: Failed to get wishlist
+ */
+router.get("/wishlist/:studentId", rewardController.getWishlist);
 
 module.exports = router;

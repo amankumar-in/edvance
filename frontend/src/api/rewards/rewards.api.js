@@ -144,6 +144,24 @@ const fulfillRedemption = async ({ id, feedback }) => {
   return response.data;
 };
 
+/**
+ * Add reward to wishlist
+ */
+const addToWishlist = async ({ rewardId, studentId }) => {
+  const response = await apiClient.post(`/rewards/${rewardId}/wishlist`, { studentId });
+  return response.data;
+};
+
+/**
+ * Remove reward from wishlist
+ */
+const removeFromWishlist = async ({ rewardId, studentId }) => {
+  const response = await apiClient.delete(`/rewards/${rewardId}/wishlist`, {
+    data: { studentId }
+  });
+  return response.data;
+};
+
 export {
   createDefaultRewardCategories,
   createRewardCategory,
@@ -161,5 +179,7 @@ export {
   getRedemptionHistory,
   getRedemptionById,
   cancelRedemption,
-  fulfillRedemption
+  fulfillRedemption,
+  addToWishlist,
+  removeFromWishlist,
 };

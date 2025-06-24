@@ -1,6 +1,31 @@
 const PointAccount = require("../models/pointAccount.model");
 const PointTransaction = require("../models/pointTransaction.model");
+const PointConfiguration = require("../models/pointConfiguration.model");
 const axios = require("axios");
+
+// Helper function to get and update level name
+const getLevelNameForAccount = async (account) => {
+  let levelName = account.levelName;
+  try {
+    const config = await PointConfiguration.getActive();
+    if (config && config.levelNames && config.levelNames.has(account.level.toString())) {
+      levelName = config.levelNames.get(account.level.toString());
+      
+      // Update the account's levelName if it's different (for future optimization)
+      if (account.levelName !== levelName) {
+        account.levelName = levelName;
+        await account.save();
+      }
+    }
+  } catch (error) {
+    console.error("Error getting level name from configuration:", error);
+    // Fallback to account's stored levelName or generate a default
+    if (!levelName) {
+      levelName = `Level ${account.level}`;
+    }
+  }
+  return levelName;
+};
 
 // Create a new point account
 exports.createAccount = async (req, res) => {
@@ -81,6 +106,9 @@ exports.getAccountByStudentId = async (req, res) => {
         message: "Point account not found",
       });
     }
+
+    // Get level name from configuration
+    const levelName = await getLevelNameForAccount(account);
 
     // Calculate points needed for next level
     const pointsToNextLevel = account.pointsToNextLevel();
@@ -230,6 +258,7 @@ exports.getAccountByStudentId = async (req, res) => {
       success: true,
       data: {
         ...account.toObject(),
+        levelName,
         pointsToNextLevel,
         progressPercentage: Math.min(100, Math.max(0, progressPercentage)),
         statistics: {
@@ -262,6 +291,9 @@ exports.getBalance = async (req, res) => {
       });
     }
 
+    // Get level name from configuration
+    const levelName = await getLevelNameForAccount(account);
+
     res.status(200).json({
       success: true,
       data: {
@@ -269,6 +301,7 @@ exports.getBalance = async (req, res) => {
         totalEarned: account.totalEarned,
         totalSpent: account.totalSpent,
         level: account.level,
+        levelName,
       },
     });
   } catch (error) {
@@ -294,6 +327,9 @@ exports.getLevelInfo = async (req, res) => {
       });
     }
 
+    // Get level name from configuration
+    const levelName = await getLevelNameForAccount(account);
+
     // Calculate points needed for next level
     const pointsToNextLevel = account.pointsToNextLevel();
 
@@ -318,6 +354,7 @@ exports.getLevelInfo = async (req, res) => {
       success: true,
       data: {
         level: account.level,
+        levelName,
         totalEarned: account.totalEarned,
         currentBalance: account.currentBalance,
         pointsToNextLevel,

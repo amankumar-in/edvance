@@ -88,185 +88,192 @@ const StudentPoints = () => {
   };
 
   return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="text-center sm:text-left">
-          <Text size="7" weight="bold">
-            Scholarship Points
-          </Text>
-          <Text size="3" color="gray" className="block mt-2">
-            Track your academic achievements and rewards
-          </Text>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center sm:text-left">
+        <Text size="7" weight="bold">
+          Scholarship Points
+        </Text>
+        <Text size="3" color="gray" className="block mt-2">
+          Track your academic achievements and rewards
+        </Text>
+      </div>
 
-        {isError && (
-          <Callout.Root color='red'>
-            <Callout.Icon>
-              <AlertCircleIcon size={16} />
-            </Callout.Icon>
-            <Callout.Text>
-              {error?.response?.data?.message || error?.message || 'Something went wrong while fetching user details'}
-            </Callout.Text>
-          </Callout.Root>
-        )}
+      {isError && (
+        <Callout.Root color='red'>
+          <Callout.Icon>
+            <AlertCircleIcon size={16} />
+          </Callout.Icon>
+          <Callout.Text>
+            {error?.response?.data?.message || error?.message || 'Something went wrong while fetching user details'}
+          </Callout.Text>
+        </Callout.Root>
+      )}
 
-        {/* Main Balance Card */}
-        <Card className="relative overflow-hidden text-center" size='2'>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
-          <div className="relative">
-            <Text size="2" color="gray" className="font-medium tracking-wide uppercase">
-              Current Balance
-            </Text>
-            <Skeleton loading={isLoading} className='w-40 mx-auto'>
-              <Flex align="center" justify="center" gap="3" className="mt-2 mb-4">
-                <Text as='p' size="9" weight="bold" className='text-[var(--accent-10)]'>
-                  {pointAccount?.currentBalance?.toLocaleString()}
-                </Text>
-                <Coins className="w-12 h-12 sm:w-16 sm:h-16" style={{ color: 'var(--accent-10)' }} />
+      {/* Main Balance Card */}
+      <Card className="overflow-hidden relative text-center" size='2'>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
+        <div className="relative">
+          <Text size="2" color="gray" className="font-medium tracking-wide uppercase">
+            Current Balance
+          </Text>
+          <Skeleton loading={isLoading} className='mx-auto w-40'>
+            <Flex align="center" justify="center" gap="3" className="mt-2 mb-4">
+              <Text as='p' size="9" weight="bold" className='text-[var(--accent-10)]'>
+                {pointAccount?.currentBalance?.toLocaleString()}
+              </Text>
+              <Coins className="w-12 h-12 sm:w-16 sm:h-16" style={{ color: 'var(--accent-10)' }} />
+            </Flex>
+          </Skeleton>
+
+          {/* Level Badge */}
+          <Skeleton loading={isLoading}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 border border-[--gray-a6] rounded-full backdrop-blur-sm bg-[--color-background] ">
+              <Trophy className="size-6" style={{ color: 'var(--amber-9)' }} />
+              <div className="flex flex-col items-start">
+                <Text as='p' size="2" weight="medium">Level {pointAccount.level}</Text>
+                {pointAccount.levelName && (
+                  <Text as='p' size="1" color="gray">
+                    {pointAccount.levelName}
+                  </Text>
+                )}
+              </div>
+            </div>
+          </Skeleton>
+
+          {/* Progress */}
+          {pointAccount.level !== 10 && (
+            <div className="mx-auto mt-4 max-w-md">
+              <Flex justify="between" className="mb-2">
+                <Text size="1" color="gray">Level {pointAccount.level}</Text>
+                <Text size="1" color="gray">{pointAccount.pointsToNextLevel ?? 0} to Level {(pointAccount.level ?? 0) + 1}</Text>
               </Flex>
-            </Skeleton>
+              <Progress value={pointAccount?.progressPercentage ?? 0} className="w-full" />
+              <Text size="1" color="gray" className="mt-1">
+                {pointAccount?.progressPercentage?.toFixed(2)}% progress to next level
+              </Text>
+            </div>
+          )}
+        </div>
+      </Card>
 
-            {/* Level Badge */}
-            <Skeleton loading={isLoading}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 border border-[--gray-a6] rounded-full backdrop-blur-sm bg-[--color-background]">
-                <Trophy className="w-5 h-5" style={{ color: 'var(--amber-9)' }} />
-                <Text size="2" weight="medium">Level {pointAccount.level}</Text>
-              </div>
-            </Skeleton>
-
-            {/* Progress */}
-            {pointAccount.level !== 10 && (
-              <div className="max-w-md mx-auto mt-4">
-                <Flex justify="between" className="mb-2">
-                  <Text size="1" color="gray">Level {pointAccount.level}</Text>
-                  <Text size="1" color="gray">{pointAccount.pointsToNextLevel ?? 0} to Level {(pointAccount.level ?? 0) + 1}</Text>
-                </Flex>
-                <Progress value={pointAccount?.progressPercentage ?? 0} className="w-full" />
-                <Text size="1" color="gray" className="mt-1">
-                  {pointAccount?.progressPercentage?.toFixed(2)}% progress to next level
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card size='2'>
+          <Flex align="center" gap="3" className="mb-3">
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--green-a3)' }}>
+              <TrendingUp className="w-5 h-5" style={{ color: 'var(--green-9)' }} />
+            </div>
+            <div>
+              <Text as='p' size="1" color="gray" className="tracking-wide uppercase">Total Earned</Text>
+              <Skeleton loading={isLoading}>
+                <Text as='p' size="4" weight="bold" style={{ color: 'var(--green-11)' }}>
+                  +{pointAccount?.totalEarned?.toLocaleString()}
                 </Text>
-              </div>
-            )}
-          </div>
+              </Skeleton>
+            </div>
+          </Flex>
         </Card>
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card size='2'>
-            <Flex align="center" gap="3" className="mb-3">
-              <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--green-a3)' }}>
-                <TrendingUp className="w-5 h-5" style={{ color: 'var(--green-9)' }} />
-              </div>
-              <div>
-                <Text as='p' size="1" color="gray" className="tracking-wide uppercase">Total Earned</Text>
-                <Skeleton loading={isLoading}>
-                  <Text as='p' size="4" weight="bold" style={{ color: 'var(--green-11)' }}>
-                    +{pointAccount?.totalEarned?.toLocaleString()}
-                  </Text>
-                </Skeleton>
-              </div>
-            </Flex>
-          </Card>
+        <Card size='2'>
+          <Flex align="center" gap="3" className="mb-3">
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--red-a3)' }}>
+              <ArrowDownRight className="w-5 h-5" style={{ color: 'var(--red-9)' }} />
+            </div>
+            <div>
+              <Text as='p' size="1" color="gray" className="tracking-wide uppercase">Total Spent</Text>
+              <Skeleton loading={isLoading}>
+                <Text as='p' size="4" weight="bold" style={{ color: 'var(--red-11)' }}>
+                  -{pointAccount?.totalSpent?.toLocaleString()}
+                </Text>
+              </Skeleton>
+            </div>
+          </Flex>
+        </Card>
 
-          <Card size='2'>
-            <Flex align="center" gap="3" className="mb-3">
-              <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--red-a3)' }}>
-                <ArrowDownRight className="w-5 h-5" style={{ color: 'var(--red-9)' }} />
-              </div>
-              <div>
-                <Text as='p' size="1" color="gray" className="tracking-wide uppercase">Total Spent</Text>
-                <Skeleton loading={isLoading}>
-                  <Text as='p' size="4" weight="bold" style={{ color: 'var(--red-11)' }}>
-                    -{pointAccount?.totalSpent?.toLocaleString()}
-                  </Text>
-                </Skeleton>
-              </div>
-            </Flex>
-          </Card>
+        <Card size='2'>
+          <Flex align="center" gap="3" className="mb-3">
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--blue-a3)' }}>
+              <Calendar className="w-5 h-5" style={{ color: 'var(--blue-9)' }} />
+            </div>
+            <div>
+              <Text as='p' size="1" color="gray" className="tracking-wide uppercase">This Week</Text>
+              <Skeleton loading={isLoading}>
+                <Text as='p' size="4" weight="bold" style={{ color: 'var(--blue-11)' }}>
+                  +{statistics?.weekly?.earned || 0}
+                </Text>
+              </Skeleton>
+            </div>
+          </Flex>
+        </Card>
 
-          <Card size='2'>
-            <Flex align="center" gap="3" className="mb-3">
-              <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--blue-a3)' }}>
-                <Calendar className="w-5 h-5" style={{ color: 'var(--blue-9)' }} />
-              </div>
-              <div>
-                <Text as='p' size="1" color="gray" className="tracking-wide uppercase">This Week</Text>
-                <Skeleton loading={isLoading}>
-                  <Text as='p' size="4" weight="bold" style={{ color: 'var(--blue-11)' }}>
-                    +{statistics?.weekly?.earned || 0}
-                  </Text>
-                </Skeleton>
-              </div>
-            </Flex>
-          </Card>
-
-          <Card size='2'>
-            <Flex align="center" gap="3" className="mb-3">
-              <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--purple-a3)' }}>
-                <Target className="w-5 h-5" style={{ color: 'var(--purple-9)' }} />
-              </div>
-              <div>
-                <Text as='p' size="1" color="gray" className="tracking-wide uppercase">This Month</Text>
-                <Skeleton loading={isLoading}>
-                  <Text as='p' size="4" weight="bold" style={{ color: 'var(--purple-11)' }}>
-                    +{statistics?.monthly?.earned || 0}
-                  </Text>
-                </Skeleton>
-              </div>
-            </Flex>
-          </Card>
-        </div>
-
-        {/* Tabs */}
-        <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
-          <Tabs.List>
-            <Tabs.Trigger value="overview">Dashboard</Tabs.Trigger>
-            <Tabs.Trigger value="activity">Activity</Tabs.Trigger>
-            <Tabs.Trigger value="levels">Levels</Tabs.Trigger>
-          </Tabs.List>
-
-          <Tabs.Content value="overview" className="mt-6">
-            <OverviewTab
-              pointAccount={pointAccount}
-              statistics={statistics}
-              transactions={transactions}
-              getTransactionIcon={getTransactionIcon}
-              getSourceIcon={getSourceIcon}
-              getStatusColor={getStatusColor}
-              formatTimeAgo={formatTimeAgo}
-              formatSource={formatSource}
-              setSelectedTab={setSelectedTab}
-              errorTransactions={errorTransactions}
-              isErrorTransactions={isErrorTransactions}
-              isLoadingTransactions={isLoadingTransactionData}
-              studentId={studentId}
-              isLoadingPointsDetails={isLoading}
-            />
-          </Tabs.Content>
-
-          <Tabs.Content value="activity" className="mt-6">
-            <ActivityTab
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              transactionFilter={transactionFilter}
-              setTransactionFilter={setTransactionFilter}
-              sourceFilter={sourceFilter}
-              setSourceFilter={setSourceFilter}
-              getTransactionIcon={getTransactionIcon}
-              getStatusColor={getStatusColor}
-              formatDate={formatDate}
-              formatSource={formatSource}
-              studentId={studentId}
-            />
-          </Tabs.Content>
-
-          <Tabs.Content value="levels" className="mt-6">
-            <LevelsTab
-              pointAccount={pointAccount}
-            />
-          </Tabs.Content>
-        </Tabs.Root>
+        <Card size='2'>
+          <Flex align="center" gap="3" className="mb-3">
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--purple-a3)' }}>
+              <Target className="w-5 h-5" style={{ color: 'var(--purple-9)' }} />
+            </div>
+            <div>
+              <Text as='p' size="1" color="gray" className="tracking-wide uppercase">This Month</Text>
+              <Skeleton loading={isLoading}>
+                <Text as='p' size="4" weight="bold" style={{ color: 'var(--purple-11)' }}>
+                  +{statistics?.monthly?.earned || 0}
+                </Text>
+              </Skeleton>
+            </div>
+          </Flex>
+        </Card>
       </div>
+
+      {/* Tabs */}
+      <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
+        <Tabs.List>
+          <Tabs.Trigger value="overview">Dashboard</Tabs.Trigger>
+          <Tabs.Trigger value="activity">Activity</Tabs.Trigger>
+          <Tabs.Trigger value="levels">Levels</Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content value="overview" className="mt-6">
+          <OverviewTab
+            pointAccount={pointAccount}
+            statistics={statistics}
+            transactions={transactions}
+            getTransactionIcon={getTransactionIcon}
+            getSourceIcon={getSourceIcon}
+            getStatusColor={getStatusColor}
+            formatTimeAgo={formatTimeAgo}
+            formatSource={formatSource}
+            setSelectedTab={setSelectedTab}
+            errorTransactions={errorTransactions}
+            isErrorTransactions={isErrorTransactions}
+            isLoadingTransactions={isLoadingTransactionData}
+            studentId={studentId}
+            isLoadingPointsDetails={isLoading}
+          />
+        </Tabs.Content>
+
+        <Tabs.Content value="activity" className="mt-6">
+          <ActivityTab
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            transactionFilter={transactionFilter}
+            setTransactionFilter={setTransactionFilter}
+            sourceFilter={sourceFilter}
+            setSourceFilter={setSourceFilter}
+            getTransactionIcon={getTransactionIcon}
+            getStatusColor={getStatusColor}
+            formatDate={formatDate}
+            formatSource={formatSource}
+            studentId={studentId}
+          />
+        </Tabs.Content>
+
+        <Tabs.Content value="levels" className="mt-6">
+          <LevelsTab
+            pointAccount={pointAccount}
+          />
+        </Tabs.Content>
+      </Tabs.Root>
+    </div>
   );
 };
 
