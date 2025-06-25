@@ -53,8 +53,8 @@ function StudentRewards() {
   // Mutations ------------------------------------------------
   const { mutate: redeemReward, isPending: isRedeemingReward } = useRedeemReward();
 
-  const { mutate: addToWishlist, isPending: isAddingToWishlist } = useAddToWishlist();
-  const { mutate: removeFromWishlist, isPending: isRemovingFromWishlist } = useRemoveFromWishlist();
+  const { mutate: addToWishlist, isPending: isAddingToWishlist, variables: addToWishlistVariables } = useAddToWishlist();
+  const { mutate: removeFromWishlist, isPending: isRemovingFromWishlist, variables: removeFromWishlistVariables } = useRemoveFromWishlist();
 
   // Wishlist Toggle
   const toggleWishlist = (rewardId, isInWishlist) => {
@@ -284,18 +284,6 @@ function StudentRewards() {
                             </Text>
                           </Button>
 
-                          <IconButton
-                            size={{ initial: '3', md: '4' }}
-                            variant="soft"
-                            className="bg-[--gray-4] hover:bg-[--gray-5] text-[--gray-11] hover:text-red-500 transition-all duration-300"
-                            onClick={() => toggleWishlist(reward.id)}
-                          >
-                            <Heart
-                              size={16}
-                              className={`md:w-[18px] md:h-[18px] transition-all duration-300 ${wishlist.has(reward.id) ? 'fill-red-500 text-red-500 scale-110' : ''
-                                }`}
-                            />
-                          </IconButton>
                         </Flex>
                       </Box>
 
@@ -421,13 +409,22 @@ function StudentRewards() {
                     </Box>
                   )}
 
+                  {reward?.isFeatured && (
+                    <Box className="absolute top-2 left-2">
+                      <Badge color="cyan" variant="solid" size="1">
+                        <Sparkles size={12} /> Featured
+                      </Badge>
+                    </Box>
+                  )}
+
                   {/* Wishlist Toggle */}
                   <WishlistToggle
                     isInWishlist={reward.isInWishlist}
                     onToggle={() => toggleWishlist(reward._id, reward.isInWishlist)}
                     className="absolute top-2 right-2 backdrop-blur-sm bg-black/50"
                     variant="soft"
-                    loading={isAddingToWishlist || isRemovingFromWishlist}
+                    
+                    loading={((isAddingToWishlist && addToWishlistVariables?.rewardId === reward._id) || (isRemovingFromWishlist && removeFromWishlistVariables?.rewardId === reward._id))}
                   />
 
                   {/* Limited Quantity Badge */}

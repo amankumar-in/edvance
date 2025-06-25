@@ -12,6 +12,18 @@ const getAllLevels = async () => {
   return response.data;
 }
 
+const addOrUpdateLevel = async (data) => {
+  const response = await apiClient.post(`/points/configuration/levels`, data);
+
+  return response.data;
+}
+
+const deleteLevel = async (level) => {
+  const response = await apiClient.delete(`/points/configuration/levels/${level}`);
+
+  return response.data;
+}
+
 const getStudentTransactions = async ({ params = {}, studentId }) => {
   const response = await apiClient.get(`/points/transactions/student/${studentId}`, { params: params });
 
@@ -27,6 +39,8 @@ const getStudentTransactionSummary = async (studentId) => {
 export {
   getPointsDetailsById,
   getAllLevels,
+  addOrUpdateLevel,
+  deleteLevel,
   getStudentTransactions,
   getStudentTransactionSummary
 }

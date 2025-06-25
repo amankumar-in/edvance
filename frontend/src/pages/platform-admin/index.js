@@ -14,6 +14,9 @@ export { default as RewardCategories } from './RewardCategories'
 export { default as CreateRewardCategory } from './CreateRewardCategory'
 export { default as RewardRedemptions } from './RewardRedemptions'
 
+// Scholarship Points Management
+export { default as ScholarshipPoints } from './ScholarshipPoints'
+
 // Analytics and Reports
 
 // Settings

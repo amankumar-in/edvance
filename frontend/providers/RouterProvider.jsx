@@ -6,7 +6,7 @@ import ParentClaims from "../src/pages/parent/ParentClaims";
 import ParentLayout from "../src/pages/parent/ParentLayout";
 import ParentTasks from "../src/pages/parent/ParentTasks";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
-import { CreateEditCategory, CreateReward, CreateRewardCategory, CreateTask, Overview, Parents, PlatformAdminDashboardLayout, RewardCategories, RewardRedemptions, Rewards, SchoolAdmins, SocialWorkers, Students, TaskCategories, Tasks, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
+import { CreateEditCategory, CreateReward, CreateRewardCategory, CreateTask, Overview, Parents, PlatformAdminDashboardLayout, RewardCategories, RewardRedemptions, Rewards, ScholarshipPoints, SchoolAdmins, SocialWorkers, Students, TaskCategories, Tasks, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
 import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
@@ -117,6 +117,7 @@ const router = createBrowserRouter(
             <Route path="reward-categories/create" element={<CreateRewardCategory />} />
             <Route path="reward-categories/edit/:id" element={<CreateRewardCategory />} />
             <Route path="reward-redemptions" element={<RewardRedemptions />} />
+            <Route path="scholarship-points" element={<ScholarshipPoints />} />
             <Route path="users/user/:id" element={<UserDetails />} />
           </Route>
         </Route>
