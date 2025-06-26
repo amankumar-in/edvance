@@ -1,5 +1,5 @@
 import { Badge, Button, Callout, Card, Dialog, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, ClipboardList, Eye, Filter, Gift, MoreHorizontal, PencilIcon, Plus, Search, Tag, TrashIcon, X } from 'lucide-react';
+import { AlertCircleIcon, Check, ClipboardList, Eye, Filter, Gift, MoreHorizontal, PencilIcon, Plus, Search, Tag, TrashIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { BarLoader } from 'react-spinners';
@@ -23,13 +23,14 @@ const Rewards = () => {
 
   // Filter states
   const [filters, setFilters] = useState({
-    category: '',
-    subcategory: '',
-    categoryId: '',
-    creatorType: '',
-    schoolId: '',
-    classId: '',
-    expiryDate: ''
+    category: null,
+    subcategory: null,
+    categoryId: null,
+    creatorType: null,
+    schoolId: null,
+    classId: null,
+    expiryDate: null,
+    isFeatured: null,
   });
 
   const [showFilters, setShowFilters] = useState(false);
@@ -85,20 +86,21 @@ const Rewards = () => {
   // function to clear filters
   const clearFilters = () => {
     setFilters({
-      category: '',
-      subcategory: '',
-      categoryId: '',
-      creatorType: '',
-      schoolId: '',
-      classId: '',
-      expiryDate: ''
+      category: null,
+      subcategory: null,
+      categoryId: null,
+      creatorType: null,
+      schoolId: null,
+      classId: null,
+      expiryDate: null,
+      isFeatured: null,
     });
     setSearch('');
   };
 
   // function to get active filters count
   const getActiveFiltersCount = () => {
-    return Object.values(filters).filter(value => value !== '').length + (search !== '' ? 1 : 0);
+    return Object.values(filters).filter(value => value !== null).length + (search !== '' ? 1 : 0);
   };
 
   // function to handle view details
@@ -192,9 +194,40 @@ const Rewards = () => {
       sortable: true,
     },
     {
+      header: 'Featured',
+      accessorKey: 'featured',
+    },
+    {
       header: 'Actions',
       accessorKey: 'actions',
     }
+  ];
+
+  // creator type options
+  const creatorTypeOptions = [
+    { value: null, label: 'All' },
+    { value: 'system', label: 'System' },
+    { value: 'school', label: 'School' },
+    { value: 'parent', label: 'Parent' },
+    { value: 'teacher', label: 'Teacher' },
+    { value: 'social_worker', label: 'Social Worker' },
+  ];
+
+  // category options
+  const categoryOptions = [
+    { value: null, label: 'All' },
+    { value: 'family', label: 'Family' },
+    { value: 'school', label: 'School' },
+    { value: 'sponsor', label: 'Sponsor' },
+  ];
+
+  // subcategory options
+  const subcategoryOptions = [
+    { value: null, label: 'All' },
+    { value: 'privilege', label: 'Privilege' },
+    { value: 'item', label: 'Item' },
+    { value: 'experience', label: 'Experience' },
+    { value: 'digital', label: 'Digital' },
   ];
 
   return (
@@ -291,15 +324,16 @@ const Rewards = () => {
                     value={filters.category}
                     onValueChange={(value) => handleFilterChange('category', value)}
                   >
-                    <Select.Trigger placeholder="Category" className="min-w-[120px]" />
+                    <Select.Trigger placeholder='Category' variant='classic'>
+                      <Text color='gray' weight={'medium'}>Category: </Text>
+                      {categoryOptions.find(option => option.value === filters.category)?.label}
+                    </Select.Trigger>
                     <Select.Content variant='soft' position='popper'>
-                      <Select.Group>
-                        <Select.Label>Category</Select.Label>
-                        <Select.Item value={null}>All Categories</Select.Item>
-                        <Select.Item value="family">Family</Select.Item>
-                        <Select.Item value="school">School</Select.Item>
-                        <Select.Item value="sponsor">Sponsor</Select.Item>
-                      </Select.Group>
+                      {categoryOptions.map(option => (
+                        <Select.Item key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
 
@@ -308,16 +342,16 @@ const Rewards = () => {
                     value={filters.subcategory}
                     onValueChange={(value) => handleFilterChange('subcategory', value)}
                   >
-                    <Select.Trigger placeholder="Subcategory" className="min-w-[120px]" />
+                    <Select.Trigger placeholder='Subcategory' variant='classic'>
+                      <Text color='gray' weight={'medium'}>Subcategory: </Text>
+                      {subcategoryOptions.find(option => option.value === filters.subcategory)?.label}
+                    </Select.Trigger>
                     <Select.Content variant='soft' position='popper'>
-                      <Select.Group>
-                        <Select.Label>Subcategory</Select.Label>
-                        <Select.Item value={null}>All Subcategories</Select.Item>
-                        <Select.Item value="privilege">Privilege</Select.Item>
-                        <Select.Item value="item">Item</Select.Item>
-                        <Select.Item value="experience">Experience</Select.Item>
-                        <Select.Item value="digital">Digital</Select.Item>
-                      </Select.Group>
+                      {subcategoryOptions.map(option => (
+                        <Select.Item key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
 
@@ -326,20 +360,34 @@ const Rewards = () => {
                     value={filters.creatorType}
                     onValueChange={(value) => handleFilterChange('creatorType', value)}
                   >
-                    <Select.Trigger placeholder="Creator Type" className="min-w-[120px]" />
+                    <Select.Trigger placeholder='Creator Type' variant='classic'>
+                      <Text color='gray' weight={'medium'}>Creator: </Text>
+                      {creatorTypeOptions.find(option => option.value === filters.creatorType)?.label}
+                    </Select.Trigger>
                     <Select.Content variant='soft' position='popper'>
-                      <Select.Group>
-                        <Select.Label>Creator Type</Select.Label>
-                        <Select.Item value={null}>All Creators</Select.Item>
-                        <Select.Item value="system">System</Select.Item>
-                        <Select.Item value="school">School</Select.Item>
-                        <Select.Item value="parent">Parent</Select.Item>
-                        <Select.Item value="teacher">Teacher</Select.Item>
-                        <Select.Item value="social_worker">Social Worker</Select.Item>
-                      </Select.Group>
+                      {creatorTypeOptions.map(option => (
+                        <Select.Item key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
 
+                  {/* Featured Filter  */}
+                  <Select.Root
+                    value={filters.isFeatured}
+                    onValueChange={(value) => handleFilterChange('isFeatured', value)}
+                  >
+                    <Select.Trigger placeholder='Featured' variant='classic'>
+                      <Text color='gray' weight={'medium'}>Featured: </Text>
+                      {filters.isFeatured === null ? 'All' : filters.isFeatured === 'true' ? 'Yes' : 'No'}
+                    </Select.Trigger>
+                    <Select.Content variant='soft' position='popper'>
+                      <Select.Item value={null}>All</Select.Item>
+                      <Select.Item value="true">Yes</Select.Item>
+                      <Select.Item value="false">No</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
                 </Flex>
               </Flex>
             </Card>
@@ -459,6 +507,10 @@ const Rewards = () => {
                     </Table.Cell>
 
                     <Table.Cell>
+                      {reward.isFeatured ? <Check size={14} color='var(--green-10)' /> : <X size={14} color='var(--red-10)' />}
+                    </Table.Cell>
+
+                    <Table.Cell>
                       <DropdownMenu.Root>
                         <DropdownMenu.Trigger>
                           <IconButton highContrast variant="ghost" color="gray">
@@ -533,7 +585,7 @@ const Rewards = () => {
                   </div>
                   <div>
                     <Text as='p' size="1" weight="medium" mb="1" color='gray'>Category</Text>
-                    <Text as='p' size="2">{selectedReward.categoryName || selectedReward.category}</Text>
+                    <Text as='p' size="2">{selectedReward.categoryName || selectedReward.category} {selectedReward.subcategoryName && `- ${selectedReward.subcategoryName || selectedReward.subcategory}`} </Text>
                   </div>
                   <div>
                     <Text as='p' size="1" weight="medium" mb="1" color='gray'>Creator Type</Text>
@@ -552,6 +604,16 @@ const Rewards = () => {
                   <div>
                     <Text as='p' size="1" weight="medium" mb="1" color='gray'>Created</Text>
                     <Text as='p' size="2">{formatDate(selectedReward.createdAt)}</Text>
+                  </div>
+                  <div>
+                    <Text as='p' size="1" weight="medium" mb="1" color='gray'>Featured</Text>
+                    <Text as='p' size="2">
+                      {selectedReward.isFeatured ? (
+                        <span className='flex gap-1 items-center'><Check size={14} color='var(--green-10)' /> Yes</span>
+                      ) : (
+                        <span className='flex gap-1 items-center'><X size={14} color='var(--red-10)' /> No</span>
+                      )}
+                    </Text>
                   </div>
                 </div>
                 <div>

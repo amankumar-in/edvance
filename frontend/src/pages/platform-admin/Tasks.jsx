@@ -1,5 +1,5 @@
-import { Badge, Button, Callout, Card, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField, Tooltip } from '@radix-ui/themes'
-import { AlertCircleIcon, BookOpen, Calendar, ClipboardList, Filter, PencilIcon, Plus, Tag, TrashIcon, Users, X } from 'lucide-react'
+import { Badge, Button, Callout, Card, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes'
+import { AlertCircleIcon, BookOpen, Calendar, Check, ClipboardList, Filter, MoreHorizontal, PencilIcon, Plus, Tag, TrashIcon, Users, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
@@ -13,8 +13,8 @@ import { formatDate } from '../../utils/helperFunctions'
 function Tasks() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sort, setSort] = useState('dueDate');
-  const [order, setOrder] = useState('asc');
+  const [sort, setSort] = useState('createdAt');
+  const [order, setOrder] = useState('desc');
   const currentSort = { field: sort, order: order };
 
   // Filter states
@@ -132,10 +132,6 @@ function Tasks() {
   };
 
   const columns = [
-    {
-      header: 'ID',
-      accessorKey: 'id',
-    },
     {
       header: 'Title',
       accessorKey: 'title',
@@ -531,7 +527,6 @@ function Tasks() {
               <Table.Body>
                 {tasks.map((task) => (
                   <Table.Row key={task._id} className='hover:bg-[--gray-a2]'>
-                    <Table.Cell>{task._id}</Table.Cell>
                     <Table.Cell>
                       <Text title={task.title} className='line-clamp-2 min-w-[250px]'>{task.title}</Text>
                     </Table.Cell>
@@ -544,39 +539,40 @@ function Tasks() {
                     <Table.Cell>{task.createdBy}</Table.Cell>
                     <Table.Cell>{task.assignedTo?.role || '-'}</Table.Cell>
                     <Table.Cell className='text-nowrap'>{formatDate(task.dueDate) || '-'}</Table.Cell>
-                    <Table.Cell>{task.requiresApproval ? 'Yes' : 'No'}</Table.Cell>
+                    <Table.Cell>{task.requiresApproval ? <Check size={14} color='var(--green-10)' /> : <X size={14} color='var(--red-10)' />}</Table.Cell>
                     <Table.Cell>{task.approverType || '-'}</Table.Cell>
                     <Table.Cell>{task.difficulty || '-'}</Table.Cell>
-                    <Table.Cell>{task.isFeatured ? 'Yes' : 'No'}</Table.Cell>
+                    <Table.Cell>{task.isFeatured ? <Check size={14} color='var(--green-10)' /> : <X size={14} color='var(--red-10)' />}</Table.Cell>
                     <Table.Cell className='text-nowrap'>{formatDate(task.createdAt) || '-'}</Table.Cell>
                     <Table.Cell>
-                      <Flex gap="2" align={'center'}>
-                        <Tooltip content='Edit task'>
+                      <DropdownMenu.Root>
+                        <DropdownMenu.Trigger>
                           <IconButton
-                            size={'1'}
-                            variant='soft'
-                            highContrast
-                            asChild
+                            variant="ghost"
+                            color="gray"
                           >
-                            <Link to={`edit/${task._id}`}>
-                              <PencilIcon size={14} />
-                            </Link>
+                            <MoreHorizontal size={14} />
                           </IconButton>
-                        </Tooltip>
-                        <Separator orientation={'vertical'} />
-                        <Tooltip content='Delete task'>
-                          <IconButton
-                            color='red'
-                            size={'1'}
-                            variant='soft'
-                            highContrast
-                            disabled={isDeleting && deleteTaskId === task._id}
-                            onClick={() => handleDeleteClick(task)}
-                          >
-                            <TrashIcon size={14} />
-                          </IconButton>
-                        </Tooltip>
-                      </Flex>
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Content variant='soft'>
+                          <DropdownMenu.Group >
+                            <DropdownMenu.Label className='text-xs'>Actions</DropdownMenu.Label>
+                            <DropdownMenu.Item asChild>
+                              <Link to={`/platform-admin/dashboard/tasks/edit/${task._id}`}>
+                                <PencilIcon size={14} />
+                                Edit Task
+                              </Link>
+                            </DropdownMenu.Item>
+                            <DropdownMenu.Item color='red'
+                              disabled={isDeleting && deleteTaskId === task._id}
+                              onClick={() => handleDeleteClick(task)}
+                            >
+                              <TrashIcon size={14} />
+                              Delete Task
+                            </DropdownMenu.Item>
+                          </DropdownMenu.Group>
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Root>
                     </Table.Cell>
                   </Table.Row>
                 ))}

@@ -50,7 +50,7 @@ const TaskCategories = () => {
 
   // Memoize expensive calculations
   const typeOptions = useMemo(() => [
-    { value: null, label: 'All Types' },
+    { value: null, label: 'All' },
     { value: 'academic', label: 'Academic' },
     { value: 'home', label: 'Home' },
     { value: 'behavior', label: 'Behavior' },
@@ -60,7 +60,7 @@ const TaskCategories = () => {
   ], []);
 
   const visibilityOptions = useMemo(() => [
-    { value: null, label: 'All Visibility' },
+    { value: null, label: 'All' },
     { value: 'private', label: 'Private' },
     { value: 'family', label: 'Family' },
     { value: 'class', label: 'Class' },
@@ -69,7 +69,7 @@ const TaskCategories = () => {
   ], []);
 
   const statusOptions = useMemo(() => [
-    { value: null, label: 'All Categories' },
+    { value: null, label: 'All' },
     { value: 'true', label: 'System Categories' },
     { value: 'false', label: 'Custom Categories' },
   ], []);
@@ -238,7 +238,7 @@ const TaskCategories = () => {
 
   return (
     <div>
-      {isFetching && !isTaskCategoriesLoading && <div className='fixed left-0 right-0 top-16'>
+      {isFetching && !isTaskCategoriesLoading && <div className='fixed right-0 left-0 top-16'>
         <BarLoader
           color='#0090ff'
           width={'100%'}
@@ -296,46 +296,46 @@ const TaskCategories = () => {
                 <Flex align="center" gap="4" wrap="wrap">
                   {/* Filter by Type */}
                   <Select.Root disabled={isFetching} value={filterType} onValueChange={setFilterType}>
-                    <Select.Trigger />
+                    <Select.Trigger className='capitalize' variant='classic' color='gray'>
+                      <Text color='gray' weight={'medium'}>Type: </Text>
+                      {typeOptions.find(option => option.value === filterType)?.label}
+                    </Select.Trigger>
                     <Select.Content variant='soft' position='popper'>
-                      <Select.Group>
-                        <Select.Label>Type</Select.Label>
-                        {typeOptions.map(option => (
-                          <Select.Item key={option.value} value={option.value}>
-                            {option.label}
-                          </Select.Item>
-                        ))}
-                      </Select.Group>
+                      {typeOptions.map(option => (
+                        <Select.Item key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
 
                   {/* Filter by Visibility */}
                   <Select.Root disabled={isFetching} value={filterVisibility} onValueChange={setFilterVisibility}>
-                    <Select.Trigger />
+                    <Select.Trigger className='capitalize' variant='classic' color='gray'>
+                      <Text color='gray' weight={'medium'}>Visibility: </Text>
+                      {visibilityOptions.find(option => option.value === filterVisibility)?.label}
+                    </Select.Trigger>
                     <Select.Content variant='soft' position='popper'>
-                      <Select.Group>
-                        <Select.Label>Visibility</Select.Label>
-                        {visibilityOptions.map(option => (
-                          <Select.Item key={option.value} value={option.value}>
-                            {option.label}
-                          </Select.Item>
-                        ))}
-                      </Select.Group>
+                      {visibilityOptions.map(option => (
+                        <Select.Item key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
 
                   {/* Filter by Status */}
                   <Select.Root disabled={isFetching} value={filterStatus} onValueChange={setFilterStatus}>
-                    <Select.Trigger />
+                    <Select.Trigger className='capitalize' variant='classic' color='gray'>
+                      <Text color='gray' weight={'medium'}>Status: </Text>
+                      {statusOptions.find(option => option.value === filterStatus)?.label}
+                    </Select.Trigger>
                     <Select.Content variant='soft' position='popper'>
-                      <Select.Group>
-                        <Select.Label>Status</Select.Label>
-                        {statusOptions.map(option => (
-                          <Select.Item key={option.value} value={option.value}>
-                            {option.label}
-                          </Select.Item>
-                        ))}
-                      </Select.Group>
+                      {statusOptions.map(option => (
+                        <Select.Item key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
 

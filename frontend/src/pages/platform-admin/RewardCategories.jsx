@@ -85,7 +85,7 @@ const RewardCategories = () => {
 
   // Category type options based on backend enums
   const typeOptions = [
-    { value: 'all', label: 'All Types' },
+    { value: 'all', label: 'All' },
     { value: 'family', label: 'Family' },
     { value: 'school', label: 'School' },
     { value: 'sponsor', label: 'Sponsor' },
@@ -102,7 +102,7 @@ const RewardCategories = () => {
 
   // visibility options
   const visibilityOptions = [
-    { value: 'all', label: 'All Visibility' },
+    { value: 'all', label: 'All' },
     { value: 'private', label: 'Private' },
     { value: 'family', label: 'Family' },
     { value: 'class', label: 'Class' },
@@ -112,7 +112,7 @@ const RewardCategories = () => {
 
   // status options
   const statusOptions = [
-    { value: 'all', label: 'All Categories' },
+    { value: 'all', label: 'All' },
     { value: 'true', label: 'System Categories' },
     { value: 'false', label: 'Custom Categories' },
   ];
@@ -389,7 +389,7 @@ const RewardCategories = () => {
 
   return (
     <div>
-      {!isLoadingRewardCategories && isFetchingRewardCategories && <div className='fixed left-0 right-0 top-16'>
+      {!isLoadingRewardCategories && isFetchingRewardCategories && <div className='fixed right-0 left-0 top-16'>
         <BarLoader
           color='#0090ff'
           width={'100%'}
@@ -450,52 +450,46 @@ const RewardCategories = () => {
 
             {/* Type Filter */}
             <Select.Root value={filterType || 'all'} onValueChange={(value) => setFilterType(value === 'all' ? null : value)}>
-              <Select.Trigger placeholder="Type" className="min-w-[120px]" />
+              <Select.Trigger className='capitalize' variant='classic'>
+                <Text color='gray' weight={'medium'}>Type: </Text>
+                {typeOptions.find(option => option.value === filterType)?.label}
+              </Select.Trigger>
               <Select.Content variant='soft' position='popper'>
-                <Select.Group>
-                  <Select.Label>
-                    Select type
-                  </Select.Label>
-                  {typeOptions.map(option => (
-                    <Select.Item key={option.value} value={option.value}>
-                      {option.label}
-                    </Select.Item>
-                  ))}
-                </Select.Group>
+                {typeOptions.map(option => (
+                  <Select.Item key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Item>
+                ))}
               </Select.Content>
             </Select.Root>
 
             {/* Visibility Filter */}
             <Select.Root value={filterVisibility || 'all'} onValueChange={(value) => setFilterVisibility(value === 'all' ? null : value)}>
-              <Select.Trigger placeholder="Visibility" className="min-w-[120px]" />
+              <Select.Trigger className='capitalize' variant='classic'>
+                <Text color='gray' weight={'medium'}>Visibility: </Text>
+                {visibilityOptions.find(option => option.value === filterVisibility)?.label}
+              </Select.Trigger>
               <Select.Content variant='soft' position='popper'>
-                <Select.Group>
-                  <Select.Label>
-                    Select visibility
-                  </Select.Label>
-                  {visibilityOptions.map(option => (
-                    <Select.Item key={option.value} value={option.value}>
-                      {option.label}
-                    </Select.Item>
-                  ))}
-                </Select.Group>
+                {visibilityOptions.map(option => (
+                  <Select.Item key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Item>
+                ))}
               </Select.Content>
             </Select.Root>
 
             {/* Status Filter */}
             <Select.Root value={filterStatus || 'all'} onValueChange={(value) => setFilterStatus(value === 'all' ? null : value)}>
-              <Select.Trigger placeholder="Status" className="min-w-[120px]" />
+              <Select.Trigger className='capitalize' variant='classic'>
+                <Text color='gray' weight={'medium'}>Status: </Text>
+                {statusOptions.find(option => option.value === filterStatus)?.label}
+              </Select.Trigger>
               <Select.Content variant='soft' position='popper'>
-                <Select.Group>
-                  <Select.Label>
-                    Select status
-                  </Select.Label>
-                  {statusOptions.map(option => (
-                    <Select.Item key={option.value} value={option.value}>
-                      {option.label}
-                    </Select.Item>
-                  ))}
-                </Select.Group>
+                {statusOptions.map(option => (
+                  <Select.Item key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Item>
+                ))}
               </Select.Content>
             </Select.Root>
 

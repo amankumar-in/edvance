@@ -1,5 +1,5 @@
 import { Badge, Button, Callout, Card, Code, Dialog, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextArea, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, Check, ClipboardList, Eye, Filter, Gift, Mail, MoreHorizontal, Tag, User, X } from 'lucide-react';
+import { AlertCircleIcon, Check, Eye, Filter, Gift, Mail, MoreHorizontal, Tag, User, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { BarLoader } from 'react-spinners';
@@ -19,14 +19,11 @@ function RewardRedemptions() {
 
   // Filter states
   const [filters, setFilters] = useState({
-    search: '',
-    status: '',
-    rewardId: '',
-    studentId: '',
-    startDate: '',
-    endDate: '',
-    minPoints: '',
-    maxPoints: ''
+    status: null,
+    rewardId: null,
+    studentId: null,
+    startDate: null,
+    endDate: null,
   });
 
   const [showFilters, setShowFilters] = useState(false);
@@ -43,14 +40,11 @@ function RewardRedemptions() {
     limit,
     sort,
     order,
-    ...(filters.search && { search: filters.search }),
     ...(filters.status && filters.status !== 'all' && { status: filters.status }),
     ...(filters.rewardId && { rewardId: filters.rewardId }),
     ...(filters.studentId && { studentId: filters.studentId }),
     ...(filters.startDate && { startDate: filters.startDate }),
     ...(filters.endDate && { endDate: filters.endDate }),
-    ...(filters.minPoints && { minPoints: parseInt(filters.minPoints) }),
-    ...(filters.maxPoints && { maxPoints: parseInt(filters.maxPoints) }),
   };
 
   // API Queries
@@ -99,20 +93,17 @@ function RewardRedemptions() {
 
   const clearFilters = () => {
     setFilters({
-      search: '',
-      status: '',
-      rewardId: '',
-      studentId: '',
-      startDate: '',
-      endDate: '',
-      minPoints: '',
-      maxPoints: ''
+      status: null,
+      rewardId: null,
+      studentId: null,
+      startDate: null,
+      endDate: null,
     });
     setPage(1); // Reset to first page when clearing filters
   };
 
   const getActiveFiltersCount = () => {
-    return Object.values(filters).filter(value => value !== '').length;
+    return Object.values(filters).filter(value => value !== null).length;
   };
 
   const getStatusBadgeColor = (status) => {
@@ -259,17 +250,6 @@ function RewardRedemptions() {
         {/* Search and Filter Controls */}
         <Flex direction="column" gap="4" className='max-w-4xl'>
           <Flex gap="3" align="center" wrap="wrap">
-            {/* Search */}
-            <TextField.Root
-              placeholder="Search by student, reward, or code..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="flex-1 min-w-[200px]"
-            >
-              <TextField.Slot>
-                <ClipboardList size={16} />
-              </TextField.Slot>
-            </TextField.Root>
 
             {/* Toggle Filters */}
             <Button
@@ -278,12 +258,8 @@ function RewardRedemptions() {
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter size={16} />
-              Filters
-              {getActiveFiltersCount() > 0 && (
-                <Badge color="blue" variant="solid" size="1" ml="1">
-                  {getActiveFiltersCount()}
-                </Badge>
-              )}
+              Filters {" "}
+              {getActiveFiltersCount() > 0 && getActiveFiltersCount()}
             </Button>
 
             {/* Clear Filters */}
@@ -310,9 +286,12 @@ function RewardRedemptions() {
                     value={filters.status}
                     onValueChange={(value) => handleFilterChange('status', value)}
                   >
-                    <Select.Trigger placeholder="Status" className="min-w-[120px]" />
-                    <Select.Content>
-                      <Select.Item value="all">All Status</Select.Item>
+                    <Select.Trigger placeholder="Status" className='capitalize' variant='classic'>
+                      <Text color='gray' weight={'medium'}>Status: </Text>
+                      {filters.status === null ? 'All' : filters.status}
+                    </Select.Trigger>
+                    <Select.Content variant='soft' position='popper'>
+                      <Select.Item value={null}>All</Select.Item>
                       <Select.Item value="pending">Pending</Select.Item>
                       <Select.Item value="fulfilled">Fulfilled</Select.Item>
                       <Select.Item value="canceled">Canceled</Select.Item>
@@ -321,38 +300,26 @@ function RewardRedemptions() {
                   </Select.Root>
 
                   {/* Date Range */}
-                  <TextField.Root
-                    placeholder="Start Date"
-                    value={filters.startDate}
-                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                    type="date"
-                    className="min-w-[140px]"
-                  />
-                  <TextField.Root
-                    placeholder="End Date"
-                    value={filters.endDate}
-                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                    type="date"
-                    className="min-w-[140px]"
-                  />
-                </Flex>
-
-                <Flex gap="3" wrap="wrap">
-                  {/* Points Range */}
-                  <TextField.Root
-                    placeholder="Min Points"
-                    value={filters.minPoints}
-                    onChange={(e) => handleFilterChange('minPoints', e.target.value)}
-                    className="min-w-[100px]"
-                    type="number"
-                  />
-                  <TextField.Root
-                    placeholder="Max Points"
-                    value={filters.maxPoints}
-                    onChange={(e) => handleFilterChange('maxPoints', e.target.value)}
-                    className="min-w-[100px]"
-                    type="number"
-                  />
+                  <label className='flex gap-2 items-center'>
+                    <Text size={'1'}>Start Date: </Text>
+                    <TextField.Root
+                      placeholder="Start Date"
+                      value={filters.startDate}
+                      onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                      type="date"
+                      className="min-w-[140px]"
+                    />
+                  </label>
+                  <label className='flex gap-2 items-center'>
+                    <Text size={'1'}>End Date: </Text>
+                    <TextField.Root
+                      placeholder="End Date"
+                      value={filters.endDate}
+                      onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                      type="date"
+                      className="min-w-[140px]"
+                    />
+                  </label>
                 </Flex>
               </Flex>
             </Card>
