@@ -2,7 +2,7 @@ import { Badge, Box, Button, Callout, Card, Flex, Grid, Heading, Separator, Tabs
 import { AlertCircleIcon, CheckCircle, Clock, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { useGetParentTasks } from '../../api/task/task.queries';
-import { Container, Loader } from '../../components';
+import { Loader } from '../../components';
 import ManageTaskVisibilityModal from '../../components/parent/ManageTaskVisibilityModal';
 import { formatDate } from '../../utils/helperFunctions';
 
@@ -104,79 +104,73 @@ function ParentTasks() {
   };
 
   if (isLoading) return (
-    <Container>
-      <Flex justify='center' align='center'>
-        <Loader />
-      </Flex>
-    </Container>
+    <Flex justify='center' align='center'>
+      <Loader />
+    </Flex>
   );
 
   if (isError) return (
-    <Container>
-      <Callout.Root color='red'>
-        <Callout.Icon>
-          <AlertCircleIcon size={16} />
-        </Callout.Icon>
-        <Callout.Text>
-          {error?.response?.data?.message || error?.message || 'Something went wrong while fetching tasks'}
-        </Callout.Text>
-      </Callout.Root>
-    </Container>
+    <Callout.Root color='red'>
+      <Callout.Icon>
+        <AlertCircleIcon size={16} />
+      </Callout.Icon>
+      <Callout.Text>
+        {error?.response?.data?.message || error?.message || 'Something went wrong while fetching tasks'}
+      </Callout.Text>
+    </Callout.Root>
   );
 
   return (
-    <Container>
-      <Box className=''>
-        {/* Header Section */}
-        <Flex justify="between" align="center" mb="5">
-          <Heading as="h1" size="6" weight="bold">Family Tasks</Heading>
-        </Flex>
+    <Box className=''>
+      {/* Header Section */}
+      <Flex justify="between" align="center" mb="5">
+        <Heading as="h1" size="6" weight="bold">Family Tasks</Heading>
+      </Flex>
 
-        {/* Filters and Controls */}
-        <Card mb="5">
-          <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align="center" gap="4" p="3">
-            <Flex gap="4" wrap="wrap">
-              <Tabs.Root defaultValue="all" value={filter} onValueChange={setFilter}>
-                <Tabs.List>
-                  <Tabs.Trigger value="all">All Tasks</Tabs.Trigger>
-                  {/* <Tabs.Trigger value="visible">Visible to Child</Tabs.Trigger>
+      {/* Filters and Controls */}
+      <Card mb="5">
+        <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align="center" gap="4" p="3">
+          <Flex gap="4" wrap="wrap">
+            <Tabs.Root defaultValue="all" value={filter} onValueChange={setFilter}>
+              <Tabs.List>
+                <Tabs.Trigger value="all">All Tasks</Tabs.Trigger>
+                {/* <Tabs.Trigger value="visible">Visible to Child</Tabs.Trigger>
                   <Tabs.Trigger value="hidden">Hidden from Child</Tabs.Trigger> */}
-                </Tabs.List>
-              </Tabs.Root>
-            </Flex>
+              </Tabs.List>
+            </Tabs.Root>
+          </Flex>
+        </Flex>
+      </Card>
+
+      {/* Tasks Display */}
+      {!Array.isArray(tasks) || tasks.length === 0 ? (
+        <Card size="3" className="p-8 text-center">
+          <Flex direction="column" align="center" gap="3">
+            <Box className="p-3 rounded-full bg-[--accent-a3]">
+              <CheckCircle size={32} className="text-[--accent-9]" />
+            </Box>
+            <Heading size="4">No Tasks Found</Heading>
+            <Text size="2" color="gray">There are no tasks assigned to your family right now.</Text>
           </Flex>
         </Card>
+      ) : (
+        <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
+          {tasks.map(task => (
+            <TaskCard key={task?._id || `task-${Math.random()}`} task={task} />
+          ))
+          }
+        </Grid>
+      )}
 
-        {/* Tasks Display */}
-        {!Array.isArray(tasks) || tasks.length === 0 ? (
-          <Card size="3" className="p-8 text-center">
-            <Flex direction="column" align="center" gap="3">
-              <Box className="p-3 rounded-full bg-[--accent-a3]">
-                <CheckCircle size={32} className="text-[--accent-9]" />
-              </Box>
-              <Heading size="4">No Tasks Found</Heading>
-              <Text size="2" color="gray">There are no tasks assigned to your family right now.</Text>
-            </Flex>
-          </Card>
-        ) : (
-          <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
-            {tasks.map(task => (
-              <TaskCard key={task?._id || `task-${Math.random()}`} task={task} />
-            ))
-            }
-          </Grid>
-        )}
-
-        {/* Visibility Management Modal */}
-        <ManageTaskVisibilityModal
-          openVisibilityModal={openVisibilityModal}
-          setOpenVisibilityModal={setOpenVisibilityModal}
-          selectedTask={selectedTask}
-          visibleToChildren={visibleToChildren}
-          setVisibleToChildren={setVisibleToChildren}
-        />
-      </Box>
-    </Container>
+      {/* Visibility Management Modal */}
+      <ManageTaskVisibilityModal
+        openVisibilityModal={openVisibilityModal}
+        setOpenVisibilityModal={setOpenVisibilityModal}
+        selectedTask={selectedTask}
+        visibleToChildren={visibleToChildren}
+        setVisibleToChildren={setVisibleToChildren}
+      />
+    </Box>
   );
 }
 

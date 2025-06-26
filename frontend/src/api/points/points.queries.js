@@ -18,7 +18,7 @@ const useGetAllLevels = () => {
 
 const useGetStudentTransaction = (studentId, params = {}) => {
   return useInfiniteQuery({
-    queryKey: ['points', 'transactions', params],
+    queryKey: ['points', 'transactions', studentId, params],
     queryFn: ({ pageParam = 1 }) => getStudentTransactions({ studentId, params: { ...params, page: pageParam } }),
     getNextPageParam: (lastPage) => {
       const currentPage = lastPage?.data?.pagination?.page;
@@ -31,7 +31,8 @@ const useGetStudentTransaction = (studentId, params = {}) => {
       return undefined;
     },
     placeholderData: keepPreviousData,
-    keepPreviousData: true
+    keepPreviousData: true, 
+    enabled: !!studentId
   })
 }
 

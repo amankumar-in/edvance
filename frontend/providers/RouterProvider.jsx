@@ -2,6 +2,7 @@ import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterP
 import App from "../src/App";
 import { ErrorBoundaryWrapper, ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
 import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, TeacherDashboard, } from "../src/pages";
+import ParentChildren from "../src/pages/parent/ParentChildren";
 import ParentClaims from "../src/pages/parent/ParentClaims";
 import ParentLayout from "../src/pages/parent/ParentLayout";
 import ParentTasks from "../src/pages/parent/ParentTasks";
@@ -51,6 +52,7 @@ const router = createBrowserRouter(
               <Route path="dashboard" element={<ParentDashboard />} />
               <Route path="tasks" element={<ParentTasks />} />
               <Route path="claims" element={<ParentClaims />} />
+              <Route path="children" element={<ParentChildren />} />
             </Route>
             <Route path="create-profile" element={<CreateParentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >

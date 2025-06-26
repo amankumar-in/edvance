@@ -1,8 +1,9 @@
 import { Avatar, Box, Button, Flex, Separator, Text } from '@radix-ui/themes';
-import { BarChart3, BookOpen, Calendar, ClipboardCheck, Home, LogOut, Settings, User } from 'lucide-react';
+import { BookOpen, ClipboardCheck, Home, LogOut, Settings, Users } from 'lucide-react';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
+import { Container } from '../../components';
 
 function ParentLayout() {
   const { user, handleLogout, isLoggingOut } = useAuth();
@@ -12,9 +13,7 @@ function ParentLayout() {
     { icon: <Home size={20} />, label: 'Dashboard', href: '/parent/dashboard' },
     { icon: <BookOpen size={20} />, label: 'Tasks', href: '/parent/tasks' },
     { icon: <ClipboardCheck size={20} />, label: 'Claims', href: '/parent/claims' },
-    { icon: <User size={20} />, label: 'Children', href: '/parent/children' },
-    { icon: <Calendar size={20} />, label: 'Schedule', href: '/parent/schedule' },
-    { icon: <BarChart3 size={20} />, label: 'Progress', href: '/parent/progress' },
+    { icon: <Users size={20} />, label: 'Children', href: '/parent/children' },
     { icon: <Settings size={20} />, label: 'Settings', href: '/parent/settings' },
   ];
 
@@ -51,7 +50,7 @@ function ParentLayout() {
                   py-2 text-sm px-4 rounded-lg flex items-center gap-2`
                 }
               >
-                <span className="flex items-center gap-2">
+                <span className="flex gap-2 items-center">
                   {item.icon}
                   {item.label}
                 </span>
@@ -74,7 +73,7 @@ function ParentLayout() {
       </Box>
 
       {/* Mobile Bottom Navigation */}
-      <Box className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ borderTop: '1px solid var(--gray-6)', background: 'var(--color-background)' }}>
+      <Box className="fixed right-0 bottom-0 left-0 z-50 md:hidden" style={{ borderTop: '1px solid var(--gray-6)', background: 'var(--color-background)' }}>
         <Flex justify="between" className="px-2 py-3">
           {navItems.slice(0, 5).map((item, index) => (
             <NavLink
@@ -101,7 +100,9 @@ function ParentLayout() {
 
       {/* Main Content */}
       <Box className="flex-1 md:ml-64">
-        <Outlet />
+        <Container>
+          <Outlet />
+        </Container>
       </Box>
     </Flex>
   );

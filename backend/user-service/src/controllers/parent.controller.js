@@ -47,7 +47,7 @@ exports.getChildren = async (req, res) => {
 
     const children = await Student.find({
       _id: { $in: parent.childIds },
-    }).populate("userId", "firstName lastName email avatar dateOfBirth");
+    }).populate("userId", "firstName lastName email avatar dateOfBirth").populate("schoolId", "-adminIds");
 
     res.status(200).json({
       success: true,

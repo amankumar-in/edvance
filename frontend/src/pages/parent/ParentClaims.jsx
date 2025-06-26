@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { useReviewTask } from '../../api/task/task.mutations'
 import { useGetTasksForApproval } from '../../api/task/task.queries'
-import { Container, EmptyStateCard, Loader } from '../../components'
+import { EmptyStateCard, Loader } from '../../components'
 import { formatDate } from '../../utils/helperFunctions'
 
 function ParentClaims() {
@@ -98,8 +98,8 @@ function ParentClaims() {
   };
 
   return (
-    <Container>
-      <Box>
+    <>
+      <Box className='mx-auto max-w-5xl'>
         <Heading size='6' mb='2'>
           Task Approvals
         </Heading>
@@ -180,64 +180,73 @@ function ParentClaims() {
               </Callout.Text>
             </Callout.Root>
           ) : allTasks?.length > 0 ? (
-            allTasks?.map(claim => (
-              <Card key={claim._id} className='p-4'>
-                <Flex direction='column' gap='2'>
-                  <Heading className='line-clamp-1' weight={'medium'} size='4'>{claim?.task?.title || '[Deleted Task]'}</Heading>
+            <>
+              {allTasks?.map(claim => (
+                <Card key={claim._id} size={'2'} className='shadow-md'>
+                  <Flex direction='column' gap='2'>
+                    <Text size='2' color='gray' className='flex gap-1 items-center'>
+                      <Clock size={'14'} /> {claim?.completedAt ? formatDate(claim?.completedAt, { dateStyle: 'medium' }) : 'N/A'}
+                    </Text>
+                    <Heading className='line-clamp-1' size='4'>{claim?.task?.title || '[Deleted Task]'}</Heading>
 
-                  <Flex justify='between' align='center'>
-                    <Flex align='center' gap='2'>
-                      <Avatar
-                        src={claim?.childDetails?.avatar}
-                        fallback={
-                          (claim?.childDetails?.firstName?.charAt(0) || '') + (claim?.childDetails?.lastName?.charAt(0) || '') || '?'
-                        }
-                        radius='full'
-                        size='2'
-                      />
-                      <Text as='p' size='2'>
-                        {claim?.childDetails?.firstName} {claim?.childDetails?.lastName || '[Unknown Student]'}
-                      </Text>
+                    <Flex justify='between' align='center' gap='2' wrap='wrap'>
+                      <Flex align='start' gap='2'>
+                        <Avatar
+                          src={claim?.childDetails?.avatar}
+                          fallback={
+                            (claim?.childDetails?.firstName?.charAt(0) || '') + (claim?.childDetails?.lastName?.charAt(0) || '') || '?'
+                          }
+                          radius='full'
+                          size='2'
+                        />
+                        <div>
+                          <Text as='p' size='2'>
+                            {claim?.childDetails?.firstName} {claim?.childDetails?.lastName || '[Unknown Student]'}
+                          </Text>
+                          <Text as='p' size={'1'} color='gray'>
+                            {claim?.childDetails?.email || 'N/A'}
+                          </Text>
+
+                        </div>
+                      </Flex>
+                      <Badge
+                        color={getStatusColor(claim?.status)}
+                      >
+                        {claim.status?.replace('_', ' ') || 'Unknown Status'}
+                      </Badge>
                     </Flex>
 
-                    <Badge color={getStatusColor(claim?.status)}>{claim.status?.replace('_', ' ') || 'Unknown Status'}</Badge>
+                    <Flex gap='2' mt='2'>
+                      {claim?.status === 'pending_approval' && (
+                        <>
+                          <Button
+                            size='1'
+                            color='grass'
+                            disabled={reviewTask.isPending && reviewTask.variables.id === claim._id}
+                            onClick={() => handleApprove(claim._id)}
+                          >
+                            {reviewTask.isPending && reviewTask.variables.id === claim._id && reviewTask.variables.data?.action === 'approve' ? "Processing..." : "Approve"}
+                          </Button>
+                          <Button
+                            size='1'
+                            color='red'
+                            disabled={reviewTask.isPending && reviewTask.variables.id === claim._id}
+                            onClick={() => handleRejectClick(claim)}
+                          >
+                            {reviewTask.isPending && reviewTask.variables.id === claim._id && reviewTask.variables.data?.action === 'reject' ? "Processing..." : "Reject"}
+                          </Button>
+                        </>
+                      )}
+                      <Button size='1' variant='surface' onClick={() => handleDetailsClick(claim)}>Details</Button>
+                    </Flex>
                   </Flex>
-                  <Text as='p' size={'2'}>
-                    {claim?.childDetails?.email || 'N/A'}
-                  </Text>
+                </Card>
 
-                  <Text size='2' color='gray' className='flex gap-1 items-center'>
-                    <Clock size={'14'} /> {claim?.completedAt ? formatDate(claim?.completedAt, { dateStyle: 'medium' }) : 'N/A'}
-                  </Text>
-
-
-                  <Flex gap='2' mt='2'>
-                    {claim?.status === 'pending_approval' && (
-                      <>
-                        <Button
-                          size='1'
-                          color='grass'
-                          disabled={reviewTask.isPending && reviewTask.variables.id === claim._id}
-                          onClick={() => handleApprove(claim._id)}
-                        >
-                          {reviewTask.isPending && reviewTask.variables.id === claim._id && reviewTask.variables.data?.action === 'approve' ? "Processing..." : "Approve"}
-                        </Button>
-                        <Button
-                          size='1'
-                          color='red'
-                          disabled={reviewTask.isPending && reviewTask.variables.id === claim._id}
-                          onClick={() => handleRejectClick(claim)}
-                        >
-                          {reviewTask.isPending && reviewTask.variables.id === claim._id && reviewTask.variables.data?.action === 'reject' ? "Processing..." : "Reject"}
-                        </Button>
-                      </>
-                    )}
-                    <Button size='1' variant='surface' onClick={() => handleDetailsClick(claim)}>Details</Button>
-                  </Flex>
-                </Flex>
-              </Card>
-
-            ))
+              ))}
+              <Text as='p' size='1' color='gray' align='center'>
+                You've reached the end of the list
+              </Text>
+            </>
           ) : (
             <EmptyStateCard
               title="No tasks found"
@@ -445,8 +454,7 @@ function ParentClaims() {
           </Flex>
         </AlertDialog.Content>
       </AlertDialog.Root>
-
-    </Container>
+    </>
   );
 }
 

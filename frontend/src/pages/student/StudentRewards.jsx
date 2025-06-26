@@ -33,7 +33,7 @@ function StudentRewards() {
 
   // Queries ------------------------------------------------
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } = useGetAllRewardsInfinite({
-    limit: 3,
+    limit: 20,
     search: debouncedSearchQuery,
     order: sortBy === 'price-low' ? 'asc' : 'desc',
     wishlistOnly: showWishlistOnly ? 'true' : undefined,
