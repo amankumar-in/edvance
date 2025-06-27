@@ -2011,8 +2011,8 @@ const taskController = {
         classId,
         page = 1,
         limit = 20,
-        sort = "dueDate",
-        order = "asc",
+        sort = "createdAt",
+        order = "desc",
       } = req.query;
 
       const currentProfileId = profiles[role]?._id;
@@ -2314,8 +2314,8 @@ const taskController = {
         classId,
         page = 1,
         limit = 20,
-        sort = "dueDate",
-        order = "asc",
+        sort = "createdAt",
+        order = "desc",
       } = req.query;
 
       const currentProfileId = profiles[role]?._id;

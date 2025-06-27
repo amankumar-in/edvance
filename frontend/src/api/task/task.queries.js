@@ -58,6 +58,7 @@ export const useGetParentTasks = (params = {}) => {
   return useQuery({
     queryKey: ["tasks", "parent", params],
     queryFn: () => getParentTasks(params),
+    placeholderData: keepPreviousData
   });
 };
 
