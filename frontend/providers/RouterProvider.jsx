@@ -2,10 +2,7 @@ import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterP
 import App from "../src/App";
 import { ErrorBoundaryWrapper, ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
 import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, TeacherDashboard, } from "../src/pages";
-import ParentChildren from "../src/pages/parent/ParentChildren";
-import ParentClaims from "../src/pages/parent/ParentClaims";
-import ParentLayout from "../src/pages/parent/ParentLayout";
-import ParentTasks from "../src/pages/parent/ParentTasks";
+import { ParentChildren, ParentClaims, CreateTask as ParentCreateTask, ParentLayout, ParentTasks } from "../src/pages/parent";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
 import { CreateEditCategory, CreateReward, CreateRewardCategory, CreateTask, Overview, Parents, PlatformAdminDashboardLayout, RewardCategories, RewardRedemptions, Rewards, ScholarshipPoints, SchoolAdmins, SocialWorkers, Students, TaskCategories, Tasks, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
 import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout } from "../src/pages/school-admin";
@@ -51,6 +48,8 @@ const router = createBrowserRouter(
             <Route element={<ParentLayout />} >
               <Route path="dashboard" element={<ParentDashboard />} />
               <Route path="tasks" element={<ParentTasks />} />
+              <Route path="tasks/create" element={<ParentCreateTask />} />
+              <Route path="tasks/edit/:id" element={<ParentCreateTask />} />
               <Route path="claims" element={<ParentClaims />} />
               <Route path="children" element={<ParentChildren />} />
             </Route>

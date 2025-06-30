@@ -49,7 +49,7 @@ const taskSchema = new mongoose.Schema(
     },
     // Who created the task
     createdBy: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     // Role of the creator
@@ -63,6 +63,7 @@ const taskSchema = new mongoose.Schema(
         "social_worker",
         "platform_admin",
         "sub_admin",
+        "system",
       ],
       required: true,
     },

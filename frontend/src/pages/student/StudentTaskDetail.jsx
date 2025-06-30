@@ -324,7 +324,7 @@ function StudentTaskDetail() {
               )}
 
               {/* External Resource */}
-              {task?.externalResource && task?.externalResource?.url && task?.externalResource?.platform && task?.externalResource?.resourceId && (
+              {task?.externalResource && task?.externalResource?.url && task?.externalResource?.platform && (
                 <>
                   <Separator size="4" />
                   <Flex direction="column" gap="3">

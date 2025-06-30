@@ -50,14 +50,16 @@ const taskController = {
         role: creatorRole
       } = req.body;
 
+      const { profiles, id } = req.user
+
       // Parse complex objects that might be JSON strings from FormData
       const assignedTo = parseField(rawAssignedTo);
       const recurringSchedule = parseField(rawRecurringSchedule);
       const externalResource = parseField(rawExternalResource);
       const metadata = parseField(rawMetadata);
-      
-      // if creatorRole is platform_admin or sub_admin, set createdBy to 'system' else set it to the user's first and last name
-      const createdBy = creatorRole === 'platform_admin' || creatorRole === 'sub_admin' ? 'system' : req.user.firstName + ' ' + req.user.lastName;
+
+      // Always store user ID for consistency
+      const createdBy = creatorRole === 'platform_admin' || creatorRole === 'sub_admin' || creatorRole === 'school_admin' ? id : profiles[creatorRole]?._id;
 
       if (!creatorRole) {
         return res.status(400).json({
@@ -97,7 +99,12 @@ const taskController = {
         subCategory,
         pointValue: Number(pointValue),
         createdBy,
-        creatorRole,
+        creatorRole: (
+          creatorRole === 'parent' ? 'parent' :
+            creatorRole === 'teacher' || creatorRole === 'school_admin' ? 'teacher' :
+              creatorRole === 'social_worker' ? 'social_worker' :
+                'system'
+        ),
         assignedTo,
         status: "pending",
         dueDate: dueDate ? new Date(dueDate) : undefined,
@@ -200,9 +207,12 @@ const taskController = {
       // For now, basic check: user is creator, assigned student, or approved role (admin, etc.)
       const userId = req.user.id;
       const userRole = req.user.roles;
+      const { profiles } = req.user;
+      const role = req.headers['x-role'];
+      const createdByProfileId = profiles[role]?._id;
 
       const isAuthorized =
-        task.createdBy === userId ||
+        task.createdBy.equals(createdByProfileId) ||
         task.assignedTo === userId ||
         userRole.includes("platform_admin") ||
         (userRole.includes("school_admin") && task.schoolId) ||
@@ -251,6 +261,9 @@ const taskController = {
       const updateData = { ...req.body };
       const userId = req.user.id;
       const userRole = req.user.roles;
+      const { profiles } = req.user;
+      const role = req.headers['x-role'];
+      const createdByProfileId = profiles[role]?._id;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -270,7 +283,7 @@ const taskController = {
 
       // Check authorization - only creator or approved roles can update
       const isAuthorized =
-        task.createdBy === userId ||
+        task.createdBy.equals(createdByProfileId) ||
         userRole.includes("platform_admin") ||
         (userRole.includes("school_admin") && task.schoolId) ||
         (userRole.includes("teacher") &&
@@ -286,7 +299,7 @@ const taskController = {
 
       // Handle attachments
       let finalAttachments = [];
-      
+
       // Get existing attachments if provided
       if (updateData.existingAttachments) {
         const existingAttachments = parseField(updateData.existingAttachments);
@@ -416,6 +429,9 @@ const taskController = {
       const { id } = req.params;
       const userId = req.user.id;
       const userRole = req.user.roles;
+      const { profiles } = req.user;
+      const role = req.headers['x-role'];
+      const createdByProfileId = profiles[role]?._id;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -435,7 +451,7 @@ const taskController = {
 
       // Check authorization - only creator or approved roles can delete
       const isAuthorized =
-        task.createdBy === userId ||
+        task.createdBy.equals(createdByProfileId) ||
         userRole.includes("platform_admin") ||
         (userRole.includes("school_admin") && task.schoolId) ||
         (userRole.includes("teacher") &&

@@ -1,8 +1,11 @@
-import { Badge, Box, Button, Callout, Card, Flex, Grid, Heading, IconButton, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
-import { AlertCircleIcon, Clock, Filter, RefreshCw, Users } from 'lucide-react';
-import React from 'react';
+import { Badge, Box, Button, Callout, Card, DropdownMenu, Flex, Grid, Heading, IconButton, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { AlertCircleIcon, Clock, Filter, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
+import React, { useState } from 'react';
 import { Link } from 'react-router';
-import { EmptyStateCard, Loader } from '../components';
+import { toast } from 'sonner';
+import { useDeleteTask } from '../api/task/task.mutations';
+import { useAuth } from '../Context/AuthContext';
+import { ConfirmationDialog, EmptyStateCard, Loader } from '../components';
 import { FALLBACK_IMAGES, taskCategoryOptions, taskDifficultyOptions } from '../utils/constants';
 import { formatDate } from '../utils/helperFunctions';
 import ManageTaskVisibilityModal from './parent/ManageTaskVisibilityModal';
@@ -41,6 +44,16 @@ function TaskPageBase({
   category,
   setCategory,
 }) {
+  const { user, profiles } = useAuth();
+  const createdByProfileId = profiles[role]?._id;
+
+  // State for delete confirmation dialog
+  const [deleteTaskId, setDeleteTaskId] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+
+  // Delete task mutation
+  const { mutate: deleteTask, isPending: isDeleting } = useDeleteTask(role);
   const getStatusColor = (status) => {
     const statusOption = statusOptions.find(option => option.value === status);
     return statusOption?.color || 'gray';
@@ -49,6 +62,38 @@ function TaskPageBase({
   const getDifficultyBadge = (difficulty) => {
     const difficultyOption = taskDifficultyOptions.find(option => option.value === difficulty);
     return <Badge color={difficultyOption?.color} variant="outline">{difficultyOption?.label}</Badge>;
+  };
+
+  // Helper function to check if current user created the task
+  const isTaskCreatedByCurrentUser = (task) => task.createdBy === createdByProfileId;
+
+  // Handle delete confirmation
+  const handleDeleteClick = (task) => {
+    setTaskToDelete(task);
+    setDeleteTaskId(task._id);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteTaskId) {
+      deleteTask(deleteTaskId , {
+        onSuccess: () => {
+          toast.success('Task deleted successfully');
+          setDeleteTaskId(null);
+          setTaskToDelete(null);
+          setShowDeleteDialog(false);
+        },
+        onError: (error) => {
+          toast.error(error?.response?.data?.message || error?.message || 'Failed to delete task');
+        }
+      });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteTaskId(null);
+    setTaskToDelete(null);
+    setShowDeleteDialog(false);
   };
 
   const TaskCard = ({ task }) => {
@@ -110,28 +155,67 @@ function TaskPageBase({
             </Flex>
 
             <Flex justify="between" align="center" mt="1">
-              <Text size="1" color='gray'>Assigned by: {task.createdBy}</Text>
+              <Text size="1" color='gray'>Assigned by: {task?.creatorRole}</Text>
               {task.completionStatus && (
                 <Badge className='capitalize' color={getStatusColor(task.completionStatus.status)} >
                   {task.completionStatus.status}
                 </Badge>
               )}
             </Flex>
-            {/* Parent-only: Show visibility management button */}
-            {role === 'parent' && handleManageVisibility && (
-              <div>
-                <Button
-                  size="1"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevent Link navigation
-                    handleManageVisibility(task);
-                  }}
-                >
-                  <Users size={14} />
-                  Manage Visibility
-                </Button>
-              </div>
+            {/* Parent-only: Show visibility management button and menu */}
+            {role === 'parent' && (
+              <Flex justify="between" align="center">
+                {handleManageVisibility && (
+                  <Button
+                    size="1"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent Link navigation
+                      handleManageVisibility(task);
+                    }}
+                  >
+                    <Users size={14} />
+                    Manage Visibility
+                  </Button>
+                )}
+
+                {/* Menu for parent-created tasks */}
+                {isTaskCreatedByCurrentUser(task) && (
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                      <IconButton
+                        variant="ghost"
+                        color="gray"
+                        onClick={(e) => e.preventDefault()} // Prevent Link navigation
+                      >
+                        <MoreHorizontal size={16} />
+                      </IconButton>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content variant="soft">
+                      <DropdownMenu.Group>
+                        <DropdownMenu.Label className="text-xs">Actions</DropdownMenu.Label>
+                        <DropdownMenu.Item asChild>
+                          <Link to={`/parent/tasks/edit/${task._id}`}>
+                            <Pencil size={14} />
+                            Edit Task
+                          </Link>
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                          color="red"
+                          disabled={isDeleting && deleteTaskId === task._id}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDeleteClick(task);
+                          }}
+                        >
+                          <Trash2 size={14} />
+                          Delete Task
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Group>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Root>
+                )}
+              </Flex>
             )}
           </Flex>
         </Link>
@@ -163,6 +247,14 @@ function TaskPageBase({
         <Heading as="h1" size="6" weight="bold">
           {role === 'parent' ? 'Family Tasks' : 'My Tasks'}
         </Heading>
+        {role === 'parent' && (
+          <Button asChild>
+            <Link to="/parent/tasks/create">
+              <Plus size={16} />
+              Create Task
+            </Link>
+          </Button>
+        )}
       </Flex>
 
       {/* Student-only: Status guide for task completion states */}
@@ -266,6 +358,19 @@ function TaskPageBase({
           setVisibleToChildren={setVisibleToChildren}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Delete Task"
+        description={`Are you sure you want to delete "${taskToDelete?.title}"? This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        confirmText="Delete Task"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+        confirmColor="red"
+      />
     </Box>
   );
 }

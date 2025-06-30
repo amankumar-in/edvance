@@ -29,11 +29,12 @@ export const useGetStudentTaskById = (id) => {
 };
 
 // Get a task by id (for admin roles)
-export const useGetTaskById = (id) => {
+export const useGetTaskById = (id, role, options = {}) => {
   return useQuery({
     queryKey: ["task", id],
-    queryFn: () => getTaskById(id),
+    queryFn: () => getTaskById(id, role),
     enabled: !!id,
+    ...options,
   });
 };
 

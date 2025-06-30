@@ -3,18 +3,19 @@ import { Upload, X, FileText, Info } from 'lucide-react';
 import { useState } from "react";
 import { toast } from "sonner";
 
-const FileUpload = ({ 
-  onFilesChange, 
-  maxFiles = 5, 
+const FileUpload = ({
+  onFilesChange,
+  maxFiles = 5,
   maxSizePerFile = 10, // MB
   acceptedTypes = [
     'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
-    'application/pdf', 'application/msword', 
+    'application/pdf', 'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'text/plain', 'video/mp4', 'video/quicktime', 'video/x-msvideo'
   ],
   acceptString = ".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.mp4,.mov,.avi",
-  existingAttachments = [] // New prop for existing attachments
+  existingAttachments = [], // New prop for existing attachments
+  showDetailedHelp = true // New prop to control helper text verbosity
 }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [existingFiles, setExistingFiles] = useState(existingAttachments);
@@ -30,7 +31,7 @@ const FileUpload = ({
   // Handle file selection
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Validate files
     const validFiles = files.filter(file => {
       // Check file size
@@ -38,13 +39,13 @@ const FileUpload = ({
         toast.error(`File ${file.name} is too large. Maximum size is ${maxSizePerFile}MB`);
         return false;
       }
-      
+
       // Check file type
       if (!acceptedTypes.includes(file.type)) {
         toast.error(`File ${file.name} is not a supported type`);
         return false;
       }
-      
+
       return true;
     });
 
@@ -55,9 +56,9 @@ const FileUpload = ({
         toast.error(`Maximum ${maxFiles} files allowed (including existing files)`);
         return;
       }
-      
+
       setSelectedFiles(newFiles);
-      
+
       // Create attachment objects for form
       const newAttachments = validFiles.map(file => ({
         type: getFileType(file.type),
@@ -65,7 +66,7 @@ const FileUpload = ({
         contentType: file.type,
         file: file // Store the actual file for upload
       }));
-      
+
       // Call parent callback with all files
       const allAttachments = [
         ...selectedFiles.map(file => ({
@@ -76,7 +77,7 @@ const FileUpload = ({
         })),
         ...newAttachments
       ];
-      
+
       onFilesChange(allAttachments, existingFiles);
     }
   };
@@ -85,14 +86,14 @@ const FileUpload = ({
   const removeFile = (index) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
-    
+
     const newAttachments = newFiles.map(file => ({
       type: getFileType(file.type),
       name: file.name,
       contentType: file.type,
       file: file
     }));
-    
+
     onFilesChange(newAttachments, existingFiles);
   };
 
@@ -100,14 +101,14 @@ const FileUpload = ({
   const removeExistingFile = (index) => {
     const newExistingFiles = existingFiles.filter((_, i) => i !== index);
     setExistingFiles(newExistingFiles);
-    
+
     const newAttachments = selectedFiles.map(file => ({
       type: getFileType(file.type),
       name: file.name,
       contentType: file.type,
       file: file
     }));
-    
+
     onFilesChange(newAttachments, newExistingFiles);
   };
 
@@ -143,7 +144,11 @@ const FileUpload = ({
             <Flex key={`existing-${index}`} align="center" justify="between" className="p-2 bg-[--accent-a2] rounded">
               <Flex align="center" gap="2">
                 <FileText size={16} />
-                <Text size="2">{file.name}</Text>
+                <Text size="2">
+                  <a href={file.url} target="_blank" rel="noopener noreferrer">
+                    {file.name}
+                  </a>
+                </Text>
                 <Text size="1" color="gray">
                   ({file.type})
                 </Text>
@@ -172,7 +177,11 @@ const FileUpload = ({
             <Flex key={`new-${index}`} align="center" justify="between" className="p-2 bg-[--gray-a2] rounded">
               <Flex align="center" gap="2">
                 <FileText size={16} />
-                <Text size="2">{file.name}</Text>
+                <Text as="p" size="2">
+                  <a href={file.url} target="_blank" rel="noopener noreferrer">
+                    {file.name}
+                  </a>
+                </Text>
                 <Text size="1" color="gray">
                   ({(file.size / 1024 / 1024).toFixed(2)} MB)
                 </Text>
@@ -192,15 +201,21 @@ const FileUpload = ({
       )}
 
       {/* File Type Info */}
-      <Callout.Root color="blue" variant="surface">
-        <Callout.Icon>
-          <Info size={16} />
-        </Callout.Icon>
-        <Callout.Text>
-          Supported file types: Images (JPG, PNG, GIF), Documents (PDF, DOC, DOCX, TXT), Videos (MP4, MOV, AVI) <br />
-          Maximum file size: {maxSizePerFile}MB per file, Maximum {maxFiles} files
-        </Callout.Text>
-      </Callout.Root>
+      {showDetailedHelp ? (
+        <Callout.Root color="blue" variant="surface">
+          <Callout.Icon>
+            <Info size={16} />
+          </Callout.Icon>
+          <Callout.Text>
+            Supported file types: Images (JPG, PNG, GIF), Documents (PDF, DOC, DOCX, TXT), Videos (MP4, MOV, AVI) <br />
+            Maximum file size: {maxSizePerFile}MB per file, Maximum {maxFiles} files
+          </Callout.Text>
+        </Callout.Root>
+      ) : (
+        <Text as="p" size="1" color="gray">
+          Max {maxFiles} files, {maxSizePerFile}MB each
+        </Text>
+      )}
     </div>
   );
 };

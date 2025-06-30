@@ -29,8 +29,8 @@ const getStudentTaskById = async (id) => {
 }
 
 // Get a task by id (for admin roles)
-const getTaskById = async (id) => {
-    const response = await apiClient.get(`/tasks/${id}`);
+const getTaskById = async (id, role) => {
+    const response = await apiClient.get(`/tasks/${id}`, { headers: { 'X-Role': role } });
     return response.data;
 }
 
@@ -56,18 +56,19 @@ const getParentTasks = async (params = {}) => {
 }
 
 // Update a task
-const updateTask = async (id, formData) => {
+const updateTask = async (id, formData, role) => {
     const response = await apiClient.put(`/tasks/${id}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
+            'X-Role': role
         },
     });
     return response.data;
 }
 
 // Delete a task
-const deleteTask = async (id) => {
-    const response = await apiClient.delete(`/tasks/${id}`);
+const deleteTask = async (id, role) => {
+    const response = await apiClient.delete(`/tasks/${id}`, { headers: { 'X-Role': role } });
     return response.data;
 }
 

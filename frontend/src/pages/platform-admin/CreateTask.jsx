@@ -527,8 +527,8 @@ const CreateTask = () => {
                       className="w-full"
                       {...register('externalResource.platform', {
                         required: {
-                          value: (externalResourceUrl && externalResourceUrl.trim() !== '') || (externalResourceResourceId && externalResourceResourceId.trim() !== ''),
-                          message: 'Platform name is required when URL or Resource ID is provided'
+                          value: (externalResourceUrl && externalResourceUrl.trim() !== ''),
+                          message: 'Platform name is required when URL is provided'
                         }
                       })}
                     />
@@ -544,12 +544,6 @@ const CreateTask = () => {
                     <TextField.Root
                       placeholder="e.g., video ID, lesson ID"
                       className="w-full"
-                      {...register('externalResource.resourceId', {
-                        required: {
-                          value: (externalResourceUrl && externalResourceUrl.trim() !== '') || (externalResourcePlatform && externalResourcePlatform.trim() !== ''),
-                          message: 'Resource ID is required when URL or Platform is provided'
-                        }
-                      })}
                     />
                   </label>
                   <FormFieldErrorMessage errors={errors} field="externalResource.resourceId" />
@@ -570,8 +564,8 @@ const CreateTask = () => {
                         message: "Please enter a valid URL starting with http:// or https://"
                       },
                       required: {
-                        value: (externalResourcePlatform && externalResourcePlatform.trim() !== '') || (externalResourceResourceId && externalResourceResourceId.trim() !== ''),
-                        message: 'Resource URL is required when Platform or Resource ID is provided'
+                        value: (externalResourcePlatform && externalResourcePlatform.trim() !== ''),
+                        message: 'Resource URL is required when Platform is provided'
                       }
                     })}
                   />

@@ -157,6 +157,10 @@ function Tasks() {
       accessorKey: "createdBy",
     },
     {
+      header: "Creator Role",
+      accessorKey: "creatorRole",
+    },
+    {
       header: "Assigned To",
       accessorKey: "assignedTo",
     },
@@ -537,6 +541,7 @@ function Tasks() {
                     <Table.Cell>{task.subCategory || '-'}</Table.Cell>
                     <Table.Cell>{task.pointValue}</Table.Cell>
                     <Table.Cell>{task.createdBy}</Table.Cell>
+                    <Table.Cell>{task.creatorRole}</Table.Cell>
                     <Table.Cell>{task.assignedTo?.role || '-'}</Table.Cell>
                     <Table.Cell className='text-nowrap'>{formatDate(task.dueDate) || '-'}</Table.Cell>
                     <Table.Cell>{task.requiresApproval ? <Check size={14} color='var(--green-10)' /> : <X size={14} color='var(--red-10)' />}</Table.Cell>

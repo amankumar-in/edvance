@@ -1,5 +1,5 @@
 import { Avatar, Box, Button, Flex, Separator, Text } from '@radix-ui/themes';
-import { BookOpen, ClipboardCheck, Home, LogOut, Settings, Users } from 'lucide-react';
+import { BookOpen, ClipboardCheck, Home, LogOut, Settings, Trophy, Users } from 'lucide-react';
 import React from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
@@ -14,6 +14,7 @@ function ParentLayout() {
     { icon: <BookOpen size={20} />, label: 'Tasks', href: '/parent/tasks' },
     { icon: <ClipboardCheck size={20} />, label: 'Claims', href: '/parent/claims' },
     { icon: <Users size={20} />, label: 'Children', href: '/parent/children' },
+    { icon: <Trophy size={20} />, label: 'Rewards', href: '/parent/rewards' },
     { icon: <Settings size={20} />, label: 'Settings', href: '/parent/settings' },
   ];
 
@@ -99,7 +100,7 @@ function ParentLayout() {
       </Box>
 
       {/* Main Content */}
-      <Box className="flex-1 md:ml-64">
+      <Box className="flex-1 pb-16 md:ml-64">
         <Container>
           <Outlet />
         </Container>

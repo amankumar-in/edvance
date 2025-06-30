@@ -51,10 +51,10 @@ export const useReviewTask = () => {
 }
 
 // Update a task
-export const useUpdateTask = () => {
+export const useUpdateTask = (role) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, data }) => updateTask(id, data),
+        mutationFn: ({ id, data }) => updateTask(id, data, role),
         onSuccess: (_, variables) => {
             Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["tasks"] }),
@@ -65,10 +65,10 @@ export const useUpdateTask = () => {
 }
 
 // Delete a task
-export const useDeleteTask = () => {
+export const useDeleteTask = (role) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: deleteTask,
+        mutationFn: (id) => deleteTask(id, role),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
         },
