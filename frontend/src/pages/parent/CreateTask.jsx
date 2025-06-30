@@ -2,7 +2,7 @@ import { Badge, Box, Button, Callout, Flex, Heading, Select, Text, TextArea, Tex
 import { ArrowLeft, Info, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { useChildren } from '../../api/parent/parent.queries';
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
@@ -12,8 +12,12 @@ import { FileUpload, FormFieldErrorMessage, Loader } from '../../components';
 
 const CreateTask = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const isEdit = Boolean(id);
+
+  // Get clone data from navigation state
+  const cloneData = location.state?.cloneData;
 
   const [isFormReady, setIsFormReady] = useState(!isEdit);
 
@@ -26,7 +30,21 @@ const CreateTask = () => {
     reset,
     formState: { errors },
   } = useForm({
-    defaultValues: {
+    defaultValues: cloneData ? {
+      title: cloneData.title || '',
+      description: cloneData.description || '',
+      pointValue: cloneData.pointValue || 10,
+      dueDate: cloneData.dueDate ? new Date(cloneData.dueDate).toISOString().slice(0, 16) : '',
+      subCategory: cloneData.subCategory || '',
+      difficulty: cloneData.difficulty || 'easy',
+      externalResource: {
+        platform: cloneData.externalResource?.platform || '',
+        resourceId: cloneData.externalResource?.resourceId || '',
+        url: cloneData.externalResource?.url || ''
+      },
+      attachments: [],
+      existingAttachments: cloneData.attachments || [] // Show original attachments when cloning
+    } : {
       title: '',
       description: '',
       pointValue: 10,
@@ -110,7 +128,7 @@ const CreateTask = () => {
   }, [subCategory, taskCategories, setValue]);
 
   // Form submission handler
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     const formData = new FormData();
 
     // Basic task information
@@ -166,18 +184,35 @@ const CreateTask = () => {
     formData.append('difficulty', data.difficulty);
     formData.append('requiresApproval', true);
     formData.append('approverType', 'parent');
+    formData.append('isFeatured', false);
 
-    // Handle existing attachments for updates
     if (isEdit) {
       const existingAttachments = data.existingAttachments && data.existingAttachments.length > 0
         ? data.existingAttachments
         : [];
       formData.append('existingAttachments', JSON.stringify(existingAttachments));
+    } else if (cloneData && data.existingAttachments && data.existingAttachments.length > 0) {
+      // For cloning, download and re-upload files as new files
+      try {
+        for (const attachment of data.existingAttachments) {
+          if (attachment.url) {
+            const response = await fetch(attachment.url);
+            const blob = await response.blob();
+            const file = new File([blob], attachment.name || 'cloned-file', {
+              type: attachment.contentType || blob.type
+            });
+            formData.append('attachments', file);
+          }
+        }
+      } catch (error) {
+        console.error('Error cloning attachments:', error);
+        toast.error('Some attachments could not be cloned');
+      }
     }
 
     // Submit to API
-    const successMessage = isEdit ? 'Task updated successfully!' : 'Task created successfully!';
-    const errorMessage = isEdit ? 'Failed to update task' : 'Failed to create task';
+    const successMessage = isEdit ? 'Task updated successfully!' : cloneData ? 'Task copy created successfully!' : 'Task created successfully!';
+    const errorMessage = isEdit ? 'Failed to update task' : cloneData ? 'Failed to create task copy' : 'Failed to create task';
     const mutation = isEdit ? updateTask : createTask;
     const mutationData = isEdit ? { id, data: formData } : formData;
 
@@ -220,21 +255,37 @@ const CreateTask = () => {
     <div className="space-y-4 max-w-xl">
       <Button asChild variant='ghost' color='gray' size='2'>
         <Link to={-1}>
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={18} />
+          {cloneData ? 'Back to Original Task' : 'Back'}
         </Link>
       </Button>
       {/* Header */}
       <Box>
         <Heading as="h1" size="6" weight="bold" mb="1">
-          {isEdit ? 'Edit Task' : 'Create New Task'}
+          {cloneData ? 'Clone Task' : isEdit ? 'Edit Task' : 'Create New Task'}
         </Heading>
         <Text color="gray" size="2">
-          {isEdit
-            ? 'Update the task details and settings'
-            : 'Create a task for your child to complete and earn points'
+          {cloneData
+            ? 'Creating a copy of an existing task. Modify any fields as needed.'
+            : isEdit
+              ? 'Update the task details and settings'
+              : 'Create a task for your child to complete and earn points'
           }
         </Text>
       </Box>
+
+      {/* Clone Info Callout */}
+      {cloneData && (
+        <Callout.Root variant='surface' color="blue" size="1" mb="4">
+          <Callout.Icon>
+            <Info size={16} />
+          </Callout.Icon>
+          <Callout.Text>
+            You're creating a copy of "{cloneData.title}".
+            Modify any fields as needed and save to create the new task.
+          </Callout.Text>
+        </Callout.Root>
+      )}
 
       <Text size={'1'} className='italic' color='gray' as='p'>
         * Required fields
@@ -258,6 +309,12 @@ const CreateTask = () => {
                 />
               </label>
               <FormFieldErrorMessage errors={errors} field="title" />
+              {/* Clone helper text */}
+              {cloneData && (
+                <Text size="1" color="gray" mt="1">
+                  Consider updating the title to differentiate from the original task
+                </Text>
+              )}
             </Box>
 
           </Flex>
@@ -451,7 +508,9 @@ const CreateTask = () => {
             <Plus size={16} />
             {isCreating || isUpdating
               ? (isEdit ? 'Updating...' : 'Creating...')
-              : (isEdit ? 'Update Task' : 'Create Task')
+              : cloneData
+                ? 'Create Copy'
+                : (isEdit ? 'Update Task' : 'Create Task')
             }
           </Button>
         </Flex>

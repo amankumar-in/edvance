@@ -46,6 +46,29 @@ function TaskDetailsPageBase({
     });
   }
 
+  // Clone task functionality - navigate to create page with pre-filled data
+  const handleCloneTask = () => {
+    if (!task) return;
+
+    const clonedTaskData = {
+      title: `Copy of ${task.title}`,
+      description: task.description,
+      category: task.category,
+      subCategory: task.subCategory,
+      pointValue: task.pointValue,
+      difficulty: task.difficulty,
+      dueDate: task.dueDate,
+      requiresApproval: task.requiresApproval,
+      approverType: task.approverType,
+      attachments: task.attachments || [],
+      externalResource: task.externalResource,
+    };
+
+    navigate(`/${role}/tasks/create`, {
+      state: { cloneData: clonedTaskData }
+    });
+  };
+
   // Get status badge color
   const getStatusColor = (status) => {
     switch (status) {
@@ -125,7 +148,10 @@ function TaskDetailsPageBase({
         </Button>
         {role === 'parent' && (
           <Flex gap="2" wrap="wrap" justify={'end'}>
-            <Button className='text-nowrap'>
+            <Button
+              className='text-nowrap'
+              onClick={handleCloneTask}
+            >
               <CopyPlus size={16} />
               Clone
             </Button>

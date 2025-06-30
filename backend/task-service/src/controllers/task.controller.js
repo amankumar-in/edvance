@@ -41,7 +41,7 @@ const taskController = {
         approverType,
         specificApproverId,
         externalResource: rawExternalResource,
-        attachments,
+        attachments: rawAttachments,
         difficulty,
         schoolId,
         classId,
@@ -57,6 +57,7 @@ const taskController = {
       const recurringSchedule = parseField(rawRecurringSchedule);
       const externalResource = parseField(rawExternalResource);
       const metadata = parseField(rawMetadata);
+      const attachments = parseField(rawAttachments);
 
       // Always store user ID for consistency
       const createdBy = creatorRole === 'platform_admin' || creatorRole === 'sub_admin' || creatorRole === 'school_admin' ? id : profiles[creatorRole]?._id;
