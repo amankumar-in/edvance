@@ -17,6 +17,7 @@ import StudentRedemptionHistory from "../src/pages/student/StudentRedemptionHist
 import StudentRewards from "../src/pages/student/StudentRewards";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentTasks from "../src/pages/student/StudentTasks";
+import TaskDetails from "../src/pages/parent/TaskDetails";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -50,6 +51,7 @@ const router = createBrowserRouter(
               <Route path="tasks" element={<ParentTasks />} />
               <Route path="tasks/create" element={<ParentCreateTask />} />
               <Route path="tasks/edit/:id" element={<ParentCreateTask />} />
+              <Route path="tasks/:id" element={<TaskDetails />} />
               <Route path="claims" element={<ParentClaims />} />
               <Route path="children" element={<ParentChildren />} />
             </Route>

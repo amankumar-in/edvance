@@ -217,7 +217,7 @@ const taskController = {
         userRole.includes("platform_admin") ||
         (userRole.includes("school_admin") && task.schoolId) ||
         (userRole.includes("teacher") && task.classId) ||
-        (userRole.includes("parent") && task.assignedTo === req.query.childId);
+        (userRole.includes("parent") && task.assignedTo?.role === 'student');
 
       if (!isAuthorized) {
         return res.status(403).json({
@@ -749,7 +749,7 @@ const taskController = {
           contentType: file.mimetype,
           fileType: getFileType(file.filename),
         }));
-        
+
         // Add file evidence to the processed evidence array
         processedEvidence = [...processedEvidence, ...fileEvidence];
       }

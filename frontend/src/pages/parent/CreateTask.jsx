@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Callout, Flex, Heading, Select, Text, TextArea, TextField } from '@radix-ui/themes';
-import { Info, Plus } from 'lucide-react';
+import { ArrowLeft, Info, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router';
@@ -182,9 +182,15 @@ const CreateTask = () => {
     const mutationData = isEdit ? { id, data: formData } : formData;
 
     mutation(mutationData, {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
+        const { _id } = data;
+
         toast.success(successMessage);
-        navigate('/parent/tasks');
+        if (isEdit) {
+          navigate(`/parent/tasks/${id}`);
+        } else {
+          navigate(`/parent/tasks/${_id}`);
+        }
       },
       onError: (error) => {
         toast.error(error?.response?.data?.message || error?.message || errorMessage);
@@ -212,6 +218,11 @@ const CreateTask = () => {
 
   return (
     <div className="space-y-4 max-w-xl">
+      <Button asChild variant='ghost' color='gray' size='2'>
+        <Link to={-1}>
+          <ArrowLeft size={18} /> Back
+        </Link>
+      </Button>
       {/* Header */}
       <Box>
         <Heading as="h1" size="6" weight="bold" mb="1">

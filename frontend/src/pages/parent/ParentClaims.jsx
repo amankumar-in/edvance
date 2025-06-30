@@ -326,9 +326,9 @@ function ParentClaims() {
                     <DataList.Label minWidth="88px">Evidence</DataList.Label>
                     <DataList.Value>
                       {selectedClaim?.evidence && selectedClaim.evidence.length > 0 ? (
-                        <Flex direction="column" gap="2">
+                        <Flex direction="column" gap="2" className='w-full'>
                           {selectedClaim.evidence.map((evidence, index) => (
-                            <Card key={index} variant="surface" size="1">
+                            <Card key={index} variant="surface" size="1" >
                               <Flex align="start" gap="2">
                                 {evidence.type === 'image' && <FileImage size={14} />}
                                 {evidence.type === 'document' && <FileText size={14} />}

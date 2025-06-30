@@ -1,13 +1,12 @@
 import { Badge, Box, Button, Callout, Card, DropdownMenu, Flex, Grid, Heading, IconButton, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
-import { AlertCircleIcon, Clock, Filter, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
+import { AlertCircleIcon, Filter, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { useDeleteTask } from '../api/task/task.mutations';
-import { useAuth } from '../Context/AuthContext';
 import { ConfirmationDialog, EmptyStateCard, Loader } from '../components';
+import { useAuth } from '../Context/AuthContext';
 import { FALLBACK_IMAGES, taskCategoryOptions, taskDifficultyOptions } from '../utils/constants';
-import { formatDate } from '../utils/helperFunctions';
 import ManageTaskVisibilityModal from './parent/ManageTaskVisibilityModal';
 
 // Status filter options - 'all' is used instead of null for Radix UI Select compatibility
@@ -76,7 +75,7 @@ function TaskPageBase({
 
   const handleDeleteConfirm = () => {
     if (deleteTaskId) {
-      deleteTask(deleteTaskId , {
+      deleteTask(deleteTaskId, {
         onSuccess: () => {
           toast.success('Task deleted successfully');
           setDeleteTaskId(null);
@@ -90,77 +89,74 @@ function TaskPageBase({
     }
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteTaskId(null);
-    setTaskToDelete(null);
-    setShowDeleteDialog(false);
-  };
-
   const TaskCard = ({ task }) => {
     // Cache lookups to avoid multiple find() calls
     const categoryOption = taskCategoryOptions?.find(option => option.value === task.category);
     const imageAttachment = task.attachments?.find(attachment => attachment.type === 'image');
 
     return (
-      <Card size="2" asChild className={`transition-shadow hover:shadow-md`}>
+      <Card size="1" asChild className={`transition-shadow hover:shadow-md`}>
         <Link to={`/${role}/tasks/${task._id}`}>
-          <Flex direction="column" gap="3">
-            <Flex direction="column" gap="1">
-              <Flex gap="2" align="center">
-                <Badge
-                  color={categoryOption?.color || 'gray'}
-                  variant="surface"
-                >
-                  {categoryOption?.label || task.category || 'Other'}
-                </Badge>
-                {task.subCategory && (
-                  <Text as='span' size="1" color="gray" className='capitalize'>
-                    {task.subCategory}
-                  </Text>
+          <Flex direction="column" gap="3" justify="between" className='h-full'>
+            <Flex direction="column" gap="3">
+              <Flex direction="column" gap="3">
+                <Flex gap="2" align="center">
+                  <Badge
+                    color={categoryOption?.color || 'gray'}
+                    variant="surface"
+                  >
+                    {categoryOption?.label || task.category || 'Other'}
+                  </Badge>
+                  {task.subCategory && (
+                    <Text as='span' size="1" color="gray" className='capitalize'>
+                      {task.subCategory}
+                    </Text>
+                  )}
+                </Flex>
+                {/* Show first image attachment if available, with fallback handling */}
+                  <img
+                    src={imageAttachment?.url || FALLBACK_IMAGES.landscape}
+                    alt={imageAttachment?.name || 'Task attachment'}
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_IMAGES.landscape;
+                    }}
+                    className="object-cover object-center w-full aspect-video"
+                  />
+
+                <Heading size="2" className='line-clamp-2'>{task.title}</Heading>
+              </Flex>
+
+              {task.description && (
+                <Text as='p' size="1" className="line-clamp-2" color="gray">{task.description}</Text>
+              )}
+
+              <Separator size="4" />
+
+              <Flex justify="between" align="center" gap="2" wrap="wrap" >
+                <Flex gap="2" align="center">
+                  <Text weight="bold" size="4">{task.pointValue}</Text>
+                  <Text size="1">points</Text>
+                </Flex>
+
+                {/* <Flex gap="3" align="center">
+                  <Flex gap="1" align="center">
+                    <Clock size={14} color='var(--gray-10)' />
+                    <Text size="1">
+                      {formatDate(task.dueDate)}
+                    </Text>
+                  </Flex>
+                  {task.difficulty && getDifficultyBadge(task.difficulty)}
+                </Flex> */}
+              </Flex>
+
+              <Flex justify="between" align="center" mt="1">
+                <Text size="1" color='gray'>Assigned by: {task?.creatorRole}</Text>
+                {task.completionStatus && (
+                  <Badge className='capitalize' color={getStatusColor(task.completionStatus.status)} >
+                    {task.completionStatus.status}
+                  </Badge>
                 )}
               </Flex>
-              {/* Show first image attachment if available, with fallback handling */}
-              <img
-                src={imageAttachment?.url || FALLBACK_IMAGES.landscape}
-                alt={imageAttachment?.name || 'Task attachment'}
-                onError={(e) => {
-                  e.currentTarget.src = FALLBACK_IMAGES.landscape;
-                }}
-                className="object-cover object-center mt-2 w-full rounded-md aspect-video"
-              />
-
-
-              <Heading size="3" style={{ marginTop: '6px' }} className='line-clamp-2'>{task.title}</Heading>
-            </Flex>
-
-            <Text size="2" className="line-clamp-2" color="gray">{task.description}</Text>
-
-            <Separator size="4" />
-
-            <Flex justify="between" align="center" gap="2" wrap="wrap" >
-              <Flex gap="2" align="center">
-                <Text weight="bold" size="4">{task.pointValue}</Text>
-                <Text size="1">points</Text>
-              </Flex>
-
-              <Flex gap="3" align="center">
-                <Flex gap="1" align="center">
-                  <Clock size={14} color='var(--gray-10)' />
-                  <Text size="1">
-                    {formatDate(task.dueDate)}
-                  </Text>
-                </Flex>
-                {task.difficulty && getDifficultyBadge(task.difficulty)}
-              </Flex>
-            </Flex>
-
-            <Flex justify="between" align="center" mt="1">
-              <Text size="1" color='gray'>Assigned by: {task?.creatorRole}</Text>
-              {task.completionStatus && (
-                <Badge className='capitalize' color={getStatusColor(task.completionStatus.status)} >
-                  {task.completionStatus.status}
-                </Badge>
-              )}
             </Flex>
             {/* Parent-only: Show visibility management button and menu */}
             {role === 'parent' && (
@@ -341,7 +337,7 @@ function TaskPageBase({
           icon={<Filter size={32} className="text-[--accent-9]" />}
         />
       ) : (
-        <Grid columns={{ initial: '1', xs: '2', lg: '3', xl: '4' }} gap="4">
+        <Grid columns={{ initial: '1', xs: '2', md: '3', lg: '4', xl: '5' }} gap="4">
           {tasks.map(task => (
             <TaskCard key={task._id} task={task} />
           ))}
