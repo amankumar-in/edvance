@@ -1,5 +1,5 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getRewardCategories, getRewardCategoryById, getRewardCategoryHierarchy, getRewards, getRewardById, getRedemptionHistory, getRedemptionById } from "./rewards.api";
+import { getRewardCategories, getRewardCategoryById, getRewardCategoryHierarchy, getRewards, getRewardById, getRedemptionHistory, getRedemptionById, getParentRewards, getStudentRewards } from "./rewards.api";
 
 /**
  * Query keys for reward categories
@@ -16,6 +16,8 @@ export const REWARD_CATEGORIES_QUERY_KEY = {
  */
 export const REWARDS_QUERY_KEY = {
   all: ['rewards'],
+  parent: (params) => ['rewards', 'parent', params],
+  student: (params) => ['rewards', 'student', params],
   list: (params) => ['rewards', params],
   detail: (id) => ['rewards', id],
 }
@@ -158,5 +160,49 @@ export const useGetRedemptionById = (id) => {
     queryKey: REDEMPTIONS_QUERY_KEY.detail(id),
     queryFn: () => getRedemptionById(id),
     enabled: !!id,
+  });
+};
+
+/**
+ * Get parent rewards
+ */
+export const useGetParentRewards = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: REWARDS_QUERY_KEY.parent(params),
+    queryFn: ({ pageParam = 1 }) => getParentRewards({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.data?.pagination?.page;
+      const totalPages = lastPage?.data?.pagination?.pages;
+
+      if (currentPage < totalPages) {
+        return currentPage + 1;
+      }
+
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
+  });
+};
+
+/**
+ * Get student rewards
+ */
+export const useGetStudentRewards = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: REWARDS_QUERY_KEY.student(params),
+    queryFn: ({ pageParam = 1 }) => getStudentRewards({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.data?.pagination?.page;
+      const totalPages = lastPage?.data?.pagination?.pages;
+
+      if (currentPage < totalPages) {
+        return currentPage + 1;
+      }
+
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
   });
 };

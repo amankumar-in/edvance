@@ -29,7 +29,6 @@ function ParentLayout() {
               size="5"
               src={user?.avatar}
               fallback={user?.firstName?.[0] || "P"}
-              color="indigo"
               radius="full"
               highContrast
             />

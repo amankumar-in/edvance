@@ -21,7 +21,7 @@ import { gradeOptions } from '../../../utils/constants'
 
 function LinkedAccounts() {
   const [linkCodeCopied, setLinkCodeCopied] = useState(false)
-  
+
   // Confirmation dialog states
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
@@ -29,7 +29,7 @@ function LinkedAccounts() {
   const [selectedRequestId, setSelectedRequestId] = useState(null)
   const [selectedChildId, setSelectedChildId] = useState(null)
   const [selectedChildName, setSelectedChildName] = useState('')
-  
+
   // Get parent profile
   const { data: parentData, isLoading, isError, error } = useParentProfile()
   const parent = parentData?.data
@@ -102,13 +102,13 @@ function LinkedAccounts() {
   // Handle unlinking a child
   const handleUnlinkChild = (childId, childName) => {
     if (!childId) return;
-    
+
     // Show confirmation dialog
     setSelectedChildId(childId);
     setSelectedChildName(childName);
     setUnlinkDialogOpen(true);
   };
-  
+
   // Confirm and execute child unlinking
   const confirmUnlinkChild = () => {
     if (!selectedChildId) return;
@@ -172,13 +172,13 @@ function LinkedAccounts() {
   // Handle rejecting a link request
   const handleRejectRequest = (requestId, studentName) => {
     if (!requestId) return;
-    
+
     // Show confirmation dialog
     setSelectedRequestId(requestId);
     setSelectedChildName(studentName);
     setRejectDialogOpen(true);
   };
-  
+
   // Confirm and execute the rejection
   const confirmRejectRequest = () => {
     if (!selectedRequestId) return;
@@ -205,13 +205,13 @@ function LinkedAccounts() {
   // Handle cancelling an outgoing request
   const handleCancelOutgoingRequest = (requestId, childName) => {
     if (!requestId) return;
-    
+
     // Show confirmation dialog
     setSelectedRequestId(requestId);
     setSelectedChildName(childName);
     setCancelDialogOpen(true);
   };
-  
+
   // Confirm and execute the cancellation
   const confirmCancelOutgoingRequest = () => {
     if (!selectedRequestId) return;
@@ -257,7 +257,7 @@ function LinkedAccounts() {
   const totalPendingRequests = pendingLinkRequests.length + outgoingRequests.length;
 
   return (
-    <Theme accentColor="blue">
+    <>
       <Box className="max-w-4xl">
         {/* HEADER */}
         <Flex direction="column" className="mb-6">
@@ -305,9 +305,9 @@ function LinkedAccounts() {
             <Flex direction="column" gap="6">
               {/* CONNECTED CHILDREN SECTION */}
               <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                <SectionHeader 
-                  icon={<Users />} 
-                  title="Family Connections" 
+                <SectionHeader
+                  icon={<Users />}
+                  title="Family Connections"
                 />
 
                 <Box className="p-4 md:p-6">
@@ -334,7 +334,6 @@ function LinkedAccounts() {
                               src={child?.userId?.avatar}
                               fallback={child?.userId?.firstName?.[0]}
                               radius="full"
-                              color="blue"
                             />
                             <Flex direction="column" gap="1">
                               <Text size="2" weight="medium">
@@ -342,7 +341,7 @@ function LinkedAccounts() {
                               </Text>
                               <Text size="2" color="gray">{child?.userId?.email}</Text>
                               {child?.grade && (
-                                <Badge size="1" variant="surface" color="blue" className="self-start mt-1">
+                                <Badge size="1" variant="surface" className="self-start mt-1">
                                   Grade {child.grade}
                                 </Badge>
                               )}
@@ -362,7 +361,7 @@ function LinkedAccounts() {
                       ))}
                     </Box>
                   ) : (
-                    <EmptyStateCard 
+                    <EmptyStateCard
                       icon={<Users />}
                       title="No children connected"
                       description="You don't have any connected children yet. Your children can send you link requests, or you can share your parent code with them."
@@ -374,9 +373,9 @@ function LinkedAccounts() {
                     <Separator size="4" />
 
                     <Box className="rounded-lg border border-[--gray-a5] overflow-hidden">
-                      <SectionHeader 
-                        icon={<Info />} 
-                        title="Your Connection Code" 
+                      <SectionHeader
+                        icon={<Info />}
+                        title="Your Connection Code"
                         size="medium"
                       />
 
@@ -416,8 +415,8 @@ function LinkedAccounts() {
                           ) : (
                             <Flex gap="3" align="center" className="border rounded-lg p-4 border-[--gray-a6]">
                               <Box className="flex-1">
-                                <Text size="2">You don't have a link code yet</Text>
-                                <Text size="2" color="gray">Generate a code to share with your child</Text>
+                                <Text as="p" size="2">You don't have a link code yet</Text>
+                                <Text as="p" size="2" color="gray">Generate a code to share with your child</Text>
                               </Box>
                               <Button
                                 onClick={handleGenerateLinkCode}
@@ -441,14 +440,12 @@ function LinkedAccounts() {
                       </Box>
                     </Box>
 
-                    <Callout.Root color="blue" size="1">
+                    <Callout.Root color="blue" variant='surface'>
                       <Callout.Icon>
-                        <Info size={14} />
+                        <Info size={16} />
                       </Callout.Icon>
                       <Callout.Text>
-                        <Text as="p" size="2">
-                          When children connect with you using your parent code, you'll be able to monitor their academic progress, achievements, and educational activities.
-                        </Text>
+                        When children connect with you using your parent code, you'll be able to monitor their academic progress, achievements, and educational activities.
                       </Callout.Text>
                     </Callout.Root>
                   </Box>
@@ -462,15 +459,15 @@ function LinkedAccounts() {
             <Flex direction="column" gap="6">
               {/* INCOMING REQUESTS */}
               <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                <SectionHeader 
-                  icon={<Clock />} 
-                  title="Incoming Connection Requests" 
+                <SectionHeader
+                  icon={<Clock />}
+                  title="Incoming Connection Requests"
                 />
 
                 <Box className="p-4 md:p-6">
-                  <Callout.Root color="blue" size="1" className="mb-5">
+                  <Callout.Root color="blue" size="1" className="mb-5" variant='surface'>
                     <Callout.Icon>
-                      <Info size={14} />
+                      <Info size={16} />
                     </Callout.Icon>
                     <Callout.Text>
                       <Text as="p" size="2">Review and respond to connection requests from children who want to link with your account.</Text>
@@ -518,7 +515,6 @@ function LinkedAccounts() {
                                       size="3"
                                       fallback={request?.studentName?.[0] || "S"}
                                       radius="full"
-                                      color="blue"
                                       className="shadow-sm"
                                     />
                                     <Flex direction="column">
@@ -571,7 +567,7 @@ function LinkedAccounts() {
                           ))}
                         </Box>
                       ) : (
-                        <EmptyStateCard 
+                        <EmptyStateCard
                           icon={<CheckCircle />}
                           title="No incoming requests"
                           description="You don't have any pending connection requests from children. When a child requests to connect with you, it will appear here."
@@ -582,15 +578,15 @@ function LinkedAccounts() {
 
               {/* OUTGOING REQUESTS */}
               <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                <SectionHeader 
-                  icon={<Clock />} 
-                  title="Outgoing Connection Requests" 
+                <SectionHeader
+                  icon={<Clock />}
+                  title="Outgoing Connection Requests"
                 />
 
                 <Box className="p-4 md:p-6">
-                  <Callout.Root color="blue" size="1" className="mb-5">
+                  <Callout.Root color="blue" size="1" className="mb-5" variant='surface'>
                     <Callout.Icon>
-                      <Info size={14} />
+                      <Info size={16} />
                     </Callout.Icon>
                     <Callout.Text>
                       <Text as="p" size="2">Connection requests you've sent to children are waiting for their approval.</Text>
@@ -620,7 +616,7 @@ function LinkedAccounts() {
                               <Box className="bg-[--gray-a3] px-4 py-3">
                                 <Flex align="center" justify="between">
                                   <Flex align="center" gap="2">
-                                    <Users size={16} className="text-[--blue-9]" />
+                                    <Users size={16} className="text-[--accent-9]" />
                                     <Text size="2" weight="medium">
                                       Request Pending Child Approval
                                     </Text>
@@ -673,7 +669,7 @@ function LinkedAccounts() {
                                       onClick={() => handleCancelOutgoingRequest(request._id, request?.childName || request?.studentName)}
                                       disabled={cancelOutgoingRequestMutation.isPending && processingRequestId === request._id}
                                     >
-                                      {cancelOutgoingRequestMutation.isPending && processingRequestId === request._id ? 
+                                      {cancelOutgoingRequestMutation.isPending && processingRequestId === request._id ?
                                         "Cancelling..." : "Cancel Request"}
                                     </Button>
                                   </Flex>
@@ -683,7 +679,7 @@ function LinkedAccounts() {
                           ))}
                         </Box>
                       ) : (
-                        <EmptyStateCard 
+                        <EmptyStateCard
                           icon={<CheckCircle />}
                           title="No outgoing requests"
                           description="You haven't sent any connection requests to children that are pending approval."
@@ -697,11 +693,11 @@ function LinkedAccounts() {
           {/* MANAGE CHILDREN TAB */}
           <Tabs.Content value="manage" className="mt-6">
             <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-              <SectionHeader 
-                icon={<UserPlus />} 
-                title="Invite a Child" 
+              <SectionHeader
+                icon={<UserPlus />}
+                title="Invite a Child"
               />
-              
+
               <Box className="p-4 md:p-6">
                 <Text as="p" size="2" mb="4">
                   Send a connection request to your child. They will need to approve the request before you can see their account.
@@ -722,7 +718,7 @@ function LinkedAccounts() {
                         />
                       </label>
                       {errors.childName && (
-                        <Text as="p" size="1" color="red" className="flex items-center gap-1 mt-1">
+                        <Text as="p" size="1" color="red" className="flex gap-1 items-center mt-1">
                           <Info size={14} /> {errors.childName.message}
                         </Text>
                       )}
@@ -749,7 +745,7 @@ function LinkedAccounts() {
                         This will be used for your child's account
                       </Text>
                       {errors.childEmail && (
-                        <Text as="p" size="1" color="red" className="flex items-center gap-1 mt-1">
+                        <Text as="p" size="1" color="red" className="flex gap-1 items-center mt-1">
                           <Info size={14} /> {errors.childEmail.message}
                         </Text>
                       )}
@@ -772,7 +768,7 @@ function LinkedAccounts() {
                           />
                         </label>
                         {errors.childAge && (
-                          <Text as="p" size="1" color="red" className="flex items-center gap-1 mt-1">
+                          <Text as="p" size="1" color="red" className="flex gap-1 items-center mt-1">
                             <Info size={14} /> {errors.childAge.message}
                           </Text>
                         )}
@@ -806,7 +802,7 @@ function LinkedAccounts() {
                           />
                         </label>
                         {errors.grade && (
-                          <Text as="p" size="1" color="red" className="flex items-center gap-1 mt-1">
+                          <Text as="p" size="1" color="red" className="flex gap-1 items-center mt-1">
                             <Info size={14} /> {errors.grade.message}
                           </Text>
                         )}
@@ -829,14 +825,12 @@ function LinkedAccounts() {
                 </form>
 
                 <Box className="mt-6">
-                  <Callout.Root color="blue" size="1">
+                  <Callout.Root color="blue" variant='surface'>
                     <Callout.Icon>
-                      <Info size={14} />
+                      <Info size={16} />
                     </Callout.Icon>
                     <Callout.Text>
-                      <Text as="p" size="2">
-                        Inviting a child sends them a link request which they'll need to approve. If they don't have an account yet, one will be created for them.
-                      </Text>
+                      Inviting a child sends them a link request which they'll need to approve. If they don't have an account yet, one will be created for them.
                     </Callout.Text>
                   </Callout.Root>
                 </Box>
@@ -845,7 +839,7 @@ function LinkedAccounts() {
           </Tabs.Content>
         </Tabs.Root>
       </Box>
-      
+
       {/* Confirmation Dialogs */}
       <ConfirmationDialog
         open={rejectDialogOpen}
@@ -862,7 +856,7 @@ function LinkedAccounts() {
         isLoading={respondToLinkRequestMutation.isPending}
         onConfirm={confirmRejectRequest}
       />
-      
+
       <ConfirmationDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
@@ -878,7 +872,7 @@ function LinkedAccounts() {
         isLoading={cancelOutgoingRequestMutation.isPending}
         onConfirm={confirmCancelOutgoingRequest}
       />
-      
+
       <ConfirmationDialog
         open={unlinkDialogOpen}
         onOpenChange={setUnlinkDialogOpen}
@@ -894,7 +888,7 @@ function LinkedAccounts() {
         isLoading={unlinkChildMutation.isPending}
         onConfirm={confirmUnlinkChild}
       />
-    </Theme>
+    </>
   )
 }
 

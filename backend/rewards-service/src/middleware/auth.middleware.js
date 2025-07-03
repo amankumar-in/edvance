@@ -1,9 +1,30 @@
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
 const JWT_SECRET =
   process.env.NODE_ENV === "production"
     ? process.env.PRODUCTION_JWT_SECRET
     : process.env.JWT_SECRET;
+
+const getAllProfiles = async (userId, token) => {
+  const baseUrl = process.env.NODE_ENV === "production"
+    ? process.env.PRODUCTION_USER_SERVICE_URL
+    : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    const { data } = await axios.get(`${baseUrl}/api/users/me/profiles`, config);
+    return data.data;
+  } catch (error) {
+    console.error(`Error fetching profiles:`, error.response?.data || error.message);
+    return null;
+  }
+};
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -20,9 +41,18 @@ const authMiddleware = async (req, res, next) => {
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
+      
+      const userDetails = await getAllProfiles(decoded.id, token);
 
       // Add user information to request object
-      req.user = decoded;
+      req.user = {
+        id: decoded.id,
+        email: userDetails?.user?.email || decoded.email,
+        roles: decoded.roles,
+        firstName: userDetails?.user?.firstName || decoded.firstName,
+        lastName: userDetails?.user?.lastName || decoded.lastName,
+        profiles: userDetails?.profiles || {}
+      };
 
       // Add convenience method to check if user has a role
       req.user.hasRole = function (role) {

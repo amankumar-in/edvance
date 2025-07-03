@@ -11,7 +11,8 @@ import {
   cancelRedemption,
   fulfillRedemption,
   addToWishlist,
-  removeFromWishlist
+  removeFromWishlist,
+  toggleRewardVisibility
 } from "./rewards.api";
 import { REWARD_CATEGORIES_QUERY_KEY, REWARDS_QUERY_KEY, REDEMPTIONS_QUERY_KEY } from "./rewards.queries";
 
@@ -186,8 +187,10 @@ const useAddToWishlist = () => {
   return useMutation({
     mutationFn: addToWishlist,
     onSuccess: () => {
+      // TODO: Update the cache manually using setQueryData for instant UI feedback
+
       // Invalidate rewards queries to update isInWishlist status
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: REWARDS_QUERY_KEY.all
       });
     },
@@ -203,10 +206,30 @@ const useRemoveFromWishlist = () => {
   return useMutation({
     mutationFn: removeFromWishlist,
     onSuccess: () => {
+      // TODO: Update the cache manually using setQueryData for instant UI feedback
+
       // Invalidate rewards queries to update isInWishlist status
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: REWARDS_QUERY_KEY.all
       });
+    },
+  });
+};
+
+/**
+ * Toggle reward visibility for parent's children
+ */
+const useToggleRewardVisibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: toggleRewardVisibility,
+    onSuccess: () => {
+      // TODO: Update the cache manually using setQueryData for instant UI feedback
+
+      // Invalidate the list queries to update visibility status
+      return queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.all });
+
     },
   });
 };
@@ -224,4 +247,5 @@ export {
   useFulfillRedemption,
   useRemoveFromWishlist,
   useAddToWishlist,
+  useToggleRewardVisibility,
 };

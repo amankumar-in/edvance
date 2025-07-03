@@ -162,6 +162,30 @@ const removeFromWishlist = async ({ rewardId, studentId }) => {
   return response.data;
 };
 
+/**
+ * Get rewards for parent
+ */
+const getParentRewards = async (params = {}) => {
+  const response = await apiClient.get(`/rewards/parent`, { params });
+  return response.data;
+};
+
+/**
+ * Get rewards for student
+ */
+const getStudentRewards = async (params = {}) => {
+  const response = await apiClient.get(`/rewards/student`, { params });
+  return response.data;
+};
+
+/**
+ * Toggle reward visibility for parent's children
+ */
+const toggleRewardVisibility = async ({ id, isVisible }) => {
+  const response = await apiClient.put(`/rewards/${id}/toggle-visibility`, { isVisible });
+  return response.data;
+};
+
 export {
   createDefaultRewardCategories,
   createRewardCategory,
@@ -182,4 +206,7 @@ export {
   fulfillRedemption,
   addToWishlist,
   removeFromWishlist,
+  getParentRewards,
+  getStudentRewards,
+  toggleRewardVisibility,
 };

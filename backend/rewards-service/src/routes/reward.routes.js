@@ -443,6 +443,342 @@ router.get("/", rewardController.getRewards);
 
 /**
  * @openapi
+ * /rewards/parent:
+ *   get:
+ *     summary: Get rewards visible to parent (with visibility control)
+ *     description: Retrieves all rewards that affect the parent's children with visibility control information. Parents can see global, school, class, and their own rewards.
+ *     tags:
+ *       - Parent Controls
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: category
+ *         in: query
+ *         description: Filter by reward category
+ *         schema:
+ *           type: string
+ *           enum: [family, school, sponsor]
+ *       - name: subcategory
+ *         in: query
+ *         description: Filter by reward subcategory
+ *         schema:
+ *           type: string
+ *           enum: [privilege, item, experience, digital]
+ *       - name: categoryId
+ *         in: query
+ *         description: Filter by RewardCategory ID
+ *         schema:
+ *           type: string
+ *       - name: creatorType
+ *         in: query
+ *         description: Filter by creator type
+ *         schema:
+ *           type: string
+ *           enum: [parent, teacher, school, social_worker, system]
+ *       - name: schoolId
+ *         in: query
+ *         description: Filter by school ID
+ *         schema:
+ *           type: string
+ *       - name: classId
+ *         in: query
+ *         description: Filter by class ID
+ *         schema:
+ *           type: string
+ *       - name: minPoints
+ *         in: query
+ *         description: Minimum points cost filter
+ *         schema:
+ *           type: number
+ *       - name: maxPoints
+ *         in: query
+ *         description: Maximum points cost filter
+ *         schema:
+ *           type: number
+ *       - name: search
+ *         in: query
+ *         description: Search by title or description
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - name: sort
+ *         in: query
+ *         description: Field to sort by
+ *         schema:
+ *           type: string
+ *           default: "createdAt"
+ *       - name: order
+ *         in: query
+ *         description: Sort order (asc or desc)
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: "desc"
+ *       - name: isFeatured
+ *         in: query
+ *         description: Filter by featured status
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *     responses:
+ *       '200':
+ *         description: Parent rewards retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     rewards:
+ *                       type: array
+ *                       items:
+ *                         allOf:
+ *                           - $ref: '#/components/schemas/Reward'
+ *                           - type: object
+ *                             properties:
+ *                               canParentControl:
+ *                                 type: boolean
+ *                                 description: Whether parent can control this reward's visibility
+ *                                 example: true
+ *                               isHiddenByParent:
+ *                                 type: boolean
+ *                                 description: Whether parent has hidden this reward
+ *                                 example: false
+ *                               isVisibleToMyChildren:
+ *                                 type: boolean
+ *                                 description: Final visibility status for parent's children
+ *                                 example: true
+ *                     parentInfo:
+ *                       type: object
+ *                       properties:
+ *                         parentId:
+ *                           type: string
+ *                         childrenCount:
+ *                           type: integer
+ *                         childrenSchools:
+ *                           type: integer
+ *                         childrenClasses:
+ *                           type: integer
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         pages:
+ *                           type: integer
+ *       '500':
+ *         description: Failed to get parent rewards
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get parent rewards"
+ *                 error:
+ *                   type: string
+ */
+router.get(
+  "/parent",
+  authorizeRoles("parent"),
+  rewardController.getParentRewards
+);
+
+/**
+ * @openapi
+ * /rewards/student:
+ *   get:
+ *     summary: Get rewards visible to student (respecting parent controls)
+ *     description: Retrieves all rewards visible to the authenticated student, respecting parent visibility controls. Automatically excludes rewards hidden by any parent.
+ *     tags:
+ *       - Student View
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: category
+ *         in: query
+ *         description: Filter by reward category
+ *         schema:
+ *           type: string
+ *           enum: [family, school, sponsor]
+ *       - name: subcategory
+ *         in: query
+ *         description: Filter by reward subcategory
+ *         schema:
+ *           type: string
+ *           enum: [privilege, item, experience, digital]
+ *       - name: categoryId
+ *         in: query
+ *         description: Filter by RewardCategory ID
+ *         schema:
+ *           type: string
+ *       - name: creatorType
+ *         in: query
+ *         description: Filter by creator type
+ *         schema:
+ *           type: string
+ *           enum: [parent, teacher, school, social_worker, system]
+ *       - name: schoolId
+ *         in: query
+ *         description: Filter by school ID
+ *         schema:
+ *           type: string
+ *       - name: classId
+ *         in: query
+ *         description: Filter by class ID
+ *         schema:
+ *           type: string
+ *       - name: minPoints
+ *         in: query
+ *         description: Minimum points cost filter
+ *         schema:
+ *           type: number
+ *       - name: maxPoints
+ *         in: query
+ *         description: Maximum points cost filter
+ *         schema:
+ *           type: number
+ *       - name: search
+ *         in: query
+ *         description: Search by title or description
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - name: sort
+ *         in: query
+ *         description: Field to sort by
+ *         schema:
+ *           type: string
+ *           default: "createdAt"
+ *       - name: order
+ *         in: query
+ *         description: Sort order (asc or desc)
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: "desc"
+ *       - name: isFeatured
+ *         in: query
+ *         description: Filter by featured status
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *       - name: wishlistOnly
+ *         in: query
+ *         description: Show only rewards in student's wishlist
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *     responses:
+ *       '200':
+ *         description: Student rewards retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     rewards:
+ *                       type: array
+ *                       items:
+ *                         allOf:
+ *                           - $ref: '#/components/schemas/Reward'
+ *                           - type: object
+ *                             properties:
+ *                               isInWishlist:
+ *                                 type: boolean
+ *                                 description: Whether reward is in student's wishlist
+ *                                 example: false
+ *                     studentInfo:
+ *                       type: object
+ *                       properties:
+ *                         studentId:
+ *                           type: string
+ *                         parentIds:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                         schoolId:
+ *                           type: string
+ *                         classIds:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         pages:
+ *                           type: integer
+ *       '500':
+ *         description: Failed to get student rewards
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get student rewards"
+ *                 error:
+ *                   type: string
+ */
+router.get(
+  "/student",
+  authorizeRoles("student"),
+  rewardController.getStudentRewards
+);
+
+/**
+ * @openapi
  * /rewards/{id}:
  *   get:
  *     summary: Get reward by ID
@@ -988,5 +1324,144 @@ router.delete("/:rewardId/wishlist", rewardController.removeFromWishlist);
  *         description: Failed to get wishlist
  */
 router.get("/wishlist/:studentId", rewardController.getWishlist);
+
+/**
+ * @openapi
+ * /rewards/{id}/toggle-visibility:
+ *   put:
+ *     summary: Toggle reward visibility for parent's children
+ *     description: Allows a parent to hide or show a specific reward for all their children. Can both hide and unhide rewards.
+ *     tags:
+ *       - Parent Controls
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the reward to toggle visibility for
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Visibility setting
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isVisible
+ *             properties:
+ *               isVisible:
+ *                 type: boolean
+ *                 description: Whether the reward should be visible to children (true) or hidden (false)
+ *                 example: false
+ *     responses:
+ *       '200':
+ *         description: Reward visibility toggled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Reward hidden from your children successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     rewardId:
+ *                       type: string
+ *                       example: "60f8a9b5e6b3f32f8c9a8d7e"
+ *                     parentId:
+ *                       type: string
+ *                       example: "60f8a9b5e6b3f32f8c9a8d7f"
+ *                     isVisible:
+ *                       type: boolean
+ *                       example: false
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-12-01T10:30:00.000Z"
+ *                     status:
+ *                       type: string
+ *                       enum: [visible, hidden]
+ *                       example: "hidden"
+ *       '400':
+ *         description: Invalid reward ID format or invalid isVisible value
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "isVisible must be a boolean value"
+ *       '403':
+ *         description: Parent cannot control this reward's visibility
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "You cannot control the visibility of this reward"
+ *       '404':
+ *         description: Reward not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Reward not found"
+ *       '409':
+ *         description: Reward is already in the requested visibility state
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Reward is already visible to your children"
+ *       '500':
+ *         description: Failed to toggle reward visibility
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to toggle reward visibility"
+ *                 error:
+ *                   type: string
+ */
+router.put(
+  "/:id/toggle-visibility",
+  authorizeRoles("parent"),
+  rewardController.toggleRewardVisibility
+);
 
 module.exports = router;

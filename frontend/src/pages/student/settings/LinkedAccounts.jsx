@@ -356,7 +356,7 @@ function LinkedAccounts() {
                         <Flex gap="6" wrap="wrap">
                           {/* Link with Code */}
                           <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex items-center gap-1 mb-2">
+                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
                               Link with Code
                               <Tooltip content="Ask your parent for their unique link code">
                                 <HelpCircle size={14} />
@@ -386,7 +386,7 @@ function LinkedAccounts() {
 
                           {/* Request Link via Email */}
                           <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex items-center gap-1 mb-2">
+                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
                               Send Link Request
                               <Tooltip content="Send a link request to your parent">
                                 <HelpCircle size={14} />
@@ -438,7 +438,6 @@ function LinkedAccounts() {
                             fallback={student?.schoolDetails?.name?.[0]}
                             src={student?.schoolDetails?.logo}
                             radius="full"
-                            color="blue"
                             className="shadow-sm"
                           />
                           <Box className="flex-1 min-w-44">
@@ -507,7 +506,7 @@ function LinkedAccounts() {
                         <Flex gap="6" wrap="wrap">
                           {/* Link with School Code */}
                           <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex items-center gap-1 mb-2">
+                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
                               Join with School Code
                               <Tooltip content="Get a join code from your school administrator or teacher">
                                 <HelpCircle size={14} />
@@ -537,7 +536,7 @@ function LinkedAccounts() {
 
                           {/* Request School Link via School Code */}
                           <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex items-center gap-1 mb-2">
+                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
                               Request School Connection
                               <Tooltip content="Request a connection with your school using a school code">
                                 <HelpCircle size={14} />
@@ -590,7 +589,6 @@ function LinkedAccounts() {
                                 src={teacher?.avatar}
                                 fallback={`${teacher.firstName?.[0] || ""}${teacher.lastName?.[0] || ""}`}
                                 radius="full"
-                                color="blue"
                                 className="shadow-sm"
                               />
                               <Flex direction="column" gap="1">
@@ -613,9 +611,9 @@ function LinkedAccounts() {
                         ))}
                       </Box>
 
-                      <Callout.Root color="blue" size="1" className="mt-5">
+                      <Callout.Root color="blue" size="1" className="mt-5" variant='surface'>
                         <Callout.Icon>
-                          <Info size={14} />
+                          <Info size={16} />
                         </Callout.Icon>
                         <Callout.Text>
                           Teachers are automatically connected when you link with your school. No separate linking process is required.
@@ -640,12 +638,12 @@ function LinkedAccounts() {
                   />
 
                   <Box className="p-4 md:p-6">
-                    <Callout.Root color="amber" size="1" className="mb-4">
+                    <Callout.Root color="amber" size="1" className="mb-4" variant='surface'>
                       <Callout.Icon>
-                        <Info size={14} />
+                        <Info size={16} />
                       </Callout.Icon>
                       <Callout.Text>
-                        <Text as="p" size="2">Parents have requested to connect with your account. Review and approve or reject these requests.</Text>
+                        Parents have requested to connect with your account. Review and approve or reject these requests.
                       </Callout.Text>
                     </Callout.Root>
 
@@ -734,9 +732,9 @@ function LinkedAccounts() {
                 />
 
                 <Box className="p-4 md:p-6">
-                  <Callout.Root color="blue" size="1" className="mb-5">
+                  <Callout.Root color="blue" size="1" className="mb-5" variant='surface'>
                     <Callout.Icon>
-                      <Info size={14} />
+                      <Info size={16} />
                     </Callout.Icon>
                     <Callout.Text>
                       <Text as="p" size="2">Link requests allow you to connect your account with parents or schools. Once sent, they can approve or reject your connection request.</Text>

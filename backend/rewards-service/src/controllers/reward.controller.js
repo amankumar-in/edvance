@@ -21,6 +21,91 @@ async function getUserDetails(userId, authHeader) {
   return response.data.data;
 }
 
+// Helper function to get parent's children data
+async function getUserChildren(parentId, authHeader) {
+  const userServiceUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+  try {
+    const childrenResponse = await axios.get(
+      `${userServiceUrl}/api/parents/me/children`,
+      { headers: { Authorization: authHeader } }
+    );
+
+    return childrenResponse.data.data;
+  } catch (error) {
+    console.error("Error getting children details:", error.response?.data || error.message);
+    throw new Error("Failed to verify parent permissions");
+  }
+}
+
+// Helper function to get parent and children data
+async function getParentAndChildrenData(parentId, authHeader) {
+  const userServiceUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+  try {
+    const [parentResponse, childrenResponse] = await Promise.all([
+      axios.get(`${userServiceUrl}/api/parents/me`, { headers: { Authorization: authHeader } }),
+      axios.get(`${userServiceUrl}/api/parents/me/children`, { headers: { Authorization: authHeader } })
+    ]);
+
+    return {
+      parentData: parentResponse.data.data,
+      childrenData: childrenResponse.data.data
+    };
+  } catch (error) {
+    console.error("Error getting parent/children details:", error.response?.data || error.message);
+    throw new Error("Failed to get parent information");
+  }
+}
+
+
+// Helper function to verify parent-child relationships and return valid parent IDs
+async function getVerifiedParentRewards(studentId, parentIds, authHeader) {
+  const userServiceUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+  const verifiedParentIds = [];
+
+  try {
+    // For each parent ID, verify that this student is actually their child
+    for (const parentId of parentIds) {
+      try {
+        // Get the parent's children list
+        const childrenResponse = await axios.get(
+          `${userServiceUrl}/api/parents/${parentId}/children`,
+          { headers: { Authorization: authHeader } }
+        );
+
+        const parentChildren = childrenResponse.data.data;
+
+        // Check if this student is in the parent's children list
+        const isActualChild = parentChildren.some(child => child._id === studentId);
+
+        if (isActualChild) {
+          verifiedParentIds.push(parentId);
+        }
+      } catch (error) {
+        console.warn(`Failed to verify parent-child relationship for parent ${parentId}:`, error.message);
+        // Continue with other parents even if one fails
+        continue;
+      }
+    }
+
+    return verifiedParentIds;
+  } catch (error) {
+    console.error("Error verifying parent-child relationships:", error);
+    return []; // Return empty array if verification fails
+  }
+}
+
 // Helper function to handle category resolution
 async function resolveCategory(req) {
   let categoryId = req.body.categoryId;
@@ -89,6 +174,8 @@ const rewardController = {
         classId,
         metadata,
         isFeatured,
+        role: creatorType,
+        isVisibleToChildren
       } = req.body;
 
       // Handle image upload
@@ -98,27 +185,10 @@ const rewardController = {
       }
 
       // Extract user info from authentication middleware
-      const creatorId = req.user.id;
-      const userRoles = req.user.roles;
+      const { profiles, id: userId, roles: userRoles } = req.user;
 
-      // Determine creator type based on user role
-      let creatorType;
-      if (userRoles.includes("parent")) {
-        creatorType = "parent";
-      } else if (userRoles.includes("teacher")) {
-        creatorType = "teacher";
-      } else if (userRoles.includes("school_admin")) {
-        creatorType = "school";
-      } else if (userRoles.includes("social_worker")) {
-        creatorType = "social_worker";
-      } else if (userRoles.includes("platform_admin")) {
-        creatorType = "system";
-      } else {
-        return res.status(403).json({
-          success: false,
-          message: "Not authorized to create rewards",
-        });
-      }
+      // Determine creator type and ID based on user role (following task service pattern)
+      const creatorId = creatorType === 'platform_admin' || creatorType === 'sub_admin' || creatorType === 'school_admin' ? userId : profiles[creatorType]?._id;
 
       // Validate required fields
       if (!title || !description || pointsCost === undefined) {
@@ -161,7 +231,8 @@ const rewardController = {
         subcategoryName: categoryData.subcategoryType,
         pointsCost,
         creatorId,
-        creatorType,
+        authUserId: userId,
+        creatorType: (creatorType === 'platform_admin' || creatorType === 'sub_admin') ? 'system' : creatorType,
         schoolId:
           creatorType === "school" || creatorType === "teacher"
             ? schoolId || req.user.schoolId
@@ -175,6 +246,7 @@ const rewardController = {
         restrictions,
         metadata,
         isFeatured: isFeatured || false,
+        isVisibleToChildren: isVisibleToChildren !== 'false',
       });
 
       await reward.save();
@@ -209,8 +281,8 @@ const rewardController = {
         search,
         page = 1,
         limit = 20,
-        sort = "pointsCost",
-        order = "asc",
+        sort = "createdAt",
+        order = "desc",
         isFeatured,
         wishlistOnly,
       } = req.query;
@@ -294,7 +366,7 @@ const rewardController = {
             // Get all wishlist items for this student
             const wishlistItems = await RewardWishlist.find({ studentId });
             const wishlistedRewardIds = wishlistItems.map(item => item.rewardId);
-            
+
             if (wishlistedRewardIds.length === 0) {
               // No wishlist items, return empty result
               return res.status(200).json({
@@ -339,7 +411,7 @@ const rewardController = {
             "Error getting student details:",
             error.response?.data || error.message
           );
-          
+
           if (wishlistOnly === 'true') {
             // If we can't get student details and wishlist is requested, return empty
             return res.status(200).json({
@@ -355,7 +427,7 @@ const rewardController = {
               },
             });
           }
-          
+
           // Fallback if user service fails - show basic rewards
           filter.$or = [{ category: "sponsor" }, { creatorType: "system" }];
         }
@@ -604,17 +676,18 @@ const rewardController = {
       }
 
       // Check authorization - only creator or platform admin can update
-      const userId = req.user.id;
+      const { profiles } = req.user;
+      const userId = profiles.parent?._id;
       const userRoles = req.user.roles;
 
       const isAuthorized =
-        reward.creatorId === userId ||
+        reward.creatorId.equals(userId) ||
         (reward.creatorType === "school" &&
           userRoles.includes("school_admin") &&
           reward.schoolId === req.user.schoolId) ||
         (reward.creatorType === "teacher" &&
           userRoles.includes("teacher") &&
-          reward.creatorId === userId) ||
+          reward.creatorId.equals(userId)) ||
         userRoles.includes("platform_admin");
 
       if (!isAuthorized) {
@@ -707,17 +780,19 @@ const rewardController = {
       }
 
       // Check authorization - only creator or platform admin can delete
-      const userId = req.user.id;
+      const { profiles } = req.user;
+      const userId = profiles.parent?._id;
       const userRoles = req.user.roles;
 
+
       const isAuthorized =
-        reward.creatorId === userId ||
+        reward.creatorId.equals(userId) ||
         (reward.creatorType === "school" &&
           userRoles.includes("school_admin") &&
-          reward.schoolId === req.user.schoolId) ||
+          reward.schoolId.equals(req.user.schoolId)) ||
         (reward.creatorType === "teacher" &&
           userRoles.includes("teacher") &&
-          reward.creatorId === userId) ||
+          reward.creatorId.equals(userId)) ||
         userRoles.includes("platform_admin");
 
       if (!isAuthorized) {
@@ -838,7 +913,6 @@ const rewardController = {
 
   // Add reward to wishlist
   addToWishlist: async (req, res) => {
-    console.log('this is the add to wishlist controller');
     try {
       const { rewardId } = req.params;
       const { studentId } = req.body;
@@ -991,7 +1065,473 @@ const rewardController = {
     }
   },
 
+  // Get rewards visible to parent (with ability to control visibility)
+  getParentRewards: async (req, res) => {
+    try {
+      const {
+        category,
+        subcategory,
+        categoryId,
+        creatorType,
+        schoolId,
+        classId,
+        minPoints,
+        maxPoints,
+        search,
+        page = 1,
+        limit = 20,
+        sort = "createdAt",
+        order = "desc",
+        isFeatured,
+      } = req.query;
+
+      const parentId = req.user?.profiles?.['parent']?._id;
+      const authHeader = req.headers.authorization;
+
+      // Get parent details and children from user service
+      try {
+        const { parentData, childrenData } = await getParentAndChildrenData(parentId, authHeader);
+
+        // Get children's school IDs and class IDs
+        const childrenSchoolIds = [...new Set(childrenData.map(child => child.schoolId).filter(Boolean))];
+        const childrenClassIds = [...new Set(childrenData.flatMap(child => child.classIds || []))];
+
+
+        // Base filter for rewards visible to parent's children
+        const filter = {
+          isActive: true,
+          isDeleted: false,
+          $or: [{ expiryDate: { $gt: new Date() } }, { expiryDate: null }],
+          // Parent can see rewards that affect their children
+          $and: [{
+            $or: [
+              { creatorId: parentId }, // Own rewards
+              { creatorType: "system" }, // Global rewards
+              { schoolId: { $in: childrenSchoolIds } }, // School rewards
+              { classId: { $in: childrenClassIds } }, // Class rewards
+            ]
+          }]
+        };
+
+        // Apply additional filters
+        if (categoryId) {
+          filter.categoryId = categoryId;
+        } else if (category) {
+          filter.$or = [
+            { category: category },
+            { categoryName: category }
+          ];
+        }
+
+        if (subcategory) {
+          filter.$or = [
+            { subcategory: subcategory },
+            { subcategoryName: subcategory }
+          ];
+        }
+
+        if (creatorType) filter.creatorType = creatorType;
+        if (schoolId) filter.schoolId = schoolId;
+        if (classId) filter.classId = classId;
+
+        if (minPoints) filter.pointsCost = { $gte: parseInt(minPoints) };
+        if (maxPoints) {
+          filter.pointsCost = filter.pointsCost || {};
+          filter.pointsCost.$lte = parseInt(maxPoints);
+        }
+
+        if (search) {
+          filter.$and = filter.$and || [];
+          filter.$and.push({
+            $or: [
+              { title: { $regex: search, $options: "i" } },
+              { description: { $regex: search, $options: "i" } },
+            ],
+          });
+        }
+
+        if (isFeatured !== undefined) {
+          filter.isFeatured = isFeatured === 'true';
+        }
+
+        // Pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const sortOrder = order === "desc" ? -1 : 1;
+
+        // Execute query
+        const rewards = await Reward.find(filter)
+          .populate("categoryId", "name type subcategoryType")
+          .sort({ [sort]: sortOrder })
+          .skip(skip)
+          .limit(parseInt(limit));
+
+        // Add parent control information to each reward
+        const rewardsWithParentInfo = rewards.map(reward => {
+          const rewardObj = reward.toObject();
+
+          // Check if parent can control this reward
+          const canControl = reward.canParentControl(parentId, childrenData);
+
+          // Check if parent has hidden this reward
+          const isHiddenByMe = reward.parentHiddenBy?.some(hide => hide.parentId === parentId) || false;
+
+          return {
+            ...rewardObj,
+            canParentControl: canControl,
+            isHiddenByParent: isHiddenByMe,
+            isVisibleToMyChildren: reward.isVisibleToStudent([parentId])
+          };
+        });
+
+        // Get total count
+        const total = await Reward.countDocuments(filter);
+
+        res.status(200).json({
+          success: true,
+          data: {
+            rewards: rewardsWithParentInfo,
+            parentInfo: {
+              parentId,
+              childrenCount: childrenData.length,
+              childrenSchools: childrenSchoolIds.length,
+              childrenClasses: childrenClassIds.length
+            },
+            pagination: {
+              total,
+              page: parseInt(page),
+              limit: parseInt(limit),
+              pages: Math.ceil(total / parseInt(limit)),
+            },
+          },
+        });
+
+      } catch (userServiceError) {
+        console.error("Error getting parent/children details:", userServiceError.response?.data || userServiceError.message);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to get parent information",
+          error: userServiceError.message,
+        });
+      }
+
+    } catch (error) {
+      console.error("Get parent rewards error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to get parent rewards",
+        error: error.message,
+      });
+    }
+  },
+
+  // Toggle reward visibility for parent's children
+  toggleRewardVisibility: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isVisible } = req.body;
+      const { profiles } = req.user;
+      const parentId = profiles.parent?._id;
+      const authHeader = req.headers.authorization;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid reward ID format",
+        });
+      }
+
+      if (typeof isVisible !== 'boolean') {
+        return res.status(400).json({
+          success: false,
+          message: "isVisible must be a boolean value",
+        });
+      }
+
+      const reward = await Reward.findById(id);
+
+      if (!reward || reward.isDeleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Reward not found",
+        });
+      }
+
+      // Get parent's children data to check if they can control this reward
+      const childrenData = await getUserChildren(parentId, authHeader);
+
+      // Check if parent can control this reward
+      if (!reward.canParentControl(parentId, childrenData)) {
+        return res.status(403).json({
+          success: false,
+          message: "You cannot control the visibility of this reward",
+        });
+      }
+
+      // Toggle visibility
+      const result = await reward.toggleParentVisibility(parentId, isVisible);
+
+      if (!result.success) {
+        return res.status(409).json({
+          success: false,
+          message: result.message,
+        });
+      }
+
+      const actionText = isVisible ? "shown to" : "hidden from";
+      const statusText = isVisible ? "visible" : "hidden";
+
+      res.status(200).json({
+        success: true,
+        message: `Reward ${actionText} your children successfully`,
+        data: {
+          rewardId: reward._id,
+          parentId,
+          isVisible,
+          updatedAt: new Date(),
+          status: statusText,
+        },
+      });
+
+    } catch (error) {
+      console.error("Toggle reward visibility error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to toggle reward visibility",
+        error: error.message,
+      });
+    }
+  },
+
+  // Get rewards visible to student (respecting parent controls)
+  getStudentRewards: async (req, res) => {
+    try {
+      const {
+        category,
+        subcategory,
+        categoryId,
+        creatorType,
+        schoolId,
+        classId,
+        minPoints,
+        maxPoints,
+        search,
+        page = 1,
+        limit = 20,
+        sort = "createdAt",
+        order = "desc",
+        isFeatured,
+        wishlistOnly,
+      } = req.query;
+
+      const { profiles } = req.user;
+      const authHeader = req.headers.authorization;
+
+
+      // Get student details from user service
+      const userServiceUrl =
+        process.env.NODE_ENV === "production"
+          ? process.env.PRODUCTION_USER_SERVICE_URL
+          : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+      try {
+        const studentResponse = await axios.get(
+          `${userServiceUrl}/api/students/me`,
+          { headers: { Authorization: authHeader } }
+        );
+
+        const studentData = studentResponse.data.data;
+        const studentId = studentData._id;
+        const parentIds = profiles['student']?.parentIds;
+
+
+        // Base filter for rewards
+        const filter = {
+          isActive: true,
+          isDeleted: false,
+          isVisibleToChildren: true, // Only visible rewards
+          $or: [{ expiryDate: { $gt: new Date() } }, { expiryDate: null }],
+          // Exclude rewards hidden by any parent
+          $nor: [
+            { 'parentHiddenBy.parentId': { $in: parentIds } }
+          ]
+        };
+
+        // Handle wishlist-only filter
+        if (wishlistOnly === 'true') {
+          const wishlistItems = await RewardWishlist.find({ studentId });
+          const wishlistedRewardIds = wishlistItems.map(item => item.rewardId);
+
+          if (wishlistedRewardIds.length === 0) {
+            return res.status(200).json({
+              success: true,
+              data: {
+                rewards: [],
+                pagination: {
+                  total: 0,
+                  page: parseInt(page),
+                  limit: parseInt(limit),
+                  pages: 0,
+                },
+              },
+            });
+          }
+
+          filter._id = { $in: wishlistedRewardIds };
+        } else {
+          // Apply student access rules
+          const schoolFilter = studentData.schoolId ? { schoolId: studentData.schoolId } : null;
+
+          filter.$and = [{
+            $or: [
+              { creatorType: "system" },
+              ...(schoolFilter ? [schoolFilter] : []),
+              { classId: { $in: studentData.classIds || [] } },
+            ]
+          }];
+
+          // Add parent rewards
+          if (parentIds.length > 0) {
+            const parentObjectIds = parentIds.map(id => new mongoose.Types.ObjectId(id));
+
+            // ADD to existing filter, don't overwrite
+            filter.$and[0].$or.push({
+              creatorType: "parent",
+              creatorId: { $in: parentObjectIds }
+            });
+          }
+
+          // Include social worker rewards if applicable
+          if (studentData.socialWorkerId) {
+            filter.$and[0].$or.push({
+              creatorType: "social_worker",
+              creatorId: studentData.socialWorkerId
+            });
+          }
+        }
+
+        // Apply additional filters
+        if (categoryId) {
+          filter.categoryId = categoryId;
+        } else if (category) {
+          filter.$or = [
+            { category: category },
+            { categoryName: category }
+          ];
+        }
+
+        if (subcategory) {
+          filter.$or = [
+            { subcategory: subcategory },
+            { subcategoryName: subcategory }
+          ];
+        }
+
+        if (creatorType) filter.creatorType = creatorType;
+        if (schoolId) filter.schoolId = schoolId;
+        if (classId) filter.classId = classId;
+
+        if (minPoints) filter.pointsCost = { $gte: parseInt(minPoints) };
+        if (maxPoints) {
+          filter.pointsCost = filter.pointsCost || {};
+          filter.pointsCost.$lte = parseInt(maxPoints);
+        }
+
+        if (search) {
+          filter.$and = filter.$and || [];
+          filter.$and.push({
+            $or: [
+              { title: { $regex: search, $options: "i" } },
+              { description: { $regex: search, $options: "i" } },
+            ],
+          });
+        }
+
+        if (isFeatured !== undefined) {
+          filter.isFeatured = isFeatured === 'true';
+        }
+
+        // Pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const sortOrder = order === "desc" ? -1 : 1;
+
+        // Execute query
+        const rewards = await Reward.find(filter)
+          .populate("categoryId", "name type subcategoryType")
+          .sort({ [sort]: sortOrder })
+          .skip(skip)
+          .limit(parseInt(limit));
+
+
+        // Add wishlist status
+        const wishlistItems = await RewardWishlist.find({ studentId });
+        const wishlistedRewardIds = new Set(
+          wishlistItems.map(item => item.rewardId.toString())
+        );
+
+        const rewardsWithWishlistStatus = rewards.map(reward => ({
+          ...reward.toObject(),
+          isInWishlist: wishlistedRewardIds.has(reward._id.toString())
+        }));
+
+        // Get total count
+        const total = await Reward.countDocuments(filter);
+
+        res.status(200).json({
+          success: true,
+          data: {
+            rewards: rewardsWithWishlistStatus,
+            studentInfo: {
+              studentId,
+              parentIds,
+              schoolId: studentData.schoolId,
+              classIds: studentData.classIds || [],
+            },
+            pagination: {
+              total,
+              page: parseInt(page),
+              limit: parseInt(limit),
+              pages: Math.ceil(total / parseInt(limit)),
+            },
+          },
+        });
+
+      } catch (userServiceError) {
+        console.error("Error getting student details:", userServiceError.response?.data || userServiceError.message);
+
+        if (wishlistOnly === 'true') {
+          return res.status(200).json({
+            success: true,
+            data: {
+              rewards: [],
+              pagination: {
+                total: 0,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: 0,
+              },
+            },
+          });
+        }
+
+        return res.status(500).json({
+          success: false,
+          message: "Failed to get student information",
+          error: userServiceError.message,
+        });
+      }
+
+    } catch (error) {
+      console.error("Get student rewards error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to get student rewards",
+        error: error.message,
+      });
+    }
+  },
+
 
 };
 
 module.exports = rewardController;
+

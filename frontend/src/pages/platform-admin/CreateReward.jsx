@@ -66,13 +66,8 @@ const CreateReward = () => {
   // Get reward categories from API
   const { data, isLoading: categoriesLoading, isError: categoriesError, error: categoriesErrorDetails } = useGetRewardCategories();
 
-  // Debug logging
-  console.log('Categories API Response:', { data, categoriesLoading, categoriesError });
-
   // Safely extract categories with fallback
   const rewardCategories = data?.data?.categories || data?.categories || [];
-
-  console.log('Extracted rewardCategories:', rewardCategories);
 
   // Create reward mutation
   const { mutate: createReward, isPending, isError, error } = useCreateReward();
@@ -145,6 +140,7 @@ const CreateReward = () => {
     formData.append('categoryId', data.categoryId);
     formData.append('limitedQuantity', data.limitedQuantity);
     formData.append('isFeatured', data.isFeatured);
+    formData.append('role', 'platform_admin');
 
     if (data.limitedQuantity && data.quantity) {
       formData.append('quantity', parseInt(data.quantity));
@@ -174,8 +170,6 @@ const CreateReward = () => {
     if (selectedFile) {
       formData.append('image', selectedFile);
     }
-
-    console.log('Creating reward with FormData');
 
     // Create reward using API
     createReward(formData, {

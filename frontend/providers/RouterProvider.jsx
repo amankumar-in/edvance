@@ -18,6 +18,8 @@ import StudentRewards from "../src/pages/student/StudentRewards";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentTasks from "../src/pages/student/StudentTasks";
 import TaskDetails from "../src/pages/parent/TaskDetails";
+import ParentRewards from "../src/pages/parent/ParentRewards";
+import CreateParentReward from "../src/pages/parent/CreateReward";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -54,6 +56,9 @@ const router = createBrowserRouter(
               <Route path="tasks/:id" element={<TaskDetails />} />
               <Route path="claims" element={<ParentClaims />} />
               <Route path="children" element={<ParentChildren />} />
+              <Route path="rewards" element={<ParentRewards />} />
+              <Route path="rewards/create" element={<CreateParentReward />} />
+              <Route path="rewards/edit/:id" element={<CreateParentReward />} />
             </Route>
             <Route path="create-profile" element={<CreateParentProfile />} />
             <Route path="settings" element={<SettingsLayout />} >
