@@ -177,12 +177,20 @@ function RewardsBasePage({
                 </>
               }
               {role === 'parent' && (
-                <Button asChild>
-                  <Link to="/parent/rewards/create">
-                    <Plus size={16} />
-                    Create Reward
-                  </Link>
-                </Button>
+                <Flex gap="2" wrap={'wrap'}>
+                  <Button asChild variant="outline">
+                    <Link to="/parent/pending-redemptions">
+                      <Clock size={16} />
+                      Pending Redemptions
+                    </Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/parent/rewards/create">
+                      <Plus size={16} />
+                      Create Reward
+                    </Link>
+                  </Button>
+                </Flex>
               )}
             </Flex>
           </Flex>
@@ -432,7 +440,7 @@ function RewardsBasePage({
               <Card
                 size='1'
                 key={reward._id}
-                className="flex flex-col transition-shadow cursor-pointer hover:shadow-md"
+                className="flex flex-col shadow-md cursor-pointer"
                 onClick={() => setSelectedReward(reward)}
               >
                 <Box className="relative">

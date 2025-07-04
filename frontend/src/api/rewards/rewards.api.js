@@ -131,16 +131,16 @@ const getRedemptionById = async (id) => {
 /**
  * Cancel a redemption
  */
-const cancelRedemption = async ({ id, reason }) => {
-  const response = await apiClient.post(`/rewards/redemptions/${id}/cancel`, { reason });
+const cancelRedemption = async ({ id, reason, role }) => {
+  const response = await apiClient.post(`/rewards/redemptions/${id}/cancel`, { reason, role });
   return response.data;
 };
 
 /**
  * Fulfill a redemption
  */
-const fulfillRedemption = async ({ id, feedback }) => {
-  const response = await apiClient.put(`/rewards/redemptions/${id}/fulfill`, { feedback });
+const fulfillRedemption = async ({ id, feedback, role }) => {
+  const response = await apiClient.put(`/rewards/redemptions/${id}/fulfill`, { feedback, role });
   return response.data;
 };
 
@@ -186,6 +186,14 @@ const toggleRewardVisibility = async ({ id, isVisible }) => {
   return response.data;
 };
 
+/**
+ * Get pending redemptions for fulfillment
+ */
+const getPendingRedemptions = async (params = {}) => {
+  const response = await apiClient.get(`/rewards/redemptions/pending`, { params });
+  return response.data;
+};
+
 export {
   createDefaultRewardCategories,
   createRewardCategory,
@@ -209,4 +217,5 @@ export {
   getParentRewards,
   getStudentRewards,
   toggleRewardVisibility,
+  getPendingRedemptions,
 };

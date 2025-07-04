@@ -125,11 +125,11 @@ function TaskPageBase({
 
                 <Heading size="2" className='line-clamp-2'>{task.title}</Heading>
               </Flex>
-
+{/* 
               {task.description && (
                 <Text as='p' size="1" className="line-clamp-2" color="gray">{task.description}</Text>
               )}
-
+ */}
               <Separator size="4" />
 
               <Flex justify="between" align="center" gap="2" wrap="wrap" >

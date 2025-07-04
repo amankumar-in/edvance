@@ -1,5 +1,5 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getRewardCategories, getRewardCategoryById, getRewardCategoryHierarchy, getRewards, getRewardById, getRedemptionHistory, getRedemptionById, getParentRewards, getStudentRewards } from "./rewards.api";
+import { getRewardCategories, getRewardCategoryById, getRewardCategoryHierarchy, getRewards, getRewardById, getRedemptionHistory, getRedemptionById, getParentRewards, getStudentRewards, getPendingRedemptions } from "./rewards.api";
 
 /**
  * Query keys for reward categories
@@ -28,6 +28,7 @@ export const REWARDS_QUERY_KEY = {
 export const REDEMPTIONS_QUERY_KEY = {
   all: ['redemptions'],
   history: (params) => ['redemptions', 'history', params],
+  pending: (params) => ['redemptions', 'pending', params],
   detail: (id) => ['redemptions', id],
 }
 
@@ -192,6 +193,28 @@ export const useGetStudentRewards = (params = {}) => {
   return useInfiniteQuery({
     queryKey: REWARDS_QUERY_KEY.student(params),
     queryFn: ({ pageParam = 1 }) => getStudentRewards({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.data?.pagination?.page;
+      const totalPages = lastPage?.data?.pagination?.pages;
+
+      if (currentPage < totalPages) {
+        return currentPage + 1;
+      }
+
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
+  });
+};
+
+/**
+ * Get pending redemptions for fulfillment
+ */
+export const useGetPendingRedemptions = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: REDEMPTIONS_QUERY_KEY.pending(params),
+    queryFn: ({ pageParam = 1 }) => getPendingRedemptions({ ...params, page: pageParam }),
     getNextPageParam: (lastPage) => {
       const currentPage = lastPage?.data?.pagination?.page;
       const totalPages = lastPage?.data?.pagination?.pages;

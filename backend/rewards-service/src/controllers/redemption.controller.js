@@ -447,7 +447,9 @@ const redemptionController = {
   fulfillRedemption: async (req, res) => {
     try {
       const { id } = req.params;
-      const { feedback } = req.body;
+      const { feedback, role } = req.body;
+      const { profiles } = req.user;
+      const userId = role === 'parent' ? profiles.parent?._id : req.user.id;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -468,12 +470,11 @@ const redemptionController = {
       }
 
       // Check authorization - only reward creator can fulfill
-      const userId = req.user.id;
       const userRoles = req.user.roles;
       const reward = redemption.rewardId;
 
       const isAuthorized =
-        reward.creatorId === userId ||
+        reward.creatorId.equals(userId) ||
         (reward.creatorType === "school" &&
           userRoles.includes("school_admin") &&
           reward.schoolId === req.user.schoolId) ||
@@ -555,7 +556,9 @@ const redemptionController = {
   cancelRedemption: async (req, res) => {
     try {
       const { id } = req.params;
-      const { reason } = req.body;
+      const { reason, role } = req.body;
+      const { profiles } = req.user;
+      const userId = role === 'parent' ? profiles.parent?._id : req.user.id;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -576,14 +579,13 @@ const redemptionController = {
       }
 
       // Check authorization - student can cancel their own, reward creator can cancel any
-      const userId = req.user.id;
       const userRoles = req.user.roles;
       const reward = redemption.rewardId;
 
       const isStudent =
         userRoles.includes("student") && redemption.studentId === userId;
       const isCreator =
-        reward.creatorId === userId ||
+        reward.creatorId.equals(userId) ||
         (reward.creatorType === "school" &&
           userRoles.includes("school_admin") &&
           reward.schoolId === req.user.schoolId);
@@ -616,7 +618,7 @@ const redemptionController = {
             sourceId: redemption._id.toString(),
             description: `Refund for cancelled redemption: ${reward.title}`,
             awardedBy: userId,
-            awardedByRole: userRoles[0],
+            awardedByRole: role,
             metadata: {
               redemptionId: redemption._id,
               rewardId: reward._id,
@@ -756,13 +758,13 @@ const redemptionController = {
       const { page = 1, limit = 20 } = req.query;
 
       // Access control - only reward creators can see pending redemptions
-      const userId = req.user.id;
+      const parentId = req.user?.profiles?.parent?._id;
       const userRoles = req.user.roles;
       const filter = { status: "pending" };
 
       if (userRoles.includes("parent")) {
         // Parents see redemptions for their created rewards
-        filter["metadata.rewardCreatorId"] = userId;
+        filter["metadata.rewardCreatorId"] = mongoose.Types.ObjectId.createFromHexString(parentId);
       } else if (userRoles.includes("school_admin")) {
         // School admins see redemptions for school rewards
         filter["metadata.rewardCreatorType"] = "school";
@@ -779,10 +781,31 @@ const redemptionController = {
 
       // Execute query with pagination
       const redemptions = await RewardRedemption.find(filter)
-        .populate("rewardId", "title category subcategory pointsCost")
+        .populate("rewardId", "title category subcategory pointsCost image")
         .sort({ redemptionDate: -1 })
         .skip(skip)
         .limit(parseInt(limit));
+
+      // Get student details for each redemption
+      const redemptionsWithStudentInfo = await Promise.all(
+        redemptions.map(async (redemption) => {
+          const studentDetails = await getStudentDetails(
+            redemption.studentId,
+            req.headers.authorization
+          );
+
+          const redemptionObj = redemption.toObject();
+          redemptionObj.studentInfo = studentDetails ? {
+            firstName: studentDetails.userId?.firstName || '',
+            lastName: studentDetails.userId?.lastName || '',
+            email: studentDetails.userId?.email || '',
+            avatar: studentDetails.userId?.avatar || null,
+            grade: studentDetails.grade || null
+          } : null;
+
+          return redemptionObj;
+        })
+      );
 
       // Get total count for pagination
       const total = await RewardRedemption.countDocuments(filter);
@@ -790,7 +813,7 @@ const redemptionController = {
       res.status(200).json({
         success: true,
         data: {
-          redemptions,
+          redemptions: redemptionsWithStudentInfo,
           pagination: {
             total,
             page: parseInt(page),

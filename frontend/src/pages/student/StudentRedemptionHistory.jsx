@@ -198,6 +198,7 @@ function StudentRedemptionHistory() {
             {allRedemptions.map((redemption) => (
               <Card
                 key={redemption._id}
+                className='shadow-md'
               >
                 <Flex gap="4" align="start">
                   {/* Reward Image */}
@@ -218,11 +219,11 @@ function StudentRedemptionHistory() {
                     {/* Header */}
                     <Flex justify="between" align="start" gap="2" wrap="wrap">
                       <div className="flex-1 min-w-0">
-                        <Heading size="4" className="line-clamp-1" weight={'medium'}>
+                        <Heading size="3" className="line-clamp-1" weight={'medium'}>
                           {redemption.rewardId?.title || 'Deleted Reward'}
                         </Heading>
                         <Text as='p' size="2" color="gray" className="capitalize">
-                          {redemption.rewardId?.category} {redemption.rewardId?.subcategory}
+                          {redemption.rewardId?.category}
                         </Text>
                       </div>
 
@@ -272,12 +273,12 @@ function StudentRedemptionHistory() {
 
                     {/* Additional Info */}
                     {redemption.fulfillmentDate && (
-                      <Text as='p' size="2" color="green">
+                      <Text as='p' size="1" color="green">
                         Fulfilled on {formatDate(redemption.fulfillmentDate, { dateStyle: 'medium' })}
                       </Text>
                     )}
                     {redemption.cancelledAt && (
-                      <Text as='p' size="2" color="red">
+                      <Text as='p' size="1" color="red">
                         Cancelled on {formatDate(redemption.cancelledAt, { dateStyle: 'medium' })}
                       </Text>
                     )}

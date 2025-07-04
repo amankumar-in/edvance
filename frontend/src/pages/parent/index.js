@@ -6,4 +6,5 @@ export { default as CreateTask } from './CreateTask';
 export { default as ParentDashboard } from './ParentDashboard';
 export { default as ParentLayout } from './ParentLayout';
 export { default as ParentRewards } from './ParentRewards';
-export { default as ParentTasks } from './ParentTasks'; 
+export { default as ParentTasks } from './ParentTasks';
+export { default as PendingRedemptions } from './PendingRedemptions'; 
