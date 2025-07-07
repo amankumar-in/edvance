@@ -1,10 +1,11 @@
 import { Badge, Button, Callout, Flex, Heading, Table, Text } from '@radix-ui/themes';
-import { AlertCircle, Check, CheckCircle, Clock, X } from 'lucide-react';
+import { AlertCircle, Check, CheckCircle, Clock, Info, X } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 import { useRespondToJoinRequest } from '../../api/school-admin/school.mutations';
 import { useGetAllPendingJoinRequests } from '../../api/school-admin/school.queries';
 import { ConfirmationDialog, EmptyStateCard, Loader } from '../../components';
+import { formatDate } from '../../utils/helperFunctions';
 
 function JoinRequests() {
   const { data, isLoading, isError, error } = useGetAllPendingJoinRequests();
@@ -68,7 +69,7 @@ function JoinRequests() {
   if (isLoading) {
     return (
       <Flex align="center" justify="center">
-        <Loader borderWidth={2} className='size-8' borderColor='var(--accent-11)' />
+        <Loader />
       </Flex>
     );
   }
@@ -88,7 +89,33 @@ function JoinRequests() {
 
   return (
     <div>
-      <Heading size="6" mb="4" weight={'medium'}>Student Join Requests</Heading>
+      {/* Enhanced Header Section */}
+      <div className="mb-6">
+        <Flex align="center" gap="3" mb="3">
+
+          <div>
+            <Heading size="6" weight="bold" mb="1">
+              Student Join Requests
+            </Heading>
+            <Text as='p' size="3" color="gray">
+              Review and manage student enrollment requests for your school
+            </Text>
+          </div>
+        </Flex>
+        
+        <Flex direction="column" gap="2" mb="4">          
+          <Callout.Root size="1" className="bg-[--accent-a2] border border-[--accent-a6]">
+            <Callout.Icon>
+              <Info size={16} />
+            </Callout.Icon>
+            <Callout.Text size="2">
+              <span className='font-medium'>Review Process: </span>
+              Carefully review each student's information before approving. 
+              Approved students will gain access to school resources and be able to participate in school activities.
+            </Callout.Text>
+          </Callout.Root>
+        </Flex>
+      </div>
 
       {joinRequests.length === 0 ? (
         <EmptyStateCard
@@ -97,27 +124,31 @@ function JoinRequests() {
           description="When students request to join your school, you'll see them here."
         />
       ) : (
-        <Table.Root layout={'fixed'}>
+        <Table.Root variant='surface'>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell className='font-medium'>Student Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium'>Requested At</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className='font-medium'>Student</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className='font-medium'>Grade</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className='font-medium'>Email</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className='font-medium text-nowrap'>Requested At</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell className='font-medium'>Status</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell className='font-medium'>Actions</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {joinRequests.map((request) => (
-              <Table.Row key={request._id}>
-                <Table.Cell>
-                  {request.studentName}
+              <Table.Row key={request._id} className='hover:bg-[--gray-a2]'>
+                <Table.Cell className='text-nowrap'>
+                  {request?.initiatorId?.userId?.firstName} {request?.initiatorId?.userId?.lastName}
+                </Table.Cell>
+                <Table.Cell className='text-nowrap'>
+                  {request?.initiatorId?.grade}
+                </Table.Cell>
+                <Table.Cell className='text-nowrap'>
+                  {request?.initiatorId?.userId?.email}
                 </Table.Cell>
                 <Table.Cell>
-                  {new Date(request.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
+                  {formatDate(request.createdAt)}
                 </Table.Cell>
                 <Table.Cell>
                   <Badge color="amber" variant="soft">
@@ -131,6 +162,7 @@ function JoinRequests() {
                   <Flex gap="2">
                     <Button
                       size="1"
+                      color="green"
                       variant="soft"
                       onClick={() => handleApprove(request._id)}
                       disabled={isPending}
@@ -161,10 +193,10 @@ function JoinRequests() {
         open={approveDialogData.open}
         onOpenChange={(open) => setApproveDialogData(prev => ({ ...prev, open }))}
         title="Approve Join Request"
-        description={`Are you sure you want to approve ${approveDialogData.request?.studentName}'s request to join your school?`}
+        description={`Are you sure you want to approve ${approveDialogData.request?.initiatorId?.userId?.firstName} ${approveDialogData.request?.initiatorId?.userId?.lastName}'s request to join your school?`}
         additionalContent={
           <Text as='div' size="1">
-            <Text as='span' weight={'medium'}>Note:</Text>
+            <Text as='span' weight={'medium'}>Note: </Text>
             Approving will add this student to your school. They will have access to school resources and activities.
           </Text>
         }

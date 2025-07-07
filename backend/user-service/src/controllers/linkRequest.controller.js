@@ -73,7 +73,7 @@ exports.requestParentLink = async (req, res) => {
     // Create link request
     const linkRequest = new LinkRequest({
       initiatorId: student._id,
-      initiator: "student",
+      initiator: "Student",
       targetId: parentId,
       targetEmail: parentEmail,
       requestType: "parent",
@@ -157,8 +157,8 @@ exports.requestSchoolLink = async (req, res) => {
     // Create link request
     const linkRequest = new LinkRequest({
       initiatorId: student._id,
-      initiator: "student",
-      targetId: schoolClass.schoolId,
+      initiator: "Student",
+      targetId: schoolClass.schoolId._id,
       targetEmail: schoolClass.schoolId.email,
       requestType: "school",
       code: code,
@@ -207,7 +207,7 @@ exports.getPendingRequests = async (req, res) => {
     // Get pending requests initiated by the student
     const requests = await LinkRequest.find({
       initiatorId: student._id,
-      initiator: "student",
+      initiator: "Student",
       status: "pending",
     }).sort({ createdAt: -1 });
 
@@ -245,7 +245,7 @@ exports.cancelRequest = async (req, res) => {
       {
         _id: requestId,
         initiatorId: student._id,
-        initiator: "student",
+        initiator: "Student",
         status: "pending",
       },
       {

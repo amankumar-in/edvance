@@ -731,26 +731,18 @@ exports.getAllPendingJoinRequests = async (req, res) => {
       targetId: school._id,
       requestType: "school",
       status: "pending",
-    }).populate("studentId", "userId");
-
-    // Populate student names
-    const populatedRequests = [];
-    for (const request of requests) {
-      if (request.studentId && request.studentId.userId) {
-        const studentUser = await User.findById(request.studentId.userId);
-        if (studentUser) {
-          populatedRequests.push({
-            ...request.toObject(),
-            studentName: `${studentUser.firstName} ${studentUser.lastName}`,
-            studentGrade: request.studentId.grade,
-          });
-        }
+    }).populate({
+      path: "initiatorId",
+      select: "userId grade",
+      populate: {
+        path: "userId",
+        select: "firstName lastName email avatar"
       }
-    }
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      data: populatedRequests,
+      data: requests,
     });
   } catch (error) {
     console.error("Get all pending join requests error:", error);
@@ -808,7 +800,7 @@ exports.respondToJoinRequest = async (req, res) => {
     // If approved, add student to school
     if (action === "approve") {
       // Find student
-      const student = await Student.findById(request.studentId);
+      const student = await Student.findById(request.initiatorId);
       if (!student) {
         return res.status(404).json({
           success: false,
@@ -823,9 +815,8 @@ exports.respondToJoinRequest = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Join request ${
-        action === "approve" ? "approved" : "rejected"
-      } successfully`,
+      message: `Join request ${action === "approve" ? "approved" : "rejected"
+        } successfully`,
     });
   } catch (error) {
     console.error("Respond to join request error:", error);

@@ -46,6 +46,8 @@ const router = createBrowserRouter(
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="select-profile" element={<SelectProfile />} />
+
+          {/* Parent Routes */}
           <Route path="parent" >
             {/* <Route index element={<Navigate to="dashboard" replace />} /> */}
             <Route element={<ParentLayout />} >
@@ -72,6 +74,8 @@ const router = createBrowserRouter(
             <Route path="dashboard" element={<SocialWorkerDashboard />} />
             <Route path="create-profile" element={<CreateSocialWorkerProfile />} />
           </Route>
+
+          {/* Student Routes */}
           <Route path="student" >
             {/* <Route index element={<Navigate to="dashboard" replace />} /> */}
             <Route element={<StudentLayout />} >
@@ -90,18 +94,24 @@ const router = createBrowserRouter(
               <Route path="notifications" element={<NotificationSettings />} />
             </Route>
           </Route>
+
+          {/* Teacher Routes */}
           <Route path="teacher" >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<TeacherDashboard />} />
             <Route path="create-profile" element={<CreateTeacherProfile />} />
           </Route>
         </Route>
+
+        {/* School Admin Routes */}
         <Route path="school-admin">
-          <Route path="dashboard" element={<SchoolAdminDashboardLayout />}>
-            <Route index element={<SchoolAdminDashboard />} />
+          <Route element={<SchoolAdminDashboardLayout />}>
+            <Route path="dashboard" element={<SchoolAdminDashboard />} />
             <Route path="join-requests" element={<JoinRequests />} />
           </Route>
         </Route>
+
+        {/* Platform Admin Routes */}
         <Route path="platform-admin">
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<PlatformAdminDashboardLayout />} >
