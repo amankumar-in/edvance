@@ -4,6 +4,7 @@ const User = require("../models/user.model");
 const Student = require("../models/student.model");
 const SchoolClass = require("../models/schoolClass.model");
 const LinkRequest = require("../models/linkRequest.model");
+const { default: mongoose } = require("mongoose");
 
 // Get school profile
 exports.getSchoolProfile = async (req, res) => {
@@ -94,6 +95,15 @@ exports.getTeachers = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Parse query parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort || 'firstName';
+    const order = req.query.order === 'desc' ? -1 : 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const subject = req.query.subject || '';
+
     // Find school where user is admin
     const school = await School.findOne({ adminIds: userId });
     if (!school) {
@@ -103,16 +113,132 @@ exports.getTeachers = async (req, res) => {
       });
     }
 
-    // Find teachers for this school
-    const teachers = await Teacher.find({ schoolId: school._id }).populate(
-      "userId",
-      "firstName lastName email avatar"
-    );
+    // Helper function to build sort object
+    const buildSortObject = (sortField, sortOrder) => {
+      const sortObject = {};
+      if (['firstName', 'lastName', 'email', 'phoneNumber'].includes(sortField)) {
+        sortObject[`userId.${sortField}`] = sortOrder;
+      } else if (['subjectsTaught', 'createdAt', 'updatedAt'].includes(sortField)) {
+        sortObject[sortField] = sortOrder;
+      } else {
+        sortObject[`userId.${sortField}`] = sortOrder; // Default to user field
+      }
+      return sortObject;
+    };
+
+    // Helper function to build base pipeline
+    const buildBasePipeline = (schoolId) => [
+      { $match: { schoolId } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            { $project: { firstName: 1, lastName: 1, email: 1, avatar: 1, phoneNumber: 1 } }
+          ]
+        }
+      },
+      { $unwind: '$userId' }
+    ];
+
+    // Helper function to build filter stages
+    const buildFilterStages = (searchTerm, subjectFilter) => {
+      const stages = [];
+
+      if (searchTerm) {
+        stages.push({
+          $match: {
+            $or: [
+              { 'userId.firstName': { $regex: searchTerm, $options: 'i' } },
+              { 'userId.lastName': { $regex: searchTerm, $options: 'i' } },
+              { 'userId.email': { $regex: searchTerm, $options: 'i' } },
+              { 'subjectsTaught': { $in: [new RegExp(searchTerm, 'i')] } },
+              {
+                $expr: {
+                  $regexMatch: {
+                    input: { $concat: ['$userId.firstName', ' ', '$userId.lastName'] },
+                    regex: searchTerm,
+                    options: 'i'
+                  }
+                }
+              }
+            ]
+          }
+        });
+      }
+
+      if (subjectFilter) {
+        stages.push({
+          $match: {
+            'subjectsTaught': { $in: [new RegExp(subjectFilter, 'i')] }
+          }
+        });
+      }
+
+      return stages;
+    };
+
+    // Build main pipeline
+    const pipeline = [
+      ...buildBasePipeline(school._id),
+      ...buildFilterStages(search, subject),
+      { $sort: buildSortObject(sort, order) },
+      { $skip: skip },
+      { $limit: limit }
+    ];
+
+    // Execute aggregation
+    const teachers = await Teacher.aggregate(pipeline);
+
+    // Get total count for pagination
+    let totalDocs;
+    if (search || subject) {
+      // Build count pipeline (same as main pipeline but without sort/skip/limit)
+      const countPipeline = [
+        ...buildBasePipeline(school._id),
+        ...buildFilterStages(search, subject),
+        { $count: 'total' }
+      ];
+
+      const countResult = await Teacher.aggregate(countPipeline);
+      totalDocs = countResult.length > 0 ? countResult[0].total : 0;
+    } else {
+      totalDocs = await Teacher.countDocuments({ schoolId: school._id });
+    }
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalDocs / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    const pagination = {
+      totalDocs,
+      limit,
+      page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      pagingCounter: skip + 1,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: hasPrevPage ? page - 1 : null
+    };
+
+    const filters = {
+      search: search || null,
+      subject: subject || null,
+      sort,
+      order: order === 1 ? 'asc' : 'desc'
+    };
 
     res.status(200).json({
       success: true,
       data: teachers,
+      pagination,
+      filters
     });
+
   } catch (error) {
     console.error("Get teachers error:", error);
     res.status(500).json({
@@ -240,6 +366,15 @@ exports.getStudents = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Parse query parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort || 'firstName';
+    const order = req.query.order === 'desc' ? -1 : 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const grade = req.query.grade ? parseInt(req.query.grade) : null;
+
     // Find school where user is admin
     const school = await School.findOne({ adminIds: userId });
     if (!school) {
@@ -249,15 +384,104 @@ exports.getStudents = async (req, res) => {
       });
     }
 
-    // Find students for this school
-    const students = await Student.find({ schoolId: school._id }).populate(
-      "userId",
-      "firstName lastName email avatar dateOfBirth"
-    );
+    // Create sort object
+    const sortObject = {};
+    if (['firstName', 'lastName', 'email', 'dateOfBirth'].includes(sort)) {
+      sortObject[`userId.${sort}`] = order;
+    } else {
+      sortObject[sort] = order;
+    }
+
+    // Build base pipeline stages
+    const basePipeline = [
+      { $match: { schoolId: school._id } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            { $project: { firstName: 1, lastName: 1, email: 1, avatar: 1, dateOfBirth: 1 } }
+          ]
+        }
+      },
+      { $unwind: '$userId' }
+    ];
+
+    // Build filter stages
+    const filterStages = [];
+
+    // Add search filter
+    if (search) {
+      filterStages.push({
+        $match: {
+          $or: [
+            { 'userId.firstName': { $regex: search, $options: 'i' } },
+            { 'userId.lastName': { $regex: search, $options: 'i' } },
+            { 'userId.email': { $regex: search, $options: 'i' } },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $concat: ['$userId.firstName', ' ', '$userId.lastName'] },
+                  regex: search,
+                  options: 'i'
+                }
+              }
+            }
+          ]
+        }
+      });
+    }
+
+    // Add grade filter
+    if (grade !== null) {
+      filterStages.push({ $match: { grade: grade } });
+    }
+
+    // Execute students query
+    const studentsPipeline = [
+      ...basePipeline,
+      ...filterStages,
+      { $sort: sortObject },
+      { $skip: skip },
+      { $limit: limit }
+    ];
+
+    // Execute count query
+    const countPipeline = [
+      ...basePipeline,
+      ...filterStages,
+      { $count: "total" }
+    ];
+
+    const [students, countResult] = await Promise.all([
+      Student.aggregate(studentsPipeline),
+      Student.aggregate(countPipeline)
+    ]);
+
+    const totalDocs = countResult.length > 0 ? countResult[0].total : 0;
+    const totalPages = Math.ceil(totalDocs / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    // Pagination info
+    const pagination = {
+      totalDocs,
+      limit,
+      page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      pagingCounter: skip + 1,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: hasPrevPage ? page - 1 : null
+    };
 
     res.status(200).json({
       success: true,
       data: students,
+      pagination
     });
   } catch (error) {
     console.error("Get students error:", error);
@@ -284,10 +508,14 @@ exports.getClasses = async (req, res) => {
     }
 
     // Find classes for this school
-    const classes = await SchoolClass.find({ schoolId: school._id }).populate(
-      "teacherId",
-      "userId"
-    );
+    const classes = await SchoolClass.find({ schoolId: school._id }).populate({
+      path: 'teacherId',
+      populate: {
+        path: 'userId',
+        model: 'User', 
+        select: 'firstName lastName email avatar phoneNumber'
+      }
+    });
 
     res.status(200).json({
       success: true,
@@ -679,10 +907,26 @@ exports.removeAdministrator = async (req, res) => {
 // Get school administrators
 exports.getAdministrators = async (req, res) => {
   try {
+    const userId = req.user.id;
     const schoolId = req.params.id;
 
-    // Find school
-    const school = await School.findById(schoolId);
+    // Parse query parameters for pagination and search
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort || 'firstName';
+    const order = req.query.order === 'desc' ? -1 : 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+
+    let school;
+
+    // If schoolId is provided, use it; otherwise find school where user is admin
+    if (schoolId) {
+      school = await School.findById(schoolId);
+    } else {
+      school = await School.findOne({ adminIds: userId });
+    }
+
     if (!school) {
       return res.status(404).json({
         success: false,
@@ -690,15 +934,65 @@ exports.getAdministrators = async (req, res) => {
       });
     }
 
-    // Get admin details
+    // Create sort object
+    const sortObject = {};
+    sortObject[sort] = order;
+
+    // Build query for administrators
+    let query = {
+      _id: { $in: school.adminIds }
+    };
+
+    // Add search filter if provided
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        {
+          $expr: {
+            $regexMatch: {
+              input: { $concat: ['$firstName', ' ', '$lastName'] },
+              regex: search,
+              options: 'i'
+            }
+          }
+        }
+      ];
+    }
+
+    // Get admin details with pagination and search
     const administrators = await User.find(
-      { _id: { $in: school.adminIds } },
+      query,
       { password: 0 } // Exclude password from results
-    );
+    )
+      .sort(sortObject)
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination (with search filters)
+    const totalDocs = await User.countDocuments(query);
+    const totalPages = Math.ceil(totalDocs / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    // Pagination info
+    const pagination = {
+      totalDocs,
+      limit,
+      page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      pagingCounter: skip + 1,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: hasPrevPage ? page - 1 : null
+    };
 
     res.status(200).json({
       success: true,
       data: administrators,
+      pagination
     });
   } catch (error) {
     console.error("Get administrators error:", error);

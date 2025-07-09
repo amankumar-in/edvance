@@ -1,0 +1,104 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  updateSchoolProfile, 
+  respondToJoinRequest,
+  addTeacher,
+  removeTeacher,
+  addAdministrator,
+  removeAdministrator,
+  importStudents
+} from "./school.api";
+import { SCHOOL_QUERY_KEYS } from "./school.queries";
+
+// Hook to update school profile
+export const useUpdateSchoolProfile = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: updateSchoolProfile,
+    onSuccess: () => {
+      // Invalidate and refetch school profile
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.profile(),
+      });
+    },
+  });
+};
+
+// Hook to respond to join request
+export const useRespondToJoinRequest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: respondToJoinRequest,
+    onSuccess: () => {
+      // Invalidate and refetch join requests
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.joinRequests(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.students(),
+      });
+    },
+  });
+};
+
+export const useAddTeacher = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addTeacher,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.teachers(),
+      });
+    },
+  });
+};
+
+export const useRemoveTeacher = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: removeTeacher,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.teachers(),
+      });
+    },
+  });
+};
+
+export const useAddAdministrator = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addAdministrator,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.allAdministrators,
+      });
+    },
+  });
+};
+
+export const useRemoveAdministrator = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: removeAdministrator,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.allAdministrators,
+      });
+    },
+  });
+};
+
+export const useImportStudents = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: importStudents,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.students(),
+      });
+    },
+  });
+}; 

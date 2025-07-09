@@ -5,7 +5,7 @@ import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStude
 import { ParentChildren, ParentClaims, CreateTask as ParentCreateTask, ParentLayout, ParentTasks, PendingRedemptions } from "../src/pages/parent";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
 import { CreateEditCategory, CreateReward, CreateRewardCategory, CreateTask, Overview, Parents, PlatformAdminDashboardLayout, RewardCategories, RewardRedemptions, Rewards, ScholarshipPoints, SchoolAdmins, SocialWorkers, Students, TaskCategories, Tasks, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
-import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout } from "../src/pages/school-admin";
+import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout, SchoolProfile, EditSchoolProfile, Students as SchoolStudents, Teachers as SchoolTeachers, Classes as SchoolClasses, Administrators as SchoolAdministrators } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
 import NotificationSettings from "../src/pages/student/settings/NotificationSettings";
@@ -108,6 +108,12 @@ const router = createBrowserRouter(
           <Route element={<SchoolAdminDashboardLayout />}>
             <Route path="dashboard" element={<SchoolAdminDashboard />} />
             <Route path="join-requests" element={<JoinRequests />} />
+            <Route path="profile" element={<SchoolProfile />} />
+            <Route path="profile/edit" element={<EditSchoolProfile />} />
+            <Route path="students" element={<SchoolStudents />} />
+            <Route path="teachers" element={<SchoolTeachers />} />
+            <Route path="classes" element={<SchoolClasses />} />
+            <Route path="administrators" element={<SchoolAdministrators />} />
           </Route>
         </Route>
 

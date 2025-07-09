@@ -1,20 +1,24 @@
-import { Badge, Button, Callout, Flex, Heading, Table, Text } from '@radix-ui/themes';
-import { AlertCircle, Check, CheckCircle, Clock, Info, X } from 'lucide-react';
-import React from 'react';
+import { Badge, Button, Callout, Flex, Table, Text } from '@radix-ui/themes';
+import { AlertCircle, Check, Clock, Info, X } from 'lucide-react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { useRespondToJoinRequest } from '../../api/school-admin/school.mutations';
 import { useGetAllPendingJoinRequests } from '../../api/school-admin/school.queries';
 import { ConfirmationDialog, EmptyStateCard, Loader } from '../../components';
 import { formatDate } from '../../utils/helperFunctions';
+import PageHeader from './components/PageHeader';
 
 function JoinRequests() {
+  // State for approve and reject dialogs
+  const [approveDialogData, setApproveDialogData] = useState({ open: false, request: null });
+  const [rejectDialogData, setRejectDialogData] = useState({ open: false, request: null });
+
+  // Queries
   const { data, isLoading, isError, error } = useGetAllPendingJoinRequests();
-  const { mutate: respondToRequest, isPending } = useRespondToJoinRequest();
   const joinRequests = data?.data || [];
 
-  // Separate state for approve and reject dialogs
-  const [approveDialogData, setApproveDialogData] = React.useState({ open: false, request: null });
-  const [rejectDialogData, setRejectDialogData] = React.useState({ open: false, request: null });
+  // Mutations
+  const { mutate: respondToRequest, isPending } = useRespondToJoinRequest();
 
   // Open approve dialog
   const handleApprove = (requestId) => {
@@ -66,77 +70,77 @@ function JoinRequests() {
     );
   };
 
+  // Loading state
   if (isLoading) {
     return (
-      <Flex align="center" justify="center">
-        <Loader />
-      </Flex>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Callout.Root color="red" size="2" className="max-w-4xl">
-        <Callout.Icon>
-          <AlertCircle size={16} />
-        </Callout.Icon>
-        <Callout.Text>
-          {error?.response?.data?.message || error?.message || "Could not load join requests"}
-        </Callout.Text>
-      </Callout.Root>
-    );
-  }
-
-  return (
-    <div>
-      {/* Enhanced Header Section */}
-      <div className="mb-6">
-        <Flex align="center" gap="3" mb="3">
-
-          <div>
-            <Heading size="6" weight="bold" mb="1">
-              Student Join Requests
-            </Heading>
-            <Text as='p' size="3" color="gray">
-              Review and manage student enrollment requests for your school
-            </Text>
-          </div>
-        </Flex>
-        
-        <Flex direction="column" gap="2" mb="4">          
-          <Callout.Root size="1" className="bg-[--accent-a2] border border-[--accent-a6]">
-            <Callout.Icon>
-              <Info size={16} />
-            </Callout.Icon>
-            <Callout.Text size="2">
-              <span className='font-medium'>Review Process: </span>
-              Carefully review each student's information before approving. 
-              Approved students will gain access to school resources and be able to participate in school activities.
-            </Callout.Text>
-          </Callout.Root>
+      <div className='space-y-6'>
+        <JoinRequestHeader />
+        <Flex align="center" justify="center">
+          <Loader />
         </Flex>
       </div>
+    );
+  }
 
-      {joinRequests.length === 0 ? (
-        <EmptyStateCard
-          icon={<CheckCircle />}
-          title="No Pending Join Requests"
-          description="When students request to join your school, you'll see them here."
-        />
-      ) : (
-        <Table.Root variant='surface'>
-          <Table.Header>
+  // Error state
+  if (isError) {
+    return (
+      <div className='space-y-6'>
+        <JoinRequestHeader />
+        <Callout.Root color="red" variant='surface'>
+          <Callout.Icon>
+            <AlertCircle size={16} />
+          </Callout.Icon>
+          <Callout.Text>
+            {error?.response?.data?.message || error?.message || "Could not load join requests"}
+          </Callout.Text>
+        </Callout.Root>
+      </div>
+    );
+  }
+
+  // Main return
+  return (
+    <div className='space-y-6'>
+      {/* Page Header */}
+      <JoinRequestHeader />
+
+      {/* Review Process */}
+      <Callout.Root color='blue' variant='surface'>
+        <Callout.Icon>
+          <Info size={16} />
+        </Callout.Icon>
+        <Callout.Text>
+          <span className='font-medium'>Review Process: </span>
+          Carefully review each student's information before approving.
+          Approved students will gain access to school resources and be able to participate in school activities.
+        </Callout.Text>
+      </Callout.Root>
+
+      {/* Table */}
+      <Table.Root variant='surface'>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell className='font-medium'>Student</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className='font-medium'>Grade</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className='font-medium'>Email</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className='font-medium text-nowrap'>Requested At</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className='font-medium'>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className='font-medium'>Actions</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {joinRequests.length === 0 ? (
             <Table.Row>
-              <Table.ColumnHeaderCell className='font-medium'>Student</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium'>Grade</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium'>Email</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium text-nowrap'>Requested At</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium'>Status</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium'>Actions</Table.ColumnHeaderCell>
+              <Table.Cell colSpan={6}>
+                <EmptyStateCard
+                  title="No Pending Join Requests"
+                  description="When students request to join your school, you'll see them here."
+                />
+              </Table.Cell>
             </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {joinRequests.map((request) => (
+          ) : (
+            joinRequests.map((request) => (
               <Table.Row key={request._id} className='hover:bg-[--gray-a2]'>
                 <Table.Cell className='text-nowrap'>
                   {request?.initiatorId?.userId?.firstName} {request?.initiatorId?.userId?.lastName}
@@ -183,10 +187,10 @@ function JoinRequests() {
                   </Flex>
                 </Table.Cell>
               </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      )}
+            ))
+          )}
+        </Table.Body>
+      </Table.Root>
 
       {/* Approve Dialog */}
       <ConfirmationDialog
@@ -221,4 +225,16 @@ function JoinRequests() {
   );
 }
 
-export default JoinRequests; 
+export default JoinRequests;
+
+// Join Request Header
+function JoinRequestHeader() {
+  return (
+    <div>
+      <PageHeader
+        title="Student Join Requests"
+        description="Review and manage student enrollment requests for your school"
+      />
+    </div>
+  )
+}

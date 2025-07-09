@@ -1,10 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAllPendingJoinRequests, getSchoolById } from "./school.api";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getAllPendingJoinRequests, getSchoolById, getSchoolProfile, getStudents, getTeachers, getClasses, getAdministrators } from "./school.api";
 
 // Query keys for school admin
 export const SCHOOL_QUERY_KEYS = {
   all: ["schools"],
+  allAdministrators:  ["schools", "administrators"],
+  administrators: (id, params) => ["schools", "administrators", id, params],
   schoolById: (id) => ["schools", id],
+  profile: () => ["schools", "profile"],
   joinRequests: () => ["schools", "join-requests"]
 };
 
@@ -17,10 +20,65 @@ export const useGetSchoolById = (id, fetchNow = false) => {
   });
 };
 
+// Hook to get school profile
+export const useGetSchoolProfile = () => {
+  return useQuery({
+    queryKey: SCHOOL_QUERY_KEYS.profile(),
+    queryFn: getSchoolProfile,
+  });
+};
+
 // Hook to get all pending join requests
 export const useGetAllPendingJoinRequests = () => {
   return useQuery({
     queryKey: SCHOOL_QUERY_KEYS.joinRequests(),
     queryFn: getAllPendingJoinRequests,
+  });
+};
+
+export const useSchoolProfile = () => {
+  return useQuery({
+    queryKey: ['school-profile'],
+    queryFn: getSchoolProfile,
+  });
+};
+
+export const useAllPendingJoinRequests = () => {
+  return useQuery({
+    queryKey: ['pending-join-requests'],
+    queryFn: getAllPendingJoinRequests,
+  });
+};
+
+export const useStudents = (params = {}) => {
+  return useQuery({
+    queryKey: ['school-students', params],
+    queryFn: () => getStudents(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useTeachers = (params = {}) => {
+  return useQuery({
+    queryKey: ['school-teachers', params],
+    queryFn: () => getTeachers(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useClasses = (params = {}) => {
+  return useQuery({
+    queryKey: ['school-classes', params],
+    queryFn: () => getClasses(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useAdministrators = (id, params = {}) => {
+  return useQuery({
+    queryKey: SCHOOL_QUERY_KEYS.administrators(id, params),
+    queryFn: () => getAdministrators(id, params),
+    enabled: !!id,
+    placeholderData: keepPreviousData,
   });
 };

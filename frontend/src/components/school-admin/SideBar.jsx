@@ -1,14 +1,19 @@
 import { Avatar, Button, DropdownMenu, Flex, Text } from '@radix-ui/themes';
 import {
   BarChart3,
+  BookOpen,
   ChevronRight,
+  GraduationCap,
   LogOut,
   School,
   SettingsIcon,
-  UserPlus
+  UserCog,
+  UserPlus,
+  Users,
+  Users2
 } from 'lucide-react';
 import React from 'react';
-import { NavLink, useMatch, useResolvedPath } from 'react-router';
+import { Link, NavLink, useMatch, useResolvedPath } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
 import profileFallback from '../../assets/profileImage.webp';
 
@@ -24,10 +29,39 @@ const sideBarItems = [
     href: '/school-admin/join-requests',
     icon: <UserPlus size={18} />
   },
+  {
+    label: 'School Profile',
+    href: '/school-admin/profile',
+    icon: <School size={18} />
+  },
+  {
+    label: 'Students',
+    href: '/school-admin/students',
+    icon: <GraduationCap  size={18} />
+  },
+  {
+    label: 'Teachers',
+    href: '/school-admin/teachers',
+    icon: <Users2  size={18} />
+  },
+  {
+    label: 'Classes',
+    href: '/school-admin/classes',
+    icon: <BookOpen size={18} />
+  },
+  {
+    label: 'Administrators',
+    href: '/school-admin/administrators',
+    icon: <UserCog  size={18}  />
+  }
 ]
 
 function SideBar({ isOpen, toggleSidebar }) {
   const { handleLogout, isLoggingOut, user } = useAuth();
+
+  function handleClick() {
+    window.innerWidth < 768 && toggleSidebar();
+  }
 
   return (
     <>
@@ -55,8 +89,8 @@ function SideBar({ isOpen, toggleSidebar }) {
             <NavLink
               to={href}
               key={label}
-              onClick={() => window.innerWidth < 768 && toggleSidebar()}
-              className={`${isActive ? 'bg-[--accent-a3] text-[--accent-12]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2 text-sm font-medium`}
+              onClick={handleClick}
+              className={`${isActive ? 'bg-[--accent-a3] text-[--accent-12]' : 'hover:bg-[--gray-a3]'} p-3 px-4 rounded-lg flex items-center gap-3 text-sm`}
             >
               {icon}
               <span>{label}</span>
@@ -106,9 +140,11 @@ function SideBar({ isOpen, toggleSidebar }) {
               </div>
             </Flex>
             <DropdownMenu.Separator />
-            <DropdownMenu.Item>
-              <School size={16} strokeWidth={1.5} />
-              School Profile
+            <DropdownMenu.Item asChild>
+              <Link to="/school-admin/profile" onClick={handleClick}>
+                <School size={16} strokeWidth={1.5} />
+                School Profile
+              </Link>
             </DropdownMenu.Item>
             <DropdownMenu.Item>
               <SettingsIcon size={16} strokeWidth={1.5} />
