@@ -88,7 +88,7 @@ const StudentPoints = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto space-y-6 max-w-5xl">
       {/* Header */}
       <div className="text-center sm:text-left">
         <Text size="7" weight="bold">

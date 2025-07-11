@@ -82,6 +82,7 @@ exports.checkIn = async (req, res) => {
       recordedBy: userId,
       recordedByRole: "student",
       comments: "Self check-in",
+      pointsAwarded: 0, // Will be updated after points service response
     });
 
     await newAttendance.save();
@@ -149,6 +150,12 @@ exports.checkIn = async (req, res) => {
         pointsResponse = response.data;
         pointsSuccess = true;
         console.log(`Points awarded for attendance to student ${studentId}`);
+        
+        // Update attendance record with actual points awarded
+        if (pointsResponse?.data?.transaction?.amount) {
+          newAttendance.pointsAwarded = pointsResponse.data.transaction.amount;
+          await newAttendance.save();
+        }
       } catch (error) {
         retryCount++;
         console.error(
@@ -994,9 +1001,14 @@ exports.getAttendanceSummary = async (req, res) => {
         currentStreak = 0;
       }
 
-      // Get points for this record
-      const pointsTransaction = pointsData[record._id.toString()];
-      const points = pointsTransaction ? pointsTransaction.amount : 0;
+      // Get points for this record - first try from attendance record, then from points service
+      let points = 0;
+      if (record.pointsAwarded && record.pointsAwarded > 0) {
+        points = record.pointsAwarded;
+      } else {
+        const pointsTransaction = pointsData[record._id.toString()];
+        points = pointsTransaction ? pointsTransaction.amount : 0;
+      }
 
       // Add points to total
       if (points > 0) {
@@ -1026,6 +1038,7 @@ exports.getAttendanceSummary = async (req, res) => {
           id: studentId,
           currentStreak: student.attendanceStreak || 0,
           longestStreak: longestStreak,
+          lastCheckInDate: student.lastCheckInDate,
         },
         summary,
         records,

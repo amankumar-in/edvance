@@ -29,13 +29,13 @@ function StudentLayout() {
     { icon: <BookOpen size={20} />, label: 'Tasks', href: '/student/tasks' },
     { icon: <CreditCard size={20} />, label: 'Scholarship Points', href: '/student/points' },
     { icon: <Trophy size={20} />, label: 'Rewards', href: '/student/rewards' },
+    { icon: <Calendar size={20} />, label: 'Attendance', href: '/student/attendance' },
     {
       icon: <Bell size={20} />,
       label: 'Notifications',
       href: '/student/notifications',
       badge: unreadNotifications > 0 ? unreadNotifications : null
     },
-    { icon: <Calendar size={20} />, label: 'Schedule', href: '/student/schedule' },
     { icon: <TrendingUp size={20} />, label: 'Progress', href: '/student/progress' },
     { icon: <BarChart3 size={20} />, label: 'Analytics', href: '/student/analytics' },
     { icon: <User size={20} />, label: 'Profile', href: '/student/profile' },
@@ -45,7 +45,7 @@ function StudentLayout() {
   return (
     <Flex>
       {/* Desktop Sidebar */}
-      <Box className="sticky left-0 hidden min-w-64 h-[calc(100vh-4rem)] pt-6 top-16 md:block" style={{ borderRight: '1px solid var(--gray-6)' }}>
+      <Box className="sticky left-0 hidden min-w-72 h-[calc(100vh-4rem)] py-6 top-16 md:block bg-[--gray-2] overflow-y-auto">
         <Flex direction="column" gap="4" className="h-full">
           {/* Profile Section */}
           <Flex direction="column" align="center" gap="2" className="px-4 py-2">
@@ -69,8 +69,6 @@ function StudentLayout() {
             </Skeleton>
           </Flex>
 
-          <Separator size="4" />
-
           {/* Navigation Items */}
           <Flex direction="column" className="flex-grow px-3">
             {navItems.map((item, index) => (
@@ -79,10 +77,10 @@ function StudentLayout() {
                 to={item.href}
                 className={({ isActive }) =>
                   `${isActive ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
-                  py-2 text-sm px-4 rounded-lg flex items-center gap-2 relative`
+                  p-4 py-3 text-sm  rounded-full flex items-center gap-2 relative font-medium`
                 }
               >
-                <span className="flex flex-1 gap-2 items-center">
+                <span className="flex flex-1 gap-5 items-center">
                   {item.icon}
                   {item.label}
                 </span>
@@ -93,11 +91,14 @@ function StudentLayout() {
                 )}
               </NavLink>
             ))}
-          </Flex>
-
-          {/* Logout Button */}
-          <Box className="px-4 py-4 mt-auto">
-            <Button variant="outline" color="gray" className='w-full'
+            <Button
+              variant="ghost"
+              my={'6'}
+              mx='auto'
+              radius='full'
+              color="gray"
+              highContrast
+              className='flex gap-5 justify-start px-4 py-3 max-w-xs font-medium'
               onClick={() => {
                 handleLogout();
               }}
@@ -105,7 +106,7 @@ function StudentLayout() {
             >
               <LogOut size={20} /> {isLoggingOut ? 'Logging out...' : 'Logout'}
             </Button>
-          </Box>
+          </Flex>
         </Flex>
       </Box >
 
@@ -113,11 +114,11 @@ function StudentLayout() {
       < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden" style={{ borderTop: '1px solid var(--gray-6)', background: 'var(--color-background)' }
       }>
         <Flex justify="between" className="items-stretch w-full">
-          {navItems.slice(0, 5).map((item, index) => (
+          {navItems.slice(0, 6).map((item, index) => (
             <NavLink
               key={index}
               to={item.href || '#'}
-              className={({ isActive }) => `flex flex-col items-center gap-1 px-2 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11]' : 'text-[--gray-11] hover:text-[--gray-12]'
+              className={({ isActive }) => `flex flex-col items-center gap-1 px-2 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11]' : 'text-[--gray-11] hover:text-[--gray-12] '
                 }`}
             >
               <Box className={({ isActive }) =>
@@ -137,7 +138,7 @@ function StudentLayout() {
       </Box >
 
       {/* Main Content */}
-      <div className='flex-1 pb-16'>
+      <div className='flex-1 pb-16 md:pb-0'>
         <Container>
           <Outlet />
         </Container>

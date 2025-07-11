@@ -1,0 +1,9 @@
+export { default as StudentDashboard } from './StudentDashboard';
+export { default as StudentLayout } from './StudentLayout';
+export { default as StudentTasks } from './StudentTasks';
+export { default as StudentTaskDetail } from './StudentTaskDetail';
+export { default as StudentAttendance } from './StudentAttendance';
+export { default as StudentNotifications } from './StudentNotifications';
+export { default as StudentPoints } from './StudentPoints';
+export { default as StudentRewards } from './StudentRewards';
+export { default as StudentRedemptionHistory } from './StudentRedemptionHistory'; 

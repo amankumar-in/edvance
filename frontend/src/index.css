@@ -13,3 +13,17 @@
 	--cursor-slider-thumb-active: grabbing;
 	--cursor-switch: pointer;
 }
+
+.radix-themes {
+	--default-font-family: "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Open Sans", system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+
+	--heading-font-family: "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Open Sans", system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+
+	--strong-font-family: "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Open Sans", system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+
+	--em-font-family: 'Times New Roman', 'Times', serif;
+
+	--quote-font-family: 'Times New Roman', 'Times', serif;
+
+	--code-font-family: 'Menlo', 'Consolas (Custom)', 'Bitstream Vera Sans Mono', monospace, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
