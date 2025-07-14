@@ -497,8 +497,14 @@ exports.getStudents = async (req, res) => {
 exports.getClasses = async (req, res) => {
   try {
     const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort || 'name';
+    const order = req.query.order === 'desc' ? -1 : 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const grade = req.query.grade || '';
 
-    // Find school where user is admin
     const school = await School.findOne({ adminIds: userId });
     if (!school) {
       return res.status(404).json({
@@ -507,19 +513,112 @@ exports.getClasses = async (req, res) => {
       });
     }
 
-    // Find classes for this school
-    const classes = await SchoolClass.find({ schoolId: school._id }).populate({
-      path: 'teacherId',
-      populate: {
-        path: 'userId',
-        model: 'User', 
-        select: 'firstName lastName email avatar phoneNumber'
-      }
-    });
+    // Build sort object
+    const sortObject = {};
+    if (['firstName', 'lastName', 'email'].includes(sort)) {
+      sortObject[`teacherId.userId.${sort}`] = order;
+    } else {
+      sortObject[sort] = order;
+    }
+
+    // Build base pipeline
+    const basePipeline = [
+      { $match: { schoolId: school._id } },
+      {
+        $lookup: {
+          from: 'teachers',
+          localField: 'teacherId',
+          foreignField: '_id',
+          as: 'teacherId',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'userId',
+                pipeline: [
+                  { $project: { firstName: 1, lastName: 1, email: 1, avatar: 1, phoneNumber: 1 } }
+                ]
+              }
+            },
+            { $unwind: { path: '$userId', preserveNullAndEmptyArrays: true } }
+          ]
+        }
+      },
+      { $unwind: { path: '$teacherId', preserveNullAndEmptyArrays: true } },
+      { $addFields: { studentCount: { $size: '$studentIds' } } }
+    ];
+
+    // Build filter stages
+    const filterStages = [];
+    if (search) {
+      filterStages.push({
+        $match: {
+          $or: [
+            { 'name': { $regex: search, $options: 'i' } },
+            { 'joinCode': { $regex: search, $options: 'i' } },
+            { 'teacherId.userId.firstName': { $regex: search, $options: 'i' } },
+            { 'teacherId.userId.lastName': { $regex: search, $options: 'i' } },
+            { 'teacherId.userId.email': { $regex: search, $options: 'i' } },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $concat: ['$teacherId.userId.firstName', ' ', '$teacherId.userId.lastName'] },
+                  regex: search,
+                  options: 'i'
+                }
+              }
+            }
+          ]
+        }
+      });
+    }
+    if (grade) {
+      filterStages.push({
+        $match: { 'grade': { $regex: grade, $options: 'i' } }
+      });
+    }
+
+    // Execute aggregation
+    const pipeline = [...basePipeline, ...filterStages, { $sort: sortObject }, { $skip: skip }, { $limit: limit }];
+    const classes = await SchoolClass.aggregate(pipeline);
+
+    // Get total count
+    let totalDocs;
+    if (search || grade) {
+      const countPipeline = [...basePipeline, ...filterStages, { $count: 'total' }];
+      const countResult = await SchoolClass.aggregate(countPipeline);
+      totalDocs = countResult.length > 0 ? countResult[0].total : 0;
+    } else {
+      totalDocs = await SchoolClass.countDocuments({ schoolId: school._id });
+    }
+
+    // Calculate pagination
+    const totalPages = Math.ceil(totalDocs / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
 
     res.status(200).json({
       success: true,
       data: classes,
+      pagination: {
+        totalDocs,
+        limit,
+        page,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+        pagingCounter: skip + 1,
+        nextPage: hasNextPage ? page + 1 : null,
+        prevPage: hasPrevPage ? page - 1 : null
+      },
+      filters: {
+        search: search || null,
+        grade: grade || null,
+        sort,
+        order: order === 1 ? 'asc' : 'desc'
+      }
     });
   } catch (error) {
     console.error("Get classes error:", error);
@@ -530,7 +629,6 @@ exports.getClasses = async (req, res) => {
     });
   }
 };
-
 // Bulk import students
 exports.importStudents = async (req, res) => {
   try {

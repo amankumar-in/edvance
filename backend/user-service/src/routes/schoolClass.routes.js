@@ -232,7 +232,7 @@ router.get(
 
 /**
  * @openapi
- * /classes/classes:
+ * /classes:
  *   post:
  *     summary: Create a new class
  *     description: Creates a new class for a teacher. Limited to teachers, school admins, and platform admins.
@@ -335,7 +335,7 @@ router.get(
  *                   type: string
  */
 router.post(
-  "/classes",
+  "/",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.createClass
@@ -343,7 +343,7 @@ router.post(
 
 /**
  * @openapi
- * /classes/classes/{id}:
+ * /classes/{id}:
  *   put:
  *     summary: Update a class
  *     description: Updates an existing class. Limited to teachers assigned to the class, school admins, and platform admins.
@@ -433,7 +433,7 @@ router.post(
  *                   type: string
  */
 router.put(
-  "/classes/:id",
+  "/:id",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.updateClass
@@ -441,7 +441,7 @@ router.put(
 
 /**
  * @openapi
- * /classes/classes/{id}:
+ * /classes/{id}:
  *   delete:
  *     summary: Delete a class
  *     description: Deletes an existing class. Limited to teachers assigned to the class, school admins, and platform admins.
@@ -513,7 +513,7 @@ router.put(
  *                   type: string
  */
 router.delete(
-  "/classes/:id",
+  "/:id",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.deleteClass
@@ -521,7 +521,7 @@ router.delete(
 
 /**
  * @openapi
- * /classes/classes/{id}/join-code:
+ * /classes/{id}/join-code:
  *   post:
  *     summary: Generate a new join code for a class
  *     description: Creates a new unique code for students to join the class. Limited to teachers assigned to the class, school admins, and platform admins.
@@ -599,7 +599,7 @@ router.delete(
  *                   type: string
  */
 router.post(
-  "/classes/:id/join-code",
+  "/:id/join-code",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.generateJoinCode

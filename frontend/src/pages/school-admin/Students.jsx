@@ -207,7 +207,7 @@ const Students = () => {
                   <Table.Cell className='font-mono text-nowrap'>
                     {student._id && `${student._id.slice(-8)}`}
                   </Table.Cell>
-                  <Table.Cell>
+                  <Table.Cell className='text-nowrap'>
                     {student.userId?.firstName} {student.userId?.lastName}
                   </Table.Cell>
                   <Table.Cell className='text-nowrap'>{student.userId?.email}</Table.Cell>

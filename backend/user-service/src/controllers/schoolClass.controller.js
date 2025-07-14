@@ -3,8 +3,80 @@ const Student = require("../models/student.model");
 const Teacher = require("../models/teacher.model");
 const User = require("../models/user.model");
 const LinkRequest = require("../models/linkRequest.model");
+const School = require("../models/school.model");
 
 const crypto = require("crypto");
+
+// Helper function to check if user is authorized to access a class
+async function checkClassAuthorization(userId, classId) {
+  try {
+    // Check if user is a teacher assigned to this class
+    const teacher = await Teacher.findOne({ userId });
+    if (teacher && teacher.classIds.includes(classId)) {
+      return {
+        authorized: true,
+        userType: 'teacher',
+        profile: teacher
+      };
+    }
+
+    // Check if user is a school admin for the school that owns this class
+    const classDetails = await SchoolClass.findById(classId);
+    if (classDetails) {
+      const school = await School.findOne({
+        _id: classDetails.schoolId,
+        adminIds: userId
+      });
+      if (school) {
+        return {
+          authorized: true,
+          userType: 'school_admin',
+          profile: { schoolId: school._id },
+          classDetails
+        };
+      }
+    }
+
+    return { authorized: false };
+  } catch (error) {
+    console.error("Authorization check error:", error);
+    return { authorized: false };
+  }
+}
+
+// Helper function to check if user can create/manage classes for a school
+async function checkSchoolAuthorization(userId, schoolId) {
+  try {
+    // Check if user is a teacher for this school
+    const teacher = await Teacher.findOne({ userId, schoolId });
+    if (teacher) {
+      return {
+        authorized: true,
+        userType: 'teacher',
+        profile: teacher
+      };
+    }
+
+    // Check if user is a school admin for this school
+    const school = await School.findOne({
+      _id: schoolId,
+      adminIds: userId
+    });
+    if (school) {
+      return {
+        authorized: true,
+        userType: 'school_admin',
+        profile: { schoolId: school._id },
+        school
+      };
+    }
+
+    return { authorized: false };
+  } catch (error) {
+    console.error("School authorization check error:", error);
+    return { authorized: false };
+  }
+}
 
 // Get specific class details
 exports.getClassDetails = async (req, res) => {
@@ -12,17 +84,9 @@ exports.getClassDetails = async (req, res) => {
     const classId = req.params.id;
     const userId = req.user.id;
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to access this class",
@@ -61,17 +125,9 @@ exports.getClassStudents = async (req, res) => {
     const classId = req.params.id;
     const userId = req.user.id;
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to access this class",
@@ -79,7 +135,7 @@ exports.getClassStudents = async (req, res) => {
     }
 
     // Get class
-    const classDetails = await SchoolClass.findById(classId);
+    const classDetails = authResult.classDetails || await SchoolClass.findById(classId);
     if (!classDetails) {
       return res.status(404).json({
         success: false,
@@ -119,17 +175,9 @@ exports.createClass = async (req, res) => {
       });
     }
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Verify teacher belongs to this school
-    if (teacher.schoolId.toString() !== schoolId) {
+    // Check authorization
+    const authResult = await checkSchoolAuthorization(userId, schoolId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to create a class for this school",
@@ -144,16 +192,18 @@ exports.createClass = async (req, res) => {
       name,
       grade: grade || null,
       schoolId,
-      teacherId: teacher._id,
+      teacherId: authResult.userType === 'teacher' ? authResult.profile._id : null,
       studentIds: [],
       joinCode,
     });
 
     await newClass.save();
 
-    // Add class to teacher's classes
-    teacher.classIds.push(newClass._id);
-    await teacher.save();
+    // Add class to teacher's classes if user is a teacher
+    if (authResult.userType === 'teacher') {
+      authResult.profile.classIds.push(newClass._id);
+      await authResult.profile.save();
+    }
 
     res.status(201).json({
       success: true,
@@ -177,17 +227,9 @@ exports.updateClass = async (req, res) => {
     const userId = req.user.id;
     const { name, grade } = req.body;
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to update this class",
@@ -233,17 +275,9 @@ exports.deleteClass = async (req, res) => {
     const classId = req.params.id;
     const userId = req.user.id;
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this class",
@@ -259,15 +293,18 @@ exports.deleteClass = async (req, res) => {
       });
     }
 
-    // Remove class from teacher's classes
-    teacher.classIds = teacher.classIds.filter(
-      (id) => id.toString() !== classId
-    );
-    await teacher.save();
+    // Remove class from teacher's classes if user is a teacher
+    if (authResult.userType === 'teacher') {
+      authResult.profile.classIds = authResult.profile.classIds.filter(
+        (id) => id.toString() !== classId
+      );
+      await authResult.profile.save();
+    }
 
     res.status(200).json({
       success: true,
       message: "Class deleted successfully",
+      data: { classId: deletedClass._id },
     });
   } catch (error) {
     console.error("Delete class error:", error);
@@ -285,17 +322,9 @@ exports.generateJoinCode = async (req, res) => {
     const classId = req.params.id;
     const userId = req.user.id;
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to manage this class",
@@ -325,7 +354,7 @@ exports.generateJoinCode = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Join code generated successfully",
-      data: { joinCode: updatedClass.joinCode },
+      data: { joinCode: updatedClass.joinCode, classId: updatedClass._id },
     });
   } catch (error) {
     console.error("Generate join code error:", error);
@@ -351,17 +380,9 @@ exports.addStudentToClass = async (req, res) => {
       });
     }
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to manage this class",
@@ -369,7 +390,7 @@ exports.addStudentToClass = async (req, res) => {
     }
 
     // Find class
-    const classDetails = await SchoolClass.findById(classId);
+    const classDetails = authResult.classDetails || await SchoolClass.findById(classId);
     if (!classDetails) {
       return res.status(404).json({
         success: false,
@@ -399,9 +420,9 @@ exports.addStudentToClass = async (req, res) => {
     classDetails.updatedAt = Date.now();
     await classDetails.save();
 
-    // Add teacher to student's teachers if not already added
-    if (!student.teacherIds.includes(teacher._id)) {
-      student.teacherIds.push(teacher._id);
+    // Add teacher to student's teachers if class has a teacher and not already added
+    if (classDetails.teacherId && !student.teacherIds.includes(classDetails.teacherId)) {
+      student.teacherIds.push(classDetails.teacherId);
       await student.save();
     }
 
@@ -432,17 +453,9 @@ exports.removeStudentFromClass = async (req, res) => {
     const { id: classId, studentId } = req.params;
     const userId = req.user.id;
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to manage this class",
@@ -450,7 +463,7 @@ exports.removeStudentFromClass = async (req, res) => {
     }
 
     // Find class
-    const classDetails = await SchoolClass.findById(classId);
+    const classDetails = authResult.classDetails || await SchoolClass.findById(classId);
     if (!classDetails) {
       return res.status(404).json({
         success: false,
@@ -474,19 +487,21 @@ exports.removeStudentFromClass = async (req, res) => {
     await classDetails.save();
 
     // If the student is no longer in any class with this teacher, remove teacher from student
-    const student = await Student.findById(studentId);
-    if (student) {
-      const otherClassesWithTeacher = await SchoolClass.findOne({
-        _id: { $ne: classId },
-        teacherId: teacher._id,
-        studentIds: studentId,
-      });
+    if (classDetails.teacherId) {
+      const student = await Student.findById(studentId);
+      if (student) {
+        const otherClassesWithTeacher = await SchoolClass.findOne({
+          _id: { $ne: classId },
+          teacherId: classDetails.teacherId,
+          studentIds: studentId,
+        });
 
-      if (!otherClassesWithTeacher) {
-        student.teacherIds = student.teacherIds.filter(
-          (id) => id.toString() !== teacher._id.toString()
-        );
-        await student.save();
+        if (!otherClassesWithTeacher) {
+          student.teacherIds = student.teacherIds.filter(
+            (id) => id.toString() !== classDetails.teacherId.toString()
+          );
+          await student.save();
+        }
       }
     }
 
@@ -510,17 +525,9 @@ exports.getPendingJoinRequests = async (req, res) => {
     const classId = req.params.id;
     const userId = req.user.id;
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to view join requests for this class",
@@ -528,7 +535,7 @@ exports.getPendingJoinRequests = async (req, res) => {
     }
 
     // Find class
-    const classDetails = await SchoolClass.findById(classId);
+    const classDetails = authResult.classDetails || await SchoolClass.findById(classId);
     if (!classDetails) {
       return res.status(404).json({
         success: false,
@@ -587,17 +594,9 @@ exports.respondToJoinRequest = async (req, res) => {
       });
     }
 
-    // Find teacher
-    const teacher = await Teacher.findOne({ userId });
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // Check if teacher is assigned to this class
-    if (!teacher.classIds.includes(classId)) {
+    // Check authorization
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to manage join requests for this class",
@@ -605,7 +604,7 @@ exports.respondToJoinRequest = async (req, res) => {
     }
 
     // Find class
-    const classDetails = await SchoolClass.findById(classId);
+    const classDetails = authResult.classDetails || await SchoolClass.findById(classId);
     if (!classDetails) {
       return res.status(404).json({
         success: false,
@@ -653,9 +652,9 @@ exports.respondToJoinRequest = async (req, res) => {
       // Update student with school and teacher
       student.schoolId = classDetails.schoolId;
 
-      // Add teacher to student's teachers if not already added
-      if (!student.teacherIds.includes(teacher._id)) {
-        student.teacherIds.push(teacher._id);
+      // Add teacher to student's teachers if class has a teacher and not already added
+      if (classDetails.teacherId && !student.teacherIds.includes(classDetails.teacherId)) {
+        student.teacherIds.push(classDetails.teacherId);
       }
 
       await student.save();
@@ -663,9 +662,8 @@ exports.respondToJoinRequest = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Join request ${
-        action === "approve" ? "approved" : "rejected"
-      } successfully`,
+      message: `Join request ${action === "approve" ? "approved" : "rejected"
+        } successfully`,
     });
   } catch (error) {
     console.error("Respond to join request error:", error);

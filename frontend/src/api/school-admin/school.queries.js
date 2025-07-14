@@ -5,6 +5,8 @@ import { getAllPendingJoinRequests, getSchoolById, getSchoolProfile, getStudents
 export const SCHOOL_QUERY_KEYS = {
   all: ["schools"],
   allAdministrators:  ["schools", "administrators"],
+  allClasses: ["schools", "classes"],
+  allClassesFiltered: (params) => ["schools", "classes", params],
   administrators: (id, params) => ["schools", "administrators", id, params],
   schoolById: (id) => ["schools", id],
   profile: () => ["schools", "profile"],
@@ -68,7 +70,7 @@ export const useTeachers = (params = {}) => {
 
 export const useClasses = (params = {}) => {
   return useQuery({
-    queryKey: ['school-classes', params],
+    queryKey: SCHOOL_QUERY_KEYS.allClassesFiltered(params),
     queryFn: () => getClasses(params),
     placeholderData: keepPreviousData,
   });

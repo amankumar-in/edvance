@@ -50,10 +50,7 @@ export const removeTeacher = async (teacherId) => {
 
 // Classes API
 export const getClasses = async (params = {}) => {
-  const { page = 1, limit = 10, sort = 'name', order = 'asc' } = params;
-  const response = await apiClient.get('/schools/me/classes', {
-    params: { page, limit, sort, order }
-  });
+  const response = await apiClient.get('/schools/me/classes', {params});
   return response.data;
 };
 
