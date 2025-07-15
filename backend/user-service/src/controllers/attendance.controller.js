@@ -878,7 +878,7 @@ exports.getAttendanceSummary = async (req, res) => {
     // Default to last 30 days if no dates provided
     const start = startDate ? new Date(startDate) : new Date();
     if (!startDate) {
-      start.setDate(start.getDate() - 30);
+      start.setDate(start.getDate() - 29);
       start.setHours(0, 0, 0, 0);
     }
 
@@ -902,6 +902,9 @@ exports.getAttendanceSummary = async (req, res) => {
       date: { $gte: start, $lte: end },
     }).sort({ date: 1 });
 
+    // Calculate total days in the date range
+    const totalDaysInRange = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    
     // If there are no records
     if (!attendanceRecords.length) {
       return res.status(200).json({
@@ -912,7 +915,7 @@ exports.getAttendanceSummary = async (req, res) => {
             currentStreak: student.attendanceStreak || 0,
           },
           summary: {
-            totalDays: 0,
+            totalDays: totalDaysInRange,
             present: 0,
             absent: 0,
             tardy: 0,
@@ -927,7 +930,7 @@ exports.getAttendanceSummary = async (req, res) => {
 
     // Calculate summary stats
     const summary = {
-      totalDays: attendanceRecords.length,
+      totalDays: totalDaysInRange,
       present: 0,
       absent: 0,
       tardy: 0,
@@ -986,20 +989,42 @@ exports.getAttendanceSummary = async (req, res) => {
       // Continue without points data
     }
 
-    // Process attendance records
+    // Process attendance records and calculate proper streaks
+    let previousDate = null;
+    
     for (const record of attendanceRecords) {
       // Update summary
       summary[record.status] += 1;
 
-      // Track streaks
+      // Track streaks - check for gaps between dates
+      const currentDate = new Date(record.date);
+      
       if (record.status === "present") {
-        currentStreak += 1;
+        // Check if there's a gap from the previous date
+        if (previousDate) {
+          const daysDiff = Math.floor((currentDate - previousDate) / (1000 * 60 * 60 * 24));
+          if (daysDiff > 1) {
+            // There's a gap, reset the streak
+            currentStreak = 1;
+          } else {
+            // Consecutive day, increment streak
+            currentStreak += 1;
+          }
+        } else {
+          // First record or first present record
+          currentStreak = 1;
+        }
+        
         if (currentStreak > longestStreak) {
           longestStreak = currentStreak;
         }
       } else {
+        // Not present (absent, tardy, excused) - break the streak
         currentStreak = 0;
       }
+
+      // Update previous date for next iteration
+      previousDate = new Date(currentDate);
 
       // Get points for this record - first try from attendance record, then from points service
       let points = 0;
@@ -1027,9 +1052,9 @@ exports.getAttendanceSummary = async (req, res) => {
     }
 
     // Calculate attendance rate
-    summary.attendanceRate = Math.round(
-      (summary.present / summary.totalDays) * 100
-    );
+    summary.attendanceRate = summary.totalDays > 0 
+      ? Math.round((summary.present / summary.totalDays) * 100)
+      : 0;
 
     res.status(200).json({
       success: true,

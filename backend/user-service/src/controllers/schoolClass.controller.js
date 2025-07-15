@@ -166,13 +166,44 @@ exports.getClassStudents = async (req, res) => {
 exports.createClass = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, grade, schoolId } = req.body;
+    const { name, grade, schoolId, schedule, academicYear, academicTerm } = req.body;
 
     if (!name || !schoolId) {
       return res.status(400).json({
         success: false,
         message: "Class name and school ID are required",
       });
+    }
+
+    if (!academicYear) {
+      return res.status(400).json({
+        success: false,
+        message: "Academic year is required",
+      });
+    }
+
+    // Validate schedule (mandatory)
+    if (!schedule || schedule.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Schedule is required and cannot be empty",
+      });
+    }
+
+    for (const scheduleItem of schedule) {
+      if (!scheduleItem.dayOfWeek || !scheduleItem.startTime || !scheduleItem.endTime) {
+        return res.status(400).json({
+          success: false,
+          message: "All schedule entries must have dayOfWeek, startTime, and endTime",
+        });
+      }
+      
+      if (scheduleItem.startTime >= scheduleItem.endTime) {
+        return res.status(400).json({
+          success: false,
+          message: "Start time must be before end time in schedule",
+        });
+      }
     }
 
     // Check authorization
@@ -195,6 +226,9 @@ exports.createClass = async (req, res) => {
       teacherId: authResult.userType === 'teacher' ? authResult.profile._id : null,
       studentIds: [],
       joinCode,
+      schedule: schedule,
+      academicYear: academicYear,
+      academicTerm: academicTerm || null,
     });
 
     await newClass.save();
@@ -225,7 +259,33 @@ exports.updateClass = async (req, res) => {
   try {
     const classId = req.params.id;
     const userId = req.user.id;
-    const { name, grade } = req.body;
+    const { name, grade, schedule, academicYear, academicTerm } = req.body;
+
+    // Validate schedule if provided (mandatory if updating)
+    if (schedule !== undefined) {
+      if (!schedule || schedule.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Schedule is required and cannot be empty",
+        });
+      }
+
+      for (const scheduleItem of schedule) {
+        if (!scheduleItem.dayOfWeek || !scheduleItem.startTime || !scheduleItem.endTime) {
+          return res.status(400).json({
+            success: false,
+            message: "All schedule entries must have dayOfWeek, startTime, and endTime",
+          });
+        }
+        
+        if (scheduleItem.startTime >= scheduleItem.endTime) {
+          return res.status(400).json({
+            success: false,
+            message: "Start time must be before end time in schedule",
+          });
+        }
+      }
+    }
 
     // Check authorization
     const authResult = await checkClassAuthorization(userId, classId);
@@ -236,14 +296,22 @@ exports.updateClass = async (req, res) => {
       });
     }
 
+    // Prepare update object
+    const updateData = {
+      updatedAt: Date.now(),
+    };
+
+    // Only update fields that are provided
+    if (name !== undefined) updateData.name = name;
+    if (grade !== undefined) updateData.grade = grade;
+    if (schedule !== undefined) updateData.schedule = schedule;
+    if (academicYear !== undefined) updateData.academicYear = academicYear;
+    if (academicTerm !== undefined) updateData.academicTerm = academicTerm;
+
     // Find and update class
     const updatedClass = await SchoolClass.findByIdAndUpdate(
       classId,
-      {
-        name: name || undefined,
-        grade: grade || undefined,
-        updatedAt: Date.now(),
-      },
+      updateData,
       { new: true, runValidators: true }
     );
 

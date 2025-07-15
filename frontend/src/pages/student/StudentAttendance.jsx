@@ -1,7 +1,6 @@
 import { Badge, Box, Button, Callout, Card, Flex, Grid, Progress, Text, Tooltip } from '@radix-ui/themes';
 import { AlertCircle, AlertCircleIcon, Award, CheckCircle, Clock, TrendingUp, Zap } from 'lucide-react';
 import React from 'react';
-import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '../../Context/AuthContext';
 import { useCheckInAttendance } from '../../api/attendance/attendance.mutations';
@@ -189,9 +188,14 @@ function StudentAttendance() {
               <CheckCircle size={20} className="text-[--blue-11] flex-shrink-0" />
               <Text as='p' size="2" color="gray" weight="medium">Attendance Rate</Text>
             </Flex>
+            <Flex justify={'between'} align={'baseline'} wrap={'wrap'} gap={'2'}>
             <Text as='p' size="6" weight="bold" color="blue">
               {summary?.attendanceRate || 0}%
             </Text>
+              <Text as='p' size="1" color="gray">
+              {summary?.present || 0} / {summary?.totalDays || 0}
+              </Text>
+            </Flex>
             <Progress value={summary?.attendanceRate || 0} color="blue" size="1" />
           </Flex>
         </Card>
@@ -214,11 +218,6 @@ function StudentAttendance() {
       <Flex direction="column" gap="4" pt='2'>
         <Flex align="center" justify="between" gap='1' wrap='wrap'>
           <Text as='p' size="5" weight="bold">Recent Attendance</Text>
-          <Button variant="ghost" asChild >
-            <Link to='/student/attendance/history'>
-              View All History
-            </Link>
-          </Button>
         </Flex>
 
         <Box>

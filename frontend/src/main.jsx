@@ -4,20 +4,26 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import AppRouter from "../providers/RouterProvider";
-import { Toaster } from "sonner";
 import { QueryProvider } from "../providers/QueryProvider";
 import { AuthProvider } from "./Context/AuthContext";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { ThemeProvider } from "next-themes";
 
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <QueryProvider>
-    <AuthProvider>     
-        <Theme accentColor="cyan" grayColor="slate">
-          <Toaster position="top-right" richColors />
+    <AuthProvider>
+      <ThemeProvider
+        attribute='class'
+        defaultTheme='light'
+        enableSystem
+        disableTransitionOnChange
+      >
+        <Theme accentColor="cyan" grayColor="gray">
           <ReactQueryDevtools initialIsOpen={false} />
           <AppRouter />
         </Theme>
+      </ThemeProvider>
     </AuthProvider>
   </QueryProvider>
   // </StrictMode>

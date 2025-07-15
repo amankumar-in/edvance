@@ -14,7 +14,7 @@ const Students = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('firstName');
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState('desc');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Debounce search term to avoid too many API calls
@@ -47,10 +47,12 @@ const Students = () => {
     {
       id: 'grade',
       header: 'Grade',
+      sortable: true
     },
     {
       id: 'dateOfBirth',
       header: 'Date of Birth',
+      sortable: true
     }
   ];
 
@@ -157,7 +159,7 @@ const Students = () => {
         </Flex>
 
         {/* Table */}
-        <Table.Root variant='surface'>
+        <Table.Root variant='surface' className='shadow-md'>
           <Table.Header>
             <Table.Row>
               {columns.map((column) => (
@@ -179,6 +181,7 @@ const Students = () => {
                 </Table.ColumnHeaderCell>
               ))}
               <Table.ColumnHeaderCell className='font-medium'>
+                Actions
               </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
@@ -221,8 +224,9 @@ const Students = () => {
                         <IconButton
                           variant="ghost"
                           color="gray"
+                          highContrast
                         >
-                          <MoreHorizontal size={14} />
+                          <MoreHorizontal size={18} />
                         </IconButton>
                       </DropdownMenu.Trigger>
                       <DropdownMenu.Content variant='soft'>

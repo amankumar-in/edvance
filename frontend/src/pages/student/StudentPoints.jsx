@@ -159,7 +159,7 @@ const StudentPoints = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card size='2'>
+        <Card size='2' className='shadow-md'>
           <Flex align="center" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--green-a3)' }}>
               <TrendingUp className="w-5 h-5" style={{ color: 'var(--green-9)' }} />
@@ -175,7 +175,7 @@ const StudentPoints = () => {
           </Flex>
         </Card>
 
-        <Card size='2'>
+        <Card size='2' className='shadow-md'>
           <Flex align="center" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--red-a3)' }}>
               <ArrowDownRight className="w-5 h-5" style={{ color: 'var(--red-9)' }} />
@@ -191,7 +191,7 @@ const StudentPoints = () => {
           </Flex>
         </Card>
 
-        <Card size='2'>
+        <Card size='2' className='shadow-md'>
           <Flex align="center" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--blue-a3)' }}>
               <Calendar className="w-5 h-5" style={{ color: 'var(--blue-9)' }} />
@@ -207,7 +207,7 @@ const StudentPoints = () => {
           </Flex>
         </Card>
 
-        <Card size='2'>
+        <Card size='2' className='shadow-md'>
           <Flex align="center" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--purple-a3)' }}>
               <Target className="w-5 h-5" style={{ color: 'var(--purple-9)' }} />

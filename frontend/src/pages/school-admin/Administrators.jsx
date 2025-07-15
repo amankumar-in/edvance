@@ -192,7 +192,7 @@ const Administrators = () => {
         </Flex>
 
         {/* Table */}
-        <Table.Root variant='surface' layout={'auto'}>
+        <Table.Root variant='surface' layout={'auto'} className='shadow-md'>
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell
@@ -228,6 +228,7 @@ const Administrators = () => {
                 </Button>
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell className='font-medium'>
+                Actions
               </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
@@ -269,8 +270,9 @@ const Administrators = () => {
                         <IconButton
                           variant="ghost"
                           color="gray"
+                          highContrast
                         >
-                          <MoreHorizontal size={14} />
+                          <MoreHorizontal size={18} />
                         </IconButton>
                       </DropdownMenu.Trigger>
                       <DropdownMenu.Content variant='soft'>
@@ -344,7 +346,7 @@ function AdministratorsPageHeader({ loading = false, onAddClick }) {
       description='Manage your school administrators'
     >
       <Skeleton loading={loading}>
-        <Button onClick={onAddClick}>
+        <Button onClick={onAddClick} className='shadow-md'>
           <UserPlus size={16} />
           Add Administrator
         </Button>

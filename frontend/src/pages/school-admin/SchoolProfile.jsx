@@ -24,7 +24,7 @@ function SchoolProfile() {
   // Loading state
   if (isLoading) {
     return (
-      <div className='space-y-6'>
+      <div className='mx-auto space-y-6 max-w-3xl'>
         <SchoolProfileHeader loading={isLoading} />
         <Flex justify="center" align="center">
           <Loader />
@@ -36,7 +36,7 @@ function SchoolProfile() {
   // Error state
   if (isError) {
     return (
-      <div className='space-y-6'>
+      <div className='mx-auto space-y-6 max-w-3xl'>
         <SchoolProfileHeader hideButton />
         <Callout.Root color="red" variant="surface">
           <Callout.Icon>
@@ -52,7 +52,7 @@ function SchoolProfile() {
 
   // Main return
   return (
-    <Box className="space-y-6">
+    <Box className="mx-auto space-y-6 max-w-3xl">
       {/* Header */}
       <SchoolProfileHeader schoolData={schoolData} />
 
@@ -61,21 +61,18 @@ function SchoolProfile() {
         <Card size={'3'} className='shadow-md'>
           <Flex direction="column" gap="4">
             {/* School Header */}
-            <Flex className='flex-col sm:flex-row sm:items-start' gap="4">
+            <Flex className='flex-col' gap="4">
               <img
                 src={schoolData.logo}
-                className='object-cover object-center w-full rounded-lg aspect-video sm:w-28 sm:aspect-square'
+                className='object-cover object-center mx-auto w-full max-w-sm rounded-lg aspect-video'
               />
-              <Box>
+              <Box className='text-center'>
                 <Text as="h2" size="5" weight="bold">
                   {schoolData.name}
                 </Text>
                 <Text as="p" color="gray" mt="1">
                   Educational Institution
                 </Text>
-                <Badge color="green" size="2" mt="2">
-                  Active
-                </Badge>
               </Box>
             </Flex>
 
@@ -176,7 +173,7 @@ function SchoolProfileHeader({ schoolData, loading = false, hideButton = false }
 function EditCreateProfileButton({ schoolData, loading }) {
   return (
     <Skeleton loading={loading} >
-      <Button asChild>
+      <Button asChild className='shadow-md'>
         <Link to={schoolData ? "/school-admin/profile/edit" : "/school-admin/profile/create"}>
           <Edit size={16} />
           {schoolData ? 'Edit Profile' : 'Create Profile'}

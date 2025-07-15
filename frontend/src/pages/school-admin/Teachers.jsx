@@ -175,7 +175,7 @@ const Teachers = () => {
         </Flex>
 
         {/* Table */}
-        <Table.Root variant='surface' layout={'auto'}>
+        <Table.Root variant='surface' layout={'auto'} className='shadow-md'>
           <Table.Header>
             <Table.Row>
               {columns.map((column) => (
@@ -248,8 +248,9 @@ const Teachers = () => {
                         <IconButton
                           variant="ghost"
                           color="gray"
+                          highContrast
                         >
-                          <MoreHorizontal size={14} />
+                          <MoreHorizontal size={18} />
                         </IconButton>
                       </DropdownMenu.Trigger>
                       <DropdownMenu.Content variant='soft'>
@@ -325,7 +326,7 @@ function TeachersPageHeader({ loading = false }) {
 function AddTeacherButton({ loading = false }) {
   return (
     <Skeleton loading={loading}>
-      <Button>
+      <Button className='shadow-md'>
         <UserPlus size={16} />
         Add Teacher
       </Button>

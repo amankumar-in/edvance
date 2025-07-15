@@ -25,8 +25,8 @@ const OverviewTab = ({
       {/* Performance Overview */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Weekly Progress Card */}
-        <Card className="relative overflow-hidden" size='2'>
-          <div className="absolute top-0 right-0 w-32 h-32 transform translate-x-16 -translate-y-16 rounded-full bg-gradient-to-br from-green-500/10 to-blue-500/10 blur-sm"></div>
+        <Card className="overflow-hidden relative shadow-md" size='2'>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br rounded-full blur-sm transform translate-x-16 -translate-y-16 from-green-500/10 to-blue-500/10"></div>
           <div className="relative">
             <Flex align="center" gap="3" className="mb-4" >
               <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--green-a3)' }}>
@@ -61,7 +61,7 @@ const OverviewTab = ({
                   </div>
                 </div>
 
-                <div className="p-4 border-2 rounded-lg" style={{ borderColor: 'var(--green-6)', backgroundColor: 'var(--green-a1)' }}>
+                <div className="p-4 rounded-lg border-2" style={{ borderColor: 'var(--green-6)', backgroundColor: 'var(--green-a1)' }}>
                   <Flex justify="between" align="center">
                     <Text size="2" weight="medium">Net This Week</Text>
                     <Text size="4" weight="bold" style={{ color: 'var(--green-11)' }}>
@@ -75,8 +75,8 @@ const OverviewTab = ({
         </Card>
 
         {/* Level Progress Card */}
-        <Card className="relative overflow-hidden" size='2'>
-          <div className="absolute top-0 right-0 w-32 h-32 transform translate-x-16 -translate-y-16 rounded-full bg-gradient-to-br from-amber-500/10 to-orange-500/10 blur-sm"></div>
+        <Card className="overflow-hidden relative shadow-md" size='2'>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br rounded-full blur-sm transform translate-x-16 -translate-y-16 from-amber-500/10 to-orange-500/10"></div>
           <div className="relative">
             <Flex align="center" gap="3" className="mb-4">
               <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--amber-a3)' }}>
@@ -133,21 +133,21 @@ const OverviewTab = ({
           Quick Actions
         </Text>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Button asChild variant="soft" size="3" className="flex-col h-20 gap-2">
+          <Button asChild variant="soft" size="3" className="flex-col gap-2 h-20">
             <Link to={`/student/tasks`}>
               <Star className="w-6 h-6" />
               <Text size="2">View Tasks</Text>
             </Link>
           </Button>
-          <Button variant="soft" size="3" className="flex-col h-20 gap-2">
+          <Button variant="soft" size="3" className="flex-col gap-2 h-20">
             <Award className="w-6 h-6" />
             <Text size="2">My Badges</Text>
           </Button>
-          <Button variant="soft" size="3" className="flex-col h-20 gap-2" onClick={() => setSelectedTab('activity')}>
+          <Button variant="soft" size="3" className="flex-col gap-2 h-20" onClick={() => setSelectedTab('activity')}>
             <Calendar className="w-6 h-6" />
             <Text size="2">All Activity</Text>
           </Button>
-          <Button variant="soft" size="3" className="flex-col h-20 gap-2" onClick={() => setSelectedTab('levels')}>
+          <Button variant="soft" size="3" className="flex-col gap-2 h-20" onClick={() => setSelectedTab('levels')}>
             <Trophy className="w-6 h-6" />
             <Text size="2">View Levels</Text>
           </Button>
@@ -244,7 +244,7 @@ const OverviewTab = ({
         {/* Sidebar Stats */}
         <div className="space-y-6">
           {/* Monthly Overview */}
-          <Card size='2'>
+          <Card size='2' className='shadow-md'>
             <Text as='p' size="4" weight="bold" className="mb-4" style={{ color: 'var(--gray-12)' }}>
               Monthly Overview
             </Text>
@@ -257,7 +257,7 @@ const OverviewTab = ({
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--green-a2)' }}>
                   <Flex align="center" gap="3">
                     <ArrowUpRight className="w-5 h-5" style={{ color: 'var(--green-9)' }} />
-                    <div className="flex items-center justify-between flex-1">
+                    <div className="flex flex-1 justify-between items-center">
                       <Text as='p' size="1" color="gray" className="tracking-wide uppercase">Earned</Text>
                       <Text as='p' size="4" weight="bold" style={{ color: 'var(--green-11)' }}>
                         +{statistics?.monthly?.earned || 0}
@@ -269,7 +269,7 @@ const OverviewTab = ({
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--red-a2)' }}>
                   <Flex align="center" gap="3">
                     <ArrowDownRight className="w-5 h-5" style={{ color: 'var(--red-9)' }} />
-                    <div className="flex items-center justify-between flex-1">
+                    <div className="flex flex-1 justify-between items-center">
                       <Text as='p' size="1" color="gray" className="tracking-wide uppercase">Spent</Text>
                       <Text as='p' size="4" weight="bold" style={{ color: 'var(--red-11)' }}>
                         -{statistics?.monthly?.spent || 0}
@@ -278,7 +278,7 @@ const OverviewTab = ({
                   </Flex>
                 </div>
 
-                <div className="p-4 border-2 rounded-lg" style={{
+                <div className="p-4 rounded-lg border-2" style={{
                   borderColor: (statistics?.monthly?.net || 0) >= 0 ? 'var(--green-6)' : 'var(--red-6)',
                   backgroundColor: (statistics?.monthly?.net || 0) >= 0 ? 'var(--green-a1)' : 'var(--red-a1)'
                 }}>
@@ -286,7 +286,7 @@ const OverviewTab = ({
                     <Target className="w-5 h-5" style={{
                       color: (statistics?.monthly?.net || 0) >= 0 ? 'var(--green-9)' : 'var(--red-9)'
                     }} />
-                    <div className="flex items-center justify-between flex-1">
+                    <div className="flex flex-1 justify-between items-center">
                       <Text as='p' size="1" color="gray" className="tracking-wide uppercase">Net Change</Text>
                       <Text as='p' size="4" weight="bold" style={{
                         color: (statistics?.monthly?.net || 0) >= 0 ? 'var(--green-11)' : 'var(--red-11)'
@@ -301,7 +301,7 @@ const OverviewTab = ({
           </Card>
 
           {/* Top Sources */}
-          <Card size='2'>
+          <Card size='2' className='shadow-md'>
             <Text as='p' size="4" weight="bold" className="mb-4" style={{ color: 'var(--gray-12)' }}>
               Points by Source
             </Text>
@@ -343,8 +343,8 @@ const OverviewTab = ({
           </Card>
 
           {/* Achievement Highlight */}
-          {pointAccount?.progressPercentage > 0 && <Card className="relative overflow-hidden" style={{ backgroundColor: 'var(--amber-a2)' }} size='2'>
-            <div className="absolute right-0 -translate-y-1/2 top-1/2 opacity-10">
+          {pointAccount?.progressPercentage > 0 && <Card className="overflow-hidden relative shadow-md" style={{ backgroundColor: 'var(--amber-a2)' }} size='2'>
+            <div className="absolute right-0 top-1/2 opacity-10 -translate-y-1/2">
               <Trophy className="w-24 h-24" />
             </div>
             <div className="relative space-y-2">

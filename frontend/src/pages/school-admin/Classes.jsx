@@ -121,15 +121,15 @@ const Classes = () => {
       setSort(field);
       setOrder('asc');
     }
-    setPage(1); // Reset to first page when sorting
+    // setPage(1); // Reset to first page when sorting
   };
 
   // Reset filters
   const handleResetFilters = () => {
     setSearchQuery('');
     setGradeFilter(null);
-    setSort('name');
-    setOrder('asc');
+    setSort('createdAt');
+    setOrder('desc');
     setPage(1);
   };
 
@@ -297,7 +297,7 @@ const Classes = () => {
         {/* Table */}
         <Table.Root variant='surface' layout={'auto'} className='shadow-md'>
           <Table.Header>
-            <Table.Row>
+            <Table.Row >
               {columns.map((column) => (
                 <Table.ColumnHeaderCell
                   key={column.id}
@@ -383,8 +383,9 @@ const Classes = () => {
                         <IconButton
                           variant="ghost"
                           color="gray"
+                          highContrast
                         >
-                          <MoreHorizontal size={14} />
+                          <MoreHorizontal size={18} />
                         </IconButton>
                       </DropdownMenu.Trigger>
                       <DropdownMenu.Content variant='soft'>

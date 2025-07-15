@@ -14,7 +14,8 @@ const GenerateJoinCodeDialog = ({ open, onOpenChange, schoolClass }) => {
       generateJoinCodeMutation.mutate(schoolClass._id, {
         onSuccess: () => {
           onOpenChange(false);
-        }, 
+          toast.success('Join code generated successfully');
+        },
         onError: (error) => {
           toast.error(error?.response?.data?.message || error?.message || 'Failed to generate join code');
         }
@@ -28,6 +29,7 @@ const GenerateJoinCodeDialog = ({ open, onOpenChange, schoolClass }) => {
         await navigator.clipboard.writeText(schoolClass.joinCode);
         joinCodeRef.current.select();
         setCopied(true);
+        toast.success('Code copied to clipboard');
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
         console.error('Failed to copy code:', err);
@@ -68,6 +70,8 @@ const GenerateJoinCodeDialog = ({ open, onOpenChange, schoolClass }) => {
                 className="flex-1 font-mono"
               />
               <IconButton
+                aria-label="Copy code"
+                title="Copy code"
                 variant="soft"
                 onClick={handleCopyCode}
                 disabled={!schoolClass?.joinCode}

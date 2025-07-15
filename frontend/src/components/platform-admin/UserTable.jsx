@@ -10,10 +10,10 @@ import { Loader } from '../../components';
 export const SortIcon = ({ currentSort, columnName }) => {
   if (currentSort.field === columnName) {
     return currentSort.order === 'asc'
-      ? <ChevronUp className='size-4' color='var(--accent-11)' />
-      : <ChevronDown className='size-4' color='var(--accent-11)' />
+      ? <ChevronUp className='size-4' />
+      : <ChevronDown className='size-4' />
   }
-  return <ChevronsUpDown className='size-4' color='var(--accent-11)' />
+  return <ChevronsUpDown className='size-4' />
 };
 
 const UserTable = ({ role }) => {
@@ -125,7 +125,7 @@ const UserTable = ({ role }) => {
 
   return (
     <Box>
-      {isFetching && <div className='fixed left-0 right-0 top-16'>
+      {isFetching && <div className='fixed right-0 left-0 top-16'>
         <BarLoader
           color='#0090ff'
           width={'100%'}
