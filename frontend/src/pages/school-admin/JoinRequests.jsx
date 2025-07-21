@@ -118,7 +118,7 @@ function JoinRequests() {
       </Callout.Root>
 
       {/* Table */}
-      <Table.Root variant='surface'>
+      <Table.Root variant='surface' className='shadow-md'>
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell className='font-medium'>Student</Table.ColumnHeaderCell>

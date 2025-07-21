@@ -105,8 +105,8 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
         data: formData
       }, {
         onSuccess: () => {
-          onOpenChange(false)
-          reset()
+          onClose(false)
+          toast.success('Class updated successfully')
         },
         onError: (error) => {
           toast.error(error?.response?.data?.message || 'Failed to update class')
@@ -119,8 +119,8 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
         schoolId: schoolId
       }, {
         onSuccess: () => {
-          onOpenChange(false)
-          reset()
+          onClose(false)
+          toast.success('Class created successfully')
         },
         onError: (error) => {
           toast.error(error?.response?.data?.message || 'Failed to create class')
@@ -137,7 +137,7 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
       setTimeout(() => {
         reset();
         currentMutation.reset();
-      }, 0);
+      }, 100);
     }
   }
 

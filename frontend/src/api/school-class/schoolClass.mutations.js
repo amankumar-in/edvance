@@ -30,8 +30,12 @@ export const useUpdateClass = () => {
 
   return useMutation({
     mutationFn: updateClass,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses });
+    onSuccess: (_, variables) => {
+      const { classId } = variables;
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses }),
+        queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.details(classId) })
+      ])
     },
   });
 };

@@ -46,7 +46,7 @@ const router = express.Router();
 
 /**
  * @openapi
- * /classes/classes/{id}:
+ * /classes/{id}:
  *   get:
  *     summary: Get class details
  *     description: Retrieves detailed information about a specific class. Limited to teachers assigned to the class, school admins, and platform admins.
@@ -117,7 +117,7 @@ const router = express.Router();
  *                   type: string
  */
 router.get(
-  "/classes/:id",
+  "/:id",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.getClassDetails
@@ -125,7 +125,7 @@ router.get(
 
 /**
  * @openapi
- * /classes/classes/{id}/students:
+ * /classes/{id}/students:
  *   get:
  *     summary: Get students in a class
  *     description: Retrieves a list of all students enrolled in a specific class. Limited to teachers assigned to the class, school admins, and platform admins.
@@ -224,7 +224,7 @@ router.get(
  *                   type: string
  */
 router.get(
-  "/classes/:id/students",
+  "/:id/students",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.getClassStudents

@@ -96,7 +96,14 @@ exports.getClassDetails = async (req, res) => {
     // Get class details
     const classDetails = await SchoolClass.findById(classId)
       .populate("schoolId", "name")
-      .populate("teacherId", "userId");
+      .populate({
+        path:"teacherId",
+        select:"userId",
+        populate:{
+          path:"userId",
+          select:"firstName lastName email avatar phoneNumber"
+        }
+      });
 
     if (!classDetails) {
       return res.status(404).json({

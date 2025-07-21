@@ -1,8 +1,9 @@
 import { Badge, Box, Button, Callout, DropdownMenu, Flex, IconButton, Select, Spinner, Table, Text, TextField } from '@radix-ui/themes';
 import { AlertCircleIcon, Check, Copy, Eye, KeyRound, MoreHorizontal, Pencil, Plus, Search, Trash, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { BarLoader } from 'react-spinners';
+import { toast } from 'sonner';
 import { useClasses } from '../../api/school-admin/school.queries';
 import { useDeleteClass } from '../../api/school-class/schoolClass.mutations';
 import { ConfirmationDialog, EmptyStateCard, Loader, Pagination } from '../../components';
@@ -11,7 +12,6 @@ import { useDebounce } from '../../hooks/useDebounce';
 import CreateClassDialog from './components/CreateClassDialog';
 import GenerateJoinCodeDialog from './components/GenerateJoinCodeDialog';
 import PageHeader from './components/PageHeader';
-import { toast } from 'sonner';
 
 // Grade options
 const gradeOptions = [
@@ -32,6 +32,8 @@ const gradeOptions = [
 ]
 
 const Classes = () => {
+  const navigate = useNavigate();
+
   // State for filters and search
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -336,8 +338,17 @@ const Classes = () => {
                   <Table.Cell className='font-mono text-nowrap'>
                     {schoolClass._id?.slice(-8)}
                   </Table.Cell>
-                  <Table.Cell className='text-nowrap'>
-                    {schoolClass.name}
+                  <Table.Cell className='cursor-pointer text-nowrap group'
+                    onClick={() => navigate(`/school-admin/classes/${schoolClass._id}`)}
+                  >
+                    <Button 
+                    variant='ghost'
+                    highContrast
+                    color='gray'
+                    className='flex justify-start w-full hover:bg-transparent group-hover:underline'
+                    >
+                      {schoolClass.name}
+                    </Button>
                   </Table.Cell>
                   <Table.Cell className='font-mono tabular-nums text-nowrap'>
                     <Flex gap='3' align='center' >
@@ -349,7 +360,7 @@ const Classes = () => {
                         variant='ghost'
                         color={copiedCode === schoolClass.joinCode ? 'green' : 'gray'}
                         size='2'
-                        onClick={() => handleCopyJoinCode(schoolClass.joinCode)}
+                        onClick={(e) => handleCopyJoinCode(schoolClass.joinCode)}
                       >
                         {copiedCode === schoolClass.joinCode ? <Check size={14} /> : <Copy size={14} />}
                       </IconButton>
@@ -361,7 +372,7 @@ const Classes = () => {
                   <Table.Cell>
                     {schoolClass.teacherId ? (
                       <div>
-                        <Text as='p' weight="medium" mb='1'>
+                        <Text as='p' mb='1'>
                           {schoolClass.teacherId.userId?.firstName} {schoolClass.teacherId.userId?.lastName}
                         </Text>
                         <Text as='p' size="1" color="gray">

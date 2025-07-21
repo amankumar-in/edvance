@@ -3,12 +3,16 @@ import App from "../src/App";
 import { ErrorBoundaryWrapper, ProtectedLayout, ProtectedRoute, PublicRoute } from '../src/components';
 import { AuthLayout, CreateParentProfile, CreateSocialWorkerProfile, CreateStudentProfile, CreateTeacherProfile, EmailVerification, ForgotPassword, Home, Login, NotFound, ParentDashboard, Register, ResetPassword, RoleSelection, SelectProfile, SocialWorkerDashboard, TeacherDashboard, } from "../src/pages";
 import { ParentChildren, ParentClaims, CreateTask as ParentCreateTask, ParentLayout, ParentTasks, PendingRedemptions } from "../src/pages/parent";
+import CreateParentReward from "../src/pages/parent/CreateReward";
+import ParentRewards from "../src/pages/parent/ParentRewards";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
+import TaskDetails from "../src/pages/parent/TaskDetails";
 import { CreateEditCategory, CreateReward, CreateRewardCategory, CreateTask, Overview, Parents, PlatformAdminDashboardLayout, RewardCategories, RewardRedemptions, Rewards, ScholarshipPoints, SchoolAdmins, SocialWorkers, Students, TaskCategories, Tasks, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
-import { JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout, SchoolProfile, EditSchoolProfile, Students as SchoolStudents, Teachers as SchoolTeachers, Classes as SchoolClasses, Administrators as SchoolAdministrators } from "../src/pages/school-admin";
+import { ClassAttendance, ClassDetails, ClassOverview, ClassStudents, EditSchoolProfile, JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout, Administrators as SchoolAdministrators, Classes as SchoolClasses, SchoolProfile, Students as SchoolStudents, Teachers as SchoolTeachers } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
 import NotificationSettings from "../src/pages/student/settings/NotificationSettings";
+import StudentAttendance from "../src/pages/student/StudentAttendance";
 import StudentDashboard from "../src/pages/student/StudentDashboard";
 import StudentLayout from "../src/pages/student/StudentLayout";
 import StudentNotifications from "../src/pages/student/StudentNotifications";
@@ -17,10 +21,6 @@ import StudentRedemptionHistory from "../src/pages/student/StudentRedemptionHist
 import StudentRewards from "../src/pages/student/StudentRewards";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentTasks from "../src/pages/student/StudentTasks";
-import StudentAttendance from "../src/pages/student/StudentAttendance";
-import TaskDetails from "../src/pages/parent/TaskDetails";
-import ParentRewards from "../src/pages/parent/ParentRewards";
-import CreateParentReward from "../src/pages/parent/CreateReward";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -115,6 +115,11 @@ const router = createBrowserRouter(
             <Route path="students" element={<SchoolStudents />} />
             <Route path="teachers" element={<SchoolTeachers />} />
             <Route path="classes" element={<SchoolClasses />} />
+            <Route path="classes/:classId" element={<ClassDetails />} >
+              <Route index element={<ClassOverview />} />
+              <Route path="students" element={<ClassStudents />} />
+              <Route path="attendance" element={<ClassAttendance />} />
+            </Route>
             <Route path="administrators" element={<SchoolAdministrators />} />
           </Route>
         </Route>

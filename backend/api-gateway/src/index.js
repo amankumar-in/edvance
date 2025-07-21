@@ -157,6 +157,7 @@ createServiceProxy("/api/badges", USER_SERVICE_URL);
 createServiceProxy("/api/classes", USER_SERVICE_URL);
 createServiceProxy("/api/search", USER_SERVICE_URL);
 createServiceProxy("/api/social-workers", USER_SERVICE_URL);
+createServiceProxy("/api/class-attendance", USER_SERVICE_URL);
 
 createServiceProxy("/api/tasks", TASK_SERVICE_URL);
 createServiceProxy("/api/points", POINTS_SERVICE_URL);

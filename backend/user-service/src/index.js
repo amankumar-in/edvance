@@ -19,6 +19,7 @@ const attendanceRoutes = require("./routes/attendance.routes");
 const schoolClassRoutes = require("./routes/schoolClass.routes");
 const searchRoutes = require("./routes/search.routes");
 const linkRequestRoutes = require("./routes/linkRequest.routes");
+const classAttendanceRoutes = require("./routes/classAttendance.routes");
 
 // Environment variables
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -66,6 +67,7 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/classes", schoolClassRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/link-requests", linkRequestRoutes);
+app.use("/api/class-attendance", classAttendanceRoutes);
 
 // MongoDB connection
 const connectDB = async () => {
