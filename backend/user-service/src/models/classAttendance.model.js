@@ -12,18 +12,20 @@ const classAttendanceSchema = new mongoose.Schema({
     ref: "SchoolClass",
     required: true,
   },
-  // attendance date to identify which day
+
+  // Attendance Date( just the day, not the time)
   attendanceDate: {
     type: Date,
     required: true,
-    default: () => new Date().toDateString(),
   },
-  // Attendance status
+
+  //Current Attendance status
   status: {
     type: String,
     enum: ["present", "absent"],
     required: true,
   },
+
   // Recording details
   recordedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -38,6 +40,7 @@ const classAttendanceSchema = new mongoose.Schema({
     type: Date,
     default: new Date(),
   },
+
   // Additional info
   comments: {
     type: String,
@@ -46,6 +49,28 @@ const classAttendanceSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+
+  // 🔍 History of changes
+  history: [
+    {
+      status: {
+        type: String,
+        enum: ["present", "absent"],
+      },
+      recordedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+      },
+      recordedByRole: {
+        type: String,
+        enum: ["teacher", "system", "school_admin", "student", "parent"],
+      },
+      comments: String,
+      recordedAt: {
+        type: Date,
+        default: () => new Date(),
+      },
+    },
+  ],
 }, { timestamps: true });
 
 // Indexes for efficient querying

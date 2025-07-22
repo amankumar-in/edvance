@@ -1,16 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { recordAttendance } from "./classAttendance.api";
+import { recordClassAttendance } from "./classAttendance.api";
 
-const useRecordAttendance = () => {
+const useRecordClassAttendance = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: recordAttendance,
-    onSuccess: () => {
+    mutationFn: recordClassAttendance,
+    onSuccess: (data, variables) => {
+      const { studentId, classId } = variables;
       // TODO: invalidate selective queries only not all.
-      queryClient.invalidateQueries({ queryKey: ["class-attendance"] });
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["class-attendance"] }),
+        queryClient.invalidateQueries({ queryKey: ["student", "class", "attendance", studentId, classId] }),
+      ])
     }
   });
 };
 
-export default useRecordAttendance;
+export {
+  useRecordClassAttendance,
+};

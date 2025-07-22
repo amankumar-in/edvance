@@ -1,29 +1,79 @@
 import { Badge, Box, Button, Callout, Card, Flex, Grid, Progress, Text, Tooltip } from '@radix-ui/themes';
-import { AlertCircle, AlertCircleIcon, Award, CheckCircle, Clock, TrendingUp, Zap } from 'lucide-react';
+import { AlertCircle, AlertCircleIcon, Award, CheckCircle, Clock, TrendingUp, XCircle, Zap } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '../../Context/AuthContext';
-import { useCheckInAttendance } from '../../api/attendance/attendance.mutations';
+import { useCheckInAttendance, useRecordAttendance } from '../../api/attendance/attendance.mutations';
 import { useAttendanceSummary, useStudentAttendance } from '../../api/attendance/attendance.queries';
 import { EmptyStateCard, Loader, PageHeader } from '../../components';
 import ErrorCallout from '../../components/ErrorCallout';
 import { formatDate } from '../../utils/helperFunctions';
+import { useParams } from 'react-router';
+import { useGetStudentClassAttendanceDetails } from '../../api/student/student.queries';
+import { useRecordClassAttendance } from '../../api/class-attendance/classAttendance.mutations';
 
 function StudentAttendance() {
+  const { classId } = useParams();
   const { profiles } = useAuth();
   const studentId = profiles?.['student']?._id;
 
   // Queries
-
-  const { data, isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError } = useStudentAttendance(studentId);
+  const { data, isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError } = useStudentAttendance({
+    studentId, options: {
+      enabled: !!studentId && !classId
+    }
+  });
   const recentAttendance = data?.data ?? [];
 
-  const { data: attendanceSummary, isLoading: isAttendanceSummaryLoading, isError: isAttendanceSummaryError, error: attendanceSummaryError, isFetching: isAttendanceSummaryFetching } = useAttendanceSummary(studentId);
+  const {
+    data: attendanceSummary,
+    isLoading: isAttendanceSummaryLoading,
+    isError: isAttendanceSummaryError,
+    error: attendanceSummaryError,
+    isFetching: isAttendanceSummaryFetching
+  } = useAttendanceSummary({
+    studentId, options: {
+      enabled: !!studentId && !classId
+    }
+  });
   const streakData = attendanceSummary?.data?.student ?? {};
   const summary = attendanceSummary?.data?.summary ?? {};
 
+
+  const {
+    data: classAttendanceDetails,
+    isLoading: isClassAttendanceDetailsLoading,
+    isError: isClassAttendanceDetailsError,
+    error: classAttendanceDetailsError,
+    isFetching: isClassAttendanceDetailsFetching
+  } = useGetStudentClassAttendanceDetails({ studentId, classId });
+  const classInfo = classAttendanceDetails?.data?.classInfo ?? {};
+  const todaysClass = classAttendanceDetails?.data?.todaysClass ?? {};
+  const statistics = classAttendanceDetails?.data?.statistics ?? {};
+  const recentClassAttendance = classAttendanceDetails?.data?.recentAttendance ?? [];
+  console.log(recentClassAttendance)
+
   // Mutations
   const checkInMutation = useCheckInAttendance();
+  const classAttendanceMutation = useRecordClassAttendance();
+
+  const handleMarkClassAttendance = () => {
+    classAttendanceMutation.mutate({
+      classId,
+      studentId,
+      status: 'present',
+      comments: 'Marked by student',
+      attendanceDate: new Date().toISOString(),
+      activeRole: 'student'
+    }, {
+      onSuccess: () => {
+        toast.success('Attendance marked successfully');
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || 'Failed to mark  attendance');
+      }
+    })
+  }
 
   // Check if student has checked in today
   const hasCheckedInToday = () => {
@@ -68,9 +118,9 @@ function StudentAttendance() {
   };
 
   // Loading states
-  if (isAttendanceSummaryLoading) return (
+  if (isAttendanceSummaryLoading || isClassAttendanceDetailsLoading) return (
     <div className='mx-auto space-y-6 max-w-5xl' >
-      <AttendancePageHeader />
+      <AttendancePageHeader classId={classId} />
       <Flex justify='center' align='center' >
         <Loader />
       </Flex>
@@ -78,12 +128,12 @@ function StudentAttendance() {
   )
 
   // Error states
-  if (isAttendanceSummaryError) return (
+  if (isAttendanceSummaryError || isClassAttendanceDetailsError) return (
     <div className='mx-auto space-y-6 max-w-5xl' >
-      <AttendancePageHeader />
+      <AttendancePageHeader classId={classId} />
       <ErrorCallout
-        className='mx-auto'
-        errorMessage={attendanceSummaryError?.response?.data?.message || 'Something went wrong while fetching attendance details'}
+        className='mx-auto max-w-2xl'
+        errorMessage={attendanceSummaryError?.response?.data?.message || classAttendanceDetailsError?.response?.data?.message || 'Something went wrong while fetching attendance details'}
       />
     </div>
   )
@@ -91,7 +141,7 @@ function StudentAttendance() {
   // Main content
   return (
     <Box className="mx-auto space-y-6 max-w-5xl">
-      <AttendancePageHeader />
+      <AttendancePageHeader classId={classId} />
 
       {/* Check-in Section */}
       <Card size="3" className='shadow-md'>
@@ -99,7 +149,7 @@ function StudentAttendance() {
           <Flex align="center" justify="between" gap='3' wrap={'wrap-reverse'}>
             <Box>
               <Text as='p' size="5" weight="bold">
-                Today's Check-in
+                {classId ? `${classInfo?.name} - ${classInfo?.grade}` : 'Today\'s Check-in'}
               </Text>
               <Text as='p' size="2" color="gray">
                 {new Date().toLocaleDateString('en-US', {
@@ -118,7 +168,7 @@ function StudentAttendance() {
             )}
           </Flex>
 
-          {!hasCheckedInToday() && (
+          {!hasCheckedInToday() && !classId && (
             <Callout.Root color="blue" variant='surface'>
               <Callout.Icon>
                 <Zap size={16} />
@@ -129,7 +179,62 @@ function StudentAttendance() {
             </Callout.Root>
           )}
 
-          <Flex align="center" gap="3" wrap='wrap'>
+          {classId && (
+            !todaysClass?.isScheduledToday ? (
+              <Callout.Root color="blue" variant='surface'>
+                <Callout.Icon>
+                  <AlertCircle size={16} />
+                </Callout.Icon>
+                <Callout.Text>
+                  No class scheduled today
+                </Callout.Text>
+              </Callout.Root>
+            ) : (
+              <>
+                <Flex align="center" gap="3" wrap='wrap'>
+                  <Button
+                    color={todaysClass?.attendanceStatus === 'present' ? 'green' : todaysClass?.attendanceStatus === 'absent' ? 'red' : ''}
+                    className="flex-1 gap-2 items-center capitalize max-w-64 text-nowrap"
+                    onClick={() => {
+                      if (todaysClass?.attendanceMarked) return;
+                      handleMarkClassAttendance();
+                    }}
+                    disabled={classAttendanceMutation.isPending || isClassAttendanceDetailsFetching}
+                  >
+                    {todaysClass?.attendanceStatus === 'present' ? (
+                      <>
+                        <CheckCircle size={16} />
+                        Marked Present
+                      </>
+                    ) : todaysClass?.attendanceStatus === 'absent' ? (
+                      <>
+                        <XCircle size={16} />
+                        Marked Absent
+                      </>
+                    ) : classAttendanceMutation.isPending ? 'Marking Attendance...' : 'Mark Attendance'}
+                  </Button>
+                  {todaysClass?.attendanceDetails?.pointsAwarded > 0 && todaysClass?.attendanceDetails?.status === 'present' && (
+                    <Text as='p' size="2" color="green" className='flex gap-1 items-center'>
+                     <Award size={16} /> {todaysClass?.attendanceDetails?.pointsAwarded} points earned today!
+                    </Text>
+                  )}
+                </Flex>
+
+                {todaysClass?.attendanceDetails?.recordedByRole && todaysClass?.attendanceDetails?.recordedByRole !== 'student' && todaysClass?.attendanceDetails?.recordedByRole !== 'parent' && (
+                  <Callout.Root color="blue" variant='surface'>
+                    <Callout.Icon>
+                      <AlertCircle size={16} />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      You attendance has been marked by your class teacher.
+                    </Callout.Text>
+                  </Callout.Root>
+                )}
+              </>
+            )
+          )}
+
+          {!classId && <Flex align="center" gap="3" wrap='wrap'>
             <Tooltip
               content={checkInMutation.isPending ? 'Checking In...' : hasCheckedInToday() ? 'You have already checked in today' : 'Check In Now'}
             >
@@ -144,13 +249,13 @@ function StudentAttendance() {
                     'Check In Now'}
               </Button>
             </Tooltip>
-            {hasCheckedInToday() && (
+            {hasCheckedInToday() && !classId && (
               <Text as='div' color='green' className='flex gap-1 items-center'>
                 <Award size={16} />
                 <Text as='span' size="2" weight="medium">Points earned today!</Text>
               </Text>
             )}
-          </Flex>
+          </Flex>}
         </Flex>
       </Card>
 
@@ -163,9 +268,8 @@ function StudentAttendance() {
               <Text as='p' size="2" color="gray" weight="medium">Current Streak</Text>
             </Flex>
             <Text size="6" weight="bold" color="indigo">
-              {streakData?.currentStreak || 0}
+              {streakData?.currentStreak || statistics?.currentStreak || 0}x
             </Text>
-            <Text as='p' size="1" color="gray">days in a row</Text>
           </Flex>
         </Card>
 
@@ -176,7 +280,7 @@ function StudentAttendance() {
               <Text as='p' size="2" color="gray" weight="medium">Longest Streak</Text>
             </Flex>
             <Text size="6" weight="bold" color="green">
-              {streakData?.longestStreak || 0}
+              {streakData?.longestStreak || statistics?.longestStreak || 0}
             </Text>
             <Text as='p' size="1" color="gray">personal best</Text>
           </Flex>
@@ -189,14 +293,14 @@ function StudentAttendance() {
               <Text as='p' size="2" color="gray" weight="medium">Attendance Rate</Text>
             </Flex>
             <Flex justify={'between'} align={'baseline'} wrap={'wrap'} gap={'2'}>
-            <Text as='p' size="6" weight="bold" color="blue">
-              {summary?.attendanceRate || 0}%
-            </Text>
+              <Text as='p' size="6" weight="bold" color="blue">
+                {summary?.attendanceRate || statistics?.attendanceRate || 0}%
+              </Text>
               <Text as='p' size="1" color="gray">
-              {summary?.present || 0} / {summary?.totalDays || 0}
+                {summary?.present || statistics?.presentDaysInMonth || 0} / {summary?.totalDays || statistics?.totalScheduledDaysInMonth || 0}
               </Text>
             </Flex>
-            <Progress value={summary?.attendanceRate || 0} color="blue" size="1" />
+            <Progress value={summary?.attendanceRate || statistics?.attendanceRate || 0} color="blue" size="1" />
           </Flex>
         </Card>
 
@@ -207,7 +311,7 @@ function StudentAttendance() {
               <Text as='p' size="2" color="gray" weight="medium">Points This Month</Text>
             </Flex>
             <Text as='p' size="6" weight="bold" color="purple">
-              {summary?.pointsEarned || 0}
+              {summary?.pointsEarned || statistics?.pointsThisMonth || 0}
             </Text>
             <Text as='p' size="1" color="gray">scholarship points</Text>
           </Flex>
@@ -260,6 +364,32 @@ function StudentAttendance() {
                 </Flex>
               </Box>
             ))
+          ) : recentClassAttendance?.length > 0 ? (
+            recentClassAttendance?.map((record) => (
+              <Box key={record?.recordedAt} className='hover:bg-[--gray-a2] transition-colors px-2 border-b border-[--gray-a6]'>
+                <Flex align="center" justify="between" py="3">
+                  <Flex align="center" gap="3">
+                    <Badge color={getStatusColor(record.status)} variant="soft">
+                      {getStatusIcon(record.status)}
+                      {record.status}
+                    </Badge>
+                    <Text as='p' size="2" weight="medium">
+                      {formatDate(record.date, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </Text>
+                  </Flex>
+                  <Flex align="center" gap="4">
+                    <Text as='div' className="flex gap-1 items-center" color='green'>
+                      <Award size={16} />
+                      <Text as='p' size="2">+{record.pointsAwarded}</Text>
+                    </Text>
+                  </Flex>
+                </Flex>
+              </Box>
+            ))
           ) : (
             <EmptyStateCard
               description='No attendance records found'
@@ -274,11 +404,12 @@ function StudentAttendance() {
 export default StudentAttendance;
 
 // Attendance Page Header
-function AttendancePageHeader() {
+function AttendancePageHeader({ classId }) {
   return (
     <PageHeader
-      title={'Daily Attendance'}
-      description={'Track your daily attendance and build your streak'}
+      title={classId ? 'Class Attendance' : 'Daily Attendance'}
+      description={classId ? 'Track your class attendance and build your streak' : 'Track your daily attendance and build your streak'}
+      backButton={classId ? true : false}
     />
   )
 }

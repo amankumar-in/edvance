@@ -9,6 +9,7 @@ const linkRequestController = require("./linkRequest.controller");
 const crypto = require("crypto");
 const axios = require("axios");
 const { default: mongoose } = require("mongoose");
+const ClassAttendance = require("../models/classAttendance.model"); // Added import for ClassAttendance
 
 // Get student profile (for student users)
 exports.getStudentProfile = async (req, res) => {
@@ -938,3 +939,349 @@ exports.respondToParentLinkRequest = async (req, res) => {
     });
   }
 };
+
+// Get all classes that a student is part of
+exports.getStudentClasses = async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    console.log('studentId', studentId)
+
+    // Find student to verify it exists
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Find all classes where this student is enrolled
+    const classes = await SchoolClass.find({
+      studentIds: studentId
+    })
+    .populate('teacherId', 'userId')
+    .populate({
+      path: 'teacherId',
+      populate: {
+        path: 'userId',
+        select: 'firstName lastName email avatar'
+      }
+    })
+    .populate('schoolId', 'name address')
+    .sort({ name: 1 });
+
+    // Format the response to include relevant class information
+    const formattedClasses = classes.map(classObj => ({
+      _id: classObj._id,
+      name: classObj.name,
+      grade: classObj.grade,
+      joinCode: classObj.joinCode,
+      schedule: classObj.schedule,
+      academicYear: classObj.academicYear,
+      academicTerm: classObj.academicTerm,
+      teacher: classObj.teacherId ? {
+        _id: classObj.teacherId._id,
+        name: classObj.teacherId.userId ? 
+          `${classObj.teacherId.userId.firstName} ${classObj.teacherId.userId.lastName}` : 
+          'Unknown Teacher',
+        email: classObj.teacherId.userId?.email,
+        avatar: classObj.teacherId.userId?.avatar
+      } : null,
+      school: classObj.schoolId ? {
+        _id: classObj.schoolId._id,
+        name: classObj.schoolId.name,
+        address: classObj.schoolId.address
+      } : null,
+      studentCount: classObj.studentIds.length,
+      createdAt: classObj.createdAt,
+      updatedAt: classObj.updatedAt
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedClasses,
+      message: `Found ${formattedClasses.length} classes for student`
+    });
+
+  } catch (error) {
+    console.error("Get student classes error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get student classes",
+      error: error.message,
+    });
+  }
+};
+
+// Get student classes by user ID (alternative endpoint for current user)
+exports.getMyClasses = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log('userid', userId)
+
+    // Find student by userId
+    const student = await Student.findOne({ userId });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+
+    console.log('student', student)
+
+    // Set the student ID in params and call the main function
+    req.params.id = student._id.toString();
+    return exports.getStudentClasses(req, res);
+
+  } catch (error) {
+    console.error("Get my classes error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get classes",
+      error: error.message,
+    });
+  }
+};
+
+// Get student's attendance details for a specific class
+const getStudentClassAttendanceDetails = async (req, res) => {
+  try {
+    const { studentId, classId } = req.params;
+    
+    // Verify the student exists and belongs to the authenticated user
+    const student = await Student.findById(studentId).populate('userId');
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Get class details to check schedule
+    const schoolClass = await SchoolClass.findById(classId);
+    if (!schoolClass) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // Check if student is enrolled in this class
+    if (!schoolClass.studentIds.includes(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Student is not enrolled in this class",
+      });
+    }
+
+    // Get current date info
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Calculate current month range
+    const monthStart = new Date(currentYear, currentMonth, 1);
+    const monthEnd = new Date(currentYear, currentMonth + 1, 0);
+
+    // Get all attendance records for this student in this class
+    const allAttendanceRecords = await ClassAttendance.find({
+      studentId,
+      classId,
+    }).sort({ attendanceDate: 1 });
+
+    // Get attendance records for current month
+    const currentMonthRecords = await ClassAttendance.find({
+      studentId,
+      classId,
+      attendanceDate: {
+        $gte: monthStart,
+        $lte: monthEnd,
+      },
+    }).sort({ attendanceDate: 1 });
+
+    // Calculate scheduled days in current month
+    const scheduledDaysInMonth = [];
+    const currentDate = new Date(monthStart);
+    
+    while (currentDate <= monthEnd) {
+      const dayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+      const isScheduled = schoolClass.schedule.some(scheduleItem =>
+        scheduleItem.dayOfWeek === dayOfWeek
+      );
+      
+      if (isScheduled) {
+        scheduledDaysInMonth.push(new Date(currentDate));
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Calculate attendance rate for current month
+    const totalScheduledDaysInMonth = scheduledDaysInMonth.length;
+    const presentDaysInMonth = currentMonthRecords.filter(record => record.status === 'present').length;
+    const attendanceRate = totalScheduledDaysInMonth > 0 
+      ? Math.round((presentDaysInMonth / totalScheduledDaysInMonth) * 100) 
+      : 0;
+
+    // Calculate points earned in current month
+    const pointsThisMonth = currentMonthRecords.reduce((sum, record) => 
+      sum + (record.pointsAwarded || 0), 0
+    );
+
+    // Function to check if a date is a scheduled class day
+    const isScheduledDay = (date) => {
+      const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+      return schoolClass.schedule.some(scheduleItem => scheduleItem.dayOfWeek === dayOfWeek);
+    };
+
+    // Calculate streaks based on scheduled days only
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+
+    // Create a map of attendance records by date for efficient lookup
+    const attendanceMap = new Map();
+    allAttendanceRecords.forEach(record => {
+      const dateKey = record.attendanceDate.toISOString().split('T')[0];
+      attendanceMap.set(dateKey, record);
+    });
+
+    // Get all scheduled days from the earliest attendance record to today
+    const earliestDate = allAttendanceRecords.length > 0 
+      ? new Date(allAttendanceRecords[0].attendanceDate) 
+      : new Date();
+    
+    const scheduledDays = [];
+    const iterDate = new Date(earliestDate);
+    const today = new Date();
+    
+    while (iterDate <= today) {
+      if (isScheduledDay(iterDate)) {
+        scheduledDays.push(new Date(iterDate));
+      }
+      iterDate.setDate(iterDate.getDate() + 1);
+    }
+
+    // Calculate longest streak by going through all scheduled days
+    for (const scheduledDay of scheduledDays) {
+      const dateKey = scheduledDay.toISOString().split('T')[0];
+      const attendanceRecord = attendanceMap.get(dateKey);
+      
+      if (attendanceRecord && attendanceRecord.status === 'present') {
+        tempStreak++;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      } else {
+        tempStreak = 0;
+      }
+    }
+
+    // Calculate current streak (from the most recent scheduled days backwards)
+    const recentScheduledDays = scheduledDays.slice(-30).reverse(); // Last 30 scheduled days, reversed
+    
+    for (const scheduledDay of recentScheduledDays) {
+      const dateKey = scheduledDay.toISOString().split('T')[0];
+      const attendanceRecord = attendanceMap.get(dateKey);
+      
+      if (attendanceRecord && attendanceRecord.status === 'present') {
+        currentStreak++;
+      } else {
+        break; // Stop at first non-present day
+      }
+    }
+
+    // Get last 7 recent attendance records (only for scheduled days)
+    const recentAttendance = [];
+    const last30ScheduledDays = scheduledDays.slice(-30).reverse(); // Get more days to ensure we have enough records
+    
+    for (const scheduledDay of last30ScheduledDays) {
+      if (recentAttendance.length >= 7) break;
+      
+      const dateKey = scheduledDay.toISOString().split('T')[0];
+      const attendanceRecord = attendanceMap.get(dateKey);
+      
+      recentAttendance.push({
+        date: scheduledDay,
+        dayOfWeek: scheduledDay.toLocaleDateString('en-US', { weekday: 'long' }),
+        status: attendanceRecord ? attendanceRecord.status : 'not_recorded',
+        pointsAwarded: attendanceRecord ? attendanceRecord.pointsAwarded : 0,
+        recordedAt: attendanceRecord ? attendanceRecord.recordedAt : null,
+      });
+    }
+
+    // Check today's class schedule and attendance status
+    const todayDayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long' });
+    const todayDateKey = today.toISOString().split('T')[0];
+    
+    // Check if class is scheduled today
+    const todaysSchedule = schoolClass.schedule.filter(scheduleItem => 
+      scheduleItem.dayOfWeek === todayDayOfWeek
+    );
+    
+    const todaysClassInfo = {
+      isScheduledToday: todaysSchedule.length > 0,
+      schedule: todaysSchedule,
+      attendanceMarked: false,
+      attendanceStatus: null,
+      attendanceDetails: null,
+    };
+    
+    // If class is scheduled today, check if attendance has been marked
+    if (todaysClassInfo.isScheduledToday) {
+      const todaysAttendanceRecord = attendanceMap.get(todayDateKey);
+      
+      if (todaysAttendanceRecord) {
+        todaysClassInfo.attendanceMarked = true;
+        todaysClassInfo.attendanceStatus = todaysAttendanceRecord.status;
+        todaysClassInfo.attendanceDetails = {
+          status: todaysAttendanceRecord.status,
+          recordedAt: todaysAttendanceRecord.recordedAt,
+          recordedBy: todaysAttendanceRecord.recordedBy,
+          recordedByRole: todaysAttendanceRecord.recordedByRole,
+          comments: todaysAttendanceRecord.comments,
+          pointsAwarded: todaysAttendanceRecord.pointsAwarded || 0,
+        };
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        studentInfo: {
+          id: student._id,
+          name: `${student.userId.firstName} ${student.userId.lastName}`,
+          email: student.userId.email,
+        },
+        classInfo: {
+          id: schoolClass._id,
+          name: schoolClass.name,
+          grade: schoolClass.grade,
+        },
+        statistics: {
+          currentStreak,
+          longestStreak,
+          attendanceRate,
+          pointsThisMonth,
+          totalScheduledDaysInMonth,
+          presentDaysInMonth,
+        },
+        todaysClass: todaysClassInfo,
+        recentAttendance,
+        monthInfo: {
+          month: currentMonth + 1,
+          year: currentYear,
+          totalScheduledDays: totalScheduledDaysInMonth,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get student class attendance details error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get student attendance details",
+      error: error.message,
+    });
+  }
+};
+
+exports.getStudentClassAttendanceDetails = getStudentClassAttendanceDetails;

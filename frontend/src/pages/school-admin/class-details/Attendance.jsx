@@ -3,12 +3,12 @@ import { Calendar, ChevronLeftIcon, ChevronRightIcon, Clock, Gauge, Minus, Searc
 import React, { useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
-import useRecordAttendance from '../../../api/class-attendance/classAttendance.mutations';
 import { useGetDayAttendance, useGetMonthAttendance, useGetWeekAttendance } from '../../../api/class-attendance/classAttendance.queries';
 import { useClassDetails } from '../../../api/school-class/schoolClass.queries';
 import { ErrorCallout, Loader } from '../../../components';
 import EmptyStateCard from '../../../components/EmptyStateCard';
 import PageHeader from '../components/PageHeader';
+import { useRecordClassAttendance } from '../../../api/class-attendance/classAttendance.mutations';
 
 const monthNames = [
   "January",
@@ -35,6 +35,7 @@ function Attendance() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [currentView, setCurrentView] = useState("day")
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const selectedDateString = selectedDate.toISOString().split('T')[0]
   const [searchQuery, setSearchQuery] = useState("")
 
   const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate()
@@ -45,15 +46,15 @@ function Attendance() {
   const students = monthAttendance?.data?.students ?? []
   const monthlySummary = monthAttendance?.data?.monthlySummary ?? {}
 
-  const { data: dayAttendance, isLoading: isDayLoading, isError: isDayError, error: dayError, isFetching: isDayFetching } = useGetDayAttendance(classId, selectedDate);
+  const { data: dayAttendance, isLoading: isDayLoading, isError: isDayError, error: dayError, isFetching: isDayFetching } = useGetDayAttendance(classId, selectedDateString);
   const dayAttendanceData = dayAttendance?.data ?? {};
   const dayAttendanceStudents = dayAttendanceData?.students ?? [];
 
-  const { data: weekAttendance, isLoading: isWeekLoading, isError: isWeekError, error: weekError, isFetching: isWeekFetching } = useGetWeekAttendance(classId, selectedDate.toISOString().split('T')[0]);
+  const { data: weekAttendance, isLoading: isWeekLoading, isError: isWeekError, error: weekError, isFetching: isWeekFetching } = useGetWeekAttendance(classId, selectedDateString);
   const weekAttendanceData = weekAttendance?.data ?? {};
 
   // Mutations
-  const recordAttendanceMutation = useRecordAttendance();
+  const recordAttendanceMutation = useRecordClassAttendance();
 
   const handleRecordAttendance = async ({ studentId, attendanceDate, status }) => {
     recordAttendanceMutation.mutate({

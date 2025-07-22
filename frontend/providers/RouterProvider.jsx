@@ -21,6 +21,7 @@ import StudentRedemptionHistory from "../src/pages/student/StudentRedemptionHist
 import StudentRewards from "../src/pages/student/StudentRewards";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentTasks from "../src/pages/student/StudentTasks";
+import StudentAttendanceBasePage from "../src/pages/student/StudentAttendanceBasePage";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -83,7 +84,8 @@ const router = createBrowserRouter(
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="tasks" element={<StudentTasks />} />
               <Route path="tasks/:id" element={<StudentTaskDetail />} />
-              <Route path="attendance" element={<StudentAttendance />} />
+              <Route path="attendance" element={<StudentAttendanceBasePage />} />
+              <Route path="attendance/:classId" element={<StudentAttendance />} />
               <Route path="notifications" element={<StudentNotifications />} />
               <Route path="points" element={<StudentPoints />} />
               <Route path="rewards" element={<StudentRewards />} />

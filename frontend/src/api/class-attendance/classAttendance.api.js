@@ -15,14 +15,14 @@ const getWeekAttendance = async (classId, startDate) => {
   return response.data;
 }
 
-const recordAttendance = async ({ classId, studentId, attendanceDate, status, comments, activeRole }) => {
+const recordClassAttendance = async ({ classId, studentId, attendanceDate, status, comments, activeRole }) => {
   const response = await apiClient.put(`/class-attendance/classes/${classId}/students/${studentId}`, { attendanceDate, status, comments, activeRole });
   return response.data;
 }
 
 export {
   getMonthAttendance,
-  recordAttendance,
+  recordClassAttendance,
   getDayAttendance,
   getWeekAttendance,
 }

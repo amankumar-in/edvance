@@ -72,3 +72,13 @@ export const respondToParentLinkRequest = async ({ requestId, action }) => {
   const response = await apiClient.post(`/students/requests/parent/${requestId}`, { action });
   return response.data;
 }
+
+export const getStudentClasses = async (id) => {
+  const response = await apiClient.get(`/students/${id}/classes`);
+  return response.data;
+}
+
+export const getStudentClassAttendanceDetails = async ({studentId, classId}) => {
+  const response = await apiClient.get(`/students/${studentId}/classes/${classId}/attendance`);
+  return response.data;
+}

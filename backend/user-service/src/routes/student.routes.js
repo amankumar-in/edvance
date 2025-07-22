@@ -1516,4 +1516,511 @@ router.post(
   studentController.respondToParentLinkRequest
 );
 
+/**
+ * @openapi
+ * /students/{studentId}/classes/{classId}/attendance:
+ *   get:
+ *     summary: Get student's class attendance details
+ *     description: Retrieves detailed attendance information for a student in a specific class including streaks, rates, and recent attendance
+ *     tags:
+ *       - Students
+ *       - Attendance
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: studentId
+ *         in: path
+ *         description: Student's unique ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: classId
+ *         in: path
+ *         description: Class unique ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Student class attendance details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     studentInfo:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                           example: "John Doe"
+ *                         email:
+ *                           type: string
+ *                           example: "john.doe@example.com"
+ *                     classInfo:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                           example: "Mathematics - Grade 9"
+ *                         grade:
+ *                           type: string
+ *                           example: "9"
+ *                     statistics:
+ *                       type: object
+ *                       properties:
+ *                         currentStreak:
+ *                           type: number
+ *                           description: Current consecutive attendance streak (scheduled days only)
+ *                           example: 5
+ *                         longestStreak:
+ *                           type: number
+ *                           description: Longest consecutive attendance streak ever achieved
+ *                           example: 15
+ *                         attendanceRate:
+ *                           type: number
+ *                           description: Attendance rate for current month as percentage
+ *                           example: 85
+ *                         pointsThisMonth:
+ *                           type: number
+ *                           description: Total points earned from attendance this month
+ *                           example: 120
+ *                         totalScheduledDaysInMonth:
+ *                           type: number
+ *                           description: Total number of scheduled class days in current month
+ *                           example: 20
+ *                         presentDaysInMonth:
+ *                           type: number
+ *                           description: Number of days student was present this month
+ *                           example: 17
+ *                     todaysClass:
+ *                       type: object
+ *                       description: Information about today's class schedule and attendance
+ *                       properties:
+ *                         isScheduledToday:
+ *                           type: boolean
+ *                           description: Whether the class is scheduled for today
+ *                           example: true
+ *                         schedule:
+ *                           type: array
+ *                           description: Today's class schedule details
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               dayOfWeek:
+ *                                 type: string
+ *                                 example: "Monday"
+ *                               startTime:
+ *                                 type: string
+ *                                 example: "09:00"
+ *                               endTime:
+ *                                 type: string
+ *                                 example: "10:30"
+ *                         attendanceMarked:
+ *                           type: boolean
+ *                           description: Whether attendance has been marked for today
+ *                           example: true
+ *                         attendanceStatus:
+ *                           type: string
+ *                           description: The attendance status if marked
+ *                           enum: [present, absent, null]
+ *                           example: "present"
+ *                         attendanceDetails:
+ *                           type: object
+ *                           description: Detailed attendance information if marked
+ *                           nullable: true
+ *                           properties:
+ *                             status:
+ *                               type: string
+ *                               enum: [present, absent]
+ *                               example: "present"
+ *                             recordedAt:
+ *                               type: string
+ *                               format: date-time
+ *                             recordedBy:
+ *                               type: string
+ *                               description: ID of who recorded the attendance
+ *                             recordedByRole:
+ *                               type: string
+ *                               enum: [teacher, system, school_admin, student, parent]
+ *                               example: "teacher"
+ *                             comments:
+ *                               type: string
+ *                               description: Any comments about the attendance
+ *                               nullable: true
+ *                             pointsAwarded:
+ *                               type: number
+ *                               description: Points awarded for this attendance
+ *                               example: 5
+ *                     recentAttendance:
+ *                       type: array
+ *                       description: Last 7 recent attendance records (scheduled days only)
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           date:
+ *                             type: string
+ *                             format: date
+ *                           dayOfWeek:
+ *                             type: string
+ *                             example: "Monday"
+ *                           status:
+ *                             type: string
+ *                             enum: [present, absent, not_recorded]
+ *                           pointsAwarded:
+ *                             type: number
+ *                             example: 5
+ *                           recordedAt:
+ *                             type: string
+ *                             format: date-time
+ *                     monthInfo:
+ *                       type: object
+ *                       properties:
+ *                         month:
+ *                           type: number
+ *                           example: 11
+ *                         year:
+ *                           type: number
+ *                           example: 2024
+ *                         totalScheduledDays:
+ *                           type: number
+ *                           example: 20
+ *       '400':
+ *         description: Student is not enrolled in this class
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Student is not enrolled in this class"
+ *       '404':
+ *         description: Student or class not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Student not found"
+ *       '500':
+ *         description: Failed to get student attendance details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get student attendance details"
+ *                 error:
+ *                   type: string
+ */
+router.get(
+  "/:studentId/classes/:classId/attendance",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["student", "parent", "teacher", "school_admin", "platform_admin"]),
+  studentController.getStudentClassAttendanceDetails
+);
+
+/**
+ * @openapi
+ * /students/{id}/classes:
+ *   get:
+ *     summary: Get student classes
+ *     description: Retrieves all classes that a student is enrolled in
+ *     tags:
+ *       - Students
+ *       - Classes
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Student's unique ID
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Student classes retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                         example: "Mathematics - Grade 9"
+ *                       grade:
+ *                         type: string
+ *                         example: "9"
+ *                       joinCode:
+ *                         type: string
+ *                         example: "MATH9A"
+ *                       schedule:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             dayOfWeek:
+ *                               type: string
+ *                               example: "Monday"
+ *                             startTime:
+ *                               type: string
+ *                               example: "09:00"
+ *                             endTime:
+ *                               type: string
+ *                               example: "10:30"
+ *                       academicYear:
+ *                         type: string
+ *                         example: "2024-2025"
+ *                       academicTerm:
+ *                         type: string
+ *                         example: "Fall"
+ *                       teacher:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                             example: "John Smith"
+ *                           email:
+ *                             type: string
+ *                             example: "j.smith@school.edu"
+ *                           avatar:
+ *                             type: string
+ *                       school:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                             example: "Springfield High School"
+ *                           address:
+ *                             type: string
+ *                             example: "123 Education St, Springfield"
+ *                       studentCount:
+ *                         type: number
+ *                         example: 25
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                 message:
+ *                   type: string
+ *                   example: "Found 3 classes for student"
+ *       '403':
+ *         description: Not authorized to view student classes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Not authorized to view student classes"
+ *       '404':
+ *         description: Student not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Student not found"
+ *       '500':
+ *         description: Failed to get student classes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get student classes"
+ *                 error:
+ *                   type: string
+ */
+router.get(
+  "/:id/classes",
+  authMiddleware.verifyToken,
+  studentController.getStudentClasses
+);
+
+/**
+ * @openapi
+ * /students/me/classes:
+ *   get:
+ *     summary: Get my classes
+ *     description: Retrieves all classes that the current student user is enrolled in
+ *     tags:
+ *       - Students
+ *       - Classes
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Student classes retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                         example: "Mathematics - Grade 9"
+ *                       grade:
+ *                         type: string
+ *                         example: "9"
+ *                       joinCode:
+ *                         type: string
+ *                         example: "MATH9A"
+ *                       schedule:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             dayOfWeek:
+ *                               type: string
+ *                               example: "Monday"
+ *                             startTime:
+ *                               type: string
+ *                               example: "09:00"
+ *                             endTime:
+ *                               type: string
+ *                               example: "10:30"
+ *                       academicYear:
+ *                         type: string
+ *                         example: "2024-2025"
+ *                       academicTerm:
+ *                         type: string
+ *                         example: "Fall"
+ *                       teacher:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                             example: "John Smith"
+ *                           email:
+ *                             type: string
+ *                             example: "j.smith@school.edu"
+ *                           avatar:
+ *                             type: string
+ *                       school:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                             example: "Springfield High School"
+ *                           address:
+ *                             type: string
+ *                             example: "123 Education St, Springfield"
+ *                       studentCount:
+ *                         type: number
+ *                         example: 25
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                 message:
+ *                   type: string
+ *                   example: "Found 3 classes for student"
+ *       '404':
+ *         description: Student profile not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Student profile not found"
+ *       '500':
+ *         description: Failed to get classes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get classes"
+ *                 error:
+ *                   type: string
+ */
+router.get(
+  "/me/classes",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["student"]),
+  studentController.getMyClasses
+);
+
 module.exports = router;

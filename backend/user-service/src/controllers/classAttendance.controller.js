@@ -74,15 +74,35 @@ const recordStudentAttendance = async (req, res) => {
       });
     }
 
+    // Create date range for the entire day
+    const startOfDay = new Date(attendanceDateObj);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(attendanceDateObj);
+    endOfDay.setHours(23, 59, 59, 999);
+
     // Find existing attendance record or create new one
     let attendanceRecord = await ClassAttendance.findOne({
       classId,
       studentId,
-      attendanceDate: attendanceDateObj,
+      attendanceDate: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
     });
+
+    // Create history entry
+    const historyEntry = {
+      status,
+      recordedBy,
+      recordedByRole: activeRole,
+      comments,
+      recordedAt: new Date(),
+    };
 
     if (attendanceRecord) {
       // Update existing record
+      attendanceRecord.history.push(historyEntry);
       attendanceRecord.status = status;
       attendanceRecord.recordedBy = recordedBy;
       attendanceRecord.recordedByRole = activeRole;
@@ -99,6 +119,7 @@ const recordStudentAttendance = async (req, res) => {
         recordedByRole: activeRole,
         comments,
         recordedAt: new Date(),
+        history: [historyEntry],
       });
     }
 
@@ -148,7 +169,7 @@ const recordStudentAttendance = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: attendanceRecord.isNew ? "Attendance recorded successfully" : "Attendance updated successfully",
+      message: "Attendance recorded successfully",
       data: attendanceRecord,
     });
   } catch (error) {

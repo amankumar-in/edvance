@@ -7,3 +7,5 @@ export { default as StudentNotifications } from './StudentNotifications';
 export { default as StudentPoints } from './StudentPoints';
 export { default as StudentRewards } from './StudentRewards';
 export { default as StudentRedemptionHistory } from './StudentRedemptionHistory'; 
+export { default as StudentAttendanceBasePage } from './StudentAttendanceBasePage';
+export { default as StudentClasses } from './StudentClasses';

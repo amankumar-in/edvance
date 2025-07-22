@@ -19,21 +19,19 @@ export const attendanceKeys = {
 };
 
 // Get student attendance records
-export const useStudentAttendance = (studentId, params = {}, options = {}) => {
+export const useStudentAttendance = ({studentId, params = {}, options = {}}) => {
   return useQuery({
     queryKey: attendanceKeys.studentAttendance(studentId, params),
     queryFn: () => getStudentAttendance(studentId, params),
-    enabled: !!studentId,
     ...options,
   });
 };
 
 // Get attendance summary with points
-export const useAttendanceSummary = (studentId, params = {}, options = {}) => {
+export const useAttendanceSummary = ({studentId, params = {}, options = {}}) => {
   return useQuery({
     queryKey: attendanceKeys.studentSummary(studentId, params),
     queryFn: () => getAttendanceSummary(studentId, params),
-    enabled: !!studentId,
     ...options,
   });
 };
