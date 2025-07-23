@@ -1036,8 +1036,8 @@ const taskController = {
       // Apply role-based access control
       if (role === "school_admin") {
         // School admins can only see tasks within their school
-        if (currentProfileId) {
-          query.schoolId = currentProfileId;
+        if (schoolId) {
+          query.schoolId = schoolId;
         }
       } else if (role === "teacher") {
         // Teachers can see tasks they created or tasks in their classes

@@ -33,7 +33,7 @@ function Attendance() {
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [currentView, setCurrentView] = useState("day")
+  const [currentView, setCurrentView] = useState("month")
   const [selectedDate, setSelectedDate] = useState(new Date())
   const selectedDateString = selectedDate.toISOString().split('T')[0]
   const [searchQuery, setSearchQuery] = useState("")

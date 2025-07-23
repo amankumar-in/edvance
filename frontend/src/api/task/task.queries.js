@@ -2,11 +2,12 @@ import { keepPreviousData, useQuery, useMutation, useQueryClient, useInfiniteQue
 import { getParentTasks, getStudentTaskById, getStudentTasks, submitTask, getTasks, getTasksForApproval, getTaskById } from "./task.api";
 
 // Get all tasks(for platform admin, school admin, teacher)
-export const useGetTasks = (params = {}) => {
+export const useGetTasks = (params = {}, options = {}) => {
   return useQuery({
     queryKey: ["tasks", params],
     queryFn: () => getTasks(params),
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData, 
+    ...options
   });
 };
 

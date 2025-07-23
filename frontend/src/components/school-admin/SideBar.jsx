@@ -2,14 +2,15 @@ import { Avatar, Button, DropdownMenu, Flex, Text } from '@radix-ui/themes';
 import {
   BarChart3,
   BookOpen,
+  CheckSquare,
   ChevronRight,
+  Gift,
   GraduationCap,
   LogOut,
   School,
   SettingsIcon,
   UserCog,
   UserPlus,
-  Users,
   Users2
 } from 'lucide-react';
 import React from 'react';
@@ -54,6 +55,16 @@ const sideBarItems = [
     href: '/school-admin/administrators',
     icon: <UserCog size={20} />
   },
+  {
+    label: 'Tasks',
+    href: '/school-admin/tasks',
+    icon: <CheckSquare  size={20} />
+  },
+  {
+    label: 'Rewards',
+    href: '/school-admin/rewards',
+    icon: <Gift size={20} />
+  }
 ]
 
 function SideBar({ isOpen, toggleSidebar }) {

@@ -8,7 +8,7 @@ import ParentRewards from "../src/pages/parent/ParentRewards";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
 import TaskDetails from "../src/pages/parent/TaskDetails";
 import { CreateEditCategory, CreateReward, CreateRewardCategory, CreateTask, Overview, Parents, PlatformAdminDashboardLayout, RewardCategories, RewardRedemptions, Rewards, ScholarshipPoints, SchoolAdmins, SocialWorkers, Students, TaskCategories, Tasks, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
-import { ClassAttendance, ClassDetails, ClassOverview, ClassStudents, EditSchoolProfile, JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout, Administrators as SchoolAdministrators, Classes as SchoolClasses, SchoolProfile, Students as SchoolStudents, Teachers as SchoolTeachers } from "../src/pages/school-admin";
+import { ClassAttendance, ClassDetails, ClassOverview, ClassStudents, EditSchoolProfile, JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout, Administrators as SchoolAdministrators, Classes as SchoolClasses, SchoolProfile, Students as SchoolStudents, Teachers as SchoolTeachers, SchoolTasks, SchoolRewards, CreateTask as SchoolCreateTask } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
 import NotificationSettings from "../src/pages/student/settings/NotificationSettings";
@@ -123,6 +123,10 @@ const router = createBrowserRouter(
               <Route path="attendance" element={<ClassAttendance />} />
             </Route>
             <Route path="administrators" element={<SchoolAdministrators />} />
+            <Route path="tasks" element={<SchoolTasks />} />
+            <Route path="tasks/create" element={<SchoolCreateTask />} />
+            <Route path="tasks/edit/:id" element={<SchoolCreateTask />} />
+            <Route path="rewards" element={<SchoolRewards />} />
           </Route>
         </Route>
 
