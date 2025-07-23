@@ -29,9 +29,9 @@ function ClassDetails() {
   return (
     <Box className='space-y-6'>
       <Flex align="center" gap="4" className='overflow-x-auto'>
-        <Tooltip content='Back to classes'>
+        <Tooltip content='Back'>
           <IconButton variant='surface' color='gray' asChild highContrast>
-            <Link to={'/school-admin/classes'} >
+            <Link to={-1} >
               <ChevronLeft size={16} />
             </Link>
           </IconButton>

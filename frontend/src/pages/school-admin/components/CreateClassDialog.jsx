@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass = null }) {
+function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass = null, teacherProfile = null, }) {
   const {
     register,
     handleSubmit,
@@ -34,7 +34,9 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
     name: 'schedule'
   })
 
-  const { data: schoolProfile, isLoading: isLoadingSchool } = useSchoolProfile()
+  const { data: schoolProfile, isLoading: isLoadingSchool } = useSchoolProfile({
+    enabled: !teacherProfile?.schoolId
+  })
   const createClassMutation = useCreateClass()
   const updateClassMutation = useUpdateClass()
 
@@ -64,7 +66,7 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
   }, [isEdit, selectedClass, setValue, reset, open])
 
   const onSubmit = (data) => {
-    const schoolId = schoolProfile?.data?._id
+    const schoolId = schoolProfile?.data?._id || teacherProfile?.schoolId
 
     if (!schoolId && !isEdit) {
       toast.error('School ID not found')
@@ -189,7 +191,7 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
               )}
 
               {/* Basic Information */}
-              <Flex gap="4" direction={{initial: 'column', xs: 'row'}}>
+              <Flex gap="4" direction={{ initial: 'column', xs: 'row' }}>
                 <div className='flex-1'>
                   <label>
                     <Text as="div" size="2" mb="1" weight="medium">
@@ -237,7 +239,7 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
               </Flex>
 
               {/* Academic Information */}
-              <Flex gap="4" direction={{initial: 'column', xs: 'row'}}>
+              <Flex gap="4" direction={{ initial: 'column', xs: 'row' }}>
                 <div style={{ flex: 1 }}>
                   <label>
                     <Text as="div" size="2" mb="1" weight="medium">

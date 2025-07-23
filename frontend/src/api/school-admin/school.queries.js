@@ -38,10 +38,11 @@ export const useGetAllPendingJoinRequests = () => {
   });
 };
 
-export const useSchoolProfile = () => {
+export const useSchoolProfile = ( options = {} ) => {
   return useQuery({
     queryKey: ['school-profile'],
     queryFn: getSchoolProfile,
+    ...options
   });
 };
 

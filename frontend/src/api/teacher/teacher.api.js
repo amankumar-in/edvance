@@ -15,3 +15,8 @@ export const updateTeacherProfile = async ({id, data}) => {
   const response = await apiClient.put(`/teachers/${id}`, data);
   return response.data;
 };
+
+export const getTeacherClasses = async() => {
+  const response = await apiClient.get("/teachers/me/classes");
+  return response.data;
+}

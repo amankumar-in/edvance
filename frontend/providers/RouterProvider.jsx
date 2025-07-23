@@ -22,6 +22,7 @@ import StudentRewards from "../src/pages/student/StudentRewards";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentTasks from "../src/pages/student/StudentTasks";
 import StudentAttendanceBasePage from "../src/pages/student/StudentAttendanceBasePage";
+import { TeacherClasses, TeacherDashboardLayout } from "../src/pages/teacher";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -98,13 +99,20 @@ const router = createBrowserRouter(
               <Route path="notifications" element={<NotificationSettings />} />
             </Route>
           </Route>
+        </Route>
 
-          {/* Teacher Routes */}
-          <Route path="teacher" >
-            <Route index element={<Navigate to="dashboard" replace />} />
+        {/* Teacher Routes */}
+        <Route path="teacher" >
+          <Route element={<TeacherDashboardLayout />} >
             <Route path="dashboard" element={<TeacherDashboard />} />
-            <Route path="create-profile" element={<CreateTeacherProfile />} />
+            <Route path="classes" element={<TeacherClasses />} />
+            <Route path="classes/:classId" element={<ClassDetails />} >
+              <Route index element={<ClassOverview />} />
+              <Route path="students" element={<ClassStudents />} />
+              <Route path="attendance" element={<ClassAttendance />} />
+            </Route>
           </Route>
+          <Route path="create-profile" element={<CreateTeacherProfile />} />
         </Route>
 
         {/* School Admin Routes */}

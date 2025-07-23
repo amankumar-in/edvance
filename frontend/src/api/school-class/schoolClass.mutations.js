@@ -19,7 +19,10 @@ export const useCreateClass = () => {
   return useMutation({
     mutationFn: createClass,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses });
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses }),
+        queryClient.invalidateQueries({ queryKey: ['teacher', 'classes'] })
+      ])
     },
   });
 };
@@ -34,7 +37,8 @@ export const useUpdateClass = () => {
       const { classId } = variables;
       Promise.all([
         queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses }),
-        queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.details(classId) })
+        queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.details(classId) }),
+        queryClient.invalidateQueries({ queryKey: ['teacher', 'classes'] })
       ])
     },
   });
@@ -47,7 +51,10 @@ export const useDeleteClass = () => {
   return useMutation({
     mutationFn: deleteClass,
     onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses }),
+        queryClient.invalidateQueries({ queryKey: ['teacher', 'classes'] })
+      ])
     },
   });
 };
@@ -59,7 +66,10 @@ export const useGenerateJoinCode = () => {
   return useMutation({
     mutationFn: generateJoinCode,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses });
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: SCHOOL_QUERY_KEYS.allClasses }),
+        queryClient.invalidateQueries({ queryKey: ['teacher', 'classes'] })
+      ])
     },
   });
 };
