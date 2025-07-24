@@ -68,11 +68,12 @@ export const useGetRewardCategoryHierarchy = (params = {}) => {
 /**
  * Get all rewards
  */
-export const useGetRewards = (params = {}) => {
+export const useGetRewards = (params = {}, options = {}) => {
   return useQuery({
     queryKey: REWARDS_QUERY_KEY.list(params),
     queryFn: () => getRewards(params),
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
+    ...options
   });
 };
 

@@ -1,5 +1,5 @@
 import { Flex, Heading, IconButton, Text, Tooltip } from '@radix-ui/themes'
-import { ChevronLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router'
 
@@ -18,7 +18,7 @@ function PageHeader({ title, description, className, children, actions, backButt
                 asChild
               >
                 <Link to={backLink}>
-                  <ChevronLeft size={16} />
+                  <ArrowLeft size={16} />
                 </Link>
               </IconButton>
             </Tooltip>

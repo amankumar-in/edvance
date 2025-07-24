@@ -8,7 +8,7 @@ import ParentRewards from "../src/pages/parent/ParentRewards";
 import ParentLinkedAccounts from "../src/pages/parent/settings/LinkedAccounts";
 import TaskDetails from "../src/pages/parent/TaskDetails";
 import { CreateEditCategory, CreateReward, CreateRewardCategory, CreateTask, Overview, Parents, PlatformAdminDashboardLayout, RewardCategories, RewardRedemptions, Rewards, ScholarshipPoints, SchoolAdmins, SocialWorkers, Students, TaskCategories, Tasks, Teachers, UserDetails, Users } from "../src/pages/platform-admin";
-import { ClassAttendance, ClassDetails, ClassOverview, ClassStudents, EditSchoolProfile, JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout, Administrators as SchoolAdministrators, Classes as SchoolClasses, SchoolProfile, Students as SchoolStudents, Teachers as SchoolTeachers, SchoolTasks, SchoolRewards, CreateTask as SchoolCreateTask } from "../src/pages/school-admin";
+import { ClassAttendance, ClassDetails, ClassOverview, ClassStudents, EditSchoolProfile, JoinRequests, SchoolAdminDashboard, SchoolAdminDashboardLayout, Administrators as SchoolAdministrators, Classes as SchoolClasses, SchoolProfile, Students as SchoolStudents, Teachers as SchoolTeachers, SchoolTasks, SchoolRewards, CreateTask as SchoolCreateTask, CreateSchoolReward } from "../src/pages/school-admin";
 import SettingsLayout from "../src/pages/SettingsLayout";
 import StudentLinkedAccounts from "../src/pages/student/settings/LinkedAccounts";
 import NotificationSettings from "../src/pages/student/settings/NotificationSettings";
@@ -22,7 +22,7 @@ import StudentRewards from "../src/pages/student/StudentRewards";
 import StudentTaskDetail from "../src/pages/student/StudentTaskDetail";
 import StudentTasks from "../src/pages/student/StudentTasks";
 import StudentAttendanceBasePage from "../src/pages/student/StudentAttendanceBasePage";
-import { CreateTeacherTask, TeacherClasses, TeacherDashboardLayout, TeacherTasks } from "../src/pages/teacher";
+import { CreateEditTeacherReward, CreateTeacherTask, TeacherClasses, TeacherDashboardLayout, TeacherRewards, TeacherTasks } from "../src/pages/teacher";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -114,6 +114,9 @@ const router = createBrowserRouter(
             <Route path="tasks" element={<TeacherTasks />} />
             <Route path="tasks/create" element={<CreateTeacherTask />} />
             <Route path="tasks/edit/:id" element={<CreateTeacherTask />} />
+            <Route path="rewards" element={<TeacherRewards />} />
+            <Route path="rewards/create" element={<CreateEditTeacherReward />} />
+            <Route path="rewards/edit/:id" element={<CreateEditTeacherReward />} />
           </Route>
           <Route path="create-profile" element={<CreateTeacherProfile />} />
         </Route>
@@ -138,6 +141,8 @@ const router = createBrowserRouter(
             <Route path="tasks/create" element={<SchoolCreateTask />} />
             <Route path="tasks/edit/:id" element={<SchoolCreateTask />} />
             <Route path="rewards" element={<SchoolRewards />} />
+            <Route path="rewards/create" element={<CreateSchoolReward />} />
+            <Route path="rewards/edit/:id" element={<CreateSchoolReward />} />
           </Route>
         </Route>
 

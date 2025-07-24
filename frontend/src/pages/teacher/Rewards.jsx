@@ -8,22 +8,22 @@ import { useDeleteReward } from '../../api/rewards/rewards.mutations';
 import { useGetRewards } from '../../api/rewards/rewards.queries';
 import { ConfirmationDialog, EmptyStateCard, ErrorCallout, Loader, PageHeader, Pagination } from '../../components';
 import { SortIcon } from '../../components/platform-admin/UserTable';
+import { useAuth } from '../../Context/AuthContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { FALLBACK_IMAGES } from '../../utils/constants';
 import { formatDate } from '../../utils/helperFunctions';
-import { useGetSchoolProfile } from '../../api/school-admin/school.queries';
 
 const Rewards = () => {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(20); 
   const [sort, setSort] = useState('createdAt');
   const [order, setOrder] = useState('desc');
   const currentSort = { field: sort, order: order };
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
-
-  const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile()
-  const schoolId = data?.data?._id
+  const { profiles } = useAuth();
+  const teacherProfile = profiles?.['teacher'];
+  const teacherId = teacherProfile?._id;
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -45,11 +45,10 @@ const Rewards = () => {
     limit,
     sort,
     order,
-    schoolId,
+    creatorType: 'teacher',
+    creatorId: teacherId,
     ...filters,
     search: debouncedSearch,
-  }, {
-    enabled: !!schoolId
   });
   const { rewards = [], pagination = {} } = rewardsData?.data ?? {};
 
@@ -215,7 +214,7 @@ const Rewards = () => {
     { value: 'digital', label: 'Digital' },
   ];
 
-  if (isLoading || isSchoolLoading) {
+  if (isLoading) {
     return (
       <div className='space-y-6'>
         <RewardsPageHeader />
@@ -226,11 +225,11 @@ const Rewards = () => {
     )
   }
 
-  if (isError || isSchoolError) {
+  if (isError) {
     return (
       <div className="space-y-6">
         <RewardsPageHeader />
-        <ErrorCallout errorMessage={error?.response?.data?.message || error?.message || schoolError?.response?.data?.message || schoolError?.message || 'Failed to load rewards'}
+        <ErrorCallout errorMessage={error?.response?.data?.message || error?.message || 'Failed to load rewards'}
           className={'mx-auto max-w-3xl'}
         />
       </div>
@@ -426,7 +425,7 @@ const Rewards = () => {
                             <Eye size={14} /> View Details
                           </DropdownMenu.Item>
                           <DropdownMenu.Item asChild>
-                            <Link to={`/school-admin/rewards/edit/${reward._id}`}>
+                            <Link to={`/teacher/rewards/edit/${reward._id}`}>
                               <PencilIcon size={14} /> Edit Reward
                             </Link>
                           </DropdownMenu.Item>
@@ -566,8 +565,8 @@ export default Rewards;
 function RewardsPageHeader() {
   return (
     <PageHeader
-      title="Rewards"
-      description="Create and manage rewards for your school students"
+      title="Rewards Management"
+      description="Create and manage rewards for your class students"
     >
       <AddRewardButton />
     </PageHeader>
@@ -577,7 +576,7 @@ function RewardsPageHeader() {
 function AddRewardButton() {
   return (
     <Button asChild className='shadow-md'>
-      <Link to='/school-admin/rewards/create'>
+      <Link to='create'>
         <Plus size={16} /> Create Reward
       </Link>
     </Button>

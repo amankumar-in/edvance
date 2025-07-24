@@ -63,13 +63,15 @@ const rewardSchema = new mongoose.Schema(
       ],
     },
     schoolId: {
-      type: String, // Will store school ID from user service
+      type: mongoose.Schema.Types.ObjectId, // Will store school ID from user service
+      ref: "School",
       required: function () {
         return this.creatorType === "school" || this.creatorType === "teacher";
       },
     },
     classId: {
-      type: String, // Will store class ID for teacher-created rewards
+      type: mongoose.Schema.Types.ObjectId, // Will store class ID for teacher-created rewards
+      ref: "SchoolClass",
       required: function () {
         return this.creatorType === "teacher";
       },

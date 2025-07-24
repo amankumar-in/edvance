@@ -54,9 +54,36 @@ async function getParentAndChildrenData(parentId, authHeader) {
       axios.get(`${userServiceUrl}/api/parents/me/children`, { headers: { Authorization: authHeader } })
     ]);
 
+    const childrenData = childrenResponse.data.data;
+
+    // Fetch classes for each child
+    const childrenWithClasses = await Promise.all(
+      childrenData.map(async (child) => {
+        try {
+          const childClasses = await axios.get(
+            `${userServiceUrl}/api/students/${child._id}/classes`,
+            { headers: { Authorization: authHeader } }
+          );
+
+          return {
+            ...child,
+            classes: childClasses?.data?.data || [],
+            classIds: childClasses?.data?.data?.map(cls => cls._id) || []
+          };
+        } catch (error) {
+          console.warn(`Failed to fetch classes for child ${child._id}:`, error.message);
+          return {
+            ...child,
+            classes: [],
+            classIds: []
+          };
+        }
+      })
+    );
+
     return {
       parentData: parentResponse.data.data,
-      childrenData: childrenResponse.data.data
+      childrenData: childrenWithClasses
     };
   } catch (error) {
     console.error("Error getting parent/children details:", error.response?.data || error.message);
@@ -233,11 +260,8 @@ const rewardController = {
         creatorId,
         authUserId: userId,
         creatorType: (creatorType === 'platform_admin' || creatorType === 'sub_admin') ? 'system' : creatorType,
-        schoolId:
-          creatorType === "school" || creatorType === "teacher"
-            ? schoolId || req.user.schoolId
-            : undefined,
-        classId: creatorType === "teacher" ? classId : undefined,
+        schoolId,
+        classId,
         limitedQuantity: limitedQuantity || false,
         quantity: limitedQuantity ? quantity : undefined,
         expiryDate: expiryDate ? new Date(expiryDate) : undefined,
@@ -274,6 +298,7 @@ const rewardController = {
         subcategory,
         categoryId,
         creatorType,
+        creatorId,
         schoolId,
         classId,
         minPoints,
@@ -314,6 +339,7 @@ const rewardController = {
       }
 
       if (creatorType) filter.creatorType = creatorType;
+      if (creatorId) filter.creatorId = creatorId;
       if (schoolId) filter.schoolId = schoolId;
       if (classId) filter.classId = classId;
 
@@ -337,199 +363,6 @@ const rewardController = {
         filter.isFeatured = isFeatured === 'true';
       }
 
-      // Access control based on user role
-      const userRoles = req.user.roles;
-      const userId = req.user.id;
-
-      if (userRoles.includes("student")) {
-        try {
-          // Get student details from user service
-          const userServiceUrl =
-            process.env.NODE_ENV === "production"
-              ? process.env.PRODUCTION_USER_SERVICE_URL
-              : process.env.USER_SERVICE_URL || "http://localhost:3002";
-
-          const studentResponse = await axios.get(
-            `${userServiceUrl}/api/students/me`,
-            {
-              headers: {
-                Authorization: req.headers.authorization,
-              },
-            }
-          );
-
-          const studentData = studentResponse.data.data;
-          const studentId = studentData._id;
-
-          // Handle wishlist-only filter
-          if (wishlistOnly === 'true') {
-            // Get all wishlist items for this student
-            const wishlistItems = await RewardWishlist.find({ studentId });
-            const wishlistedRewardIds = wishlistItems.map(item => item.rewardId);
-
-            if (wishlistedRewardIds.length === 0) {
-              // No wishlist items, return empty result
-              return res.status(200).json({
-                success: true,
-                data: {
-                  rewards: [],
-                  pagination: {
-                    total: 0,
-                    page: parseInt(page),
-                    limit: parseInt(limit),
-                    pages: 0,
-                  },
-                },
-              });
-            }
-
-            // Filter to only include wishlisted rewards
-            filter._id = { $in: wishlistedRewardIds };
-          } else {
-            // Normal filtering logic for students
-            // Students can see:
-            // 1. Sponsor rewards
-            // 2. System rewards
-            // 3. School rewards for their school
-            // 4. Class rewards for their classes
-            // 5. Family rewards created by their parents
-            filter.$or = [
-              { category: "sponsor" },
-              { creatorType: "system" },
-              { schoolId: studentData.schoolId },
-              { classId: { $in: studentData.classIds || [] } },
-              { creatorId: { $in: studentData.parentIds || [] } },
-            ];
-
-            // If student has a social worker, include their rewards too
-            if (studentData.socialWorkerId) {
-              filter.$or.push({ creatorId: studentData.socialWorkerId });
-            }
-          }
-        } catch (error) {
-          console.error(
-            "Error getting student details:",
-            error.response?.data || error.message
-          );
-
-          if (wishlistOnly === 'true') {
-            // If we can't get student details and wishlist is requested, return empty
-            return res.status(200).json({
-              success: true,
-              data: {
-                rewards: [],
-                pagination: {
-                  total: 0,
-                  page: parseInt(page),
-                  limit: parseInt(limit),
-                  pages: 0,
-                },
-              },
-            });
-          }
-
-          // Fallback if user service fails - show basic rewards
-          filter.$or = [{ category: "sponsor" }, { creatorType: "system" }];
-        }
-      } else if (wishlistOnly === 'true') {
-        // Non-students requesting wishlist should get empty results
-        return res.status(200).json({
-          success: true,
-          data: {
-            rewards: [],
-            pagination: {
-              total: 0,
-              page: parseInt(page),
-              limit: parseInt(limit),
-              pages: 0,
-            },
-          },
-        });
-      } else if (userRoles.includes("parent")) {
-        try {
-          // Get parent details from user service
-          const userServiceUrl =
-            process.env.NODE_ENV === "production"
-              ? process.env.PRODUCTION_USER_SERVICE_URL
-              : process.env.USER_SERVICE_URL || "http://localhost:3002";
-
-          const parentResponse = await axios.get(
-            `${userServiceUrl}/api/parents/me`,
-            {
-              headers: {
-                Authorization: req.headers.authorization,
-              },
-            }
-          );
-
-          const parentData = parentResponse.data.data;
-
-          // Get children's school IDs
-          const childrenResponse = await axios.get(
-            `${userServiceUrl}/api/parents/me/children`,
-            {
-              headers: {
-                Authorization: req.headers.authorization,
-              },
-            }
-          );
-
-          const childrenData = childrenResponse.data.data;
-          const childrenSchoolIds = childrenData
-            .map((child) => child.schoolId)
-            .filter(Boolean);
-
-          // Parents can see:
-          // 1. Their own rewards
-          // 2. Sponsor rewards
-          // 3. System rewards
-          // 4. School rewards for schools their children attend
-          filter.$or = [
-            { creatorId: userId },
-            { category: "sponsor" },
-            { creatorType: "system" },
-            { schoolId: { $in: childrenSchoolIds } },
-          ];
-        } catch (error) {
-          console.error(
-            "Error getting parent details:",
-            error.response?.data || error.message
-          );
-          // Fallback if user service fails
-          filter.$or = [
-            { creatorId: userId },
-            { category: "sponsor" },
-            { creatorType: "system" },
-          ];
-        }
-      } else if (userRoles.includes("teacher")) {
-        // Teachers can see:
-        // 1. Their own rewards
-        // 2. School rewards for their school
-        // 3. System rewards
-        filter.$or = [
-          { creatorId: userId },
-          { schoolId: req.user.schoolId },
-          { creatorType: "system" },
-        ];
-      } else if (userRoles.includes("social_worker")) {
-        // Social workers can see:
-        // 1. Their own rewards
-        // 2. Sponsor rewards
-        // 3. System rewards
-        filter.$or = [
-          { creatorId: userId },
-          { category: "sponsor" },
-          { creatorType: "system" },
-        ];
-      } else if (userRoles.includes("school_admin")) {
-        // School admins can see all rewards but focus on their school
-        if (req.user.schoolId && !schoolId) {
-          filter.schoolId = req.user.schoolId;
-        }
-      }
-      // Platform admins can see all rewards
-
       // Pagination
       const skip = (parseInt(page) - 1) * parseInt(limit);
       const sortOrder = order === "desc" ? -1 : 1;
@@ -544,59 +377,10 @@ const rewardController = {
       // Get total count for pagination
       const total = await Reward.countDocuments(filter);
 
-      // Add wishlist status for students
-      let rewardsWithWishlistStatus = rewards;
-      if (userRoles.includes("student")) {
-        try {
-          // Get student ID from user service
-          const userServiceUrl =
-            process.env.NODE_ENV === "production"
-              ? process.env.PRODUCTION_USER_SERVICE_URL
-              : process.env.USER_SERVICE_URL || "http://localhost:3002";
-
-          const studentResponse = await axios.get(
-            `${userServiceUrl}/api/students/me`,
-            {
-              headers: {
-                Authorization: req.headers.authorization,
-              },
-            }
-          );
-
-          const studentId = studentResponse.data.data._id;
-
-          // Get all wishlist items for this student
-          const wishlistItems = await RewardWishlist.find({ studentId });
-          const wishlistedRewardIds = new Set(
-            wishlistItems.map(item => item.rewardId.toString())
-          );
-
-          // Add isInWishlist field to each reward
-          rewardsWithWishlistStatus = rewards.map(reward => ({
-            ...reward.toObject(),
-            isInWishlist: wishlistedRewardIds.has(reward._id.toString())
-          }));
-
-        } catch (error) {
-          console.error("Error adding wishlist status:", error);
-          // If we can't get wishlist status, just return rewards without it
-          rewardsWithWishlistStatus = rewards.map(reward => ({
-            ...reward.toObject(),
-            isInWishlist: false
-          }));
-        }
-      } else {
-        // For non-students, set isInWishlist to false
-        rewardsWithWishlistStatus = rewards.map(reward => ({
-          ...reward.toObject(),
-          isInWishlist: false
-        }));
-      }
-
       res.status(200).json({
         success: true,
         data: {
-          rewards: rewardsWithWishlistStatus,
+          rewards,
           pagination: {
             total,
             page: parseInt(page),
@@ -658,6 +442,7 @@ const rewardController = {
     try {
       const { id } = req.params;
       const updateData = req.body;
+      const role = req.body.role;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -677,7 +462,7 @@ const rewardController = {
 
       // Check authorization - only creator or platform admin can update
       const { profiles } = req.user;
-      const userId = profiles.parent?._id;
+      const userId = profiles[role]?._id;
       const userRoles = req.user.roles;
 
       const isAuthorized =
@@ -1072,11 +857,6 @@ const rewardController = {
         category,
         subcategory,
         categoryId,
-        creatorType,
-        schoolId,
-        classId,
-        minPoints,
-        maxPoints,
         search,
         page = 1,
         limit = 20,
@@ -1090,54 +870,87 @@ const rewardController = {
 
       // Get parent details and children from user service
       try {
-        const { parentData, childrenData } = await getParentAndChildrenData(parentId, authHeader);
+        const { childrenData } = await getParentAndChildrenData(parentId, authHeader);
 
         // Get children's school IDs and class IDs
-        const childrenSchoolIds = [...new Set(childrenData.map(child => child.schoolId).filter(Boolean))];
-        const childrenClassIds = [...new Set(childrenData.flatMap(child => child.classIds || []))];
+        const childrenSchoolIds = [...new Set(childrenData.map(child => {
+          const schoolId = child.schoolId?._id || child.schoolId;
+          return schoolId ? new mongoose.Types.ObjectId(schoolId) : null;
+        }).filter(Boolean))];
 
+        const childrenClassIds = [...new Set(childrenData.flatMap(child =>
+          (child.classIds || []).map(classId => new mongoose.Types.ObjectId(classId))
+        ))];
 
-        // Base filter for rewards visible to parent's children
+        // Base filter for rewards visible to parent
         const filter = {
           isActive: true,
           isDeleted: false,
-          $or: [{ expiryDate: { $gt: new Date() } }, { expiryDate: null }],
-          // Parent can see rewards that affect their children
-          $and: [{
-            $or: [
-              { creatorId: parentId }, // Own rewards
-              { creatorType: "system" }, // Global rewards
-              { schoolId: { $in: childrenSchoolIds } }, // School rewards
-              { classId: { $in: childrenClassIds } }, // Class rewards
-            ]
-          }]
+          $or: [{ expiryDate: { $gt: new Date() } }, { expiryDate: null }]
         };
+
+        // Parent can see:
+        // 1. System rewards
+        // 2. Rewards they created
+        // 3. Class rewards for their children's classes
+        // 4. School rewards for their children's schools (but not class-specific ones)
+        const rewardAccessConditions = [
+          { creatorType: "system" }
+        ];
+
+        // 1. Parent's own rewards
+        rewardAccessConditions.push({
+          creatorType: "parent",
+          creatorId: parentId
+        });
+
+        // 2. School rewards (school-level rewards without specific classId)
+        if (childrenSchoolIds.length > 0) {
+          rewardAccessConditions.push({
+            $and: [
+              { schoolId: { $in: childrenSchoolIds } },
+              { $or: [{ classId: { $exists: false } }, { classId: null }] }
+            ]
+          });
+        }
+
+        // 3. Class rewards for children's classes
+        if (childrenClassIds.length > 0) {
+          rewardAccessConditions.push({
+            classId: { $in: childrenClassIds }
+          });
+        }
+
+        // Apply access conditions
+        if (rewardAccessConditions.length > 0) {
+          filter.$or = rewardAccessConditions;
+        } else {
+          // If no access conditions, only show parent's own rewards
+          filter.creatorType = "parent";
+          filter.creatorId = parentId;
+        }
 
         // Apply additional filters
         if (categoryId) {
           filter.categoryId = categoryId;
         } else if (category) {
-          filter.$or = [
-            { category: category },
-            { categoryName: category }
-          ];
+          filter.$and = filter.$and || [];
+          filter.$and.push({
+            $or: [
+              { category: category },
+              { categoryName: category }
+            ]
+          });
         }
 
         if (subcategory) {
-          filter.$or = [
-            { subcategory: subcategory },
-            { subcategoryName: subcategory }
-          ];
-        }
-
-        if (creatorType) filter.creatorType = creatorType;
-        if (schoolId) filter.schoolId = schoolId;
-        if (classId) filter.classId = classId;
-
-        if (minPoints) filter.pointsCost = { $gte: parseInt(minPoints) };
-        if (maxPoints) {
-          filter.pointsCost = filter.pointsCost || {};
-          filter.pointsCost.$lte = parseInt(maxPoints);
+          filter.$and = filter.$and || [];
+          filter.$and.push({
+            $or: [
+              { subcategory: subcategory },
+              { subcategoryName: subcategory }
+            ]
+          });
         }
 
         if (search) {
@@ -1231,7 +1044,6 @@ const rewardController = {
       const { isVisible } = req.body;
       const { profiles } = req.user;
       const parentId = profiles.parent?._id;
-      const authHeader = req.headers.authorization;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -1253,17 +1065,6 @@ const rewardController = {
         return res.status(404).json({
           success: false,
           message: "Reward not found",
-        });
-      }
-
-      // Get parent's children data to check if they can control this reward
-      const childrenData = await getUserChildren(parentId, authHeader);
-
-      // Check if parent can control this reward
-      if (!reward.canParentControl(parentId, childrenData)) {
-        return res.status(403).json({
-          success: false,
-          message: "You cannot control the visibility of this reward",
         });
       }
 
@@ -1309,11 +1110,6 @@ const rewardController = {
         category,
         subcategory,
         categoryId,
-        creatorType,
-        schoolId,
-        classId,
-        minPoints,
-        maxPoints,
         search,
         page = 1,
         limit = 20,
@@ -1325,7 +1121,11 @@ const rewardController = {
 
       const { profiles } = req.user;
       const authHeader = req.headers.authorization;
-
+      const studentData = profiles['student'];
+      const studentId = studentData._id;
+      const parentIds = profiles['student']?.parentIds;
+      const schoolId = studentData?.schoolId;
+      let classIds;
 
       // Get student details from user service
       const userServiceUrl =
@@ -1334,15 +1134,12 @@ const rewardController = {
           : process.env.USER_SERVICE_URL || "http://localhost:3002";
 
       try {
-        const studentResponse = await axios.get(
-          `${userServiceUrl}/api/students/me`,
+        const studentClasses = await axios.get(
+          `${userServiceUrl}/api/students/${studentId}/classes`,
           { headers: { Authorization: authHeader } }
         );
 
-        const studentData = studentResponse.data.data;
-        const studentId = studentData._id;
-        const parentIds = profiles['student']?.parentIds;
-
+        classIds = studentClasses?.data?.data?.map(cls => new mongoose.Types.ObjectId(cls._id)) ?? [];
 
         // Base filter for rewards
         const filter = {
@@ -1379,22 +1176,35 @@ const rewardController = {
           filter._id = { $in: wishlistedRewardIds };
         } else {
           // Apply student access rules
-          const schoolFilter = studentData.schoolId ? { schoolId: studentData.schoolId } : null;
+          const rewardAccessConditions = [
+            // System/global rewards
+            { creatorType: "system" },
+          ];
 
-          filter.$and = [{
-            $or: [
-              { creatorType: "system" },
-              ...(schoolFilter ? [schoolFilter] : []),
-              { classId: { $in: studentData.classIds || [] } },
-            ]
-          }];
+          // School rewards (contain schoolId, no classId requirement)
+          if (schoolId) {
+            rewardAccessConditions.push({
+              $and: [
+                { schoolId: schoolId },
+                { $or: [{ classId: { $exists: false } }, { classId: null }] }
+              ]
+            });
+          }
 
-          // Add parent rewards
-          if (parentIds.length > 0) {
+          // Class rewards (contain both schoolId and classId)
+          if (classIds && classIds.length > 0) {
+            rewardAccessConditions.push({
+              $and: [
+                { schoolId: schoolId },
+                { classId: { $in: classIds } }
+              ]
+            });
+          }
+
+          // Parent rewards
+          if (parentIds && parentIds.length > 0) {
             const parentObjectIds = parentIds.map(id => new mongoose.Types.ObjectId(id));
-
-            // ADD to existing filter, don't overwrite
-            filter.$and[0].$or.push({
+            rewardAccessConditions.push({
               creatorType: "parent",
               creatorId: { $in: parentObjectIds }
             });
@@ -1402,11 +1212,13 @@ const rewardController = {
 
           // Include social worker rewards if applicable
           if (studentData.socialWorkerId) {
-            filter.$and[0].$or.push({
+            rewardAccessConditions.push({
               creatorType: "social_worker",
               creatorId: studentData.socialWorkerId
             });
           }
+
+          filter.$or = rewardAccessConditions;
         }
 
         // Apply additional filters
@@ -1424,16 +1236,6 @@ const rewardController = {
             { subcategory: subcategory },
             { subcategoryName: subcategory }
           ];
-        }
-
-        if (creatorType) filter.creatorType = creatorType;
-        if (schoolId) filter.schoolId = schoolId;
-        if (classId) filter.classId = classId;
-
-        if (minPoints) filter.pointsCost = { $gte: parseInt(minPoints) };
-        if (maxPoints) {
-          filter.pointsCost = filter.pointsCost || {};
-          filter.pointsCost.$lte = parseInt(maxPoints);
         }
 
         if (search) {
