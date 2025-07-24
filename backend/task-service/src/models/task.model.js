@@ -206,10 +206,12 @@ const taskSchema = new mongoose.Schema(
     },
     // School-related fields
     schoolId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "School",
     },
     classId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SchoolClass",
     },
     // If part of a badge or achievement
     badgeId: {
