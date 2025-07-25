@@ -95,7 +95,7 @@ function TaskPageBase({
     const imageAttachment = task.attachments?.find(attachment => attachment.type === 'image');
 
     return (
-      <Card size="1" asChild className={`transition-shadow hover:shadow-md`}>
+      <Card size="1" asChild className={`shadow-md transition-shadow hover:shadow-lg`}>
         <Link to={`/${role}/tasks/${task._id}`}>
           <Flex direction="column" gap="3" justify="between" className='h-full'>
             <Flex direction="column" gap="3">

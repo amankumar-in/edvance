@@ -74,3 +74,11 @@ export const useGetTasksForApproval = (params = {}) => {
     keepPreviousData: true
   });
 };
+
+export const useGetTaskClaimsPaginated = (params = {}) => {
+  return useQuery({
+    queryKey: ["tasks", "approval", params],
+    queryFn: () => getTasksForApproval(params),
+    placeholderData: keepPreviousData,
+  });
+};

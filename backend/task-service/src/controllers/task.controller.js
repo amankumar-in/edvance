@@ -5,6 +5,7 @@ const TaskVisibility = require("../models/taskVisibility.model");
 const TaskCompletion = require("../models/taskCompletion.model");
 const { getFileUrl, getFileType } = require("../middleware/upload.middleware");
 
+// Helper function to get student classes
 async function getStudentClasses(childId, authHeader) {
   const userServiceUrl =
     process.env.NODE_ENV === "production"
@@ -63,6 +64,18 @@ async function getChildrenData(authHeader) {
     console.error("Error getting children details:", error.response?.data || error.message);
     throw new Error("Failed to get children information");
   }
+}
+
+// Helper function to get school profile
+async function getSchoolProfile(authHeader) {
+  const userServiceUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+  const schoolProfile = await axios.get(`${userServiceUrl}/api/schools/me`, { headers: { Authorization: authHeader } });
+
+  return schoolProfile?.data?.data;
 }
 
 
@@ -260,33 +273,7 @@ const taskController = {
         });
       }
 
-      // Check if user has permission to view this task
-      // Here we'd implement access control logic
-      // For example, a student should only see tasks assigned to them
-      // A parent should only see tasks they created or assigned to their children
-      // A teacher should only see tasks they created or for their class/school
-
-      // For now, basic check: user is creator, assigned student, or approved role (admin, etc.)
-      const userId = req.user.id;
-      const userRole = req.user.roles;
-      const { profiles } = req.user;
-      const role = req.headers['x-role'];
-      const createdByProfileId = profiles[role]?._id;
-
-      const isAuthorized =
-        task.createdBy.equals(createdByProfileId) ||
-        task.assignedTo === userId ||
-        userRole.includes("platform_admin") ||
-        (userRole.includes("school_admin") && task.schoolId) ||
-        (userRole.includes("teacher") && task.classId) ||
-        (userRole.includes("parent"));
-
-      if (!isAuthorized) {
-        return res.status(403).json({
-          success: false,
-          message: "Not authorized to view this task",
-        });
-      }
+      // TODO: Implement access control logic
 
       return res.status(200).json({
         success: true,
@@ -343,6 +330,7 @@ const taskController = {
         });
       }
 
+      // TODO: Implement a stricter access control logic
       // Check authorization - only creator or approved roles can update
       const isAuthorized =
         task.createdBy.equals(createdByProfileId) ||
@@ -511,6 +499,7 @@ const taskController = {
         });
       }
 
+      // TODO: Implement a stricter access control logic
       // Check authorization - only creator or approved roles can delete
       const isAuthorized =
         task.createdBy.equals(createdByProfileId) ||
@@ -710,6 +699,9 @@ const taskController = {
       const { profiles } = req.user;
       const { id } = req.params;
       const { note, evidence: rawEvidence } = req.body;
+      const currentProfileId = profiles.student?._id && new mongoose.Types.ObjectId(profiles.student?._id);
+      const schoolId = profiles?.['student']?.schoolId && new mongoose.Types.ObjectId(profiles?.['student']?.schoolId);
+      const classIds = await getStudentClasses(currentProfileId, req.headers.authorization);
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -717,8 +709,6 @@ const taskController = {
           message: "Invalid task ID format",
         });
       }
-
-      const currentProfileId = profiles.student?._id;
 
       if (!currentProfileId) {
         return res.status(400).json({
@@ -769,6 +759,12 @@ const taskController = {
               assignedId => assignedId.toString() === currentProfileId.toString()
             );
           }
+        } else if (task.assignedTo?.role === "school") {
+          if (task.schoolId.equals(schoolId) && (task.classId === null || task.classId === undefined)) {
+            hasAccess = true;
+          } else if (task.classId && classIds.some(id => id.equals(task.classId))) {
+            hasAccess = true;
+          }
         }
       }
 
@@ -795,13 +791,13 @@ const taskController = {
 
       // Process evidence including file uploads
       let processedEvidence = [];
-      
+
       // Parse evidence from FormData if it exists (for text/link evidence)
       const textEvidence = parseField(rawEvidence) || [];
-      
+
       // Add text/link evidence first
       processedEvidence = [...textEvidence];
-      
+
       // Process uploaded files if any
       if (req.files && req.files.length > 0) {
         const fileEvidence = req.files.map(file => ({
@@ -931,8 +927,9 @@ const taskController = {
     try {
       const { id } = req.params;
       const { action, feedback, role } = req.body;
-      const userId = req.user.id;
+      const { profiles } = req.user;
       const userRole = role;
+      let userId;
 
       if (!["approve", "reject"].includes(action)) {
         return res.status(400).json({
@@ -970,17 +967,27 @@ const taskController = {
       // Check if user is authorized to approve/reject
       let isAuthorized = false;
 
-      if (task.approverType === "parent" && userRole === "parent") {
-        isAuthorized = task.specificApproverId
-          ? task.specificApproverId === userId
-          : true;
-      } else if (
-        task.approverType === "teacher" &&
-        (userRole === "teacher" || userRole === "school_admin")
-      ) {
-        isAuthorized = task.createdBy === userId || userRole === "school_admin";
-      } else if (userRole === "platform_admin") {
-        isAuthorized = true;
+      // TODO: Implement a stricter access control logic
+      if (userRole === 'teacher') {
+        const teacherProfile = profiles?.['teacher'];
+        const teacherId = teacherProfile?._id;
+        const classIds = teacherProfile?.classIds;
+        const classIdsObjectIds = classIds.map(id => new mongoose.Types.ObjectId(id));
+        userId = teacherId;
+
+        isAuthorized = classIdsObjectIds.some(id => id.equals(task.classId));
+      }
+      if (userRole === 'school_admin') {
+        userId = new mongoose.Types.ObjectId(req.user.id);
+        const schoolProfile = await getSchoolProfile(req.headers.authorization);
+        const schoolId = schoolProfile?._id;
+        isAuthorized = task.schoolId.equals(schoolId);
+      }
+      if (userRole === 'parent') {
+        const parentProfile = profiles?.['parent'];
+        const parentId = parentProfile?._id;
+        userId = parentId;
+        isAuthorized = task.approverType === 'parent';
       }
 
       if (!isAuthorized) {
@@ -2580,10 +2587,10 @@ const taskController = {
             childIds.forEach(childId => {
               const childIdStr = childId.toString();
               const child = childrenData.find(c => c._id.toString() === childIdStr);
-              
+
               if (child) {
                 let canSeeTask = false;
-                
+
                 // Check if task is a school-level task
                 if (task.schoolId && (!task.classId || task.classId === null)) {
                   const taskSchoolId = task.schoolId.toString();
@@ -2595,7 +2602,7 @@ const taskController = {
                   const taskClassId = task.classId.toString();
                   canSeeTask = (child.classIds || []).some(classId => classId.toString() === taskClassId);
                 }
-                
+
                 // Apply visibility settings
                 if (canSeeTask && !visibility.hiddenChildren.has(childIdStr)) {
                   visibleToChildren.add(childIdStr);
@@ -2640,6 +2647,7 @@ const taskController = {
   /**
    * Get tasks for approval
    */
+  // TODO: Refactor to reduce code duplication while maintaining exact functionality
   getTasksForApproval: async (req, res) => {
     try {
       const role = req.query.role;
@@ -2805,8 +2813,255 @@ const taskController = {
         return res.status(200).json({ success: true, data: approvalRequest })
       }
 
-      // TODO: Implement similar logic for other roles (e.g., teacher, school_admin etc.)
+      if (role === 'school_admin') {
+        const schoolProfile = await getSchoolProfile(req.headers.authorization);
+        const schoolId = schoolProfile?._id;
 
+        if (!schoolId) {
+          return res.status(400).json({
+            success: false,
+            message: "School admin profile missing schoolId"
+          });
+        }
+
+        // Convert schoolId to ObjectId format for querying
+        const schoolObjectId = new mongoose.Types.ObjectId(schoolId);
+
+        // Base match stage to get task completions from students in the school admin's school
+        const matchStage = {};
+
+        // If status is provided and not "all", apply filter
+        if (status && status !== 'all') {
+          matchStage.status = status;
+        }
+
+        // Aggregation pipeline
+        const aggregationPipeline = [
+          { $match: matchStage },
+          {
+            $lookup: {
+              from: "tasks",
+              localField: "taskId",
+              foreignField: "_id",
+              as: "task"
+            }
+          },
+          {
+            $addFields: {
+              task: { $arrayElemAt: ["$task", 0] }
+            }
+          },
+          {
+            $match: {
+              "task.schoolId": schoolObjectId
+            }
+          },
+          {
+            $lookup: {
+              from: "students",
+              localField: "studentId",
+              foreignField: "_id",
+              as: "childDetails",
+              pipeline: [
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user"
+                  }
+                },
+                {
+                  $addFields: {
+                    user: { $arrayElemAt: ["$user", 0] },
+                  }
+                }
+              ]
+            }
+          },
+          // Flatten childDetails array
+          {
+            $addFields: {
+              childDetails: { $arrayElemAt: ["$childDetails", 0] }
+            }
+          },
+          {
+            $addFields: {
+              childDetails: {
+                $mergeObjects: [
+                  "$childDetails",
+                  "$childDetails.user"
+                ]
+              },
+            }
+          },
+          // Final projection: send only necessary fields to the client
+          {
+            $project: {
+              taskId: 1,
+              studentId: 1,
+              completedAt: 1,
+              note: 1,
+              evidence: 1,
+              status: 1,
+              approvedBy: 1,
+              approverRole: 1,
+              approvalDate: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              task: 1,
+              childDetails: {
+                userId: 1,
+                firstName: 1,
+                lastName: 1,
+                avatar: 1,
+                email: 1,
+                grade: 1
+              },
+              feedback: 1
+            }
+          }
+        ]
+
+        // Pagination options
+        const options = {
+          page,
+          limit,
+          sort: { [sortBy]: order === 'asc' ? 1 : -1 }
+        }
+
+        // Execute the aggregation with pagination
+        const approvalRequest = await TaskCompletion.aggregatePaginate(
+          TaskCompletion.aggregate(aggregationPipeline),
+          options
+        );
+
+        return res.status(200).json({ success: true, data: approvalRequest })
+      }
+
+      if (role === 'teacher') {
+        const teacherProfile = profiles?.['teacher'];
+        const classIds = teacherProfile?.classIds;
+
+        if (!classIds?.length) {
+          return res.status(400).json({ success: false, message: "Teacher profile missing classIds" });
+        }
+
+        const classIdsObjectIds = classIds.map(id => new mongoose.Types.ObjectId(id));
+
+        // Base match stage to get task completions from students in the teacher's classes
+        const matchStage = {};
+
+        // If status is provided and not "all", apply filter
+        if (status && status !== 'all') {
+          matchStage.status = status;
+        }
+
+        // Aggregation pipeline
+        const aggregationPipeline = [
+          { $match: matchStage },
+          {
+            $lookup: {
+              from: "tasks",
+              localField: "taskId",
+              foreignField: "_id",
+              as: "task"
+            }
+          },
+          {
+            $addFields: {
+              task: { $arrayElemAt: ["$task", 0] }
+            }
+          },
+          {
+            $match: {
+              "task.isDeleted": false,
+              "task.approverType": "teacher",
+              "task.classId": { $in: classIdsObjectIds }
+            }
+          },
+          {
+            $lookup: {
+              from: "students",
+              localField: "studentId",
+              foreignField: "_id",
+              as: "childDetails",
+              pipeline: [
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user"
+                  }
+                },
+                {
+                  $addFields: {
+                    user: { $arrayElemAt: ["$user", 0] },
+                  }
+                }
+              ]
+            }
+          },
+          // Flatten childDetails array
+          {
+            $addFields: {
+              childDetails: { $arrayElemAt: ["$childDetails", 0] }
+            }
+          },
+          {
+            $addFields: {
+              childDetails: {
+                $mergeObjects: [
+                  "$childDetails",
+                  "$childDetails.user"
+                ]
+              },
+            }
+          },
+          // Final projection: send only necessary fields to the client
+          {
+            $project: {
+              taskId: 1,
+              studentId: 1,
+              completedAt: 1,
+              note: 1,
+              evidence: 1,
+              status: 1,
+              approvedBy: 1,
+              approverRole: 1,
+              approvalDate: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              task: 1,
+              childDetails: {
+                userId: 1,
+                firstName: 1,
+                lastName: 1,
+                avatar: 1,
+                email: 1,
+                grade: 1
+              },
+              feedback: 1
+            }
+          }
+        ]
+
+        // Pagination options
+        const options = {
+          page,
+          limit,
+          sort: { [sortBy]: order === 'asc' ? 1 : -1 }
+        }
+
+        // Execute the aggregation with pagination
+        const approvalRequest = await TaskCompletion.aggregatePaginate(
+          TaskCompletion.aggregate(aggregationPipeline),
+          options
+        );
+
+        return res.status(200).json({ success: true, data: approvalRequest })
+      }
     } catch (error) {
       console.log('Server error: ', error)
 

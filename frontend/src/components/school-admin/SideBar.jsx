@@ -4,6 +4,7 @@ import {
   BookOpen,
   CheckSquare,
   ChevronRight,
+  FileCheck,
   Gift,
   GraduationCap,
   LogOut,
@@ -59,6 +60,11 @@ const sideBarItems = [
     label: 'Tasks',
     href: '/school-admin/tasks',
     icon: <CheckSquare  size={20} />
+  },
+  {
+    label: 'Task Claims',
+    href: '/school-admin/claims',
+    icon: <FileCheck size={20} />
   },
   {
     label: 'Rewards',

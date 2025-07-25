@@ -6,7 +6,8 @@ import {
   ChevronRight,
   Gift,
   LogOut,
-  SettingsIcon
+  SettingsIcon,
+  FileCheck
 } from 'lucide-react';
 import React from 'react';
 import { NavLink, useMatch, useResolvedPath } from 'react-router';
@@ -29,6 +30,11 @@ const sideBarItems = [
     label: 'Tasks',
     href: '/teacher/tasks',
     icon: <CheckSquare  size={20} />
+  },
+  {
+    label: 'Task Claims',
+    href: '/teacher/claims',
+    icon: <FileCheck size={20} />
   },
   {
     label: 'Rewards',

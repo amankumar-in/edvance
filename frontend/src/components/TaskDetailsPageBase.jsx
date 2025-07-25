@@ -257,7 +257,7 @@ function TaskDetailsPageBase({
 
 
           {/* Task Header */}
-          <Card size="2" mb="5">
+          <Card size="2" mb="5" className='shadow-md'>
             <Flex direction="column" gap="4">
               <Flex justify="between" align="start" gap="4">
                 <Flex direction="column" gap="2" style={{ flex: 1 }}>
@@ -318,7 +318,7 @@ function TaskDetailsPageBase({
           </Card>
 
           {/* Task Details */}
-          <Card size="2" mb="5">
+          <Card size="2" mb="5" className='shadow-md'>
             <Flex direction="column" gap="4">
               <Heading size="4">Task Details</Heading>
 
@@ -432,7 +432,7 @@ function TaskDetailsPageBase({
 
           {/* Your Submission - Show after task is submitted */}
           {task?.completionStatus?.hasSubmitted && (
-            <Card size="2">
+            <Card size="2" className='mb-5 shadow-md'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Your Submission</Heading>
 
@@ -516,7 +516,7 @@ function TaskDetailsPageBase({
         {/* Sidebar */}
         <Box>
           {/* Action Panel */}
-          {role === 'student' && <Card size="2" mb="5" className='xl:sticky xl:top-[72px] z-10 bg-[--color-background]'>
+          {role === 'student' && <Card size="2" mb="5" className='xl:sticky xl:top-[72px] z-10 bg-[--color-background] shadow-md'>
             <Flex direction="column" gap="3">
               <Heading size="4">Actions</Heading>
 
@@ -546,7 +546,7 @@ function TaskDetailsPageBase({
           </Card>}
 
           {/* Task Progress */}
-          {role === 'student' && <Card size="2" mb="5">
+          {role === 'student' && <Card size="2" mb="5" className='shadow-md'>
             <Flex direction="column" gap="4">
               <Heading size="4">Progress</Heading>
 
@@ -610,26 +610,26 @@ function TaskDetailsPageBase({
           </Card>}
 
           {/* Status Guide */}
-          {role === 'student' && <Card size="2" mb="5">
+          {role === 'student' && <Card size="2" mb="5" className='shadow-md'>
             <Flex direction="column" gap="4">
               <Heading size="4">Status Guide</Heading>
 
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
                   <Clock size={16} className="text-blue-500" />
-                  <Text size="2"><strong>Pending:</strong> Ready to work on</Text>
+                  <Text size="2" className='flex-1'><strong>Pending:</strong> Ready to work on</Text>
                 </Flex>
                 <Flex align="center" gap="2">
                   <Eye size={16} className="text-orange-500" />
-                  <Text size="2"><strong>Pending Approval:</strong> Submitted, awaiting review</Text>
+                  <Text size="2" className='flex-1'><strong>Pending Approval:</strong> Submitted, awaiting review</Text>
                 </Flex>
                 <Flex align="center" gap="2">
                   <CheckCircle size={16} className="text-green-500" />
-                  <Text size="2"><strong>Approved:</strong> Complete! Points earned</Text>
+                  <Text size="2" className='flex-1' ><strong>Approved:</strong> Complete! Points earned</Text>
                 </Flex>
                 <Flex align="center" gap="2">
                   <XCircle size={16} className="text-red-500" />
-                  <Text size="2"><strong>Rejected:</strong> Needs revision</Text>
+                  <Text size="2" className='flex-1'><strong>Rejected:</strong> Needs revision</Text>
                 </Flex>
               </Flex>
             </Flex>
@@ -637,7 +637,7 @@ function TaskDetailsPageBase({
 
           {/* Completion Tips */}
           {task?.completionStatus?.status === 'pending' && (
-            <Card size="2" mb="5">
+            <Card size="2" mb="5" className='shadow-md'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Completion Tips</Heading>
 
@@ -656,7 +656,7 @@ function TaskDetailsPageBase({
 
           {/* Submission Help */}
           {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
-            <Card size="2" mb="5">
+            <Card size="2" mb="5" className='shadow-md'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Submission Help</Heading>
 
@@ -677,7 +677,7 @@ function TaskDetailsPageBase({
 
           {/* Evidence Guide */}
           {task?.completionStatus?.status === 'pending' && (
-            <Card size="2" mb="5">
+            <Card size="2" mb="5" className='shadow-md'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Evidence Types</Heading>
 
