@@ -65,10 +65,12 @@ function Tasks() {
     {
       header: 'Title',
       id: 'title',
+      sortable: true,
     },
     {
       header: 'Description',
       id: 'description',
+      sortable: true,
     },
     {
       header: "Category",
@@ -81,6 +83,7 @@ function Tasks() {
     {
       header: "Point Value",
       id: "pointValue",
+      sortable: true,
     },
     {
       header: "Assigned To",
@@ -212,8 +215,8 @@ function Tasks() {
                   <Table.Cell title={task.description}>
                     <Text as="p" title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description || '-'}</Text>
                   </Table.Cell>
-                  <Table.Cell>{task.category}</Table.Cell>
-                  <Table.Cell>{task.subCategory}</Table.Cell>
+                  <Table.Cell className='text-nowrap'>{task.category}</Table.Cell>
+                  <Table.Cell className='text-nowrap'>{task.subCategory}</Table.Cell>
                   <Table.Cell>{task.pointValue}</Table.Cell>
                   <Table.Cell>
                     {task?.assignedTo?.role}

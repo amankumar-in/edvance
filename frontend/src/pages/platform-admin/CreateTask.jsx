@@ -1,4 +1,4 @@
-import { Box, Button, Callout, Flex, Heading, Radio, RadioGroup, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
+import { Box, Button, Callout, Card, Flex, Heading, Radio, RadioGroup, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
 import { ArrowLeft, Eye, Info, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -32,10 +32,10 @@ const CreateTask = () => {
     defaultValues: {
       title: '',
       description: '',
-      pointValue: undefined,
+      pointValue: 10,
       dueDate: '',
       requiresApproval: true,
-      approverType: 'platform_admin',
+      approverType: 'system',
       subCategory: '',
       selectedPeople: [],
       assigned: '',
@@ -76,18 +76,19 @@ const CreateTask = () => {
   // get all task categories
   const { data: taskCategories } = useGetTaskCategories({ role: 'platform_admin' })
 
-  // set point value based on category
+  // Set point value based on category
   useEffect(() => {
-    if (taskCategories?.data) {
-      const pointsValue = taskCategories?.data.filter(cat => cat.name === subCategory)?.[0]?.defaultPointValue
-      setValue('pointValue', pointsValue)
+    if (taskCategories?.data && subCategory) {
+      const selectedCategory = taskCategories.data.find(cat => cat.name === subCategory);
+      if (selectedCategory) {
+        setValue('pointValue', selectedCategory.defaultPointValue || 10);
+      }
     }
-  }, [subCategory, taskCategories])
+  }, [subCategory, taskCategories, setValue]);
 
   // populate form when editing
   useEffect(() => {
     if (isEdit && task && !isLoadingTask) {
-      console.log(task)
 
       // Prepare all form data with proper formatting
       const formData = {
@@ -255,7 +256,7 @@ const CreateTask = () => {
 
   return (
     <Container>
-      <div className="pb-8 space-y-8">
+      <div className="pb-8 space-y-6">
         {/* Header */}
         <Box>
           <Button
@@ -317,7 +318,7 @@ const CreateTask = () => {
         </Text>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 max-w-4xl">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-4xl">
           {
             (isError) && (
               <Callout.Root
@@ -596,25 +597,17 @@ const CreateTask = () => {
             <Flex gap="4" className="flex-col lg:flex-row">
               <div className="flex-1">
                 <Text as="label" htmlFor='assigned' size="2" weight="medium">
-                  Assigned To *
+                  Assign To *
                 </Text>
                 <div className='mt-2'>
                   <Flex align="start" gap="4">
-                    <Flex asChild gap="2">
-                      <Text as="label" size="2">
-                        <Radio id='assigned' {...register('assigned', {
-                          required: "Assigned to is required"
-                        })} value="parent" />
-                        Parent
-                      </Text>
-                    </Flex>
 
                     <Flex asChild gap="2">
                       <Text as="label" size="2">
                         <Radio id='assigned' {...register('assigned', {
                           required: "Assigned to is required"
                         })} value="student" />
-                        Student
+                        All Students
                       </Text>
                     </Flex>
 
@@ -714,16 +707,10 @@ const CreateTask = () => {
                           <Flex gap='2' wrap='wrap'>
                             <RadioGroup.Item value="parent">Parent</RadioGroup.Item>
                             <RadioGroup.Item value="teacher">Teacher</RadioGroup.Item>
-                            <RadioGroup.Item value="school_admin">School Admin</RadioGroup.Item>
-                            <RadioGroup.Item value="social_worker">Social Worker</RadioGroup.Item>
-                            <RadioGroup.Item value="platform_admin">Platform Admin</RadioGroup.Item>
                           </Flex>
                         </RadioGroup.Root>
                       )}
                     />
-                    <Text as="p" size="1" color="gray" mt="1">
-                      Select all user roles that should be allowed to approve task
-                    </Text>
                     <FormFieldErrorMessage errors={errors} field="approverType" />
 
                   </label>
@@ -751,7 +738,7 @@ export default CreateTask;
 // This component is used to create a section in the form
 export const FormSection = ({ title, children }) => {
   return (
-    <section>
+    <Card className='shadow-md outline-none' size='3'>
       <Flex direction={'column'} gap={'3'} mb={'4'}>
         <Text size="4" weight="medium">
           {title}
@@ -761,6 +748,6 @@ export const FormSection = ({ title, children }) => {
       <div className='space-y-4'>
         {children}
       </div>
-    </section>
+    </Card>
   )
 }

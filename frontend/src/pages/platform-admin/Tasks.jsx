@@ -135,11 +135,13 @@ function Tasks() {
     {
       header: 'Title',
       accessorKey: 'title',
+      sortable: true,
     },
     {
       header: 'Description',
       accessorKey: 'description',
-    },
+      sortable: true,
+      },
     {
       header: "Category",
       accessorKey: "category",
@@ -151,6 +153,7 @@ function Tasks() {
     {
       header: "Point Value",
       accessorKey: "pointValue",
+      sortable: true,
     },
     {
       header: "Created By",
@@ -537,8 +540,8 @@ function Tasks() {
                     <Table.Cell >
                       <Text title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description || '-'}</Text>
                     </Table.Cell>
-                    <Table.Cell>{task.category}</Table.Cell>
-                    <Table.Cell>{task.subCategory || '-'}</Table.Cell>
+                    <Table.Cell className='text-nowrap'>{task.category}</Table.Cell>
+                    <Table.Cell className='text-nowrap'>{task.subCategory || '-'}</Table.Cell>
                     <Table.Cell>{task.pointValue}</Table.Cell>
                     <Table.Cell>{task.createdBy}</Table.Cell>
                     <Table.Cell>{task.creatorRole}</Table.Cell>

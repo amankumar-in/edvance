@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Card,
   Flex,
   Heading,
   IconButton,
@@ -185,7 +186,7 @@ const CreateReward = () => {
 
   return (
     <Container>
-      <div className="pb-8 space-y-8">
+      <div className="pb-8 space-y-6">
         {/* Header */}
         <Box>
           <Button
@@ -225,7 +226,7 @@ const CreateReward = () => {
         </Text>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 max-w-4xl">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-4xl">
           {/* Basic Information */}
           <FormSection title="Basic Information">
             <div className="grid grid-cols-1 gap-6">
@@ -397,7 +398,7 @@ const CreateReward = () => {
                     })}
                     className="mt-2"
                   />
-                   <FormFieldErrorMessage errors={errors} field="quantity" />  
+                  <FormFieldErrorMessage errors={errors} field="quantity" />
                 </div>
               )}
 
@@ -600,15 +601,17 @@ const CreateReward = () => {
 
 export const FormSection = ({ title, children }) => {
   return (
-    <div className="space-y-4">
-      <div>
-        <Heading as="h3" size="4" weight="medium" className="text-[--gray-12]">
-          {title}
-        </Heading>
-        <Separator size="4" className="mt-2" />
+    <Card className='shadow-md' size='3'>
+      <div className="space-y-4">
+        <div>
+          <Heading as="h3" size="4" weight="medium" className="text-[--gray-12]">
+            {title}
+          </Heading>
+          <Separator size="4" className="mt-2" />
+        </div>
+        {children}
       </div>
-      {children}
-    </div>
+    </Card>
   );
 };
 

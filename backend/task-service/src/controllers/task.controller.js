@@ -5,6 +5,67 @@ const TaskVisibility = require("../models/taskVisibility.model");
 const TaskCompletion = require("../models/taskCompletion.model");
 const { getFileUrl, getFileType } = require("../middleware/upload.middleware");
 
+async function getStudentClasses(childId, authHeader) {
+  const userServiceUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+  const childClasses = await axios.get(
+    `${userServiceUrl}/api/students/${childId}/classes`,
+    { headers: { Authorization: authHeader } }
+  );
+
+  const classIds = childClasses?.data?.data?.map(child => new mongoose.Types.ObjectId(child._id));
+
+  return classIds || [];
+}
+
+// Helper function to get children data
+async function getChildrenData(authHeader) {
+  const userServiceUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.PRODUCTION_USER_SERVICE_URL
+      : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+  try {
+    const childrenResponse = await axios.get(`${userServiceUrl}/api/parents/me/children`, { headers: { Authorization: authHeader } });
+
+    const childrenData = childrenResponse.data.data;
+
+    // Fetch classes for each child
+    const childrenWithClasses = await Promise.all(
+      childrenData.map(async (child) => {
+        try {
+          const childClasses = await axios.get(
+            `${userServiceUrl}/api/students/${child._id}/classes`,
+            { headers: { Authorization: authHeader } }
+          );
+
+          return {
+            ...child,
+            classes: childClasses?.data?.data || [],
+            classIds: childClasses?.data?.data?.map(cls => cls._id) || []
+          };
+        } catch (error) {
+          console.warn(`Failed to fetch classes for child ${child._id}:`, error.message);
+          return {
+            ...child,
+            classes: [],
+            classIds: []
+          };
+        }
+      })
+    );
+
+    return childrenWithClasses;
+  } catch (error) {
+    console.error("Error getting children details:", error.response?.data || error.message);
+    throw new Error("Failed to get children information");
+  }
+}
+
+
 /**
  * Task Controller
  * Handles all task-related operations
@@ -218,7 +279,7 @@ const taskController = {
         userRole.includes("platform_admin") ||
         (userRole.includes("school_admin") && task.schoolId) ||
         (userRole.includes("teacher") && task.classId) ||
-        (userRole.includes("parent") && task.assignedTo?.role === 'student');
+        (userRole.includes("parent"));
 
       if (!isAuthorized) {
         return res.status(403).json({
@@ -2009,6 +2070,12 @@ const taskController = {
     try {
       const { profiles, roles } = req.user;
       const { role } = req.query;
+      const studentProfile = profiles?.['student'];
+      const studentId = studentProfile?._id;
+      const schoolId = studentProfile?.schoolId;
+      const authHeader = req.headers.authorization;
+
+      const studentClasses = await getStudentClasses(studentId, authHeader);
 
       if (!role || role !== "student" || !roles.includes("student")) {
         return res.status(400).json({
@@ -2024,7 +2091,6 @@ const taskController = {
         endDate,
         dueDate,
         status,
-        schoolId,
         classId,
         page = 1,
         limit = 20,
@@ -2046,8 +2112,20 @@ const taskController = {
             $or: [
               { "assignedTo.selectedPeopleIds": { $exists: false } },
               { "assignedTo.selectedPeopleIds": { $size: 0 } },
-              { "assignedTo.selectedPeopleIds": { $in: [currentProfileId] } },
-            ],
+              { "assignedTo.selectedPeopleIds": { $in: [currentProfileId] } }
+            ]
+          },
+          // School-level tasks without specific class assignment
+          {
+            schoolId: schoolId,
+            "assignedTo.role": { $ne: "student" }, // Exclude student-specific tasks
+            $or: [
+              { classId: { $exists: false } },
+              { classId: null }
+            ]
+          },
+          {
+            classId: { $in: studentClasses || [] }
           }
         ]
       };
@@ -2055,7 +2133,6 @@ const taskController = {
       // Apply filters (excluding status - we'll handle that separately)
       if (category) query.category = category?.toLowerCase();
       if (subCategory) query.subCategory = subCategory?.toLowerCase();
-      if (schoolId) query.schoolId = schoolId;
       if (classId) query.classId = classId;
 
       if (dueDate) query.dueDate = new Date(dueDate);
@@ -2116,7 +2193,6 @@ const taskController = {
         // Apply the same filters as the main query
         if (category) extraTaskQuery.category = category?.toLowerCase();
         if (subCategory) extraTaskQuery.subCategory = subCategory?.toLowerCase();
-        if (schoolId) extraTaskQuery.schoolId = schoolId;
         if (classId) extraTaskQuery.classId = classId;
         if (dueDate) extraTaskQuery.dueDate = new Date(dueDate);
         if (startDate || endDate) {
@@ -2196,6 +2272,19 @@ const taskController = {
       const { profiles, roles } = req.user;
       const { role } = req.query;
       const { id } = req.params;
+      const studentProfile = profiles?.['student'];
+      const studentId = studentProfile?._id && new mongoose.Types.ObjectId(studentProfile?._id);
+      const schoolId = studentProfile?.schoolId && new mongoose.Types.ObjectId(studentProfile?.schoolId);
+      const authHeader = req.headers.authorization;
+
+      let classIds = [];
+
+      try {
+        classIds = await getStudentClasses(studentId, authHeader);
+      } catch (error) {
+        console.error("Error fetching student classes:", error);
+        throw error;
+      }
 
       if (!role || role !== "student" || !roles.includes("student")) {
         return res.status(400).json({
@@ -2211,8 +2300,6 @@ const taskController = {
         });
       }
 
-      const currentProfileId = profiles[role]?._id;
-
       // Find the task
       const task = await Task.findById(id).lean();
 
@@ -2226,7 +2313,7 @@ const taskController = {
       // Check task visibility first
       const visibility = await TaskVisibility.findOne({
         taskId: id,
-        toggledForUserId: currentProfileId,
+        toggledForUserId: studentId,
       });
 
       // If task is explicitly hidden by parent, deny access
@@ -2252,8 +2339,14 @@ const taskController = {
           } else {
             // Check if current student is in the selected list
             hasAccess = task.assignedTo.selectedPeopleIds.some(
-              assignedId => assignedId.toString() === currentProfileId.toString()
+              assignedId => assignedId.toString() === studentId.toString()
             );
+          }
+        } else if (task.assignedTo?.role === "school") {
+          if (task.schoolId.equals(schoolId) && (task.classId === null || task.classId === undefined)) {
+            hasAccess = true;
+          } else if (task.classId && classIds.some(id => id.equals(task.classId))) {
+            hasAccess = true;
           }
         }
       }
@@ -2268,7 +2361,7 @@ const taskController = {
       // Get completion status for this student
       const completion = await TaskCompletion.findOne({
         taskId: id,
-        studentId: currentProfileId
+        studentId: studentId
       }).lean();
 
       // Enhance task with completion status
@@ -2312,6 +2405,19 @@ const taskController = {
     try {
       const { profiles, roles } = req.user;
       const { role } = req.query;
+      const authHeader = req.headers.authorization;
+
+      const childrenData = await getChildrenData(authHeader);
+
+      // Get children's school IDs and class IDs
+      const childrenSchoolIds = [...new Set(childrenData.map(child => {
+        const schoolId = child.schoolId?._id || child.schoolId;
+        return schoolId ? new mongoose.Types.ObjectId(schoolId) : null;
+      }).filter(Boolean))];
+
+      const childrenClassIds = [...new Set(childrenData.flatMap(child =>
+        (child.classIds || []).map(classId => new mongoose.Types.ObjectId(classId))
+      ))];
 
       if (!role || role !== "parent" || !roles.includes("parent")) {
         return res.status(400).json({
@@ -2327,7 +2433,6 @@ const taskController = {
         endDate,
         dueDate,
         status,
-        schoolId,
         classId,
         page = 1,
         limit = 20,
@@ -2368,6 +2473,16 @@ const taskController = {
               { "assignedTo.selectedPeopleIds": { $exists: false } },
               { "assignedTo.selectedPeopleIds": { $size: 0 } },
             ],
+          },
+          {
+            schoolId: { $in: childrenSchoolIds },
+            $or: [
+              { classId: { $exists: false } },
+              { classId: null }
+            ]
+          },
+          {
+            classId: { $in: childrenClassIds },
           }
         );
       }
@@ -2377,7 +2492,6 @@ const taskController = {
       // Apply filters
       if (category) query.category = category;
       if (subCategory) query.subCategory = subCategory;
-      if (schoolId) query.schoolId = schoolId;
       if (classId) query.classId = classId;
       if (status) query.status = status;
 
@@ -2431,8 +2545,16 @@ const taskController = {
           // Start with an empty set of visible children
           const visibleToChildren = new Set();
 
-          // Add children based on task assignment rules
-          if (task.assignedTo?.role === "student") {
+          // Determine which children can see this task based on task type
+          if (task.assignedTo?.role === "parent") {
+            // Parent-assigned tasks: all children can see unless explicitly hidden
+            childIds.forEach(childId => {
+              const childIdStr = childId.toString();
+              if (!visibility.hiddenChildren.has(childIdStr)) {
+                visibleToChildren.add(childIdStr);
+              }
+            });
+          } else if (task.assignedTo?.role === "student") {
             if (!task.assignedTo.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0) {
               // Task assigned to all students - all children can see by default unless explicitly hidden
               childIds.forEach(childId => {
@@ -2452,9 +2574,37 @@ const taskController = {
                 }
               });
             }
+          } else {
+            // System/School/Class tasks without specific assignment role
+            // Determine visibility based on school and class membership
+            childIds.forEach(childId => {
+              const childIdStr = childId.toString();
+              const child = childrenData.find(c => c._id.toString() === childIdStr);
+              
+              if (child) {
+                let canSeeTask = false;
+                
+                // Check if task is a school-level task
+                if (task.schoolId && (!task.classId || task.classId === null)) {
+                  const taskSchoolId = task.schoolId.toString();
+                  const childSchoolId = (child.schoolId?._id || child.schoolId)?.toString();
+                  canSeeTask = taskSchoolId === childSchoolId;
+                }
+                // Check if task is a class-level task
+                else if (task.classId) {
+                  const taskClassId = task.classId.toString();
+                  canSeeTask = (child.classIds || []).some(classId => classId.toString() === taskClassId);
+                }
+                
+                // Apply visibility settings
+                if (canSeeTask && !visibility.hiddenChildren.has(childIdStr)) {
+                  visibleToChildren.add(childIdStr);
+                }
+              }
+            });
           }
 
-          // Add explicitly visible children
+          // Add explicitly visible children (overrides default logic)
           visibility.visibleChildren.forEach(childId => {
             visibleToChildren.add(childId);
           });
