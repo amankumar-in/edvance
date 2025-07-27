@@ -274,33 +274,35 @@ exports.addTeacher = async (req, res) => {
     }
 
     // Check if already a teacher
-    const existingTeacher = await Teacher.findOne({ userId: teacherUser._id });
-    if (existingTeacher) {
+    let existingTeacher = await Teacher.findOne({ userId: teacherUser._id });
+
+    if (existingTeacher && existingTeacher.schoolId) {
       return res.status(400).json({
         success: false,
-        message: "User is already a teacher",
+        message: "User is already a teacher linked to a school",
       });
     }
 
-    // Update user roles
-    if (!teacherUser.roles.includes("teacher")) {
-      teacherUser.roles.push("teacher");
-      await teacherUser.save();
+    if (!existingTeacher) {
+      // No teacher profile yet → create one
+      existingTeacher = new Teacher({
+        userId: teacherUser._id,
+        schoolId: school._id,
+        subjectsTaught: subjectsTaught || [],
+        classIds: [],
+      });
+    } else {
+      // Profile exists but no school → just update it
+      existingTeacher.schoolId = school._id;
+      existingTeacher.subjectsTaught = subjectsTaught || [];
     }
 
-    // Create teacher profile
-    const newTeacher = new Teacher({
-      userId: teacherUser._id,
-      schoolId: school._id,
-      subjectsTaught: subjectsTaught || [],
-      classIds: [],
-    });
-    await newTeacher.save();
+    await existingTeacher.save();
 
     res.status(201).json({
       success: true,
       message: "Teacher added successfully",
-      data: newTeacher,
+      data: existingTeacher,
     });
   } catch (error) {
     console.error("Add teacher error:", error);

@@ -119,7 +119,7 @@ const router = createBrowserRouter(
             <Route path="rewards/create" element={<CreateEditTeacherReward />} />
             <Route path="rewards/edit/:id" element={<CreateEditTeacherReward />} />
           </Route>
-          <Route path="create-profile" element={<CreateTeacherProfile />} />
+            <Route path="create-profile" element={<CreateTeacherProfile />} />
         </Route>
 
         {/* School Admin Routes */}

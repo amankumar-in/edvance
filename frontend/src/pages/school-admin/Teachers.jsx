@@ -9,6 +9,9 @@ import { useDebounce } from '../../hooks/useDebounce';
 import PageHeader from './components/PageHeader';
 import { useAuth } from '../../Context/AuthContext';
 import NoSchoolProfileCard from './components/NoSchoolProfileCard';
+import AddTeacherDialog from './components/AddTeacherDialog';
+import { useRemoveTeacher } from '../../api/school-admin/school.mutations';
+import { toast } from 'sonner';
 
 const Teachers = () => {
   const { profiles } = useAuth();
@@ -21,6 +24,7 @@ const Teachers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [selectedTeacherToRemove, setSelectedTeacherToRemove] = useState(null);
+  const [isAddTeacherDialogOpen, setIsAddTeacherDialogOpen] = useState(false);
 
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -35,6 +39,8 @@ const Teachers = () => {
   }, {
     enabled: !!school?._id
   });
+
+  const removeTeacherMutation = useRemoveTeacher();
 
   // Column definitions
   const columns = [
@@ -103,7 +109,17 @@ const Teachers = () => {
     setSelectedTeacherToRemove(null);
   };
 
-  const handleRemoveConfirm = () => {}
+  const handleRemoveConfirm = () => {
+    removeTeacherMutation.mutate(selectedTeacherToRemove._id, {
+      onSuccess: () => {
+        toast.success('Teacher removed successfully');
+        handleRemoveCancel();
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to remove teacher');
+      }
+    });
+  }
 
   // No school profile
   if (!school) {
@@ -163,7 +179,7 @@ const Teachers = () => {
       )}
       <Box className='space-y-6'>
         {/* Header */}
-        <TeachersPageHeader />
+        <TeachersPageHeader onAddTeacher={() => setIsAddTeacherDialogOpen(true)} />
 
         {/* Search and Filters */}
         <Flex gap="3" align="center" wrap="wrap">
@@ -232,7 +248,7 @@ const Teachers = () => {
                         ? "Try adjusting your search or filters"
                         : "No teachers have been added to your school yet"
                     }
-                    action={searchTerm ? null : <AddTeacherButton />}
+                    action={searchTerm ? null : <AddTeacherButton onAddTeacher={() => setIsAddTeacherDialogOpen(true)} />}
                   />
                 </Table.Cell>
               </Table.Row>
@@ -305,7 +321,7 @@ const Teachers = () => {
         />
       </Box>
 
-      {/* Remove Administrator Dialog */}
+      {/* Remove Teacher Dialog */}
       <ConfirmationDialog
         title='Remove Teacher'
         description={
@@ -317,6 +333,13 @@ const Teachers = () => {
         onOpenChange={handleRemoveCancel}
         onConfirm={handleRemoveConfirm}
         confirmColor='red'
+        isLoading={removeTeacherMutation.isPending}
+      />
+
+      {/* Add Teacher Dialog */}
+      <AddTeacherDialog
+        open={isAddTeacherDialogOpen}
+        onOpenChange={setIsAddTeacherDialogOpen}
       />
     </>
   );
@@ -325,22 +348,22 @@ const Teachers = () => {
 export default Teachers;
 
 // Page header component
-function TeachersPageHeader({ loading = false }) {
+function TeachersPageHeader({ loading = false, onAddTeacher }) {
   return (
     <PageHeader
       title='Teachers'
       description="Manage your school's teachers"
     >
-      <AddTeacherButton loading={loading} />
+      <AddTeacherButton loading={loading} onAddTeacher={onAddTeacher} />
     </PageHeader>
   )
 }
 
 // Add teacher button component
-function AddTeacherButton({ loading = false }) {
+function AddTeacherButton({ loading = false, onAddTeacher }) {
   return (
     <Skeleton loading={loading}>
-      <Button className='shadow-md'>
+      <Button className='shadow-md' onClick={onAddTeacher}>
         <UserPlus size={16} />
         Add Teacher
       </Button>

@@ -1,13 +1,16 @@
-import { Button, Callout, Flex, Text, TextField } from '@radix-ui/themes';
+import { Button, Callout, Card, Flex, Text, TextField } from '@radix-ui/themes';
 import { Info } from 'lucide-react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { Controller, useForm } from 'react-hook-form';
+import { Navigate, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useCreateTeacherProfile } from '../../api/teacher/teacher.mutations';
 import { useUpdateUserProfile } from '../../api/user/user.mutations';
-import { Container, ProfilePictureUpload, VerifyMobileNumber } from '../../components';
+import { Container, Navbar, ProfilePictureUpload } from '../../components';
 import { useAuth } from '../../Context/AuthContext';
+import { isValidPhoneNumber } from 'libphonenumber-js';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 function calculateAge(dateString) {
   const today = new Date();
@@ -21,15 +24,15 @@ function calculateAge(dateString) {
 }
 
 function CreateTeacherProfile() {
-  const { user, setUser } = useAuth();
-  const { firstName, lastName, email, phoneNumber, isPhoneVerified: isPhoneVerifiedFromUser } = user ?? {};
+  const { user, setUser, profiles } = useAuth();
+  const { firstName, lastName, email } = user ?? {};
   const navigate = useNavigate();
-  const [isPhoneVerified, setIsPhoneVerified] = React.useState(isPhoneVerifiedFromUser || false);
-  const [currentPhone, setCurrentPhone] = React.useState(phoneNumber || "");
+  const teacherProfile = profiles?.['teacher'];
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -57,9 +60,13 @@ function CreateTeacherProfile() {
       await updateUserProfile(data);
       try {
         await createTeacherProfile({});
+
         toast.success('Profile created successfully');
-        setCurrentPhone(data.phoneNumber || phoneNumber);
-        setUser({ ...user, phoneNumber: data.phoneNumber });
+
+        if (data.phoneNumber) {
+          setUser({ ...user, phoneNumber: data.phoneNumber });
+        }
+        navigate('/teacher/dashboard', { replace: true });
       } catch (error) {
         // error handled below
         console.error('Failed to create teacher profile', error)
@@ -70,163 +77,175 @@ function CreateTeacherProfile() {
     }
   };
 
+  // If student profile already exists, redirect to dashboard
+  if (teacherProfile) {
+    return <Navigate to="/teacher/dashboard" replace />
+  }
+
   return (
-    <Container>
-      {currentPhone && !isPhoneVerified ? (
-        <VerifyMobileNumber
-          phoneNumber={currentPhone}
-          onVerified={() => {
-            navigate('/teacher/dashboard', { replace: true });
-          }}
-        />
-      ) : (
-        <div className="relative z-10 w-full max-w-2xl mx-auto space-y-6 text-gray-900 bg-white ">
-          <div className="text-center">
-            <Text as="p" size="8" weight="bold">Create Teacher Profile</Text>
-            <Text as="p" size="4" mt="4">Complete your teacher profile to get started</Text>
-          </div>
-          {/* Error Message Display */}
-          {(isErrorCreatingProfile || isErrorUpdatingUserProfile) && (
-            <Callout.Root color="red" variant="surface">
-              <Callout.Icon>
-                <Info size={16} />
-              </Callout.Icon>
-              <Callout.Text>
-                {errorCreatingProfile?.response?.data?.message ||
-                  errorUpdatingUserProfile?.response?.data?.message ||
-                  "Failed to create profile."}
-              </Callout.Text>
-            </Callout.Root>
-          )}
-
-          {/* Profile Picture Upload Component */}
-          <ProfilePictureUpload />
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* First Name and Last Name */}
-            <Flex gap={'4'} className='flex-col sm:flex-row'>
-              <label className='flex-1'>
-                <Text as="div" size="2" mb="1" weight="medium">
-                  First Name
-                </Text>
-                <TextField.Root
-                  size={"3"}
-                  defaultValue={firstName}
-                  radius="large"
-                  placeholder="First name"
-                  readOnly
-                />
-              </label>
-              <label className='flex-1'>
-                <Text as="div" size="2" mb="1" weight="medium">
-                  Last Name
-                </Text>
-                <TextField.Root
-                  readOnly
-                  defaultValue={lastName}
-                  size={"3"}
-                  radius="large"
-                  placeholder="Last Name"
-                />
-              </label>
-            </Flex>
-            {/* Email */}
-            <div>
-              <label>
-                <Text as="div" size="2" mb="1" weight="medium">
-                  Email
-                </Text>
-                <TextField.Root
-                  size={"3"}
-                  defaultValue={email}
-                  radius="large"
-                  placeholder="Email"
-                  readOnly
-                />
-              </label>
+    <>
+    <Navbar />
+      <Container>
+        <Card size='3' className='mx-auto w-full max-w-2xl shadow-md'>
+          <div className="relative z-10 space-y-6">
+            <div className="text-center">
+              <Text as="p" size="7" weight="bold">Create Teacher Profile</Text>
+              <Text as="p" mt={'1'} color='gray'>Complete your teacher profile to get started</Text>
             </div>
-            {/* Date of birth and Phone number */}
-            <Flex gap={'4'} className='flex-col sm:flex-row'>
-              <div className='flex-1'>
-                <label >
-                  <Text as="div" size="2" mb="1" weight="medium">
-                    Date of Birth {" "}
-                    <Text as='span' color='gray' size='2' weight={'regular'}>
-                      (optional)
-                    </Text>
-                  </Text>
-                  <TextField.Root
-                    type='date'
-                    size={"3"}
-                    {...register('dateOfBirth', {
-                      validate: (value) => {
-                        if (value) {
-                          const age = calculateAge(value);
-                          if (isNaN(age) || age < 0) return 'Enter a valid date';
-                          return true;
-                        }
-                      },
-                    })}
-                    radius="large"
-                  />
-                </label>
-                {errors.dateOfBirth && (
-                  <Text
-                    as="p"
-                    size={"2"}
-                    color='red'
-                    className="flex items-center gap-1 mt-1"
-                  >
-                    <Info size={14} /> {errors.dateOfBirth.message}
-                  </Text>
-                )}
-              </div>
-              <div className='flex-1'>
+            {/* Error Message Display */}
+            {(isErrorCreatingProfile || isErrorUpdatingUserProfile) && (
+              <Callout.Root color="red" variant="surface">
+                <Callout.Icon>
+                  <Info size={16} />
+                </Callout.Icon>
+                <Callout.Text>
+                  {errorCreatingProfile?.response?.data?.message ||
+                    errorUpdatingUserProfile?.response?.data?.message ||
+                    "Failed to create profile."}
+                </Callout.Text>
+              </Callout.Root>
+            )}
+
+            {/* Profile Picture Upload Component */}
+            <ProfilePictureUpload />
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* First Name and Last Name */}
+              <Flex gap={'4'} className='flex-col sm:flex-row'>
                 <label className='flex-1'>
                   <Text as="div" size="2" mb="1" weight="medium">
-                    Phone Number
+                    First Name
                   </Text>
                   <TextField.Root
-                    type='tel'
-                    size={'3'}
-                    {...register('phoneNumber', {
-                      required: 'Phone number is required',
-                      validate: (value) => {
-                        if (value && value.length < 10) return 'Phone number must be at least 10 digits';
-                        return true;
-                      },
-                    })}
-                    radius='large'
-                    placeholder='Phone Number'
+                    size={"3"}
+                    defaultValue={firstName}
+                    radius="large"
+                    placeholder="First name"
+                    readOnly
                   />
                 </label>
-                {errors.phoneNumber && (
-                  <Text
-                    as="p"
-                    size={"2"}
-                    color='red'
-                    className="flex items-center gap-1 mt-1"
-                  >
-                    <Info size={14} /> {errors.phoneNumber.message}
+                <label className='flex-1'>
+                  <Text as="div" size="2" mb="1" weight="medium">
+                    Last Name
                   </Text>
-                )}
+                  <TextField.Root
+                    readOnly
+                    defaultValue={lastName}
+                    size={"3"}
+                    radius="large"
+                    placeholder="Last Name"
+                  />
+                </label>
+              </Flex>
+              {/* Email */}
+              <div>
+                <label>
+                  <Text as="div" size="2" mb="1" weight="medium">
+                    Email
+                  </Text>
+                  <TextField.Root
+                    size={"3"}
+                    defaultValue={email}
+                    radius="large"
+                    placeholder="Email"
+                    readOnly
+                  />
+                </label>
               </div>
-            </Flex>
-            {/* Submit Button */}
-            <div className="text-center">
-              <Button
-                type="submit"
-                size="4"
-                className="w-full"
-                disabled={isCreatingProfile || isUpdatingUserProfile}
-              >
-                {(isCreatingProfile || isUpdatingUserProfile) ? 'Creating...' : 'Create Profile'}
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-    </Container>
+              {/* Date of birth and Phone number */}
+              <Flex gap={'4'} className='flex-col sm:flex-row'>
+                <div className='flex-1'>
+                  <label >
+                    <Text as="div" size="2" mb="1" weight="medium">
+                      Date of Birth {" "}
+                      <Text as='span' color='gray' size='2' weight={'regular'}>
+                        (optional)
+                      </Text>
+                    </Text>
+                    <TextField.Root
+                      type='date'
+                      size={"3"}
+                      {...register('dateOfBirth', {
+                        validate: (value) => {
+                          if (value) {
+                            const age = calculateAge(value);
+                            if (isNaN(age) || age < 0) return 'Enter a valid date';
+                            return true;
+                          }
+                        },
+                      })}
+                      radius="large"
+                    />
+                  </label>
+                  {errors.dateOfBirth && (
+                    <Text
+                      as="p"
+                      size={"2"}
+                      color='red'
+                      className="flex gap-1 items-center mt-1"
+                    >
+                      <Info size={14} /> {errors.dateOfBirth.message}
+                    </Text>
+                  )}
+                </div>
+                <div className='flex-1'>
+                  <label className='flex-1'>
+                    <Text as="div" size="2" mb="1" weight="medium">
+                      Phone Number
+                    </Text>
+                    <Controller
+                      control={control}
+                      name="phoneNumber"
+                      rules={{
+                        validate: (value) => {
+                          if (value) {
+                            return isValidPhoneNumber(value) || 'Invalid phone number'
+                          }
+                        }
+                      }}
+                      render={({ field }) => (
+                        <PhoneInput
+                          placeholder="Enter phone number"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          defaultCountry=""
+                          className="flex px-4 w-full bg-[--color-surface] ring-1 ring-[--gray-a7] focus-within:ring-[1.5px] focus-within:outline-none focus-within:ring-[--focus-8] rounded-md h-[38px]"
+                          numberInputProps={{
+                            className: "flex-1 border-0 bg-transparent outline-none placeholder:text-[--gray-a9] placeholder:text-[16px]"
+                          }}
+                        />
+                      )}
+                    />
+
+                  </label>
+                  {errors.phoneNumber && (
+                    <Text
+                      as="p"
+                      size={"2"}
+                      color='red'
+                      className="flex gap-1 items-center mt-1"
+                    >
+                      <Info size={14} /> {errors.phoneNumber.message}
+                    </Text>
+                  )}
+                </div>
+              </Flex>
+              {/* Submit Button */}
+              <div className="text-center">
+                <Button
+                  type="submit"
+                  size="3"
+                  className="w-full"
+                  disabled={isCreatingProfile || isUpdatingUserProfile}
+                >
+                  {(isCreatingProfile || isUpdatingUserProfile) ? 'Creating...' : 'Create Profile'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </Card>
+      </Container>
+    </>
   );
 }
 

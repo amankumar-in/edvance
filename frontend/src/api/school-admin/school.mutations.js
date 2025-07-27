@@ -63,7 +63,7 @@ export const useAddTeacher = () => {
     mutationFn: addTeacher,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: SCHOOL_QUERY_KEYS.teachers(),
+        queryKey: ['school-teachers']
       });
     },
   });
@@ -75,7 +75,7 @@ export const useRemoveTeacher = () => {
     mutationFn: removeTeacher,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: SCHOOL_QUERY_KEYS.teachers(),
+        queryKey: ['school-teachers'],
       });
     },
   });
