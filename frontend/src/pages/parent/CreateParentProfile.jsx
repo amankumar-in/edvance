@@ -1,13 +1,16 @@
-import { Button, Callout, Flex, Text, TextField } from '@radix-ui/themes';
+import { Button, Callout, Card, Flex, Text, TextField } from '@radix-ui/themes';
 import { Info } from 'lucide-react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { Controller, useForm } from 'react-hook-form';
+import { Navigate, useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { useUpdateUserProfile } from '../../api/user/user.mutations';
 import { useCreateParentProfile } from '../../api/parent/parent.mutations';
-import { Container, ProfilePictureUpload, VerifyMobileNumber } from '../../components';
+import { useUpdateUserProfile } from '../../api/user/user.mutations';
+import { Container, ProfilePictureUpload } from '../../components';
 import { useAuth } from '../../Context/AuthContext';
+import { isValidPhoneNumber } from 'libphonenumber-js';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 function calculateAge(dateString) {
   const today = new Date();
@@ -21,16 +24,17 @@ function calculateAge(dateString) {
 }
 
 function CreateParentProfile() {
-  const { user, setUser } = useAuth();
-  const { firstName, lastName, email, phoneNumber, isPhoneVerified: isPhoneVerifiedFromUser } = user ?? {};
+  const { user, setUser, profiles } = useAuth();
+  const { firstName, lastName, email } = user ?? {};
   const navigate = useNavigate();
-  const [isPhoneVerified, setIsPhoneVerified] = React.useState(isPhoneVerifiedFromUser || false);
-  const [currentPhone, setCurrentPhone] = React.useState(phoneNumber || "");
+  const parentProfile = profiles?.['parent'];
+
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm({
     defaultValues: {
       dateOfBirth: '',
@@ -57,9 +61,14 @@ function CreateParentProfile() {
       await updateUserProfile(data);
       try {
         await createParentProfile({});
+
         toast.success('Profile created successfully');
-        setCurrentPhone(data.phoneNumber || phoneNumber);
-        setUser({ ...user, phoneNumber: data.phoneNumber });
+
+        if (data.phoneNumber) {
+          setUser({ ...user, phoneNumber: data.phoneNumber });
+        }
+
+        navigate('/parent/dashboard', { replace: true });
       } catch (error) {
         // error handled below
         console.error('Failed to create parent profile', error)
@@ -70,17 +79,15 @@ function CreateParentProfile() {
     }
   };
 
+  // If parent profile already exists, redirect to dashboard
+  if (parentProfile) {
+    return <Navigate to="/parent/dashboard" replace />
+  }
+
   return (
     <Container>
-      {currentPhone && !isPhoneVerified ? (
-        <VerifyMobileNumber
-          phoneNumber={currentPhone}
-          onVerified={() => {
-            navigate('/parent/dashboard', { replace: true });
-          }}
-        />
-      ) : (
-        <div className="relative z-10 w-full max-w-2xl mx-auto space-y-6 text-gray-900 bg-white ">
+      <Card size='3' className='mx-auto w-full max-w-2xl shadow-md'>
+        <div className="relative z-10 space-y-6">
           <div className="text-center">
             <Text as="p" size="8" weight="bold">Create Parent Profile</Text>
             <Text as="p" size="4" mt="4">Complete your parent profile to get started</Text>
@@ -175,7 +182,7 @@ function CreateParentProfile() {
                     as="p"
                     size={"2"}
                     color='red'
-                    className="flex items-center gap-1 mt-1"
+                    className="flex gap-1 items-center mt-1"
                   >
                     <Info size={14} /> {errors.dateOfBirth.message}
                   </Text>
@@ -186,18 +193,28 @@ function CreateParentProfile() {
                   <Text as="div" size="2" mb="1" weight="medium">
                     Phone Number
                   </Text>
-                  <TextField.Root
-                    type='tel'
-                    size={'3'}
-                    {...register('phoneNumber', {
-                      required: 'Phone number is required',
+                  <Controller
+                    control={control}
+                    name="phoneNumber"
+                    rules={{
                       validate: (value) => {
-                        if (value && value.length < 10) return 'Phone number must be at least 10 digits';
-                        return true;
-                      },
-                    })}
-                    radius='large'
-                    placeholder='Phone Number'
+                        if (value) {
+                          return isValidPhoneNumber(value) || 'Invalid phone number'
+                        }
+                      }
+                    }}
+                    render={({ field }) => (
+                      <PhoneInput
+                        placeholder="Enter phone number"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        defaultCountry=""
+                        className="flex px-4 w-full bg-[--color-surface] ring-1 ring-[--gray-a7] focus-within:ring-[1.5px] focus-within:outline-none focus-within:ring-[--focus-8] rounded-md h-[38px]"
+                        numberInputProps={{
+                          className: "flex-1 border-0 bg-transparent outline-none placeholder:text-[--gray-a9] placeholder:text-[16px]"
+                        }}
+                      />
+                    )}
                   />
                 </label>
                 {errors.phoneNumber && (
@@ -205,7 +222,7 @@ function CreateParentProfile() {
                     as="p"
                     size={"2"}
                     color='red'
-                    className="flex items-center gap-1 mt-1"
+                    className="flex gap-1 items-center mt-1"
                   >
                     <Info size={14} /> {errors.phoneNumber.message}
                   </Text>
@@ -216,7 +233,7 @@ function CreateParentProfile() {
             <div className="text-center">
               <Button
                 type="submit"
-                size="4"
+                size="3"
                 className="w-full"
                 disabled={isCreatingProfile || isUpdatingUserProfile}
               >
@@ -225,7 +242,7 @@ function CreateParentProfile() {
             </div>
           </form>
         </div>
-      )}
+      </Card>
     </Container>
   );
 }
