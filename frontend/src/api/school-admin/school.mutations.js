@@ -51,7 +51,7 @@ export const useRespondToJoinRequest = () => {
         queryKey: SCHOOL_QUERY_KEYS.joinRequests(),
       });
       queryClient.invalidateQueries({
-        queryKey: SCHOOL_QUERY_KEYS.students(),
+        queryKey: ['school-students']
       });
     },
   });

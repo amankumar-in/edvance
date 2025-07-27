@@ -80,15 +80,9 @@ export const useAddStudentToClass = () => {
 
   return useMutation({
     mutationFn: addStudentToClass,
-    onSuccess: (data, variables) => {
-      toast.success("Student added to class successfully");
+    onSuccess: () => {
       // Invalidate class students and details
-      queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.students(variables.classId) });
-      queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.details(variables.classId) });
-      queryClient.invalidateQueries({ queryKey: ["schools", "classes"] });
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "Failed to add student to class");
+      queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.all });
     },
   });
 };

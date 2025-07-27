@@ -607,7 +607,7 @@ router.post(
 
 /**
  * @openapi
- * /classes/classes/{id}/students:
+ * /classes/{id}/students:
  *   post:
  *     summary: Add a student to a class
  *     description: Adds a student to a class. Limited to teachers assigned to the class, school admins, and platform admins.
@@ -708,7 +708,7 @@ router.post(
  *                   type: string
  */
 router.post(
-  "/classes/:id/students",
+  "/:id/students",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.addStudentToClass

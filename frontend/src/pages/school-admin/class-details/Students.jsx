@@ -3,12 +3,12 @@ import { AlertCircle, MoreHorizontal, Plus, Search } from 'lucide-react';
 import React, { useState } from 'react';
 import { useParams } from 'react-router';
 import { useClassStudents } from '../../../api/school-class/schoolClass.queries';
-import { EmptyStateCard, Loader } from '../../../components';
+import { AddStudentsDialog, EmptyStateCard, Loader } from '../../../components';
 
 
 function Students() {
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [isAddStudentsDialogOpen, setIsAddStudentsDialogOpen] = useState(false);
   const { classId } = useParams();
   const { data, isLoading, isError } = useClassStudents(classId);
   const students = data?.data ?? [];
@@ -60,12 +60,12 @@ function Students() {
             </TextField.Slot>
           </TextField.Root>
 
-          <AddStudentButton />
+          <AddStudentButton onAddStudent={() => setIsAddStudentsDialogOpen(true)} />
         </Flex>
       </Flex>
 
       {/* Students Table */}
-      <Table.Root variant="surface">
+      <Table.Root variant="surface" className='shadow-md'>
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell className='font-medium text-nowrap'>Student ({students.length})</Table.ColumnHeaderCell>
@@ -87,7 +87,7 @@ function Students() {
                     />
                     <Box>
                       <Text as='p'>
-                        {student?.userId?.firstName} {student?.userId?.lastName} 
+                        {student?.userId?.firstName} {student?.userId?.lastName}
                       </Text>
                       <Text color="gray" size="2"></Text>
                     </Box>
@@ -123,13 +123,19 @@ function Students() {
                 <EmptyStateCard
                   title='No students found'
                   description='No students found in this class'
-                  action={<AddStudentButton />}
+                  action={<AddStudentButton onAddStudent={() => setIsAddStudentsDialogOpen(true)} />}
                 />
               </Table.Cell>
             </Table.Row>
           )}
         </Table.Body>
       </Table.Root>
+      <AddStudentsDialog
+        open={isAddStudentsDialogOpen}
+        onOpenChange={setIsAddStudentsDialogOpen}
+        classId={classId}
+        classStudents={students}
+      />
     </div>
 
   )
@@ -137,9 +143,9 @@ function Students() {
 
 export default Students
 
-function AddStudentButton() {
+function AddStudentButton({ onAddStudent }) {
   return (
-    <Button>
+    <Button onClick={onAddStudent} className='shadow-md'>
       <Plus size={16} />
       Add Student
     </Button>
