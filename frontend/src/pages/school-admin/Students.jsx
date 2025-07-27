@@ -9,8 +9,13 @@ import { SortIcon } from '../../components/platform-admin/UserTable';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatDate } from '../../utils/helperFunctions';
 import PageHeader from './components/PageHeader';
+import { useAuth } from '../../Context/AuthContext';
+import NoSchoolProfileCard from './components/NoSchoolProfileCard';
 
 const Students = () => {
+const {profiles} = useAuth();
+const school = profiles?.school;
+  
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('firstName');
@@ -26,6 +31,8 @@ const Students = () => {
     sort,
     order,
     search: searchTerm === '' ? '' : debouncedSearchTerm,
+  }, {
+    enabled: !!school?._id
   });
 
   // Column definitions
@@ -84,6 +91,15 @@ const Students = () => {
     setSearchTerm('');
     setPage(1);
   };
+
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to start managing students'>
+        <StudentsPageHeader />
+      </NoSchoolProfileCard>
+    )
+  }
 
   if (isLoading) {
     return (

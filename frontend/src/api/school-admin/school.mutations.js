@@ -6,9 +6,23 @@ import {
   removeTeacher,
   addAdministrator,
   removeAdministrator,
-  importStudents
+  importStudents,
+  createSchoolProfile
 } from "./school.api";
 import { SCHOOL_QUERY_KEYS } from "./school.queries";
+
+// Hook to create school profile
+export const useCreateSchoolProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createSchoolProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.profile(),
+      });
+    },
+  });
+};
 
 // Hook to update school profile
 export const useUpdateSchoolProfile = () => {

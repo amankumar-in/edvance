@@ -23,18 +23,20 @@ export const useGetSchoolById = (id, fetchNow = false) => {
 };
 
 // Hook to get school profile
-export const useGetSchoolProfile = () => {
+export const useGetSchoolProfile = (options = {}) => {
   return useQuery({
     queryKey: SCHOOL_QUERY_KEYS.profile(),
     queryFn: getSchoolProfile,
+    ...options
   });
 };
 
 // Hook to get all pending join requests
-export const useGetAllPendingJoinRequests = () => {
+export const useGetAllPendingJoinRequests = (options = {}) => {
   return useQuery({
     queryKey: SCHOOL_QUERY_KEYS.joinRequests(),
     queryFn: getAllPendingJoinRequests,
+    ...options
   });
 };
 
@@ -53,31 +55,34 @@ export const useAllPendingJoinRequests = () => {
   });
 };
 
-export const useStudents = (params = {}) => {
+export const useStudents = (params = {}, options = {}) => {
   return useQuery({
     queryKey: ['school-students', params],
     queryFn: () => getStudents(params),
     placeholderData: keepPreviousData,
+    ...options
   });
 };
 
-export const useTeachers = (params = {}) => {
+export const useTeachers = (params = {}, options = {}) => {
   return useQuery({
     queryKey: ['school-teachers', params],
     queryFn: () => getTeachers(params),
     placeholderData: keepPreviousData,
+    ...options
   });
 };
 
-export const useClasses = (params = {}) => {
+export const useClasses = (params = {}, options = {}) => {
   return useQuery({
     queryKey: SCHOOL_QUERY_KEYS.allClassesFiltered(params),
     queryFn: () => getClasses(params),
     placeholderData: keepPreviousData,
+    ...options
   });
 };
 
-export const useAdministrators = (id, params = {}) => {
+export const useAdministrators = (id, params = {}, options = {}) => {
   return useQuery({
     queryKey: SCHOOL_QUERY_KEYS.administrators(id, params),
     queryFn: () => getAdministrators(id, params),

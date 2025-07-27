@@ -11,16 +11,23 @@ import { ConfirmationDialog, EmptyStateCard, ErrorCallout, Loader, Pagination } 
 import { SortIcon } from '../../components/platform-admin/UserTable'
 import { formatDate } from '../../utils/helperFunctions'
 import PageHeader from './components/PageHeader'
+import { useAuth } from '../../Context/AuthContext'
+import NoSchoolProfileCard from './components/NoSchoolProfileCard'
 
 
 function Tasks() {
+  const {profiles} = useAuth();
+  const school = profiles?.school;
+  
   // State for filters and search
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('createdAt');
   const [order, setOrder] = useState('desc');
 
-  const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile()
+  const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile({
+    enabled: !!school?._id
+  })
   const schoolId = data?.data?._id
   const { data: tasks, isLoading: isTasksLoading, isFetching: isTasksFetching, isError: isTasksError, error: tasksError } = useGetTasks({ 
     role: 'school_admin', 
@@ -137,6 +144,15 @@ function Tasks() {
       });
     }
   };
+
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to start managing tasks'>
+        <TaskPageHeader />
+      </NoSchoolProfileCard>
+    )
+  }
 
   if (isSchoolLoading || isTasksLoading) {
     return (

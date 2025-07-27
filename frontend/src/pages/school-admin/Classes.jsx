@@ -12,6 +12,8 @@ import { useDebounce } from '../../hooks/useDebounce';
 import CreateClassDialog from './components/CreateClassDialog';
 import GenerateJoinCodeDialog from './components/GenerateJoinCodeDialog';
 import PageHeader from './components/PageHeader';
+import { useAuth } from '../../Context/AuthContext';
+import NoSchoolProfileCard from './components/NoSchoolProfileCard';
 
 // Grade options
 const gradeOptions = [
@@ -33,7 +35,8 @@ const gradeOptions = [
 
 const Classes = () => {
   const navigate = useNavigate();
-
+  const {profiles} = useAuth();
+  const school = profiles?.school;
   // State for filters and search
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -53,6 +56,8 @@ const Classes = () => {
     order,
     search: searchQuery === '' ? '' : debouncedSearchQuery,
     grade: gradeFilter
+  }, {
+    enabled: !!school?._id
   });
 
   const deleteClassMutation = useDeleteClass();
@@ -198,6 +203,15 @@ const Classes = () => {
       sortable: false
     }
   ];
+
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to start managing classes'>
+        <ClassesPageHeader />
+      </NoSchoolProfileCard>
+    )
+  }
 
   // Loading state
   if (isLoading) {

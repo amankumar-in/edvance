@@ -238,6 +238,12 @@ exports.getAllProfiles = async (req, res) => {
         message: "User not found",
       });
     }
+
+    let school = null;
+    if (user?.roles?.includes('school_admin')) {
+      school = await School.findOne({ adminIds: userId });
+    }
+
     const userProfile = user.toObject();
     delete userProfile.password;
 
@@ -258,6 +264,7 @@ exports.getAllProfiles = async (req, res) => {
           parent,
           teacher,
           social_worker: socialWorker,
+          school,
         },
       },
     });

@@ -13,8 +13,13 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { FALLBACK_IMAGES } from '../../utils/constants';
 import { formatDate } from '../../utils/helperFunctions';
 import { useGetSchoolProfile } from '../../api/school-admin/school.queries';
+import { useAuth } from '../../Context/AuthContext';
+import NoSchoolProfileCard from './components/NoSchoolProfileCard';
 
 const Rewards = () => {
+  const {profiles} = useAuth();
+  const school = profiles?.school;
+  
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('createdAt');
@@ -23,7 +28,9 @@ const Rewards = () => {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
 
-  const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile()
+  const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile({
+    enabled: !!school?._id
+  })
   const schoolId = data?.data?._id
 
   // Filter states
@@ -215,6 +222,15 @@ const Rewards = () => {
     { value: 'experience', label: 'Experience' },
     { value: 'digital', label: 'Digital' },
   ];
+
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to start managing rewards'>
+        <RewardsPageHeader />
+      </NoSchoolProfileCard>
+    )
+  }
 
   if (isLoading || isSchoolLoading) {
     return (

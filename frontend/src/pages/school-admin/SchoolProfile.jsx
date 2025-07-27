@@ -5,10 +5,17 @@ import { Link } from 'react-router';
 import { useGetSchoolProfile } from '../../api/school-admin/school.queries';
 import { EmptyStateCard, Loader } from '../../components';
 import PageHeader from './components/PageHeader';
+import { useAuth } from '../../Context/AuthContext';
+import NoSchoolProfileCard from './components/NoSchoolProfileCard';
+import { FALLBACK_IMAGES } from '../../utils/constants';
 
 function SchoolProfile() {
+  const { profiles } = useAuth();
+  const school = profiles?.school;
   // Queries
-  const { data: schoolProfile, isLoading, error, isError } = useGetSchoolProfile();
+  const { data: schoolProfile, isLoading, error, isError } = useGetSchoolProfile({
+    enabled: !!school?._id
+  });
   // Extract school data from API response
   const schoolData = schoolProfile?.success ? schoolProfile.data : null;
 
@@ -20,6 +27,15 @@ function SchoolProfile() {
     schoolData.zipCode,
     schoolData.country
   ].filter(Boolean).join(', ') : '';
+
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to get started'>
+        <SchoolProfileHeader loading={false} />
+      </NoSchoolProfileCard>
+    )
+  }
 
   // Loading state
   if (isLoading) {
@@ -63,8 +79,12 @@ function SchoolProfile() {
             {/* School Header */}
             <Flex className='flex-col' gap="4">
               <img
-                src={schoolData.logo}
-                className='object-cover object-center mx-auto w-full max-w-sm rounded-lg aspect-video'
+                src={schoolData.logo || FALLBACK_IMAGES.photo}
+                alt={schoolData.name || 'School logo'}
+                onError={(e) => {
+                  e.currentTarget.src = FALLBACK_IMAGES.photo;
+                }}
+                className='object-cover object-center mx-auto w-full max-w-sm rounded-lg aspect-video bg-[--gray-5]'
               />
               <Box className='text-center'>
                 <Text as="h2" size="5" weight="bold">
@@ -143,7 +163,7 @@ function SchoolProfile() {
           icon={<School />}
           action={
             <Button asChild>
-              <Link to="/school-admin/profile/create">
+              <Link to="/school-admin/school/create">
                 <Edit size={16} />
                 Create School Profile
               </Link>
@@ -174,7 +194,7 @@ function EditCreateProfileButton({ schoolData, loading }) {
   return (
     <Skeleton loading={loading} >
       <Button asChild className='shadow-md'>
-        <Link to={schoolData ? "/school-admin/profile/edit" : "/school-admin/profile/create"}>
+        <Link to={schoolData ? "/school-admin/school/edit" : "/school-admin/school/create"}>
           <Edit size={16} />
           {schoolData ? 'Edit Profile' : 'Create Profile'}
         </Link>

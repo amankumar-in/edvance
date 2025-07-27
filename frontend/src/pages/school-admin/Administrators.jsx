@@ -12,8 +12,12 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { formatDate } from '../../utils/helperFunctions';
 import PageHeader from '../school-admin/components/PageHeader';
 import AddAdministratorDialog from './components/AddAdministratorDialog';
+import NoSchoolProfileCard from './components/NoSchoolProfileCard';
 
 const Administrators = () => {
+  const {profiles} = useAuth();
+  const school = profiles?.school;
+  
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('firstName');
@@ -29,8 +33,7 @@ const Administrators = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // Queries
-  const { data: schoolProfile, isLoading: isSchoolProfileLoading, isError: isSchoolProfileError, error: schoolProfileError } = useSchoolProfile();
-  const schoolId = schoolProfile?.data?._id;
+  const schoolId = school?._id;
 
   const { data, isLoading, isFetching, isError, error } = useAdministrators(schoolId, {
     page,
@@ -101,12 +104,21 @@ const Administrators = () => {
     });
   };
 
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to start managing administrators'>
+        <AdministratorsPageHeader />
+      </NoSchoolProfileCard>
+    )
+  }
+
   // Loading
-  if (isLoading || isSchoolProfileLoading) {
+    if (isLoading) {
     return (
       <div className='space-y-6'>
         <AdministratorsPageHeader
-          loading={isLoading || isSchoolProfileLoading}
+          loading={isLoading}
           onAddClick={() => setIsAddDialogOpen(true)}
         />
         <Flex justify='center' align='center'>
@@ -117,7 +129,7 @@ const Administrators = () => {
   }
 
   // Error
-  if (isError || isSchoolProfileError) {
+    if (isError) {
     return (
       <div className='space-y-6'>
         <AdministratorsPageHeader
@@ -128,7 +140,7 @@ const Administrators = () => {
             <AlertCircleIcon size={16} />
           </Callout.Icon>
           <Callout.Text>
-            {error?.response?.data?.message || schoolProfileError?.response?.data?.message || 'Failed to load administrators'}
+            {error?.response?.data?.message || 'Failed to load administrators'}
           </Callout.Text>
         </Callout.Root>
       </div>

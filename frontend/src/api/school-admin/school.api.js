@@ -10,6 +10,11 @@ export const getSchoolProfile = async () => {
   return response.data;
 };
 
+export const createSchoolProfile = async (data) => {
+  const response = await apiClient.post('/schools', data);
+  return response.data;
+};
+
 export const updateSchoolProfile = async (data) => {
   const response = await apiClient.put('/schools/me', data);
   return response.data;

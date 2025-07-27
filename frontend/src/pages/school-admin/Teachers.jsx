@@ -7,14 +7,19 @@ import { ConfirmationDialog, EmptyStateCard, Loader, Pagination } from '../../co
 import { SortIcon } from '../../components/platform-admin/UserTable';
 import { useDebounce } from '../../hooks/useDebounce';
 import PageHeader from './components/PageHeader';
+import { useAuth } from '../../Context/AuthContext';
+import NoSchoolProfileCard from './components/NoSchoolProfileCard';
 
 const Teachers = () => {
+  const { profiles } = useAuth();
+  const school = profiles?.school;
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('firstName');
   const [order, setOrder] = useState('asc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);  
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [selectedTeacherToRemove, setSelectedTeacherToRemove] = useState(null);
 
   // Debounce search term to avoid too many API calls
@@ -27,6 +32,8 @@ const Teachers = () => {
     sort,
     order,
     search: searchTerm === '' ? '' : debouncedSearchTerm,
+  }, {
+    enabled: !!school?._id
   });
 
   // Column definitions
@@ -97,6 +104,15 @@ const Teachers = () => {
   };
 
   const handleRemoveConfirm = () => {}
+
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to start managing teachers'>
+        <TeachersPageHeader />
+      </NoSchoolProfileCard>
+    )
+  }
 
   // Loading states
   if (isLoading) {
@@ -301,8 +317,6 @@ const Teachers = () => {
         onOpenChange={handleRemoveCancel}
         onConfirm={handleRemoveConfirm}
         confirmColor='red'
-        // confirmText={removeAdministratorMutation.isPending ? 'Removing...' : 'Remove'}
-        // isLoading={removeAdministratorMutation.isPending}
       />
     </>
   );

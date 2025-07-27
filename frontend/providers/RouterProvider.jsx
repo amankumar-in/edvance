@@ -128,7 +128,8 @@ const router = createBrowserRouter(
             <Route path="dashboard" element={<SchoolAdminDashboard />} />
             <Route path="join-requests" element={<JoinRequests />} />
             <Route path="profile" element={<SchoolProfile />} />
-            <Route path="profile/edit" element={<EditSchoolProfile />} />
+            <Route path="school/edit" element={<EditSchoolProfile />} />
+            <Route path="school/create" element={<EditSchoolProfile />} />
             <Route path="students" element={<SchoolStudents />} />
             <Route path="teachers" element={<SchoolTeachers />} />
             <Route path="classes" element={<SchoolClasses />} />

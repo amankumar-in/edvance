@@ -1,5 +1,5 @@
 import { Badge, Button, Callout, Flex, Table, Text } from '@radix-ui/themes';
-import { AlertCircle, Check, Clock, Info, X } from 'lucide-react';
+import { AlertCircle, Check, Clock, Info, Plus, School, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { useRespondToJoinRequest } from '../../api/school-admin/school.mutations';
@@ -7,14 +7,22 @@ import { useGetAllPendingJoinRequests } from '../../api/school-admin/school.quer
 import { ConfirmationDialog, EmptyStateCard, Loader } from '../../components';
 import { formatDate } from '../../utils/helperFunctions';
 import PageHeader from './components/PageHeader';
+import { useAuth } from '../../Context/AuthContext';
+import { Link } from 'react-router';
+import NoSchoolProfileCard from './components/NoSchoolProfileCard';
 
 function JoinRequests() {
+  const { profiles } = useAuth();
+  const school = profiles?.school;
+
   // State for approve and reject dialogs
   const [approveDialogData, setApproveDialogData] = useState({ open: false, request: null });
   const [rejectDialogData, setRejectDialogData] = useState({ open: false, request: null });
 
   // Queries
-  const { data, isLoading, isError, error } = useGetAllPendingJoinRequests();
+  const { data, isLoading, isError, error } = useGetAllPendingJoinRequests({
+    enabled: !!school?._id
+  });
   const joinRequests = data?.data || [];
 
   // Mutations
@@ -69,6 +77,15 @@ function JoinRequests() {
       }
     );
   };
+
+  // No school profile
+  if (!school) {
+    return (
+      <NoSchoolProfileCard description='Create a school profile to start receiving join requests'>
+        <JoinRequestHeader />
+      </NoSchoolProfileCard>
+    )
+  }
 
   // Loading state
   if (isLoading) {
