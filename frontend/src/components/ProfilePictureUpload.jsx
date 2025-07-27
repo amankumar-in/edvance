@@ -78,7 +78,7 @@ export default function ProfilePictureUpload() {
         </Text>
       </Flex>
 
-      <div className="relative flex flex-col w-full">
+      <div className="flex relative flex-col w-full">
         <div className="w-24 h-24 mb-2 overflow-hidden border-2 border-[--gray-a6] rounded-full mx-auto">
           {previewUrl ? (
             <img
@@ -95,12 +95,12 @@ export default function ProfilePictureUpload() {
           )}
         </div>
 
-        <div className="flex w-full gap-2">
+        <div className="flex gap-2 w-full">
           <Button
             asChild
-            radius="large"
-            size="4"
+            size="3"
             className="flex-1 w-full cursor-pointer"
+            variant="surface"
           >
             <label>
               <Upload size={18} />
@@ -117,8 +117,7 @@ export default function ProfilePictureUpload() {
             <Button
               type="button"
               variant="outline"
-              radius="large"
-              size="4"
+              size="3"
               onClick={handleUpload}
               disabled={isUploading}
               className="flex-1 max-w-xs"
@@ -131,7 +130,7 @@ export default function ProfilePictureUpload() {
               type="button"
               color="gray"
               variant="soft"
-              size="4"
+              size="3"
               onClick={() => {
                 setSelectedFile(null);
                 setPreviewUrl(null);
@@ -150,7 +149,7 @@ export default function ProfilePictureUpload() {
           as="p"
           size={"2"}
           color='red'
-          className="flex items-center gap-1 mt-1"
+          className="flex gap-1 items-center mt-1"
         >
           <Info size={14} /> {uploadError?.response?.data?.message || 'Upload failed'}
         </Text>
@@ -158,11 +157,11 @@ export default function ProfilePictureUpload() {
 
       {/* Helper text section */}
       <Box className="mt-1">
-        <Callout.Root color="blue" size="1" variant="surface">
+        <Callout.Root color="blue" variant="surface">
           <Callout.Icon>
             <Info size={14} />
           </Callout.Icon>
-          <Callout.Text size={'1'}>
+          <Callout.Text>
             Accepted file types: JPG, JPEG, PNG, GIF <br />
             Maximum file size: 5MB
           </Callout.Text>

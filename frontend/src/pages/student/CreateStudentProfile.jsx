@@ -1,12 +1,15 @@
-import { Button, Callout, Flex, Select, Text, TextField } from '@radix-ui/themes';
+import { Button, Callout, Card, Flex, Select, Text, TextField } from '@radix-ui/themes';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import { Info } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+import { Navigate, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useCreateStudentProfile } from '../../api/student/student.mutations';
 import { useUpdateUserProfile } from '../../api/user/user.mutations';
-import { Container, ProfilePictureUpload, VerifyMobileNumber } from '../../components';
+import { Container, ProfilePictureUpload } from '../../components';
 import { useAuth } from '../../Context/AuthContext';
 
 const gradeOptions = [
@@ -28,13 +31,11 @@ function calculateAge(dateString) {
 }
 
 function CreateStudentProfile() {
-  const { user, setUser } = useAuth();
-  const { firstName, lastName, email, phoneNumber, isPhoneVerified: isPhoneVerifiedFromUser } = user ?? {};
+  const { user, setUser, profiles } = useAuth();
+  const { firstName, lastName, email } = user ?? {};
   const navigate = useNavigate();
-  const [isPhoneVerified, setIsPhoneVerified] = useState(isPhoneVerifiedFromUser || false);
-  const [currentPhone, setCurrentPhone] = useState(phoneNumber || "");
-  console.log(currentPhone, isPhoneVerified)
-  
+  const studentProfile = profiles?.['student'];
+
   const {
     register,
     handleSubmit,
@@ -43,7 +44,7 @@ function CreateStudentProfile() {
   } = useForm({
     defaultValues: {
       dateOfBirth: '',
-      phoneNumber: phoneNumber || '',
+      phoneNumber: '',
       grade: '',
     },
   });
@@ -75,11 +76,9 @@ function CreateStudentProfile() {
         toast.success('Profile created successfully');
 
         if (userData.phoneNumber) {
-          setCurrentPhone(userData.phoneNumber);
           setUser({ ...user, phoneNumber: userData.phoneNumber });
-        } else {
-          navigate('/student/dashboard', { replace: true });
         }
+        navigate('/student/dashboard', { replace: true });
       } catch (error) {
         console.error('Failed to create profile', error)
       }
@@ -88,20 +87,19 @@ function CreateStudentProfile() {
     }
   };
 
+  // If student profile already exists, redirect to dashboard
+  if (studentProfile) {
+    return <Navigate to="/student/dashboard" replace />
+  }
+
+  // If student profile does not exist, show the form
   return (
     <Container>
-      {currentPhone && !isPhoneVerified ? (
-        <VerifyMobileNumber
-          phoneNumber={currentPhone}
-          onVerified={() => {
-            navigate('/student/dashboard', { replace: true });
-          }}
-        />
-      ) : (
-        <div className="relative z-10 w-full max-w-2xl mx-auto space-y-6 text-gray-900 bg-white ">
+      <Card size='3' className='mx-auto w-full max-w-2xl shadow-md'>
+        <div className="relative z-10 space-y-6">
           <div className="text-center">
-            <Text as="p" size="8" weight="bold">Create Student Profile</Text>
-            <Text as="p" size="4" mt="4">Complete your student profile to get started</Text>
+            <Text as="p" size="7" weight="bold">Create Student Profile</Text>
+            <Text as="p" mt={'1'} color='gray'>Complete your student profile to get started</Text>
           </div>
           {/* Error Message Display */}
           {(isErrorCreatingProfile || isErrorUpdatingUserProfile) && (
@@ -131,11 +129,10 @@ function CreateStudentProfile() {
                   First Name
                 </Text>
                 <TextField.Root
+                  readOnly
                   size={"3"}
                   defaultValue={firstName}
-                  radius="large"
                   placeholder="First name"
-                  readOnly
                 />
               </label>
 
@@ -147,7 +144,6 @@ function CreateStudentProfile() {
                   readOnly
                   defaultValue={lastName}
                   size={"3"}
-                  radius="large"
                   placeholder="Last Name"
                 />
               </label>
@@ -162,7 +158,6 @@ function CreateStudentProfile() {
                 <TextField.Root
                   size={"3"}
                   defaultValue={email}
-                  radius="large"
                   placeholder="Email"
                   readOnly
                 />
@@ -187,7 +182,6 @@ function CreateStudentProfile() {
                         return true;
                       },
                     })}
-                    radius="large"
                   />
                 </label>
                 {errors.dateOfBirth && (
@@ -195,7 +189,7 @@ function CreateStudentProfile() {
                     as="p"
                     size={"2"}
                     color='red'
-                    className="flex items-center gap-1 mt-1"
+                    className="flex gap-1 items-center mt-1"
                   >
                     <Info size={14} /> {errors.dateOfBirth.message}
                   </Text>
@@ -203,22 +197,34 @@ function CreateStudentProfile() {
               </div>
 
               <div className='flex-1'>
+
                 <label className='flex-1'>
                   <Text as="div" size="2" mb="1" weight="medium">
                     Phone Number
                   </Text>
-                  <TextField.Root
-                    type='tel'
-                    size={"3"}
-                    {...register("phoneNumber", {
-                      required: 'Phone number is required',
+
+                  <Controller
+                    control={control}
+                    name="phoneNumber"
+                    rules={{
                       validate: (value) => {
-                        if (value && value.length < 10) return 'Phone number must be at least 10 digits';
-                        return true;
-                      },
-                    })}
-                    radius="large"
-                    placeholder="Phone Number"
+                        if (value) {
+                          return isValidPhoneNumber(value) || 'Invalid phone number'
+                        }
+                      }
+                    }}
+                    render={({ field }) => (
+                      <PhoneInput
+                        placeholder="Enter phone number"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        defaultCountry=""
+                        className="flex px-4 w-full text-sm bg-[--color-surface] ring-1 ring-[--gray-a7] focus-within:ring-[1.5px] focus-within:outline-none focus-within:ring-[--focus-8] rounded-md h-[38px]"
+                        numberInputProps={{
+                          className: "flex-1 border-0 bg-transparent outline-none placeholder:text-[--gray-a9] placeholder:text-[16px]"
+                        }}
+                      />
+                    )}
                   />
                 </label>
                 {errors.phoneNumber && (
@@ -226,7 +232,7 @@ function CreateStudentProfile() {
                     as="p"
                     size={"2"}
                     color='red'
-                    className="flex items-center gap-1 mt-1"
+                    className="flex gap-1 items-center mt-1"
                   >
                     <Info size={14} /> {errors.phoneNumber.message}
                   </Text>
@@ -250,8 +256,8 @@ function CreateStudentProfile() {
                       onValueChange={(value) => field.onChange(value)}
                       size={"3"}
                     >
-                      <Select.Trigger placeholder='Select Grade' radius="large" className='w-full' />
-                      <Select.Content position="popper">
+                      <Select.Trigger placeholder='Select Grade' className='w-full' />
+                      <Select.Content position="popper" variant='soft'>
                         {gradeOptions.map((g) => (
                           <Select.Item key={g} value={g} className='capitalize'>
                             {g}
@@ -267,7 +273,7 @@ function CreateStudentProfile() {
                   as="p"
                   size={"2"}
                   color='red'
-                  className="flex items-center gap-1 mt-1"
+                  className="flex gap-1 items-center mt-1"
                 >
                   <Info size={14} /> {errors.grade.message}
                 </Text>
@@ -278,7 +284,7 @@ function CreateStudentProfile() {
             <div className="text-center">
               <Button
                 type="submit"
-                size="4"
+                size="3"
                 className="w-full"
                 disabled={isCreatingProfile || isUpdatingUserProfile}>
                 {(isCreatingProfile || isUpdatingUserProfile) ? 'Creating...' : 'Create Profile'}
@@ -286,7 +292,7 @@ function CreateStudentProfile() {
             </div>
           </form>
         </div>
-      )}
+      </Card>
     </Container>
   );
 }
