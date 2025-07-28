@@ -139,7 +139,7 @@ const canManageRewards = (req, res, next) => {
     });
   }
 
-  if (!req.user.hasAnyRole(["parent", "school_admin", "platform_admin"])) {
+  if (!req.user.hasAnyRole(["parent", "school_admin", "platform_admin", "teacher"])) {
     return res.status(403).json({
       success: false,
       message: "Not authorized to manage rewards",

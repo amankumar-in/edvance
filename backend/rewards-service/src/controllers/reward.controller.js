@@ -460,20 +460,39 @@ const rewardController = {
         });
       }
 
-      // Check authorization - only creator or platform admin can update
       const { profiles } = req.user;
-      const userId = profiles[role]?._id;
       const userRoles = req.user.roles;
 
-      const isAuthorized =
-        reward.creatorId.equals(userId) ||
-        (reward.creatorType === "school" &&
-          userRoles.includes("school_admin") &&
-          reward.schoolId === req.user.schoolId) ||
-        (reward.creatorType === "teacher" &&
-          userRoles.includes("teacher") &&
-          reward.creatorId.equals(userId)) ||
-        userRoles.includes("platform_admin");
+      // Check authorization
+      let isAuthorized = false;
+
+      // Check if the user is a school admin and has the school_admin role
+      if (role === "school_admin" && userRoles.includes("school_admin")) {
+        const schoolId = profiles?.['school']?._id;
+
+        // Authorize if the reward belongs to the same school
+        isAuthorized = reward.schoolId.equals(schoolId)
+      }
+      // Check if the user is a teacher and has the teacher role
+      else if (role === 'teacher' && userRoles.includes('teacher')) {
+        const teacherProfile = profiles?.['teacher'];
+        const classIds = teacherProfile?.classIds;
+
+        // Authorize if the reward is assigned to any of the teacher's classes
+        isAuthorized = classIds.some(classId => reward.classId.equals(classId));
+      }
+      // Check if the user is a parent and has the parent role
+      else if (role === 'parent' && userRoles.includes('parent')) {
+        const parentProfile = profiles?.['parent'];
+        const parentId = parentProfile?._id;
+
+        // Authorize if the parent is the creator of the reward
+        isAuthorized = reward.creatorId.equals(parentId);
+      }
+      // Allow full access to platform or sub admins
+      else if (userRoles.includes('platform_admin') || userRoles.includes('sub_admin')) {
+        isAuthorized = true;
+      }
 
       if (!isAuthorized) {
         return res.status(403).json({
@@ -564,21 +583,40 @@ const rewardController = {
         });
       }
 
-      // Check authorization - only creator or platform admin can delete
+      // Check authorization
       const { profiles } = req.user;
-      const userId = profiles.parent?._id;
       const userRoles = req.user.roles;
 
+      // Check authorization
+      let isAuthorized = false;
 
-      const isAuthorized =
-        reward.creatorId.equals(userId) ||
-        (reward.creatorType === "school" &&
-          userRoles.includes("school_admin") &&
-          reward.schoolId.equals(req.user.schoolId)) ||
-        (reward.creatorType === "teacher" &&
-          userRoles.includes("teacher") &&
-          reward.creatorId.equals(userId)) ||
-        userRoles.includes("platform_admin");
+      // Check if the user has the school_admin role
+      if (userRoles.includes("school_admin")) {
+        const schoolId = profiles?.['school']?._id;
+
+        // Authorize if the reward belongs to the same school
+        isAuthorized = reward.schoolId.equals(schoolId)
+      }
+      // Check if the user has the teacher role
+      else if (userRoles.includes('teacher')) {
+        const teacherProfile = profiles?.['teacher'];
+        const classIds = teacherProfile?.classIds;
+
+        // Authorize if the reward is assigned to any of the teacher's classes
+        isAuthorized = classIds.some(classId => reward.classId.equals(classId));
+      }
+      // Check if the user has the parent role
+      else if (userRoles.includes('parent')) {
+        const parentProfile = profiles?.['parent'];
+        const parentId = parentProfile?._id;
+
+        // Authorize if the parent is the creator of the reward
+        isAuthorized = reward.creatorId.equals(parentId);
+      }
+      // Allow full access to platform or sub admins
+      else if (userRoles.includes('platform_admin') || userRoles.includes('sub_admin')) {
+        isAuthorized = true;
+      }
 
       if (!isAuthorized) {
         return res.status(403).json({
