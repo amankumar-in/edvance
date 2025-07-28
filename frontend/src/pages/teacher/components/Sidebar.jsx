@@ -4,10 +4,11 @@ import {
   BookOpen,
   CheckSquare,
   ChevronRight,
+  FileCheck,
   Gift,
   LogOut,
-  SettingsIcon,
-  FileCheck
+  Receipt,
+  SettingsIcon
 } from 'lucide-react';
 import React from 'react';
 import { NavLink, useMatch, useResolvedPath } from 'react-router';
@@ -40,6 +41,11 @@ const sideBarItems = [
     label: 'Rewards',
     href: '/teacher/rewards',
     icon: <Gift size={20} />
+  },
+  {
+    label: 'Reward Redemption',
+    href: '/teacher/reward-redemption',
+    icon: <Receipt size={20} />
   }
 ]
 

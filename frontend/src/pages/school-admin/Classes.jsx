@@ -39,7 +39,7 @@ const Classes = () => {
   const school = profiles?.school;
   // State for filters and search
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('createdAt');
   const [order, setOrder] = useState('desc');
   const [searchQuery, setSearchQuery] = useState('');

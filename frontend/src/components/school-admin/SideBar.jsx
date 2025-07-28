@@ -8,6 +8,7 @@ import {
   Gift,
   GraduationCap,
   LogOut,
+  Receipt,
   School,
   SettingsIcon,
   UserCog,
@@ -70,6 +71,11 @@ const sideBarItems = [
     label: 'Rewards',
     href: '/school-admin/rewards',
     icon: <Gift size={20} />
+  },
+  {
+    label: 'Reward Redemption',
+    href: '/school-admin/reward-redemption',
+    icon: <Receipt size={20} />
   }
 ]
 

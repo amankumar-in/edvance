@@ -8,7 +8,8 @@ const rewardRedemptionSchema = new mongoose.Schema(
       required: true,
     },
     studentId: {
-      type: String, // Will store student ID from user service
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
       required: true,
     },
     pointsSpent: {
@@ -30,7 +31,7 @@ const rewardRedemptionSchema = new mongoose.Schema(
       type: Date,
     },
     fulfillerId: {
-      type: String, // Will store user ID of who fulfilled the redemption
+      type: mongoose.Schema.Types.ObjectId,
     },
     redemptionCode: {
       type: String,
@@ -49,7 +50,7 @@ const rewardRedemptionSchema = new mongoose.Schema(
       type: String,
     },
     cancelledBy: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
     },
     cancelledAt: {
       type: Date,

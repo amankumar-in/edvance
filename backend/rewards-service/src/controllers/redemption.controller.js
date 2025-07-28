@@ -9,7 +9,7 @@ const getStudentDetails = async (studentId, authorization) => {
     const userServiceUrl = process.env.NODE_ENV === "production"
       ? process.env.PRODUCTION_USER_SERVICE_URL
       : process.env.USER_SERVICE_URL || "http://localhost:3002";
-    
+
     const response = await axios.get(
       `${userServiceUrl}/api/students/${studentId}`,
       {
@@ -18,7 +18,7 @@ const getStudentDetails = async (studentId, authorization) => {
         },
       }
     );
-    
+
     return response.data.data;
   } catch (error) {
     console.error("Failed to get student details:", error.message);
@@ -32,7 +32,7 @@ const getParentDetails = async (userId, authorization) => {
     const userServiceUrl = process.env.NODE_ENV === "production"
       ? process.env.PRODUCTION_USER_SERVICE_URL
       : process.env.USER_SERVICE_URL || "http://localhost:3002";
-    
+
     const response = await axios.get(
       `${userServiceUrl}/api/parents/by-user/${userId}`,
       {
@@ -41,7 +41,7 @@ const getParentDetails = async (userId, authorization) => {
         },
       }
     );
-    
+
     return response.data.data;
   } catch (error) {
     console.error("Failed to get parent details:", error.message);
@@ -82,10 +82,10 @@ const redemptionController = {
           reason: !reward.isActive
             ? "Reward is not active"
             : reward.expiryDate && reward.expiryDate < new Date()
-            ? "Reward has expired"
-            : reward.limitedQuantity && reward.quantity <= 0
-            ? "Reward is out of stock"
-            : "Unknown reason",
+              ? "Reward has expired"
+              : reward.limitedQuantity && reward.quantity <= 0
+                ? "Reward is out of stock"
+                : "Unknown reason",
         });
       }
 
@@ -100,7 +100,7 @@ const redemptionController = {
           const userServiceUrl = process.env.NODE_ENV === "production"
             ? process.env.PRODUCTION_USER_SERVICE_URL
             : process.env.USER_SERVICE_URL || "http://localhost:3002";
-          
+
           const studentResponse = await axios.get(
             `${userServiceUrl}/api/students/me`,
             {
@@ -109,9 +109,9 @@ const redemptionController = {
               },
             }
           );
-          
+
           requestedStudentId = studentResponse.data.data._id;
-          
+
           // Students can only redeem for themselves
           if (studentId && studentId !== requestedStudentId) {
             return res.status(403).json({
@@ -283,7 +283,7 @@ const redemptionController = {
         requestedStudentId,
         req.headers.authorization
       );
-      
+
       const redemptionObj = redemption.toObject();
       redemptionObj.studentInfo = studentDetails ? {
         firstName: studentDetails.userId?.firstName || '',
@@ -324,6 +324,7 @@ const redemptionController = {
         limit = 20,
         sort = "redemptionDate",
         order = "desc",
+        activeRole
       } = req.query;
 
       const filter = {};
@@ -339,7 +340,7 @@ const redemptionController = {
           const userServiceUrl = process.env.NODE_ENV === "production"
             ? process.env.PRODUCTION_USER_SERVICE_URL
             : process.env.USER_SERVICE_URL || "http://localhost:3002";
-          
+
           const studentResponse = await axios.get(
             `${userServiceUrl}/api/students/me`,
             {
@@ -348,7 +349,7 @@ const redemptionController = {
               },
             }
           );
-          
+
           const studentProfileId = studentResponse.data.data._id;
           filter.studentId = studentProfileId;
         } catch (error) {
@@ -363,12 +364,183 @@ const redemptionController = {
         // Parents can see their children's redemptions
         // TODO: Integrate with user service to get children IDs
         filter.studentId = studentId || userId;
-      } else if (
-        userRoles.includes("school_admin") ||
-        userRoles.includes("teacher")
-      ) {
-        // School staff can see redemptions related to their school
-        // TODO: Filter based on school ID from rewards
+      } else if (activeRole === "school_admin" && userRoles.includes("school_admin")) {
+        const schoolId = req.user?.profiles?.school?._id;
+
+        // Step 1: Base match stage
+        const baseMatchStage = {
+          $match: {
+            $or: [
+              { "metadata.rewardCreatorType": "school_admin" },
+              { "metadata.rewardCreatorType": "teacher" }
+            ]
+          }
+        };
+
+        // Step 2: Lookup and filter by schoolId
+        const lookupAndFilterStages = [
+          {
+            $lookup: {
+              from: "rewards",
+              localField: "rewardId",
+              foreignField: "_id",
+              as: "rewardId",
+              pipeline: [
+                { $project: { title: 1, schoolId: 1, category: 1, subcategory: 1, pointsCost: 1, image: 1, classId: 1 } }
+              ]
+            }
+          },
+          { $unwind: "$rewardId" },
+          {
+            $match: {
+              "rewardId.schoolId": new mongoose.Types.ObjectId(schoolId)
+            }
+          }
+        ];
+
+        // Step 3: Count total before pagination
+        const countPipeline = [
+          baseMatchStage,
+          ...lookupAndFilterStages,
+          { $count: "total" }
+        ];
+        const countResult = await RewardRedemption.aggregate(countPipeline);
+        const total = countResult[0]?.total || 0;
+
+        // Step 4: Fetch paginated results
+        const paginationStages = [
+          { $sort: { [sort]: order === "desc" ? -1 : 1 } },
+          { $skip: (parseInt(page) - 1) * parseInt(limit) },
+          { $limit: parseInt(limit) }
+        ];
+
+        const redemptions = await RewardRedemption.aggregate([
+          baseMatchStage,
+          ...lookupAndFilterStages,
+          ...paginationStages
+        ]);
+
+        // Step 5: Enrich with student info
+        const redemptionsWithStudentInfo = await Promise.all(
+          redemptions.map(async (redemption) => {
+            const studentDetails = await getStudentDetails(
+              redemption.studentId,
+              req.headers.authorization
+            );
+
+            return {
+              ...redemption,
+              studentInfo: studentDetails ? {
+                firstName: studentDetails.userId?.firstName || '',
+                lastName: studentDetails.userId?.lastName || '',
+                email: studentDetails.userId?.email || '',
+                avatar: studentDetails.userId?.avatar || null,
+                grade: studentDetails.grade || null
+              } : null
+            };
+          })
+        );
+
+        // Step 6: Send response
+        res.status(200).json({
+          success: true,
+          data: {
+            redemptions: redemptionsWithStudentInfo,
+            pagination: {
+              total,
+              page: parseInt(page),
+              limit: parseInt(limit),
+              pages: Math.ceil(total / parseInt(limit)),
+            },
+          },
+        });
+      } else if (userRoles.includes("teacher") && activeRole === "teacher") {
+        const classIds = req.user?.profiles?.teacher?.classIds;
+        const classObjectIds = classIds.map(id => new mongoose.Types.ObjectId(id));
+        const pageNumber = parseInt(page);
+        const pageLimit = parseInt(limit);
+
+        // Step 1: Define common stages (match + lookup + classId filter)
+        const baseMatchStage = {
+          $match: {
+            "metadata.rewardCreatorType": "teacher"
+          }
+        };
+
+        const lookupAndFilterStages = [
+          {
+            $lookup: {
+              from: "rewards",
+              localField: "rewardId",
+              foreignField: "_id",
+              as: "rewardId"
+            }
+          },
+          { $unwind: "$rewardId" },
+          {
+            $match: {
+              "rewardId.classId": { $in: classObjectIds }
+            }
+          }
+        ];
+
+        // Step 2: Count total before pagination
+        const countPipeline = [
+          baseMatchStage,
+          ...lookupAndFilterStages,
+          { $count: "total" }
+        ];
+        const countResult = await RewardRedemption.aggregate(countPipeline);
+        const total = countResult[0]?.total || 0;
+
+        // Step 3: Fetch paginated results
+        const paginationStages = [
+          { $sort: { [sort]: order === "desc" ? -1 : 1 } },
+          { $skip: (pageNumber - 1) * pageLimit },
+          { $limit: pageLimit }
+        ];
+
+        const redemptions = await RewardRedemption.aggregate([
+          baseMatchStage,
+          ...lookupAndFilterStages,
+          ...paginationStages
+        ]);
+
+        // Step 4: Enrich with student info
+        const redemptionsWithStudentInfo = await Promise.all(
+          redemptions.map(async (redemption) => {
+            const studentDetails = await getStudentDetails(
+              redemption.studentId,
+              req.headers.authorization
+            );
+
+            return {
+              ...redemption,
+              studentInfo: studentDetails ? {
+                firstName: studentDetails.userId?.firstName || '',
+                lastName: studentDetails.userId?.lastName || '',
+                email: studentDetails.userId?.email || '',
+                avatar: studentDetails.userId?.avatar || null,
+                grade: studentDetails.grade || null
+              } : null
+            };
+          })
+        );
+
+        // Step 5: Return final response
+        res.status(200).json({
+          success: true,
+          data: {
+            redemptions: redemptionsWithStudentInfo,
+            pagination: {
+              total,
+              page: pageNumber,
+              limit: pageLimit,
+              pages: Math.ceil(total / pageLimit)
+            }
+          }
+        });
+
       }
       // Platform admins can see all redemptions
 
@@ -404,7 +576,7 @@ const redemptionController = {
             redemption.studentId,
             req.headers.authorization
           );
-          
+
           const redemptionObj = redemption.toObject();
           redemptionObj.studentInfo = studentDetails ? {
             firstName: studentDetails.userId?.firstName || '',
@@ -413,7 +585,7 @@ const redemptionController = {
             avatar: studentDetails.userId?.avatar || null,
             grade: studentDetails.grade || null
           } : null;
-          
+
           return redemptionObj;
         })
       );
@@ -473,12 +645,35 @@ const redemptionController = {
       const userRoles = req.user.roles;
       const reward = redemption.rewardId;
 
-      const isAuthorized =
-        reward.creatorId.equals(userId) ||
-        (reward.creatorType === "school" &&
-          userRoles.includes("school_admin") &&
-          reward.schoolId === req.user.schoolId) ||
-        userRoles.includes("platform_admin");
+      let isAuthorized = false;
+
+      // Check if the user is a school admin and has the school_admin role
+      if (role === "school_admin" && userRoles.includes("school_admin")) {
+        const schoolId = profiles?.['school']?._id;
+
+        // Authorize if the reward belongs to the same school
+        isAuthorized = reward.schoolId.equals(schoolId)
+      }
+      // Check if the user is a teacher and has the teacher role
+      else if (role === 'teacher' && userRoles.includes('teacher')) {
+        const teacherProfile = profiles?.['teacher'];
+        const classIds = teacherProfile?.classIds;
+
+        // Authorize if the reward is assigned to any of the teacher's classes
+        isAuthorized = classIds.some(classId => reward.classId.equals(classId));
+      }
+      // Check if the user is a parent and has the parent role
+      else if (role === 'parent' && userRoles.includes('parent')) {
+        const parentProfile = profiles?.['parent'];
+        const parentId = parentProfile?._id;
+
+        // Authorize if the parent is the creator of the reward
+        isAuthorized = reward.creatorId.equals(parentId);
+      }
+      // Allow full access to platform or sub admins
+      else if (userRoles.includes('platform_admin') || userRoles.includes('sub_admin')) {
+        isAuthorized = true;
+      }
 
       if (!isAuthorized) {
         return res.status(403).json({
@@ -527,7 +722,7 @@ const redemptionController = {
         redemption.studentId,
         req.headers.authorization
       );
-      
+
       const redemptionObj = redemption.toObject();
       redemptionObj.studentInfo = studentDetails ? {
         firstName: studentDetails.userId?.firstName || '',
@@ -582,16 +777,39 @@ const redemptionController = {
       const userRoles = req.user.roles;
       const reward = redemption.rewardId;
 
-      const isStudent =
-        userRoles.includes("student") && redemption.studentId === userId;
-      const isCreator =
-        reward.creatorId.equals(userId) ||
-        (reward.creatorType === "school" &&
-          userRoles.includes("school_admin") &&
-          reward.schoolId === req.user.schoolId);
-      const isPlatformAdmin = userRoles.includes("platform_admin");
+      const isStudent = role === "student" && userRoles.includes("student") && redemption.studentId === userId;
 
-      if (!isStudent && !isCreator && !isPlatformAdmin) {
+      let isAuthorized = false;
+
+      // Check if the user is a school admin and has the school_admin role
+      if (role === "school_admin" && userRoles.includes("school_admin")) {
+        const schoolId = profiles?.['school']?._id;
+
+        // Authorize if the reward belongs to the same school
+        isAuthorized = reward.schoolId.equals(schoolId)
+      }
+      // Check if the user is a teacher and has the teacher role
+      else if (role === 'teacher' && userRoles.includes('teacher')) {
+        const teacherProfile = profiles?.['teacher'];
+        const classIds = teacherProfile?.classIds;
+
+        // Authorize if the reward is assigned to any of the teacher's classes
+        isAuthorized = classIds.some(classId => reward.classId.equals(classId));
+      }
+      // Check if the user is a parent and has the parent role
+      else if (role === 'parent' && userRoles.includes('parent')) {
+        const parentProfile = profiles?.['parent'];
+        const parentId = parentProfile?._id;
+
+        // Authorize if the parent is the creator of the reward
+        isAuthorized = reward.creatorId.equals(parentId);
+      }
+      // Allow full access to platform or sub admins
+      else if (userRoles.includes('platform_admin') || userRoles.includes('sub_admin')) {
+        isAuthorized = true;
+      }
+
+      if (!isStudent && !isAuthorized) {
         return res.status(403).json({
           success: false,
           message: "Not authorized to cancel this redemption",
