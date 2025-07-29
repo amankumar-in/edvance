@@ -1,13 +1,14 @@
-import { Avatar, Badge, Box, Button, Flex, Separator, Skeleton, Text } from '@radix-ui/themes';
-import { BarChart3, Bell, BookOpen, Calendar, CreditCard, Home, LogOut, Settings, TrendingUp, Trophy, User } from 'lucide-react';
+import { Avatar, Badge, Box, Button, Flex, IconButton, Skeleton, Text } from '@radix-ui/themes';
+import { BarChart3, Bell, BookOpen, Calendar, CreditCard, Home, LogOut, Settings, TrendingUp, Trophy, User, X } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router';
-import { useAuth } from '../../Context/AuthContext';
-import { Container } from '../../components';
-import { usePointsDetailsById } from '../../api/points/points.queries';
+import { NavLink, Outlet, useOutletContext } from 'react-router';
 import { toast } from 'sonner';
+import { useAuth } from '../../Context/AuthContext';
+import { usePointsDetailsById } from '../../api/points/points.queries';
+import { Container } from '../../components';
 
 function StudentLayout() {
+  const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useOutletContext();
   const { user, handleLogout, isLoggingOut, profiles } = useAuth();
   const studentId = profiles?.student?._id;
 
@@ -43,12 +44,32 @@ function StudentLayout() {
   ];
 
   return (
-    <Flex>
-      {/* Desktop Sidebar */}
-      <Box className="sticky left-0 hidden min-w-72 h-[calc(100vh-4rem)] py-6 top-16 md:block bg-[--gray-2] overflow-y-auto">
-        <Flex direction="column" gap="4" className="h-full">
+    <>
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && <div
+        onClick={() => setIsMobileSidebarOpen(false)}
+        className="fixed inset-0 z-[999] bg-[--color-overlay] md:hidden"
+      />}
+
+      <Flex className='relative'>
+        {/* Desktop Sidebar */}
+        <Box className={`overflow-y-auto fixed md:sticky transition-transform border-r border-[--gray-a6] duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--gray-2] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
+          <Flex align='center' gap='4' px={'4'} className='h-16 md:hidden' justify='between'>
+            <Text as='p' weight='bold' size="7" color='cyan'>
+              EdVance
+            </Text>
+            <IconButton
+              variant='ghost'
+              color='gray'
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              className='md:hidden'
+            >
+              <X size={24} />
+            </IconButton>
+          </Flex>
+
           {/* Profile Section */}
-          <Flex direction="column" align="center" gap="2" className="px-4 py-2">
+          <Flex direction="column" align="center" gap="2" className="p-4">
             <Avatar
               size="5"
               src={user?.profileImage}
@@ -70,30 +91,31 @@ function StudentLayout() {
           </Flex>
 
           {/* Navigation Items */}
-          <Flex direction="column" className="flex-grow px-3">
-            {navItems.map((item, index) => (
-              <NavLink
-                key={index}
-                to={item.href}
-                className={({ isActive }) =>
-                  `${isActive ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
+          <Flex direction="column" justify='between' px={'3'} pb={'4'}>
+            <Flex direction="column">
+              {navItems.map((item, index) => (
+                <NavLink
+                  key={index}
+                  to={item.href}
+                  className={({ isActive }) =>
+                    `${isActive ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
                   p-4 py-3 text-sm  rounded-full flex items-center gap-2 relative font-medium`
-                }
-              >
-                <span className="flex flex-1 gap-5 items-center">
-                  {item.icon}
-                  {item.label}
-                </span>
-                {item.badge && (
-                  <span className="flex justify-center items-center px-1 h-5 text-xs text-white bg-red-500 rounded-full min-w-5">
-                    {item.badge > 99 ? '99+' : item.badge}
+                  }
+                >
+                  <span className="flex flex-1 gap-5 items-center">
+                    {item.icon}
+                    {item.label}
                   </span>
-                )}
-              </NavLink>
-            ))}
+                  {item.badge && (
+                    <span className="flex justify-center items-center px-1 h-5 text-xs text-white bg-red-500 rounded-full min-w-5">
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                </NavLink>
+              ))}
+            </Flex>
             <Button
               variant="ghost"
-              my={'6'}
               mx='auto'
               radius='full'
               color="gray"
@@ -107,43 +129,38 @@ function StudentLayout() {
               <LogOut size={20} /> {isLoggingOut ? 'Logging out...' : 'Logout'}
             </Button>
           </Flex>
-        </Flex>
-      </Box >
+        </Box >
 
-      {/* Mobile Bottom Navigation */}
-      < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden" style={{ borderTop: '1px solid var(--gray-6)', background: 'var(--color-background)' }
-      }>
-        <Flex justify="between" className="items-stretch w-full">
-          {navItems.slice(0, 6).map((item, index) => (
-            <NavLink
-              key={index}
-              to={item.href || '#'}
-              className={({ isActive }) => `flex flex-col items-center gap-1 px-2 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11]' : 'text-[--gray-11] hover:text-[--gray-12] '
-                }`}
-            >
-              <Box className={({ isActive }) =>
-                isActive ? 'bg-[--accent-a3] p-1 rounded-md' : 'p-1'
-              }>
-                {item.icon}
-              </Box>
-              {/* <Text
-                size="1"
-                weight={({ isActive }) => isActive ? "medium" : "regular"}
+        {/* Mobile Bottom Navigation */}
+        < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden bg-[--gray-2]" style={{ borderTop: '1px solid var(--gray-6)' }
+        }>
+          <Flex justify="between" className='w-full'>
+            {navItems.slice(0, 5).map((item, index) => (
+              <NavLink
+                key={index}
+                to={item.href || '#'}
+                className={({ isActive }) => `flex flex-col items-center gap-1 px-2 border-t-4 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11] font-semibold  border-[--accent-11]' : 'text-[--gray-11]  border-transparent'}`}
               >
-                {item.label}
-              </Text> */}
-            </NavLink>
-          ))}
-        </Flex>
-      </Box >
+                {item.icon}
+                <Text
+                  as='p'
+                  size="1"
+                >
+                  {item.label === 'Scholarship Points' ? 'SP' : item.label}
+                </Text>
+              </NavLink>
+            ))}
+          </Flex>
+        </Box >
 
-      {/* Main Content */}
-      <div className='flex-1 pb-16 md:pb-0'>
-        <Container>
-          <Outlet />
-        </Container>
-      </div>
-    </Flex >
+        {/* Main Content */}
+        <div className='flex-1 pb-16 md:pb-0'>
+          <Container>
+            <Outlet />
+          </Container>
+        </div>
+      </Flex >
+    </>
   );
 }
 
