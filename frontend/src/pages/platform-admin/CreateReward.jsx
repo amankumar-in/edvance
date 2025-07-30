@@ -21,14 +21,16 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
-import { useCreateReward } from '../../api/rewards/rewards.mutations';
-import { useGetRewardCategories } from '../../api/rewards/rewards.queries';
-import { Container, FormFieldErrorMessage } from '../../components';
+import { useCreateReward, useUpdateReward } from '../../api/rewards/rewards.mutations';
+import { useGetRewardById, useGetRewardCategories } from '../../api/rewards/rewards.queries';
+import { Container, FormFieldErrorMessage, Loader } from '../../components';
 
 const CreateReward = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
 
   const {
     register,
@@ -36,7 +38,8 @@ const CreateReward = () => {
     control,
     watch,
     formState: { errors },
-    setValue
+    setValue,
+    reset
   } = useForm({
     defaultValues: {
       title: '',
@@ -63,6 +66,7 @@ const CreateReward = () => {
   // Image upload state
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [isFormReady, setIsFormReady] = useState(!isEdit);
 
   // Get reward categories from API
   const { data, isLoading: categoriesLoading, isError: categoriesError, error: categoriesErrorDetails } = useGetRewardCategories();
@@ -70,8 +74,15 @@ const CreateReward = () => {
   // Safely extract categories with fallback
   const rewardCategories = data?.data?.categories || data?.categories || [];
 
-  // Create reward mutation
-  const { mutate: createReward, isPending, isError, error } = useCreateReward();
+  // Get reward for editing
+  const { data: rewardData, isLoading: isLoadingReward } = useGetRewardById(id, { enabled: isEdit });
+  const reward = rewardData?.data;
+
+  // Create and update reward mutations
+  const { mutate: createReward, isPending: isCreating } = useCreateReward();
+  const { mutate: updateReward, isPending: isUpdating } = useUpdateReward();
+
+  const isPending = isCreating || isUpdating;
 
   // Handle file selection
   const handleFileChange = (e) => {
@@ -107,10 +118,42 @@ const CreateReward = () => {
     }
   };
 
-  // Set suggested point value based on category
+  // Populate form when editing
   useEffect(() => {
-    const categoryId = watch('categoryId');
-    if (rewardCategories && categoryId) {
+    if (isEdit && reward && !isLoadingReward) {
+      const formData = {
+        title: reward.title || '',
+        description: reward.description || '',
+        pointsCost: reward.pointsCost || undefined,
+        categoryId: reward.categoryId?._id || reward.categoryId || '',
+        category: reward.category || '',
+        subcategory: reward.subcategory || '',
+        limitedQuantity: reward.limitedQuantity || false,
+        quantity: reward.quantity || undefined,
+        expiryDate: reward.expiryDate ? new Date(reward.expiryDate).toISOString().slice(0, 10) : '',
+        image: reward.image || '',
+        redemptionInstructions: reward.redemptionInstructions || '',
+        restrictions: reward.restrictions || '',
+        schoolId: reward.schoolId || '',
+        classId: reward.classId || '',
+        isFeatured: reward.isFeatured || false,
+      };
+
+      reset(formData);
+
+      // Set existing image if available
+      if (reward.image) {
+        setPreviewUrl(reward.image);
+      }
+
+      setIsFormReady(true);
+    }
+  }, [isEdit, reward, isLoadingReward, reset]);
+
+  // Set suggested point value based on category (only for new rewards)
+  useEffect(() => {
+    if (!isEdit && rewardCategories && watch('categoryId')) {
+      const categoryId = watch('categoryId');
       const selectedCategory = rewardCategories.find(cat => cat._id === categoryId);
       if (selectedCategory) {
         setValue('pointsCost', selectedCategory.minPointValue);
@@ -118,7 +161,7 @@ const CreateReward = () => {
         setValue('subcategory', selectedCategory.subcategoryType);
       }
     }
-  }, [watch('categoryId'), rewardCategories, setValue]);
+  }, [isEdit, watch('categoryId'), rewardCategories, setValue]);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -172,17 +215,33 @@ const CreateReward = () => {
       formData.append('image', selectedFile);
     }
 
-    // Create reward using API
-    createReward(formData, {
+    // Submit to API
+    const successMessage = isEdit ? 'Reward updated successfully!' : 'Reward created successfully';
+    const errorMessage = isEdit ? 'Failed to update reward' : 'Failed to create reward';
+    const mutation = isEdit ? updateReward : createReward;
+    const mutationData = isEdit ? { id, formData } : formData;
+
+    mutation(mutationData, {
       onSuccess: () => {
-        toast.success('Reward created successfully');
+        toast.success(successMessage);
         navigate('/platform-admin/dashboard/rewards');
       },
       onError: (error) => {
-        toast.error(error?.response?.data?.message || error?.message || 'Failed to create reward');
+        toast.error(error?.response?.data?.message || error?.message || errorMessage);
       }
     });
   };
+
+  // Show loading state when editing and form is not ready
+  if (isEdit && (isLoadingReward || !isFormReady)) {
+    return (
+      <Container>
+        <Flex justify="center">
+          <Loader />
+        </Flex>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -202,9 +261,14 @@ const CreateReward = () => {
           </Button>
           <Flex justify={'between'} align={'start'} wrap='wrap' gap='2'>
             <Flex direction={'column'}>
-              <Heading as="h1" size="6" weight="medium">Create New Reward</Heading>
+              <Heading as="h1" size="6" weight="medium">
+                {isEdit ? 'Edit Reward' : 'Create New Reward'}
+              </Heading>
               <Text color="gray" size="2" className="mt-1">
-                Create a new reward that students can redeem with their scholarship points.
+                {isEdit
+                  ? 'Update the reward details and settings.'
+                  : 'Create a new reward that students can redeem with their scholarship points.'
+                }
               </Text>
             </Flex>
 
@@ -216,7 +280,11 @@ const CreateReward = () => {
                 disabled={isPending}
                 onClick={handleSubmit(onSubmit)}
               >
-                <Plus size={16} /> {isPending ? 'Creating...' : 'Create Reward'}
+                <Plus size={16} />
+                {isPending
+                  ? (isEdit ? 'Updating...' : 'Creating...')
+                  : (isEdit ? 'Update Reward' : 'Create Reward')
+                }
               </Button>
             </Flex>
           </Flex>

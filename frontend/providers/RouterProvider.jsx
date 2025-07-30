@@ -172,6 +172,7 @@ const router = createBrowserRouter(
             <Route path="task-categories/edit/:id" element={<CreateEditCategory />} />
             <Route path="rewards" element={<Rewards />} />
             <Route path="rewards/create" element={<CreateReward />} />
+            <Route path="rewards/edit/:id" element={<CreateReward />} />
             <Route path="reward-categories" element={<RewardCategories />} />
             <Route path="reward-categories/create" element={<CreateRewardCategory />} />
             <Route path="reward-categories/edit/:id" element={<CreateRewardCategory />} />
