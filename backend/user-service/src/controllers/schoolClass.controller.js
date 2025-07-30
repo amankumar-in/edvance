@@ -158,6 +158,7 @@ exports.getClassStudents = async (req, res) => {
     res.status(200).json({
       success: true,
       data: students,
+      classDetails
     });
   } catch (error) {
     console.error("Get class students error:", error);
@@ -649,6 +650,110 @@ exports.getPendingJoinRequests = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get pending join requests",
+      error: error.message,
+    });
+  }
+};
+
+// Assign teacher to class
+exports.assignTeacherToClass = async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const userId = req.user.id;
+    const { teacherId } = req.body;
+
+    if (!teacherId) {
+      return res.status(400).json({
+        success: false,
+        message: "Teacher ID is required",
+      });
+    }
+
+    // Check authorization - only school admins can assign teachers
+    const authResult = await checkClassAuthorization(userId, classId);
+    if (!authResult.authorized || authResult.userType !== 'school_admin') {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to assign teachers to this class. Only school administrators can perform this action.",
+      });
+    }
+
+    // Find class
+    const classDetails = authResult.classDetails || await SchoolClass.findById(classId);
+    if (!classDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // Find teacher and verify they belong to the same school
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher not found",
+      });
+    }
+
+    // Verify teacher belongs to the same school as the class
+    if (teacher.schoolId.toString() !== classDetails.schoolId.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "Teacher must belong to the same school as the class",
+      });
+    }
+
+    // Check if teacher is already assigned to this class
+    if (classDetails.teacherId && classDetails.teacherId.toString() === teacherId) {
+      return res.status(400).json({
+        success: false,
+        message: "Teacher is already assigned to this class",
+      });
+    }
+
+    // Assign new teacher to class
+    classDetails.teacherId = teacherId;
+    classDetails.updatedAt = Date.now();
+    await classDetails.save();
+
+    // Add class to teacher's classIds if not already present
+    if (!teacher.classIds.includes(classId)) {
+      teacher.classIds.push(classId);
+      await teacher.save();
+    }
+
+    // Add teacher to all students' teacherIds in this class
+    for (const studentId of classDetails.studentIds) {
+      const student = await Student.findById(studentId);
+      if (student && !student.teacherIds.includes(teacherId)) {
+        student.teacherIds.push(teacherId);
+        await student.save();
+      }
+    }
+
+    // Get updated class with populated teacher data
+    const updatedClass = await SchoolClass.findById(classId)
+      .populate("schoolId", "name")
+      .populate({
+        path: "teacherId",
+        select: "userId",
+        populate: {
+          path: "userId",
+          select: "firstName lastName email avatar phoneNumber"
+        }
+      });
+
+    res.status(200).json({
+      success: true,
+      message: "Teacher assigned to class successfully",
+      data: updatedClass,
+    });
+  } catch (error) {
+    console.error("Assign teacher to class error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to assign teacher to class",
       error: error.message,
     });
   }

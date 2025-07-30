@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { SCHOOL_QUERY_KEYS } from "../school-admin/school.queries";
 import {
   addStudentToClass,
+  assignTeacherToClass,
   createClass,
   deleteClass,
   generateJoinCode,
@@ -96,12 +97,7 @@ export const useRemoveStudentFromClass = () => {
     onSuccess: (data, variables) => {
       toast.success("Student removed from class successfully");
       // Invalidate class students and details
-      queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.students(variables.classId) });
-      queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.details(variables.classId) });
-      queryClient.invalidateQueries({ queryKey: ["schools", "classes"] });
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "Failed to remove student from class");
+      queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.all });
     },
   });
 };
@@ -123,6 +119,17 @@ export const useRespondToJoinRequest = () => {
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "Failed to respond to join request");
+    },
+  });
+};
+
+export const useAssignTeacherToClass = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: assignTeacherToClass,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SCHOOL_CLASS_QUERY_KEYS.all });
     },
   });
 };

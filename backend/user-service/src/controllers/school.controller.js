@@ -367,6 +367,7 @@ exports.removeTeacher = async (req, res) => {
 exports.getStudents = async (req, res) => {
   try {
     const userId = req.user.id;
+    const roles = req.user.roles;
 
     // Parse query parameters
     const page = parseInt(req.query.page) || 1;
@@ -377,13 +378,38 @@ exports.getStudents = async (req, res) => {
     const search = req.query.search || '';
     const grade = req.query.grade ? parseInt(req.query.grade) : null;
 
-    // Find school where user is admin
-    const school = await School.findOne({ adminIds: userId });
-    if (!school) {
-      return res.status(404).json({
-        success: false,
-        message: "School profile not found",
-      });
+    let school = null;
+
+    // If user is a teacher, get the school they belong to
+    if (roles.includes('teacher')) {
+      const teacher = await Teacher.findOne({ userId: userId });
+      if (!teacher) {
+        return res.status(404).json({
+          success: false,
+          message: "Teacher not found",
+        });
+      }
+      const schoolId = teacher.schoolId;
+      school = await School.findById(schoolId);
+
+      // If school not found, return 404
+      if (!school) {
+        return res.status(404).json({
+          success: false,
+          message: "School not found",
+        });
+      }
+    }
+
+    // If user is a school admin, get the school they belong to
+    if (roles.includes('school_admin')) {
+      school = await School.findOne({ adminIds: userId });
+      if (!school) {
+        return res.status(404).json({
+          success: false,
+          message: "School not found",
+        });
+      }
     }
 
     // Create sort object

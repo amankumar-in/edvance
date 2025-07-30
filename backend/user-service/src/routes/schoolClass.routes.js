@@ -716,7 +716,7 @@ router.post(
 
 /**
  * @openapi
- * /classes/classes/{id}/students/{studentId}:
+ * /classes/{id}/students/{studentId}:
  *   delete:
  *     summary: Remove a student from a class
  *     description: Removes a student from a class. Limited to teachers assigned to the class, school admins, and platform admins.
@@ -807,7 +807,7 @@ router.post(
  *                   type: string
  */
 router.delete(
-  "/classes/:id/students/:studentId",
+  "/:id/students/:studentId",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.removeStudentFromClass
@@ -1040,6 +1040,115 @@ router.post(
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
   schoolClassController.respondToJoinRequest
+);
+
+/**
+ * @openapi
+ * /classes/{id}/assign-teacher:
+ *   put:
+ *     summary: Assign a teacher to a class
+ *     description: Assigns a teacher to a class. Only school administrators can perform this action.
+ *     tags:
+ *       - School Classes
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the class
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Teacher assignment information
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               teacherId:
+ *                 type: string
+ *                 description: ID of the teacher to assign
+ *                 example: "60d21b4667d0d8992e610c88"
+ *             required:
+ *               - teacherId
+ *     responses:
+ *       '200':
+ *         description: Teacher assigned to class successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Teacher assigned to class successfully"
+ *                 data:
+ *                   $ref: '#/components/schemas/SchoolClass'
+ *       '400':
+ *         description: Teacher ID is required, teacher already assigned, or teacher not from same school
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Teacher must belong to the same school as the class"
+ *       '403':
+ *         description: Not authorized to assign teachers. Only school administrators can perform this action.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Not authorized to assign teachers to this class. Only school administrators can perform this action."
+ *       '404':
+ *         description: Class or teacher not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Teacher not found"
+ *       '500':
+ *         description: Failed to assign teacher to class
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to assign teacher to class"
+ *                 error:
+ *                   type: string
+ */
+router.put(
+  "/:id/assign-teacher",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["school_admin", "platform_admin"]),
+  schoolClassController.assignTeacherToClass
 );
 
 module.exports = router;

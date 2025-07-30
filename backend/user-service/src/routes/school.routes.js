@@ -702,7 +702,7 @@ router.delete(
 router.get(
   "/me/students",
   authMiddleware.verifyToken,
-  authMiddleware.checkRole(["school_admin", "platform_admin"]),
+  authMiddleware.checkRole(["school_admin", "platform_admin", "teacher"]),
   schoolController.getStudents
 );
 

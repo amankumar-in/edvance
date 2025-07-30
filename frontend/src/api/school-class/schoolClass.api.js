@@ -43,8 +43,8 @@ export const addStudentToClass = async ({ classId, studentId }) => {
 };
 
 // Remove student from class
-export const removeStudentFromClass = async ({ classId, studentId }) => {
-  const response = await apiClient.delete(`/classes/${classId}/students/${studentId}`);
+export const removeStudentFromClass = async ({ id, studentId }) => {
+  const response = await apiClient.delete(`/classes/${id}/students/${studentId}`);
   return response.data;
 };
 
@@ -57,5 +57,10 @@ export const getPendingJoinRequests = async (classId) => {
 // Respond to join request
 export const respondToJoinRequest = async ({ classId, requestId, action }) => {
   const response = await apiClient.post(`/classes/${classId}/join-requests/${requestId}`, { action });
+  return response.data;
+};
+
+export const assignTeacherToClass = async ({ id, teacherId }) => {
+  const response = await apiClient.put(`/classes/${id}/assign-teacher`, { teacherId });
   return response.data;
 };

@@ -8,6 +8,7 @@ import { useClassDetails } from '../../../api/school-class/schoolClass.queries'
 import Honors from '../../../assets/Honors.jpg'
 import { ConfirmationDialog, EmptyStateCard, Loader } from '../../../components'
 import CreateClassDialog from '../components/CreateClassDialog'
+import AssignTeacherDialog from '../components/AssignTeacherDialog'
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const dayToday = daysOfWeek[new Date().getDay()].toLowerCase();
@@ -27,7 +28,7 @@ function Overview() {
 
   const [isEditClassDialogOpen, setIsEditClassDialogOpen] = useState(false);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
-
+  const [isAssignTeacherDialogOpen, setIsAssignTeacherDialogOpen] = useState(false);
   const deleteClassMutation = useDeleteClass();
 
   const handleRemoveConfirm = () => {
@@ -185,11 +186,11 @@ function Overview() {
                 <div className="space-y-3">
                   <Flex align="center" gap="2">
                     <Mail size={14} color="var(--gray-11)" />
-                    <Text size="2">{teacherDetails?.email}</Text>
+                    <Text size="2">{teacherDetails?.email || '-'}</Text>
                   </Flex>
                   <Flex align="center" gap="2">
                     <Phone size={14} color="var(--gray-11)" />
-                    <Text size="2">{teacherDetails?.phoneNumber}</Text>
+                    <Text size="2">{teacherDetails?.phoneNumber || '-'}</Text>
                   </Flex>
                 </div>
               </Flex>
@@ -199,9 +200,15 @@ function Overview() {
                 description='No teacher assigned to this class'
                 icon={<User />}
                 action={(
-                  <Button>
-                    Assign Teacher
-                  </Button>
+                  <AssignTeacherDialog
+                    open={isAssignTeacherDialogOpen}
+                    onOpenChange={setIsAssignTeacherDialogOpen}
+                    classDetails={classDetails}
+                  >
+                    <Button onClick={() => setIsAssignTeacherDialogOpen(true)}>
+                      Assign Teacher
+                    </Button>
+                  </AssignTeacherDialog>
                 )}
               />
             )}

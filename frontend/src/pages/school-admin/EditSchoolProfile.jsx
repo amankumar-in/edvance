@@ -252,7 +252,7 @@ function EditSchoolProfile() {
                 placeholder="Enter ZIP code"
                 {...register('zipCode', {
                   pattern: {
-                    value: /^\d{5}(-\d{4})?$/,
+                    value: /^[A-Z0-9\s-]{2,12}$/i,
                     message: 'Please enter a valid ZIP code'
                   }
                 })}

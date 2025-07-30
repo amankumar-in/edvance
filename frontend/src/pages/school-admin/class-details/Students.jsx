@@ -1,9 +1,12 @@
 import { Avatar, Box, Button, Callout, DropdownMenu, Flex, IconButton, Table, Text, TextField } from '@radix-ui/themes';
-import { AlertCircle, MoreHorizontal, Plus, Search } from 'lucide-react';
+import { AlertCircle, MoreHorizontal, Plus, Search, User } from 'lucide-react';
 import React, { useState } from 'react';
 import { useParams } from 'react-router';
 import { useClassStudents } from '../../../api/school-class/schoolClass.queries';
-import { AddStudentsDialog, EmptyStateCard, Loader } from '../../../components';
+import { AddStudentsDialog, ConfirmationDialog, EmptyStateCard, Loader } from '../../../components';
+import { useRemoveStudentFromClass } from '../../../api/school-class/schoolClass.mutations';
+import { toast } from 'sonner';
+import AssignTeacherDialog from '../components/AssignTeacherDialog';
 
 
 function Students() {
@@ -12,6 +15,25 @@ function Students() {
   const { classId } = useParams();
   const { data, isLoading, isError } = useClassStudents(classId);
   const students = data?.data ?? [];
+  const classDetails = data?.classDetails ?? {};
+  const teacherId = classDetails?.teacherId || null;
+
+  const { mutate: removeStudentFromClass, isPending: isRemovingStudent } = useRemoveStudentFromClass();
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isAssignTeacherDialogOpen, setIsAssignTeacherDialogOpen] = useState(false);
+
+
+  const handleRemoveStudent = (studentId) => {
+    removeStudentFromClass({ id: classId, studentId }, {
+      onSuccess: () => {
+        toast.success('Student removed from class successfully');
+        setSelectedStudent(null);
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to remove student from class');
+      }
+    });
+  }
 
   const filteredStudents = students.filter(student =>
     student?.userId?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -42,6 +64,29 @@ function Students() {
         </Callout.Root>
       </div>
     );
+  }
+
+  if (!teacherId) {
+    return (
+      <div className='mx-auto max-w-5xl'>
+        <EmptyStateCard
+          title='No teacher assigned'
+          description='First assign a teacher to this class and then add students to the class'
+          icon={<User />}
+          action={(
+            <AssignTeacherDialog
+              open={isAssignTeacherDialogOpen}
+              onOpenChange={setIsAssignTeacherDialogOpen}
+              classDetails={classDetails}
+            >
+              <Button onClick={() => setIsAssignTeacherDialogOpen(true)}>
+                Assign Teacher
+              </Button>
+            </AssignTeacherDialog>
+          )}
+        />
+      </div>
+    )
   }
 
   return (
@@ -109,7 +154,7 @@ function Students() {
                         View Profile
                       </DropdownMenu.Item>
                       <DropdownMenu.Separator />
-                      <DropdownMenu.Item color="red">
+                      <DropdownMenu.Item color="red" onClick={() => setSelectedStudent(student)}>
                         Remove from Class
                       </DropdownMenu.Item>
                     </DropdownMenu.Content>
@@ -135,6 +180,16 @@ function Students() {
         onOpenChange={setIsAddStudentsDialogOpen}
         classId={classId}
         classStudents={students}
+      />
+
+      <ConfirmationDialog
+        title='Remove Student from Class'
+        description={`Are you sure you want to remove ${selectedStudent?.userId?.firstName || 'this student'} from the class?`}
+        open={!!selectedStudent}
+        onOpenChange={() => setSelectedStudent(null)}
+        onConfirm={() => handleRemoveStudent(selectedStudent?._id)}
+        confirmColor='red'
+        isLoading={isRemovingStudent}
       />
     </div>
 
