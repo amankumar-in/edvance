@@ -814,7 +814,7 @@ exports.getParentLinkRequests = async (req, res) => {
     const requests = await LinkRequest.find({
       targetId: student._id,
       requestType: "parent",
-      initiator: "parent",
+      initiator: "Parent",
       status: "pending",
     });
 
@@ -884,7 +884,7 @@ exports.respondToParentLinkRequest = async (req, res) => {
       _id: requestId,
       targetId: student._id,
       requestType: "parent",
-      initiator: "parent",
+      initiator: "Parent",
       status: "pending",
     });
 

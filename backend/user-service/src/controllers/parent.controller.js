@@ -203,7 +203,7 @@ exports.addChild = async (req, res) => {
     // Create link request
     const linkRequest = new LinkRequest({
       initiatorId: parent._id,
-      initiator: "parent",
+      initiator: "Parent",
       targetId: student._id,
       targetEmail: childUser.email,
       requestType: "parent",
@@ -440,7 +440,7 @@ exports.getPendingLinkRequests = async (req, res) => {
     const requests = await LinkRequest.find({
       targetEmail: user.email,
       requestType: "parent",
-      initiator: "student",
+      initiator: "Student",
       status: "pending",
     }).populate({
       path: "initiatorId",
@@ -492,7 +492,7 @@ exports.getOutgoingLinkRequests = async (req, res) => {
     // Find requests initiated by this parent
     const requests = await LinkRequest.find({
       initiatorId: parent._id,
-      initiator: "parent",
+      initiator: "Parent",
       requestType: "parent",
       status: "pending",
     }).populate({
@@ -548,7 +548,7 @@ exports.cancelOutgoingRequest = async (req, res) => {
       {
         _id: requestId,
         initiatorId: parent._id,
-        initiator: "parent",
+        initiator: "Parent",
         status: "pending",
       },
       {
@@ -616,7 +616,7 @@ exports.respondToLinkRequest = async (req, res) => {
       _id: requestId,
       targetEmail: user.email,
       requestType: "parent",
-      initiator: "student",
+      initiator: "Student",
       status: "pending",
     });
 

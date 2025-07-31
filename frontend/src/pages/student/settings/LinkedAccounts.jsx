@@ -1,5 +1,5 @@
-import { Avatar, Badge, Box, Button, Callout, Flex, ScrollArea, Separator, Tabs, Text, TextField, Tooltip } from '@radix-ui/themes';
-import { AlertCircle, Building, CheckCircle, Clock, GraduationCap, HelpCircle, Info, Link, Link2, Link2Off, Mail, School, Shield, UserPlus, Users } from 'lucide-react';
+import { Avatar, Badge, Box, Button, Callout, Card, Flex, Tabs, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { AlertCircle, Building, CheckCircle, HelpCircle, Info, Link, Link2Off, Mail, School, Shield, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -7,7 +7,6 @@ import {
   useLinkWithParent,
   useLinkWithSchool,
   useRequestParentLink,
-  useRequestSchoolLink,
   useRespondToParentLinkRequest,
   useUnlinkFromParent,
   useUnlinkFromSchool
@@ -17,13 +16,12 @@ import {
   useGetPendingLinkRequests,
   useStudentProfile
 } from '../../../api/student/student.queries';
-import { ConfirmationDialog, EmptyStateCard, Loader, SectionHeader } from '../../../components';
+import { ConfirmationDialog, EmptyStateCard, Loader } from '../../../components';
 
 function LinkedAccounts() {
   const [parentCode, setParentCode] = useState('');
   const [parentEmail, setParentEmail] = useState('');
   const [schoolCode, setSchoolCode] = useState('');
-  const [schoolRequestCode, setSchoolRequestCode] = useState('');
 
   // Confirmation dialog states
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -56,7 +54,6 @@ function LinkedAccounts() {
 
   const linkSchoolMutation = useLinkWithSchool();
   const unlinkSchoolMutation = useUnlinkFromSchool();
-  const requestSchoolLinkMutation = useRequestSchoolLink();
   const cancelLinkRequestMutation = useCancelLinkRequest();
 
   // Handle link parent form submission
@@ -212,27 +209,10 @@ function LinkedAccounts() {
     });
   };
 
-  // Handle request school link via code
-  const handleRequestSchoolLink = (e) => {
-    e.preventDefault();
-    if (!schoolRequestCode) return;
-
-    requestSchoolLinkMutation.mutate(schoolRequestCode, {
-      onSuccess: () => {
-        toast.success("School link request sent successfully");
-        setSchoolRequestCode('');
-      },
-      onError: (error) => {
-        console.log(error);
-        toast.error(error?.response?.data?.message || error?.message || "Failed to send school link request");
-      }
-    });
-  };
-
   if (isLoading) {
     return (
       <Flex align="center" justify="center">
-        <Loader borderWidth={2} className='size-8' borderColor='var(--accent-11)' />
+        <Loader />
       </Flex>
     );
   }
@@ -252,35 +232,18 @@ function LinkedAccounts() {
 
   return (
     <div>
-      <Box className="max-w-4xl">
+      <Box className="space-y-6 max-w-4xl">
         {/* HEADER */}
-        <Flex direction="column" className="mb-6">
-          <Flex align="center" gap="2" mb="1">
-            <Link2 size={22} className="text-[--accent-9]" />
-            <Text as="h1" size="6" weight="medium">
-              Account Connections
-            </Text>
-          </Flex>
-          <Text as="p" size="2" color="gray">
-            Connect your account with family, schools and educational institutions to enhance your learning journey
-            and share your progress with those who support you.
-          </Text>
-        </Flex>
+        <LinkedAccountsHeader />
 
         {/* TABS INTERFACE */}
-        <Tabs.Root defaultValue="connections">
+        <Tabs.Root defaultValue="connections" className='space-y-6'>
           <Tabs.List wrap={'wrap'}>
             <Tabs.Trigger value="connections">
-              <Flex align="center" gap="1">
-                <Link2 size={16} />
-                <span>Connections</span>
-              </Flex>
+              Connections
             </Tabs.Trigger>
             <Tabs.Trigger value="requests" className="relative">
-              <Flex align="center" gap="1">
-                <Clock size={16} />
-                <span>Requests</span>
-              </Flex>
+              Requests
               {(pendingLinkRequests.length > 0 || parentLinkRequests.length > 0) && (
                 <span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] flex items-center justify-center text-xs rounded-full bg-[--accent-9] text-[--accent-contrast] font-medium">
                   {pendingLinkRequests.length + parentLinkRequests.length}
@@ -290,532 +253,431 @@ function LinkedAccounts() {
           </Tabs.List>
 
           {/* ACTIVE CONNECTIONS TAB */}
-          <Tabs.Content value="connections" className="mt-6">
+          <Tabs.Content value="connections">
             <Flex direction="column" gap="6">
               {/* FAMILY SECTION */}
-              <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                <SectionHeader
-                  icon={<Users />}
-                  title="Family Connections"
-                />
+              <Card size={'3'} className='space-y-6 shadow-md'>
+                <Text as='p' weight={'bold'}>
+                  Family Connections
+                </Text>
 
-                <Box className="p-4 md:p-6">
-                  {student?.parentIds?.length > 0 ? (
-                    <Box>
-                      <Box className="grid gap-3 mb-6">
-                        {student.parentIds.map((parent) => (
-                          <Box key={parent._id} className="flex items-center justify-between p-4 bg-[--gray-a2] rounded-lg border border-[--gray-a5] hover:border-[--focus-8] transition-all gap-3 flex-wrap">
-                            <Flex gap="3" align="start" className="flex-1">
-                              <Avatar
-                                size="3"
-                                src={parent?.avatar}
-                                fallback={parent?.firstName?.[0] || ""}
-                                radius="full"
-                              />
-                              <Flex direction="column" gap="1">
-                                <Text size="2" weight="medium">
-                                  {parent.firstName} {parent.lastName}
-                                </Text>
-                                <Text size="2" color="gray">{parent.email}</Text>
-                              </Flex>
-                            </Flex>
-                            <Button
-                              color="red"
-                              variant="soft"
-                              size="2"
-                              onClick={() => handleUnlinkParent(parent._id, parent.firstName)}
-                              disabled={unlinkParentMutation.isPending}
-                            >
-                              <Link2Off size={16} />
-                              {unlinkParentMutation.isPending ? "Unlinking..." : "Unlink"}
-                            </Button>
-                          </Box>
-                        ))}
-                      </Box>
-                    </Box>
-                  ) : (
-                    <EmptyStateCard
-                      icon={<Users />}
-                      title="No family connections"
-                      description="Link your parents or guardians to share your academic progress, achievements, and attendance records with them."
-                      className="mb-6"
-                    />
-                  )}
-
-                  <Box className="space-y-5">
-                    <Separator size="4" />
-
-                    <Box className="rounded-lg border border-[--gray-a5] overflow-hidden">
-                      <SectionHeader
-                        icon={<UserPlus />}
-                        title="Connect with a Parent or Guardian"
-                        size="medium"
-                      />
-
-                      <Box className="p-4">
-                        <Flex gap="6" wrap="wrap">
-                          {/* Link with Code */}
-                          <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
-                              Link with Code
-                              <Tooltip content="Ask your parent for their unique link code">
-                                <HelpCircle size={14} />
-                              </Tooltip>
+                {student?.parentIds?.length > 0 ? (
+                  <Box className="grid gap-3 mb-6">
+                    {student.parentIds.map((parent) => (
+                      <Card size='2' key={parent._id} className="flex flex-wrap gap-3 justify-between items-center">
+                        <Flex gap="3" align="start" className="flex-1">
+                          <Avatar
+                            size="3"
+                            src={parent?.avatar}
+                            fallback={parent?.firstName?.[0] || ""}
+                            radius="full"
+                          />
+                          <Flex direction="column" gap="1">
+                            <Text size="2" weight="medium">
+                              {parent.firstName} {parent.lastName}
                             </Text>
-                            <form onSubmit={handleLinkParent} className="flex flex-col gap-2">
-                              <TextField.Root
-                                placeholder="Enter parent link code"
-                                value={parentCode}
-                                onChange={e => setParentCode(e.target.value)}
-                                className="w-full"
-                                size="2"
-                              />
-                              <Text size="1" color="gray" className="mb-1">
-                                Parent link codes are provided to your parent/guardian
-                              </Text>
-                              <Button
-                                type="submit"
-                                size="2"
-                                disabled={!parentCode || linkParentMutation.isPending}
-                                className="self-start"
-                              >
-                                {linkParentMutation.isPending ? "Linking..." : "Link Parent"}
-                              </Button>
-                            </form>
-                          </Box>
-
-                          {/* Request Link via Email */}
-                          <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
-                              Send Link Request
-                              <Tooltip content="Send a link request to your parent">
-                                <HelpCircle size={14} />
-                              </Tooltip>
-                            </Text>
-                            <form onSubmit={handleRequestParentLink} className="flex flex-col gap-2">
-                              <TextField.Root
-                                type="email"
-                                placeholder="Enter parent's email address"
-                                value={parentEmail}
-                                onChange={e => setParentEmail(e.target.value)}
-                                className="w-full"
-                                size="2"
-                              />
-                              <Text size="1" color="gray" className="mb-1">
-                                Your parent will receive a link request to connect
-                              </Text>
-                              <Button
-                                type="submit"
-                                size="2"
-                                disabled={!parentEmail || requestParentLinkMutation.isPending}
-                                className="self-start"
-                              >
-                                {requestParentLinkMutation.isPending ? "Sending..." : "Request Link"}
-                              </Button>
-                            </form>
-                          </Box>
+                            <Text size="2" color="gray">{parent.email}</Text>
+                          </Flex>
                         </Flex>
-                      </Box>
-                    </Box>
+                        <Button
+                          color="red"
+                          variant="soft"
+                          size="2"
+                          onClick={() => handleUnlinkParent(parent._id, parent.firstName)}
+                          disabled={unlinkParentMutation.isPending}
+                        >
+                          <Link2Off size={16} />
+                          {unlinkParentMutation.isPending ? "Unlinking..." : "Unlink"}
+                        </Button>
+                      </Card>
+                    ))}
                   </Box>
-                </Box>
-              </Box>
+                ) : (
+                  <EmptyStateCard
+                    icon={<Users />}
+                    title="No family connections"
+                    description="Link your parents or guardians to share your academic progress, achievements, and attendance records with them."
+                    className="mb-6"
+                  />
+                )}
+
+                <Card size={'3'} className='space-y-6'>
+                  <Text as='p' weight={'bold'}>
+                    Connect with a Parent or Guardian
+                  </Text>
+
+                  <Flex gap="6" wrap="wrap">
+                    {/* Link with Code */}
+                    <Box className="flex-1 min-w-44">
+                      <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
+                        Link with Code
+                        <Tooltip content="Ask your parent for their unique link code">
+                          <HelpCircle size={14} />
+                        </Tooltip>
+                      </Text>
+                      <form onSubmit={handleLinkParent} className="flex flex-col gap-2">
+                        <TextField.Root
+                          placeholder="Enter parent link code"
+                          value={parentCode}
+                          onChange={e => setParentCode(e.target.value)}
+                          className="w-full"
+                          size="2"
+                        />
+                        <Text size="1" color="gray" className="mb-1">
+                          Parent link codes are provided to your parent/guardian
+                        </Text>
+                        <Button
+                          type="submit"
+                          size="2"
+                          disabled={!parentCode || linkParentMutation.isPending}
+                          className="self-start"
+                        >
+                          {linkParentMutation.isPending ? "Linking..." : "Link Parent"}
+                        </Button>
+                      </form>
+                    </Box>
+
+                    {/* Request Link via Email */}
+                    <Box className="flex-1 min-w-44">
+                      <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
+                        Send Link Request
+                        <Tooltip content="Send a link request to your parent">
+                          <HelpCircle size={14} />
+                        </Tooltip>
+                      </Text>
+                      <form onSubmit={handleRequestParentLink} className="flex flex-col gap-2">
+                        <TextField.Root
+                          type="email"
+                          placeholder="Enter parent's email address"
+                          value={parentEmail}
+                          onChange={e => setParentEmail(e.target.value)}
+                          className="w-full"
+                          size="2"
+                        />
+                        <Text size="1" color="gray" className="mb-1">
+                          Your parent will receive a link request to connect
+                        </Text>
+                        <Button
+                          type="submit"
+                          size="2"
+                          disabled={!parentEmail || requestParentLinkMutation.isPending}
+                          className="self-start"
+                        >
+                          {requestParentLinkMutation.isPending ? "Sending..." : "Request Link"}
+                        </Button>
+                      </form>
+                    </Box>
+                  </Flex>
+                </Card>
+              </Card>
 
               {/* SCHOOL SECTION */}
-              <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                <SectionHeader
-                  icon={<School />}
-                  title="Educational Institution"
-                />
+              <Card size={'3'} className='space-y-6 shadow-md'>
+                <Text as='p' weight={'bold'}>
+                  Educational Institution
+                </Text>
 
-                <Box className="p-4 md:p-6">
-                  {student?.schoolDetails ? (
-                    <Box className="mb-6">
-                      <Box className="bg-[--gray-a2] rounded-lg border border-[--gray-a5] p-5 hover:border-[--focus-8] transition-all">
-                        <Flex gap="4" wrap={'wrap'}>
-                          <Avatar
-                            size="5"
-                            fallback={student?.schoolDetails?.name?.[0]}
-                            src={student?.schoolDetails?.logo}
-                            radius="full"
-                            className="shadow-sm"
-                          />
-                          <Box className="flex-1 min-w-44">
-                            <Flex direction="column" gap="1">
-                              <Text as="p" size="3" weight="medium">
-                                {student?.schoolDetails?.name}
-                              </Text>
-                              <Text as="div" size="1" color="gray" className='space-y-1'>
-                                <div>
-                                  {student?.schoolDetails?.address}
-                                </div>
-                                <div>
-                                  {student?.schoolDetails?.city},&nbsp;
-                                  {student?.schoolDetails?.state}, {student?.schoolDetails?.zipCode}
-                                </div>
-                              </Text>
-                            </Flex>
-                            <Flex gapX="4" gapY="1" mt="3" align="center" wrap="wrap">
-                              <Flex align="center" gap="1">
-                                <Building size={14} />
-                                <Text size="1" color="gray">{student?.schoolDetails?.phone || "No phone number"}</Text>
-                              </Flex>
-                              <Flex align="center" gap="1">
-                                <Mail size={14} />
-                                <Text size="1" color="gray">{student?.schoolDetails?.email || "No email"}</Text>
-                              </Flex>
-                              <Flex align="center" gap="1">
-                                <Link size={14} />
-                                <Text size="1" color="gray">{student?.schoolDetails?.website || "No website"}</Text>
-                              </Flex>
-                            </Flex>
-
-                            <Flex mt="4" justify="end">
-                              <Button
-                                color="red"
-                                variant="soft"
-                                size="2"
-                                onClick={() => handleUnlinkSchool(student?.schoolDetails?.name)}
-                                disabled={unlinkSchoolMutation.isPending}
-                              >
-                                <Link2Off size={14} />{unlinkSchoolMutation.isPending ? "Unlinking..." : "Unlink School"}
-                              </Button>
-                            </Flex>
-                          </Box>
-                        </Flex>
-                      </Box>
-                    </Box>
-                  ) : (
-                    <EmptyStateCard
-                      icon={<School />}
-                      title="No school connected"
-                      description="Join your school to track attendance, access assignments, and connect with teachers."
-                      className="mb-6"
-                    />
-                  )}
-
-                  {!student?.schoolDetails && (
-                    <Box className="rounded-lg border border-[--gray-a5] overflow-hidden">
-                      <SectionHeader
-                        icon={<School />}
-                        title="Connect with Your School"
-                        size="medium"
+                {student?.schoolDetails ? (
+                  <Card size='2'>
+                    <Flex gap="4" wrap={'wrap'}>
+                      <Avatar
+                        size="5"
+                        fallback={student?.schoolDetails?.name?.[0]}
+                        src={student?.schoolDetails?.logo}
+                        radius="full"
+                        className="shadow-sm"
                       />
+                      <Box className="flex-1 min-w-44">
+                        <Flex direction="column" gap="1">
+                          <Text as="p" size="3" weight="medium">
+                            {student?.schoolDetails?.name}
+                          </Text>
+                          <Text as="div" size="1" color="gray" className='space-y-1'>
+                            <div>
+                              {student?.schoolDetails?.address}
+                            </div>
+                            <div>
+                              {student?.schoolDetails?.city},&nbsp;
+                              {student?.schoolDetails?.state}, {student?.schoolDetails?.zipCode}
+                            </div>
+                          </Text>
+                        </Flex>
+                        <Flex gapX="4" gapY="1" mt="3" align="center" wrap="wrap">
+                          <Flex align="center" gap="1">
+                            <Building size={14} />
+                            <Text size="1" color="gray">{student?.schoolDetails?.phone || "No phone number"}</Text>
+                          </Flex>
+                          <Flex align="center" gap="1">
+                            <Mail size={14} />
+                            <Text size="1" color="gray">{student?.schoolDetails?.email || "No email"}</Text>
+                          </Flex>
+                          <Flex align="center" gap="1">
+                            <Link size={14} />
+                            <Text size="1" color="gray">{student?.schoolDetails?.website || "No website"}</Text>
+                          </Flex>
+                        </Flex>
 
-                      <Box className="p-4">
-                        <Flex gap="6" wrap="wrap">
-                          {/* Link with School Code */}
-                          <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
-                              Join with School Code
-                              <Tooltip content="Get a join code from your school administrator or teacher">
-                                <HelpCircle size={14} />
-                              </Tooltip>
-                            </Text>
-                            <form onSubmit={handleLinkSchool} className="flex flex-col gap-2">
-                              <TextField.Root
-                                placeholder="Enter school join code"
-                                value={schoolCode}
-                                onChange={e => setSchoolCode(e.target.value)}
-                                className="w-full"
-                                size="2"
-                              />
-                              <Text size="1" color="gray" className="mb-1">
-                                School codes are provided by your school administrator
-                              </Text>
-                              <Button
-                                type="submit"
-                                size="2"
-                                disabled={!schoolCode || linkSchoolMutation.isPending}
-                                className="self-start"
-                              >
-                                {linkSchoolMutation.isPending ? "Joining..." : "Join School"}
-                              </Button>
-                            </form>
-                          </Box>
-
-                          {/* Request School Link via School Code */}
-                          <Box className="flex-1 min-w-44">
-                            <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
-                              Request School Connection
-                              <Tooltip content="Request a connection with your school using a school code">
-                                <HelpCircle size={14} />
-                              </Tooltip>
-                            </Text>
-                            <form onSubmit={handleRequestSchoolLink} className="flex flex-col gap-2">
-                              <TextField.Root
-                                placeholder="Enter school code"
-                                value={schoolRequestCode}
-                                onChange={e => setSchoolRequestCode(e.target.value)}
-                                className="w-full"
-                                size="2"
-                              />
-                              <Text size="1" color="gray" className="mb-1">
-                                Enter the code provided by your school administration
-                              </Text>
-                              <Button
-                                type="submit"
-                                size="2"
-                                disabled={!schoolRequestCode || requestSchoolLinkMutation.isPending}
-                                className="self-start"
-                              >
-                                {requestSchoolLinkMutation.isPending ? "Requesting..." : "Request Connection"}
-                              </Button>
-                            </form>
-                          </Box>
+                        <Flex mt="4" justify="end">
+                          <Button
+                            color="red"
+                            variant="soft"
+                            size="2"
+                            onClick={() => handleUnlinkSchool(student?.schoolDetails?.name)}
+                            disabled={unlinkSchoolMutation.isPending}
+                          >
+                            <Link2Off size={14} />{unlinkSchoolMutation.isPending ? "Unlinking..." : "Unlink School"}
+                          </Button>
                         </Flex>
                       </Box>
+                    </Flex>
+                  </Card>
+                ) : (
+                  <EmptyStateCard
+                    icon={<School />}
+                    title="No school connected"
+                    description="Join your school to track attendance, access assignments, and connect with teachers."
+                    className="mb-6"
+                  />
+                )}
+
+                {!student?.schoolDetails && (
+                  <Card size={'3'} className='space-y-6'>
+                    <Text as='p' weight={'bold'}>
+                      Connect with Your School
+                    </Text>
+
+                    {/* Link with Class Code */}
+                    <Box>
+                      <Text size="2" weight="medium" className="flex gap-1 items-center mb-2">
+                        Join with Class Code
+                        <Tooltip content="Get a join code from your school administrator or teacher">
+                          <HelpCircle size={14} />
+                        </Tooltip>
+                      </Text>
+                      <form onSubmit={handleLinkSchool} className="flex flex-col gap-2">
+                        <TextField.Root
+                          placeholder="Enter class join code"
+                          value={schoolCode}
+                          onChange={e => setSchoolCode(e.target.value)}
+                          className="w-full"
+                          size="2"
+                        />
+                        <Text size="1" color="gray" className="mb-1">
+                          Class codes are provided by your school administrator or teacher
+                        </Text>
+                        <Button
+                          type="submit"
+                          size="2"
+                          disabled={!schoolCode || linkSchoolMutation.isPending}
+                          className="self-start"
+                        >
+                          {linkSchoolMutation.isPending ? "Processing..." : "Join School"}
+                        </Button>
+                      </form>
                     </Box>
-                  )}
-                </Box>
-              </Box>
+                  </Card>
+                )}
+              </Card>
 
               {/* TEACHERS SECTION */}
               {student?.schoolDetails && student?.teacherIds?.length > 0 && (
-                <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                  <SectionHeader
-                    icon={<GraduationCap />}
-                    title="Connected Teachers"
-                  />
+                <Card size={'3'} className='space-y-6 shadow-md'>
+                  <Text as='p' weight={'bold'}>
+                    Connected Teachers
+                  </Text>
 
-                  <ScrollArea type="auto" scrollbars="vertical" className="max-h-[400px]">
-                    <Box className="p-4 md:p-6">
-                      <Box className="grid gap-3">
-                        {student?.teacherIds.map((teacher) => (
-                          <Box key={teacher._id} className="flex items-center p-4 bg-[--gray-a2] rounded-lg border border-[--gray-a5] hover:border-[--accent-8] transition-all">
-                            <Flex gap="3" align="start" className="flex-1">
-                              <Avatar
-                                size="3"
-                                src={teacher?.avatar}
-                                fallback={`${teacher.firstName?.[0] || ""}${teacher.lastName?.[0] || ""}`}
-                                radius="full"
-                                className="shadow-sm"
-                              />
-                              <Flex direction="column" gap="1">
-                                <Text size="2" weight="medium">
-                                  {teacher.firstName} {teacher.lastName}
-                                </Text>
-                                <Text size="2" color="gray">{teacher.email}</Text>
-                                {teacher.subjectsTaught?.length > 0 && (
-                                  <Flex gap="1" wrap="wrap" mt="1">
-                                    {teacher.subjectsTaught.map((subject) => (
-                                      <Badge key={subject} size="1" color="gray" variant="soft">
-                                        {subject}
-                                      </Badge>
-                                    ))}
-                                  </Flex>
-                                )}
+                  <Box className="grid gap-4">
+                    {student?.teacherIds.map((teacher) => (
+                      <Card>
+                        <Flex gap="3" align="start" className="flex-1">
+                          <Avatar
+                            size="3"
+                            src={teacher?.avatar}
+                            fallback={`${teacher.firstName?.[0] || ""}${teacher.lastName?.[0] || ""}`}
+                            radius="full"
+                            className="shadow-sm"
+                          />
+                          <Flex direction="column" gap="1">
+                            <Text size="2" weight="medium">
+                              {teacher.firstName} {teacher.lastName}
+                            </Text>
+                            <Text size="2" color="gray">{teacher.email}</Text>
+                            {teacher.subjectsTaught?.length > 0 && (
+                              <Flex gap="1" wrap="wrap" mt="1">
+                                {teacher.subjectsTaught.map((subject) => (
+                                  <Badge key={subject} size="1" color="gray" variant="soft">
+                                    {subject}
+                                  </Badge>
+                                ))}
                               </Flex>
-                            </Flex>
-                          </Box>
-                        ))}
-                      </Box>
+                            )}
+                          </Flex>
+                        </Flex>
+                      </Card>
+                    ))}
+                  </Box>
 
-                      <Callout.Root color="blue" size="1" className="mt-5" variant='surface'>
-                        <Callout.Icon>
-                          <Info size={16} />
-                        </Callout.Icon>
-                        <Callout.Text>
-                          Teachers are automatically connected when you link with your school. No separate linking process is required.
-                        </Callout.Text>
-                      </Callout.Root>
-                    </Box>
-                  </ScrollArea>
-                </Box>
+                  <Callout.Root color="blue" size="1" className="mt-5" variant='surface'>
+                    <Callout.Icon>
+                      <Info size={16} />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      Teachers are automatically connected when you link with your school. No separate linking process is required.
+                    </Callout.Text>
+                  </Callout.Root>
+                </Card>
               )}
             </Flex>
           </Tabs.Content>
 
           {/* PENDING REQUESTS TAB */}
-          <Tabs.Content value="requests" className="mt-6">
+          <Tabs.Content value="requests">
             <Flex direction="column" gap="6">
               {/* REQUESTS FROM PARENTS */}
               {parentLinkRequests.length > 0 && (
-                <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                  <SectionHeader
-                    icon={<Users />}
-                    title="Parent Connection Requests"
-                  />
+                <Card size='3' className='space-y-6 shadow-md'>
+                  <Text as='p' weight={'bold'}>
+                    Parent Connection Requests
+                  </Text>
 
-                  <Box className="p-4 md:p-6">
-                    <Callout.Root color="amber" size="1" className="mb-4" variant='surface'>
-                      <Callout.Icon>
-                        <Info size={16} />
-                      </Callout.Icon>
-                      <Callout.Text>
-                        Parents have requested to connect with your account. Review and approve or reject these requests.
-                      </Callout.Text>
-                    </Callout.Root>
-
-                    {isLoadingParentLinkRequests ? (
-                      <Flex align="center" justify="center" py="4">
-                        <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
-                      </Flex>
-                    ) : (
-                      <Box className="grid gap-3">
-                        {parentLinkRequests.map((request) => (
-                          <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a6]">
-                            <Box className="bg-[--gray-a3] px-4 py-3">
-                              <Flex align="center" justify="between">
-                                <Flex align="center" gap="2">
-                                  <Users size={16} className="text-[--blue-9]" />
-                                  <Text size="2" weight="medium">
-                                    Parent Connection Request
-                                  </Text>
-                                </Flex>
-                                <Badge variant="soft" color="amber">
-                                  Needs Review
-                                </Badge>
-                              </Flex>
-                            </Box>
-
-                            <Box className="p-4">
-                              <Flex direction="column" gap="3">
-                                <Flex align="center" gap="2">
-                                  <Avatar
-                                    size="3"
-                                    src={request.parentAvatar}
-                                    fallback={request.parentName?.[0] || "P"}
-                                    radius="full"
-                                  />
-                                  <Flex direction="column">
-                                    <Text size="2" weight="medium">{request.parentName}</Text>
-                                    <Text size="1" color="gray">{request.parentEmail}</Text>
-                                  </Flex>
-                                </Flex>
-
-                                <Flex wrap="wrap" gap="3" className="text-sm">
-                                  <Box>
-                                    <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                      <Text size="1" color="gray">Code:</Text>
-                                      <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
-                                    </Box>
-                                  </Box>
-                                  <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                    <Text size="1" color="gray">Expires:</Text>
-                                    <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                                  </Box>
-                                </Flex>
-
-                                <Flex justify="end" gap="2">
-                                  <Button
-                                    color="red"
-                                    variant="soft"
-                                    onClick={() => handleRespondToParentLinkRequest(request._id, 'reject')}
-                                    disabled={respondToParentLinkMutation.isPending}
-                                  >
-                                    Reject
-                                  </Button>
-                                  <Button
-                                    color="grass"
-                                    onClick={() => handleRespondToParentLinkRequest(request._id, 'approve')}
-                                    disabled={respondToParentLinkMutation.isPending}
-                                  >
-                                    Approve
-                                  </Button>
-                                </Flex>
-                              </Flex>
-                            </Box>
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                </Box>
-              )}
-
-              {/* REQUESTS I'VE SENT */}
-              <Box className="rounded-lg border border-[--gray-a6] overflow-hidden">
-                <SectionHeader
-                  icon={<Clock />}
-                  title="My Pending Connection Requests"
-                />
-
-                <Box className="p-4 md:p-6">
-                  <Callout.Root color="blue" size="1" className="mb-5" variant='surface'>
+                  <Callout.Root color="amber" size="1" variant='surface'>
                     <Callout.Icon>
                       <Info size={16} />
                     </Callout.Icon>
                     <Callout.Text>
-                      <Text as="p" size="2">Link requests allow you to connect your account with parents or schools. Once sent, they can approve or reject your connection request.</Text>
-                      <Text as="p" size="2" mt="1">Requests automatically expire after 7 days if not acted upon.</Text>
+                      Parents have requested to connect with your account. Review and approve or reject these requests.
                     </Callout.Text>
                   </Callout.Root>
 
-                  {isLoadingLinkRequests ? (
-                    <Flex align="center" justify="center" py="8">
+                  {isLoadingParentLinkRequests ? (
+                    <Flex align="center" justify="center" py="4">
                       <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
                     </Flex>
-                  ) : pendingLinkRequests.length > 0 ? (
-                    <Box className="grid gap-3">
-                      {pendingLinkRequests.map((request) => (
-                        <Box key={request._id} className="overflow-hidden rounded-lg border border-[--gray-a5]">
-                          <Box className="bg-[--gray-a3] px-4 py-3">
-                            <Flex align="center" justify="between">
-                              <Flex align="center" gap="2">
-                                {request.requestType === 'parent' ? (
-                                  <Users size={16} className="text-[--accent-9]" />
-                                ) : (
-                                  <School size={16} className="text-[--accent-9]" />
-                                )}
-                                <Text size="2" weight="medium">
-                                  {request.requestType === 'parent' ? 'Parent Connection' : 'School Connection'}
-                                </Text>
+                  ) : (
+                    <Box className="grid gap-4">
+                      {parentLinkRequests.map((request) => (
+                        <Card key={request._id} size='2' className='space-y-6'>
+                          <Flex direction="column" gap="3">
+                            <Flex align="center" gap="2">
+                              <Avatar
+                                size="3"
+                                src={request.parentAvatar}
+                                fallback={request.parentName?.[0] || "P"}
+                                radius="full"
+                              />
+                              <Flex direction="column">
+                                <Text size="2" weight="medium">{request.parentName}</Text>
+                                <Text size="1" color="gray">{request.parentEmail}</Text>
                               </Flex>
-                              <Badge variant="soft" color="amber">
-                                {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                              </Badge>
                             </Flex>
-                          </Box>
 
-                          <Box className="p-4">
-                            <Flex direction="column" gap="3">
-                              <Flex align="center" gap="2">
-                                <Shield size={14} className="text-[--accent-9]" />
-                                <Text size="2" weight="medium">{request.targetEmail}</Text>
-                              </Flex>
-
-                              <Flex wrap="wrap" gap="3" className="text-sm">
+                            <Flex wrap="wrap" gap="3" className="text-sm">
+                              <Box>
                                 <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
                                   <Text size="1" color="gray">Code:</Text>
                                   <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
                                 </Box>
-
-                                <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                  <Text size="1" color="gray">Created:</Text>
-                                  <Text size="1">{new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                                </Box>
-
-                                <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
-                                  <Text size="1" color="gray">Expires:</Text>
-                                  <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                                </Box>
-                              </Flex>
-
-                              <Flex justify="end">
-                                <Button
-                                  color="red"
-                                  variant="soft"
-                                  onClick={() => handleCancelLinkRequest(request._id)}
-                                  disabled={cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id}
-                                >
-                                  {cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id ? "Cancelling..." : "Cancel Request"}
-                                </Button>
-                              </Flex>
+                              </Box>
+                              <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                                <Text size="1" color="gray">Expires:</Text>
+                                <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                              </Box>
                             </Flex>
-                          </Box>
-                        </Box>
+
+                            <Flex justify="end" gap="2">
+                              <Button
+                                color="red"
+                                variant="soft"
+                                onClick={() => handleRespondToParentLinkRequest(request._id, 'reject')}
+                                disabled={respondToParentLinkMutation.isPending}
+                              >
+                                Reject
+                              </Button>
+                              <Button
+                                color="grass"
+                                onClick={() => handleRespondToParentLinkRequest(request._id, 'approve')}
+                                disabled={respondToParentLinkMutation.isPending}
+                              >
+                                Approve
+                              </Button>
+                            </Flex>
+                          </Flex>
+                        </Card>
                       ))}
                     </Box>
-                  ) : (
-                    <EmptyStateCard
-                      icon={<CheckCircle />}
-                      title="No pending requests"
-                      description="You don't have any active link requests. Use the options in the Family or School sections to create new connection requests."
-                    />
                   )}
-                </Box>
-              </Box>
+                </Card>
+              )}
+
+              {/* REQUESTS I'VE SENT */}
+              <Card size={'3'} className='space-y-6 shadow-md'>
+                <Text as='p' weight={'bold'}>
+                  My Pending Connection Requests
+                </Text>
+
+                <Callout.Root color="blue" size="1" className="mb-5" variant='surface'>
+                  <Callout.Icon>
+                    <Info size={16} />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    <Text as="p" size="2">Link requests allow you to connect your account with parents or schools. Once sent, they can approve or reject your connection request.</Text>
+                    <Text as="p" size="2" mt="1">Requests automatically expire after 7 days if not acted upon.</Text>
+                  </Callout.Text>
+                </Callout.Root>
+
+                {isLoadingLinkRequests ? (
+                  <Flex align="center" justify="center" py="8">
+                    <Loader borderWidth={2} className='size-6' borderColor='var(--accent-11)' />
+                  </Flex>
+                ) : pendingLinkRequests.length > 0 ? (
+                  <Box className="grid gap-3">
+                    {pendingLinkRequests.map((request) => (
+                      <Card key={request._id} size='2' className='space-y-6'>
+                        <Flex direction="column" gap="3">
+                          <Flex align="center" gap="2">
+                            <Shield size={14} className="text-[--accent-9]" />
+                            <Text size="2" weight="medium">{request.targetEmail}</Text>
+                          </Flex>
+
+                          <Flex wrap="wrap" gap="3" className="text-sm">
+                            <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                              <Text size="1" color="gray">Code:</Text>
+                              <Text size="1" weight="bold" className="font-mono">{request.code}</Text>
+                            </Box>
+
+                            <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                              <Text size="1" color="gray">Created:</Text>
+                              <Text size="1">{new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                            </Box>
+
+                            <Box className="bg-[--gray-a3] rounded px-2 py-1 inline-flex items-center gap-1">
+                              <Text size="1" color="gray">Expires:</Text>
+                              <Text size="1">{new Date(request.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                            </Box>
+                          </Flex>
+
+                          <Flex justify="end">
+                            <Button
+                              color="red"
+                              variant="soft"
+                              onClick={() => handleCancelLinkRequest(request._id)}
+                              disabled={cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id}
+                            >
+                              {cancelLinkRequestMutation.isPending && cancelLinkRequestMutation.variables === request._id ? "Cancelling..." : "Cancel Request"}
+                            </Button>
+                          </Flex>
+                        </Flex>
+                      </Card>
+                    ))}
+                  </Box>
+                ) : (
+                  <EmptyStateCard
+                    icon={<CheckCircle />}
+                    title="No pending requests"
+                    description="You don't have any active link requests. Use the options in the Family or School sections to create new connection requests."
+                  />
+                )}
+              </Card>
             </Flex>
           </Tabs.Content>
         </Tabs.Root>
@@ -891,3 +753,17 @@ function LinkedAccounts() {
 }
 
 export default LinkedAccounts;
+
+function LinkedAccountsHeader() {
+  return (
+    <Flex direction="column">
+      <Text as="p" size="6" weight="bold" mb={'2'}>
+        Account Connections
+      </Text>
+      <Text as="p" size="2" color="gray">
+        Connect your account with family, schools and educational institutions to enhance your learning journey
+        and share your progress with those who support you.
+      </Text>
+    </Flex>
+  )
+}

@@ -91,13 +91,13 @@ const router = createBrowserRouter(
               <Route path="points" element={<StudentPoints />} />
               <Route path="rewards" element={<StudentRewards />} />
               <Route path="redemption-history" element={<StudentRedemptionHistory />} />
+              <Route path="settings" element={<SettingsLayout />} >
+                <Route index element={<Navigate to="linked-accounts" replace />} />
+                <Route path="linked-accounts" element={<StudentLinkedAccounts />} />
+                <Route path="notifications" element={<NotificationSettings />} />
+              </Route>
             </Route>
             <Route path="create-profile" element={<CreateStudentProfile />} />
-            <Route path="settings" element={<SettingsLayout />} >
-              <Route index element={<Navigate to="linked-accounts" replace />} />
-              <Route path="linked-accounts" element={<StudentLinkedAccounts />} />
-              <Route path="notifications" element={<NotificationSettings />} />
-            </Route>
           </Route>
         </Route>
 
@@ -120,7 +120,7 @@ const router = createBrowserRouter(
             <Route path="rewards/edit/:id" element={<CreateEditTeacherReward />} />
             <Route path="reward-redemption" element={<TeacherRewardRedemption />} />
           </Route>
-            <Route path="create-profile" element={<CreateTeacherProfile />} />
+          <Route path="create-profile" element={<CreateTeacherProfile />} />
         </Route>
 
         {/* School Admin Routes */}
