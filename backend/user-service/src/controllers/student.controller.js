@@ -424,6 +424,13 @@ exports.linkWithSchool = async (req, res) => {
       });
     }
 
+    if(!schoolClass?.teacherId) {
+      return res.status(400).json({
+        success: false,
+        message: "Class is not linked to a teacher. Please contact your school administrator",
+      });
+    }
+
     // Update student with school and class
     student.schoolId = schoolClass.schoolId;
 

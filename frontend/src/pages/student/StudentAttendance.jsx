@@ -194,7 +194,7 @@ function StudentAttendance() {
                 <Flex align="center" gap="3" wrap='wrap'>
                   <Button
                     color={todaysClass?.attendanceStatus === 'present' ? 'green' : todaysClass?.attendanceStatus === 'absent' ? 'red' : ''}
-                    className="flex-1 gap-2 items-center capitalize max-w-64 text-nowrap"
+                    className="flex-1 gap-2 items-center capitalize shadow-md max-w-64 text-nowrap"
                     onClick={() => {
                       if (todaysClass?.attendanceMarked) return;
                       handleMarkClassAttendance();
@@ -242,7 +242,7 @@ function StudentAttendance() {
                 color="green"
                 disabled={checkInMutation.isPending || hasCheckedInToday() || isAttendanceSummaryFetching}
                 onClick={handleCheckIn}
-                className="flex-1 max-w-64 text-nowrap"
+                className="flex-1 shadow-md max-w-64 text-nowrap"
               >
                 {checkInMutation.isPending ? 'Checking In...' :
                   hasCheckedInToday() ? 'Already Checked In' :

@@ -474,6 +474,14 @@ exports.addStudentToClass = async (req, res) => {
       });
     }
 
+    // Don't allow students to join a class without a teacher
+    if(!classDetails?.teacherId) {
+      return res.status(400).json({
+        success: false,
+        message: "No teacher is assigned to this class.",
+      });
+    }
+
     // Check if student exists
     const student = await Student.findById(studentId);
     if (!student) {
