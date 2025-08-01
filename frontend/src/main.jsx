@@ -19,7 +19,7 @@ createRoot(document.getElementById("root")).render(
         enableSystem
         disableTransitionOnChange
       >
-        <Theme accentColor="cyan" grayColor="gray">
+        <Theme accentColor="cyan" grayColor="slate">
           <ReactQueryDevtools initialIsOpen={false} />
           <AppRouter />
         </Theme>
