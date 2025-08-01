@@ -182,10 +182,10 @@ exports.register = async (req, res) => {
     const mailResult = await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: "Verify your Univance account",
+      subject: "Verify your EdVance account",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Welcome to Univance!</h2>
+          <h2>Welcome to EdVance!</h2>
           <p>Hi ${firstName},</p>
           <p>Thank you for signing up. Please verify your email address to complete your registration.</p>
           <p>
@@ -198,7 +198,7 @@ exports.register = async (req, res) => {
           <p>Or copy and paste this link in your browser: ${verifyLink}</p>
           <p>This link will expire in one hour.</p>
           <p>If you did not create this account, please ignore this email.</p>
-          <p>Best regards,<br>The Univance Team</p>
+          <p>Best regards,<br>The EdVance Team</p>
         </div>
       `,
     });
@@ -330,10 +330,10 @@ exports.resendVerification = async (req, res) => {
     const mailResult = await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: "Verify your Univance account",
+      subject: "Verify your EdVance account",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Verify Your Univance Account</h2>
+          <h2>Verify Your EdVance Account</h2>
           <p>Hi ${user.firstName},</p>
           <p>You requested a new verification link. Please click the button below to verify your email address:</p>
           <p>
@@ -346,7 +346,7 @@ exports.resendVerification = async (req, res) => {
           <p>Or copy and paste this link in your browser: ${verifyLink}</p>
           <p>This link will expire in one hour.</p>
           <p>If you did not request this email, please ignore it.</p>
-          <p>Best regards,<br>The Univance Team</p>
+          <p>Best regards,<br>The EdVance Team</p>
         </div>
       `,
     });
@@ -593,7 +593,7 @@ exports.forgotPassword = async (req, res) => {
     await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: "Reset Your Univance Password",
+      subject: "Reset Your EdVance Password",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Reset</h2>
@@ -609,7 +609,7 @@ exports.forgotPassword = async (req, res) => {
           <p>Or copy and paste this link in your browser: ${resetLink}</p>
           <p>This link will expire in one hour.</p>
           <p>If you did not request a password reset, please ignore this email and your password will remain unchanged.</p>
-          <p>Best regards,<br>The Univance Team</p>
+          <p>Best regards,<br>The EdVance Team</p>
         </div>
       `,
     });
@@ -708,14 +708,14 @@ exports.resetPassword = async (req, res) => {
     await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
-      subject: "Your Univance Password Has Been Changed",
+      subject: "Your EdVance Password Has Been Changed",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Changed</h2>
           <p>Hi ${user.firstName},</p>
           <p>Your password has been successfully changed.</p>
           <p>If you did not request this change, please contact our support immediately.</p>
-          <p>Best regards,<br>The Univance Team</p>
+          <p>Best regards,<br>The EdVance Team</p>
         </div>
       `,
     });
@@ -793,14 +793,14 @@ exports.updatePassword = async (req, res) => {
     await safeSendMail({
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: user.email,
-      subject: "Your Univance Password Has Been Changed",
+      subject: "Your EdVance Password Has Been Changed",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Changed</h2>
           <p>Hi ${user.firstName},</p>
           <p>Your password has been successfully changed.</p>
           <p>If you did not request this change, please contact our support immediately.</p>
-          <p>Best regards,<br>The Univance Team</p>
+          <p>Best regards,<br>The EdVance Team</p>
         </div>
       `,
     });
@@ -942,8 +942,8 @@ exports.sendOtp = async (req, res) => {
     // Send SMS via Twilio
     const message =
       normalizedPurpose === "verify"
-        ? `Use this OTP to verify your phone number on Univance: ${otp}. This OTP will expire in 5 minutes.`
-        : `Use this OTP to log into your Univance account: ${otp}. This OTP will expire in 5 minutes. If you did not request this OTP, please ignore this message. - Univance Team`;
+        ? `Use this OTP to verify your phone number on EdVance: ${otp}. This OTP will expire in 5 minutes.`
+        : `Use this OTP to log into your EdVance account: ${otp}. This OTP will expire in 5 minutes. If you did not request this OTP, please ignore this message. - EdVance Team`;
 
     try {
       await sendOTP(phoneNumber, message);
