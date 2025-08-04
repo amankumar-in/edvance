@@ -2554,14 +2554,15 @@ const taskController = {
 
           // Determine which children can see this task based on task type
           if (task.assignedTo?.role === "parent") {
-            // Parent-assigned tasks: all children can see unless explicitly hidden
+            // Parent-assigned tasks: hidden from all children unless explicitly made visible
             childIds.forEach(childId => {
               const childIdStr = childId.toString();
-              if (!visibility.hiddenChildren.has(childIdStr)) {
+              if (visibility.visibleChildren.has(childIdStr)) {
                 visibleToChildren.add(childIdStr);
               }
             });
-          } else if (task.assignedTo?.role === "student") {
+          }
+          else if (task.assignedTo?.role === "student") {
             if (!task.assignedTo.selectedPeopleIds || task.assignedTo.selectedPeopleIds.length === 0) {
               // Task assigned to all students - all children can see by default unless explicitly hidden
               childIds.forEach(childId => {

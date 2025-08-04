@@ -39,7 +39,7 @@ const CreateTask = () => {
       subCategory: '',
       selectedPeople: [],
       assigned: '',
-      difficulty: '',
+      difficulty: 'easy',
       externalResource: {
         platform: '',
         resourceId: '',
@@ -608,6 +608,19 @@ const CreateTask = () => {
                           required: "Assigned to is required"
                         })} value="student" />
                         All Students
+                      </Text>
+                    </Flex>
+
+                    <Flex asChild gap="2">
+                      <Text as="label" size="2">
+                        <Radio
+                          id='assigned'
+                          {...register('assigned', {
+                            required: "Assigned to is required"
+                          })}
+                          value="parent"
+                        />
+                        Parents
                       </Text>
                     </Flex>
 

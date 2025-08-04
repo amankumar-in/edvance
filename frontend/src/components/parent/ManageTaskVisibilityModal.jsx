@@ -1,16 +1,17 @@
-import { Box, Dialog, Flex, Heading, Separator, Switch, Text } from '@radix-ui/themes'
+import { Box, Button, Dialog, Flex, Heading, Separator, Switch, Text } from '@radix-ui/themes'
 import React from 'react'
 import { toast } from 'sonner'
 import { useChildren } from '../../api/parent/parent.queries'
 import { useToggleTaskVisibility } from '../../api/task/task.mutations'
+import { EmptyStateCard } from '../../components'
 import Loader from '../Loader'
 
 function ManageTaskVisibilityModal({
   openVisibilityModal = false,
-  setOpenVisibilityModal = () => {},
+  setOpenVisibilityModal = () => { },
   selectedTask = null,
   visibleToChildren = [],
-  setVisibleToChildren = () => {}
+  setVisibleToChildren = () => { }
 }) {
   const toggleTaskVisibility = useToggleTaskVisibility()
 
@@ -41,7 +42,7 @@ function ManageTaskVisibilityModal({
   return (
     <Dialog.Root open={!!openVisibilityModal} onOpenChange={setOpenVisibilityModal}>
       <Dialog.Content style={{ maxWidth: 600 }} aria-describedby={undefined}>
-        <Dialog.Title size={'6'}>Manage Task Visibility</Dialog.Title>
+        <Dialog.Title size={'5'}>Manage Task Visibility</Dialog.Title>
         {selectedTask ? (
           <Box>
             <Heading size="3">{selectedTask.title}</Heading>
@@ -54,7 +55,7 @@ function ManageTaskVisibilityModal({
             <div className='mt-2 space-y-2'>
               {isLoading ? (
                 <Flex justify='center' align='center'>
-                  <Loader className='size-6 animate-spin' borderColor='var(--accent-9)' borderWidth='2' />
+                  <Loader className='animate-spin size-6' borderColor='var(--accent-9)' borderWidth='2' />
                 </Flex>
               ) : isError ? (
                 <Text size="2" color="red">{error?.response?.data?.message || error?.message || 'Error loading children'}</Text>
@@ -75,15 +76,21 @@ function ManageTaskVisibilityModal({
                   )
                 })
               ) : (
-                <Text size="2" color="gray">
-                  No children linked to your account.
-                </Text>
+                <EmptyStateCard
+                  title="No children linked to your account."
+                  description="Please link a child to your account to manage task visibility."
+                />
               )}
             </div>
           </Box>
         ) : (
           <Text size="2" color="gray">No task selected.</Text>
         )}
+        <Flex gap="3" mt="4" justify="end">
+          <Dialog.Close>
+            <Button variant="soft" color="gray">Close</Button>
+          </Dialog.Close>
+        </Flex>
       </Dialog.Content>
     </Dialog.Root>
   )
