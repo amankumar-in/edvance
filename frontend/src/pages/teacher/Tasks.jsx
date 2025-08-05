@@ -1,5 +1,5 @@
 import { Button, DropdownMenu, Flex, IconButton, Table, Text } from '@radix-ui/themes'
-import { CheckSquare, MoreHorizontal, PencilIcon, PlusIcon, TrashIcon } from 'lucide-react'
+import { Check, CheckSquare, MoreHorizontal, PencilIcon, PlusIcon, TrashIcon, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
@@ -81,6 +81,10 @@ function Tasks() {
     {
       header: "Assigned To",
       id: "assignedTo",
+    },
+    {
+      header: "Requires Approval",
+      id: "requiresApproval",
     },
     {
       header: "Due Date",
@@ -213,6 +217,13 @@ function Tasks() {
                   <Table.Cell>{task.pointValue}</Table.Cell>
                   <Table.Cell>
                     {task?.assignedTo?.role}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {task?.requiresApproval ? (
+                      <Check size={16} color='var(--green-10)' />
+                    ) : (
+                      <X size={16} color='var(--red-10)' />
+                    )}
                   </Table.Cell>
                   <Table.Cell>{formatDate(task.dueDate)}</Table.Cell>
                   <Table.Cell>{task.difficulty}</Table.Cell>

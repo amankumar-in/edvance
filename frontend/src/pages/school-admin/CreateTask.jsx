@@ -10,11 +10,14 @@ import { useCreateTask, useUpdateTask } from '../../api/task/task.mutations';
 import { useGetTaskById } from '../../api/task/task.queries';
 import { ErrorCallout, FileUpload, FormFieldErrorMessage, Loader } from '../../components';
 import PageHeader from './components/PageHeader';
+import SelectClassDialog from './components/SelectClassDialog';
 
 const CreateTask = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+
+  const [isSelectClassDialogOpen, setIsSelectClassDialogOpen] = useState(false);
 
   const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile()
   const schoolId = data?.data?._id
@@ -44,8 +47,11 @@ const CreateTask = () => {
       },
       attachments: [],
       existingAttachments: [],
+      classDetails: null,
     },
   });
+  const classDetails = watch('classDetails');
+  const className = classDetails?.name || 'Select class';
 
   // Watch form values
   const subCategory = watch('subCategory');
@@ -92,6 +98,7 @@ const CreateTask = () => {
         },
         attachments: [],
         existingAttachments: task.attachments || [],
+        classDetails: task.class || null,
       };
 
       reset(formData);
@@ -175,6 +182,7 @@ const CreateTask = () => {
     formData.append('requiresApproval', true);
     formData.append('approverType', approverType);
     formData.append('isFeatured', false);
+    formData.append('classId', data.classDetails?._id || '');
 
     if (isEdit) {
       const existingAttachments = data.existingAttachments && data.existingAttachments.length > 0
@@ -211,6 +219,11 @@ const CreateTask = () => {
     acc[type].push(category);
     return acc;
   }, {}) || {};
+
+  const handleSelectClass = (classDetails) => {
+    setValue('classDetails', classDetails);
+    setValue('classDetails.name', classDetails?.name || '');
+  }
 
   if (isEdit && (isLoadingTask || !isFormReady)) {
     return (
@@ -367,6 +380,34 @@ const CreateTask = () => {
               </label>
               <FormFieldErrorMessage errors={errors} field="dueDate" />
             </Box>
+
+            <Box className='flex-1'>
+              <label>
+                <Text as="p" size="2" weight="medium" mb="2">
+                  Class
+                </Text>
+                {/* Select class dialog */}
+                <SelectClassDialog
+                  open={isSelectClassDialogOpen}
+                  onOpenChange={setIsSelectClassDialogOpen}
+                  onSelectClass={handleSelectClass}
+                  classDetails={watch('classDetails')}
+                >
+                  <Button
+                    className='flex justify-between font-normal w-full bg-[--color-surface] text-[--color-text]'
+                    variant='outline'
+                    color='gray'
+                    onClick={() => setIsSelectClassDialogOpen(true)}
+                  >
+                    {classDetails?._id ? `${className} (${classDetails?.grade})` : (
+                      <Text className='text-[--gray-10]'>
+                        Select class
+                      </Text>
+                    )}
+                  </Button>
+                </SelectClassDialog>
+              </label>
+            </Box>
           </Flex>
         </FormSection>
 
@@ -454,7 +495,7 @@ export const FormSection = ({ title, children }) => {
   return (
     <Card size='3' className='shadow-md'>
       <Flex direction={'column'} gap={'3'} mb={'4'}>
-        <Text size="4" weight="medium">
+        <Text size="4" weight="medium" as='p'>
           {title}
         </Text>
         <Separator size={'4'} />

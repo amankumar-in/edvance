@@ -78,6 +78,44 @@ async function getSchoolProfile(authHeader) {
   return schoolProfile?.data?.data;
 }
 
+// Helper function to get school details by ID
+async function getSchoolById(schoolId, authHeader) {
+  try {
+    const userServiceUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.PRODUCTION_USER_SERVICE_URL
+        : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+    const response = await axios.get(`${userServiceUrl}/api/schools/${schoolId}`, {
+      headers: { Authorization: authHeader }
+    });
+
+    return response?.data?.data;
+  } catch (error) {
+    console.warn(`Failed to fetch school ${schoolId}:`, error.message);
+    return null;
+  }
+}
+
+// Helper function to get class details by ID
+async function getClassById(classId, authHeader) {
+  try {
+    const userServiceUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.PRODUCTION_USER_SERVICE_URL
+        : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+    const response = await axios.get(`${userServiceUrl}/api/classes/${classId}`, {
+      headers: { Authorization: authHeader }
+    });
+
+    return response?.data?.data;
+  } catch (error) {
+    console.warn(`Failed to fetch class ${classId}:`, error.message);
+    return null;
+  }
+}
+
 
 /**
  * Task Controller
@@ -256,6 +294,7 @@ const taskController = {
   getTaskById: async (req, res) => {
     try {
       const { id } = req.params;
+      const authHeader = req.headers.authorization;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -275,9 +314,26 @@ const taskController = {
 
       // TODO: Implement access control logic
 
+      // Populate class data if it exists
+      const enhancedTask = { ...task.toObject() };
+
+      // Fetch class details if classId exists
+      // School details are already present in class details (no need to fetch separately)
+      if (task.classId && authHeader) {
+        const classData = await getClassById(task.classId, authHeader);
+        if (classData) {
+          enhancedTask.class = {
+            _id: classData._id,
+            name: classData.name,
+            grade: classData.grade,
+            schoolId: classData.schoolId, 
+          };
+        }
+      }
+
       return res.status(200).json({
         success: true,
-        data: task,
+        data: enhancedTask,
       });
     } catch (error) {
       console.error("Get task error:", error);
@@ -385,6 +441,9 @@ const taskController = {
       }
       if (updateData.recurringSchedule) {
         updateData.recurringSchedule = parseField(updateData.recurringSchedule);
+      }
+      if(updateData.classId === '' || updateData.classId === 'null') {
+        updateData.classId = null;
       }
 
       // Handle boolean conversions for FormData
@@ -1108,14 +1167,19 @@ const taskController = {
           query.schoolId = schoolId;
         }
       } else if (role === "teacher") {
+        const teacherProfile = profiles?.['teacher'];
+        const teacherId = teacherProfile?._id;
+        const classIds = teacherProfile?.classIds;
+        const classIdsObjectIds = classIds?.map(id => new mongoose.Types.ObjectId(id)) || [];
+
         // Teachers can see tasks they created or tasks in their classes
         const teacherConditions = [
-          { createdBy: currentProfileId }
+          { createdBy: teacherId }
         ];
 
         // If teacher has class assignments, include those
-        if (currentProfileId) {
-          teacherConditions.push({ classId: currentProfileId });
+        if (classIdsObjectIds.length > 0) {
+          teacherConditions.push({ classId: { $in: classIdsObjectIds } });
         }
 
         query.$or = teacherConditions;

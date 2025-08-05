@@ -212,6 +212,7 @@ const taskSchema = new mongoose.Schema(
     classId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SchoolClass",
+      default: null
     },
     // If part of a badge or achievement
     badgeId: {
