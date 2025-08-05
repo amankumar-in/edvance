@@ -54,7 +54,7 @@ function SelectClassDialog({ open, onOpenChange, classDetails = null, children =
       <Dialog.Content maxWidth="600px">
         <Dialog.Title>Select Class</Dialog.Title>
         <Dialog.Description size="2" mb="4">
-          Select a class to assign to this task.
+          Select a class to assign to this task or reward.
         </Dialog.Description>
 
         <div className='space-y-4'>
@@ -108,7 +108,7 @@ function SelectClassDialog({ open, onOpenChange, classDetails = null, children =
 
           {/* Selected Class */}
           {classDetails?._id && (
-            <Card size={'1'} className='flex flex-1 gap-2 justify-between items-center'>
+            <Card size={'1'} className='flex flex-1 gap-2 justify-between items-center shadow-sm'>
               <Text as='p' size={'2'} weight={'medium'}>
                 {classDetails?.name} {classDetails?.grade}
               </Text>
@@ -138,7 +138,7 @@ function SelectClassDialog({ open, onOpenChange, classDetails = null, children =
                         key={c._id}
                         gap="2"
                         align="center"
-                        className={`p-2 rounded-md border-2 ${classDetails?._id === c._id ? 'border-[--green-a6]' : 'cursor-pointer hover:bg-[--gray-a2] border-transparent'}`}
+                        className={`p-2 rounded-md border-2 ${classDetails?._id === c._id ? 'border-[--green-a6] bg-[--green-a1]' : 'cursor-pointer hover:bg-[--gray-a2] border-transparent'}`}
                         justify="between"
                         onClick={() => handleSelectClass(c)}
                       >

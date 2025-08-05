@@ -188,6 +188,10 @@ const Rewards = () => {
       accessorKey: 'creatorType',
     },
     {
+      header: 'Type', 
+      accessorKey: 'type',
+    },
+    {
       header: 'Status',
       accessorKey: 'status',
     },
@@ -412,6 +416,10 @@ const Rewards = () => {
                       <Badge color={getCreatorTypeBadgeColor(reward.creatorType)} variant="soft">
                         {reward.creatorType}
                       </Badge>
+                    </Table.Cell>
+
+                    <Table.Cell>
+                        {reward?.classId ? 'Class' : 'School'}
                     </Table.Cell>
 
                     <Table.Cell>

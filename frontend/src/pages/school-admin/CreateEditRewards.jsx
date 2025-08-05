@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Card, Flex, RadioGroup, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Badge, Box, Button, Card, ChevronDownIcon, Flex, RadioGroup, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
 import { Plus, Upload, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -8,11 +8,15 @@ import { useCreateReward, useUpdateReward } from '../../api/rewards/rewards.muta
 import { useGetRewardById, useGetRewardCategories } from '../../api/rewards/rewards.queries';
 import { useGetSchoolProfile } from '../../api/school-admin/school.queries';
 import { ErrorCallout, FormFieldErrorMessage, Loader, PageHeader } from '../../components';
+import SelectClassDialog from './components/SelectClassDialog';
 
 const CreateReward = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+
+  const [isSelectClassDialogOpen, setIsSelectClassDialogOpen] = useState(false);
+
   const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile()
   const schoolId = data?.data?._id
   const [isFormReady, setIsFormReady] = useState(!isEdit);
@@ -37,8 +41,16 @@ const CreateReward = () => {
       schoolId: schoolId,
       redemptionInstructions: '',
       restrictions: '',
+      classDetails: null,
     },
   });
+  const classDetails = watch('classDetails');
+  const className = classDetails?.name || 'Select class';
+
+  const handleSelectClass = (classDetails) => {
+    setValue('classDetails', classDetails);
+    setValue('classDetails.name', classDetails?.name || '');
+  }
 
   // Image upload state
   const [selectedFile, setSelectedFile] = useState(null);
@@ -106,6 +118,7 @@ const CreateReward = () => {
         expiryDate: reward.expiryDate ? new Date(reward.expiryDate).toISOString().slice(0, 10) : '',
         redemptionInstructions: reward.redemptionInstructions || '',
         restrictions: reward.restrictions || '',
+        classDetails: reward.class || null,
       };
 
       reset(formData);
@@ -151,6 +164,7 @@ const CreateReward = () => {
     formData.append('limitedQuantity', data.limitedQuantity);
     formData.append('role', 'school_admin');
     formData.append('schoolId', schoolId);
+    formData.append('classId', data.classDetails?._id || '');
 
     if (data.limitedQuantity && data.quantity) {
       formData.append('quantity', parseInt(data.quantity));
@@ -308,6 +322,35 @@ const CreateReward = () => {
               <FormFieldErrorMessage errors={errors} field="categoryId" />
             </Box>
 
+            {/* Select Class Dialog */}
+            <Box className='flex-1'>
+              <label>
+                <Text as="p" size="2" weight="medium" mb="2">
+                  Class
+                </Text>
+                {/* Select class dialog */}
+                <SelectClassDialog
+                  open={isSelectClassDialogOpen}
+                  onOpenChange={setIsSelectClassDialogOpen}
+                  onSelectClass={handleSelectClass}
+                  classDetails={watch('classDetails')}
+                >
+                  <Button
+                    className='flex justify-between font-normal w-full bg-[--color-surface] text-[--color-text]'
+                    variant='outline'
+                    color='gray'
+                    onClick={() => setIsSelectClassDialogOpen(true)}
+                  >
+                    {classDetails?._id ? `${className} (${classDetails?.grade})` : (
+                      <Text className='text-[--gray-10]'>
+                        Select class
+                      </Text>
+                    )}
+                    <ChevronDownIcon/>
+                  </Button>
+                </SelectClassDialog>
+              </label>
+            </Box>
           </Flex>
 
           <Flex gap="4" direction={{ initial: 'column', xs: 'row' }}>

@@ -45,8 +45,7 @@ const Rewards = () => {
     limit,
     sort,
     order,
-    creatorType: 'teacher',
-    creatorId: teacherId,
+    activeRole: 'teacher',
     ...filters,
     search: debouncedSearch,
   });

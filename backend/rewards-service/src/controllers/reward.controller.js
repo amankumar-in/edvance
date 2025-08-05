@@ -5,6 +5,7 @@ const RewardWishlist = require("../models/rewardWishlist.model");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const { getFileUrl } = require("../middleware/upload.middleware");
+const { isValidObjectId } = require("mongoose");
 
 // Helper function to get user details
 async function getUserDetails(userId, authHeader) {
@@ -130,6 +131,25 @@ async function getVerifiedParentRewards(studentId, parentIds, authHeader) {
   } catch (error) {
     console.error("Error verifying parent-child relationships:", error);
     return []; // Return empty array if verification fails
+  }
+}
+
+// Helper function to get class details by ID
+async function getClassById(classId, authHeader) {
+  try {
+    const userServiceUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.PRODUCTION_USER_SERVICE_URL
+        : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+    const response = await axios.get(`${userServiceUrl}/api/classes/${classId}`, {
+      headers: { Authorization: authHeader }
+    });
+
+    return response?.data?.data;
+  } catch (error) {
+    console.warn(`Failed to fetch class ${classId}:`, error.message);
+    return null;
   }
 }
 
@@ -260,8 +280,8 @@ const rewardController = {
         creatorId,
         authUserId: userId,
         creatorType: (creatorType === 'platform_admin' || creatorType === 'sub_admin') ? 'system' : creatorType,
-        schoolId,
-        classId,
+        schoolId: isValidObjectId(schoolId) ? schoolId : undefined,
+        classId: isValidObjectId(classId) ? classId : undefined,
         limitedQuantity: limitedQuantity || false,
         quantity: limitedQuantity ? quantity : undefined,
         expiryDate: expiryDate ? new Date(expiryDate) : undefined,
@@ -309,14 +329,36 @@ const rewardController = {
         sort = "createdAt",
         order = "desc",
         isFeatured,
-        wishlistOnly,
+        activeRole,
       } = req.query;
+
+      const { profiles, roles, id: userId } = req.user
 
       const filter = {
         isActive: true,
         isDeleted: false,
         $or: [{ expiryDate: { $gt: new Date() } }, { expiryDate: null }],
       };
+
+      // if activeRole is teacher and the user has the teacher role, filter the rewards by the teacher's class
+      if (activeRole === 'teacher' && roles.includes('teacher')) {
+        console.log('teacher')
+        const teacherProfile = profiles?.['teacher'];
+        console.log(teacherProfile)
+        const classIds = teacherProfile?.classIds;
+        const classIdsObjectId = classIds.map(id => new mongoose.Types.ObjectId(id));
+        const teacherId = teacherProfile?._id;
+
+        const baseFilter = [{ creatorId: new mongoose.Types.ObjectId(teacherId) }]
+
+        if (classIdsObjectId.length > 0) {
+          baseFilter.push({
+            classId: { $in: classIdsObjectId },
+          })
+        }
+
+        filter.$or = baseFilter;
+      }
 
       // Apply filters (NEW: prioritizes categoryId, maintains backward compatibility)
       if (categoryId) {
@@ -403,6 +445,7 @@ const rewardController = {
   getRewardById: async (req, res) => {
     try {
       const { id } = req.params;
+      const authHeader = req.headers.authorization;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -423,9 +466,23 @@ const rewardController = {
         });
       }
 
+      const enhancedReward = { ...reward.toObject() };
+
+      if (reward.classId) {
+        const classData = await getClassById(reward.classId, authHeader);
+        if (classData) {
+          enhancedReward.class = {
+            _id: classData._id,
+            name: classData.name,
+            grade: classData.grade,
+            schoolId: classData.schoolId,
+          };
+        }
+      }
+
       res.status(200).json({
         success: true,
-        data: reward,
+        data: enhancedReward,
       });
     } catch (error) {
       console.error("Get reward error:", error);
@@ -538,6 +595,11 @@ const rewardController = {
             message: error.message,
           });
         }
+      }
+
+      // if classId is an empty string, set it to null
+      if (updateData.classId === '') {
+        updateData.classId = null;
       }
 
       // Update the reward

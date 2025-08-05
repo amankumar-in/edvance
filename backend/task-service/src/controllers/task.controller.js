@@ -4,6 +4,7 @@ const axios = require("axios");
 const TaskVisibility = require("../models/taskVisibility.model");
 const TaskCompletion = require("../models/taskCompletion.model");
 const { getFileUrl, getFileType } = require("../middleware/upload.middleware");
+const { isValidObjectId } = require("mongoose");
 
 // Helper function to get student classes
 async function getStudentClasses(childId, authHeader) {
@@ -236,9 +237,8 @@ const taskController = {
         externalResource,
         attachments: processedAttachments,
         difficulty,
-        schoolId,
-        classId,
-        // visibility: visibility || "private",
+        schoolId: isValidObjectId(schoolId) ? schoolId : undefined,
+        classId: isValidObjectId(classId) ? classId : undefined,
         metadata,
       });
 
