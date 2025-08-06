@@ -62,15 +62,18 @@ const rewardSchema = new mongoose.Schema(
         "system",
       ],
     },
+    // schoolId is required only for school-level users
     schoolId: {
-      type: mongoose.Schema.Types.ObjectId, // Will store school ID from user service
+      type: mongoose.Schema.Types.ObjectId,
       ref: "School",
+      default: null,
       required: function () {
-        return this.creatorType === "school" || this.creatorType === "teacher" || this.creatorType === "school_admin";
+        return ['school_admin', 'teacher', 'school'].includes(this.creatorType);
       },
     },
+    // classId is required only for teacher-created rewards
     classId: {
-      type: mongoose.Schema.Types.ObjectId, // Will store class ID for teacher-created rewards
+      type: mongoose.Schema.Types.ObjectId,
       ref: "SchoolClass",
       default: null,
       required: function () {

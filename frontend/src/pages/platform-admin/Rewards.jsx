@@ -423,7 +423,7 @@ const Rewards = () => {
           />
         ) : (
           <>
-            <Table.Root variant='surface'>
+            <Table.Root variant='surface' className='shadow-md'>
               <Table.Header>
                 <Table.Row>
                   {columns.map((column) => (

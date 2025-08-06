@@ -513,7 +513,7 @@ function Tasks() {
         ) : tasks.length > 0 ? (
           // Main data table
           <div>
-            <Table.Root variant='surface' layout={'auto'}>
+            <Table.Root variant='surface' layout={'auto'} className='shadow-md'>
               <Table.Header>
                 <Table.Row>
                   {columns.map((column) => (

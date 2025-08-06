@@ -265,6 +265,12 @@ const rewardController = {
         });
       }
 
+      // TODO:
+      // 1. If schoolId is provided, validate that the school exists.
+      // 2. If classId is provided, validate that the class exists.
+      // 3. If both are provided, ensure that the class belongs to the given school.
+      // 4. Prevent creation if any of these checks fail.
+
       // Create new reward
       const reward = new Reward({
         title,
@@ -280,8 +286,8 @@ const rewardController = {
         creatorId,
         authUserId: userId,
         creatorType: (creatorType === 'platform_admin' || creatorType === 'sub_admin') ? 'system' : creatorType,
-        schoolId: isValidObjectId(schoolId) ? schoolId : undefined,
-        classId: isValidObjectId(classId) ? classId : undefined,
+        schoolId: isValidObjectId(schoolId) ? schoolId : null,
+        classId: isValidObjectId(classId) ? classId : null,
         limitedQuantity: limitedQuantity || false,
         quantity: limitedQuantity ? quantity : undefined,
         expiryDate: expiryDate ? new Date(expiryDate) : undefined,
@@ -597,9 +603,27 @@ const rewardController = {
         }
       }
 
-      // if classId is an empty string, set it to null
-      if (updateData.classId === '') {
-        updateData.classId = null;
+      // TODO:
+      // 1. If schoolId is present, verify that the school exists.
+      // 2. If classId is present, verify that the class exists.
+      // 3. If both are present, ensure the class belongs to the school.
+
+      // Only update schoolId if valid or explicitly set to null
+      if ('schoolId' in updateData) {
+        updateData.schoolId = isValidObjectId(updateData.schoolId) ? updateData.schoolId : null;
+      }
+
+      // Only update classId if valid or explicitly set to null
+      if ('classId' in updateData) {
+        updateData.classId = isValidObjectId(updateData.classId) ? updateData.classId : null;
+      }
+
+      // Validation: Ensure classId isn't set without schoolId
+      if (updateData.classId && !updateData.schoolId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot assign classId without a valid schoolId',
+        });
       }
 
       // Update the reward

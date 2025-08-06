@@ -39,7 +39,7 @@ const CreateReward = () => {
     watch,
     formState: { errors },
     setValue,
-    reset
+    reset,
   } = useForm({
     defaultValues: {
       title: '',
@@ -59,6 +59,8 @@ const CreateReward = () => {
       isFeatured: false,
     },
   });
+
+  const [schoolId, classId] = watch(['schoolId', 'classId'])
 
   // watch form values
   const limitedQuantity = watch('limitedQuantity');
@@ -185,6 +187,8 @@ const CreateReward = () => {
     formData.append('limitedQuantity', data.limitedQuantity);
     formData.append('isFeatured', data.isFeatured);
     formData.append('role', 'platform_admin');
+    formData.append('classId', data.classId ?? '');
+    formData.append('schoolId', data.schoolId ?? '');
 
     if (data.limitedQuantity && data.quantity) {
       formData.append('quantity', parseInt(data.quantity));
@@ -200,14 +204,6 @@ const CreateReward = () => {
 
     if (data.restrictions) {
       formData.append('restrictions', data.restrictions);
-    }
-
-    if (data.schoolId) {
-      formData.append('schoolId', data.schoolId);
-    }
-
-    if (data.classId) {
-      formData.append('classId', data.classId);
     }
 
     // Add image file if selected
@@ -245,7 +241,7 @@ const CreateReward = () => {
 
   return (
     <Container>
-      <div className="pb-8 space-y-6">
+      <div className="pb-8 mx-auto space-y-6 max-w-4xl">
         {/* Header */}
         <Box>
           <Button
@@ -294,7 +290,7 @@ const CreateReward = () => {
         </Text>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-4xl">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Information */}
           <FormSection title="Basic Information">
             <div className="grid grid-cols-1 gap-6">
@@ -635,12 +631,18 @@ const CreateReward = () => {
                 <TextField.Root
                   id="schoolId"
                   placeholder="Enter school ID (if applicable)"
-                  {...register('schoolId')}
+                  {...register('schoolId', {
+                    validate: () => {
+                      if (classId && !schoolId) return 'School ID is required when class ID is provided';
+                      return true;
+                    }
+                  })}
                   className="mt-2"
                 />
                 <Text size="1" color="gray" className="mt-1">
                   Leave empty for general rewards
                 </Text>
+                <FormFieldErrorMessage errors={errors} field="schoolId" />
               </div>
 
               <div>
@@ -656,6 +658,7 @@ const CreateReward = () => {
                 <Text size="1" color="gray" className="mt-1">
                   Leave empty for school-wide rewards
                 </Text>
+                <FormFieldErrorMessage errors={errors} field="classId" />
               </div>
             </div>
           </FormSection>

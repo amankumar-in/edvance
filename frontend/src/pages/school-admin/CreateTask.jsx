@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Card, Flex, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Badge, Box, Button, Card, ChevronDownIcon, Flex, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
 import { Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -404,6 +404,7 @@ const CreateTask = () => {
                         Select class
                       </Text>
                     )}
+                    <ChevronDownIcon />
                   </Button>
                 </SelectClassDialog>
               </label>

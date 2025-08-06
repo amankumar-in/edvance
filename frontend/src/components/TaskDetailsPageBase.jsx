@@ -146,37 +146,40 @@ function TaskDetailsPageBase({
             <ArrowLeft size={18} /> Back to Tasks
           </Link>
         </Button>
-        {role === 'parent' && (
-          <Flex gap="2" wrap="wrap" justify={'end'}>
-            <Button
-              className='text-nowrap'
-              onClick={handleCloneTask}
-            >
-              <CopyPlus size={16} />
-              Clone
-            </Button>
-            {isCreator && (
-              <>
-                <Button className='text-nowrap'
-                  variant='outline'
-                  asChild
-                >
-                  <Link to={`/parent/tasks/edit/${task?._id}`}>
-                    <Pencil size={16} /> Edit
-                  </Link>
-                </Button>
-                <Button className='text-nowrap'
-                  variant='soft'
-                  color='red'
-                  onClick={() => setShowDeleteDialog(true)}
-                >
-                  <Trash size={16} />Delete
-                </Button>
-              </>
-            )}
-          </Flex>
-        )}
+
       </Flex>
+
+      {/* Parent Actions - Clone, Edit, Delete */}
+      {role === 'parent' && (
+        <Flex gap="2" wrap="wrap" justify={'start'} mb={'5'}>
+          <Button
+            className='shadow-md text-nowrap'
+            onClick={handleCloneTask}
+          >
+            <CopyPlus size={16} />
+            Clone Task
+          </Button>
+          {isCreator && (
+            <>
+              <Button className='text-nowrap'
+                variant='outline'
+                asChild
+              >
+                <Link to={`/parent/tasks/edit/${task?._id}`}>
+                  <Pencil size={16} /> Edit
+                </Link>
+              </Button>
+              <Button className='text-nowrap'
+                variant='soft'
+                color='red'
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash size={16} />Delete
+              </Button>
+            </>
+          )}
+        </Flex>
+      )}
 
       {/* Success Message */}
       {task?.completionStatus?.status === 'approved' && (
