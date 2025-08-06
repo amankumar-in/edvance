@@ -7,7 +7,10 @@ function PreviewTaskForm({ open, setOpen, task }) {
   // Format assigned people for display
   const formatAssignedPeople = () => {
     if (!task?.selectedPeople || task.selectedPeople.length === 0) {
-      return `All ${task?.assigned || 'users'}s`;
+      if(task?.assigned === 'school') return 'School';
+      if(task?.assigned === 'student') return 'All students';
+      if(task?.assigned === 'parent') return 'All parents';
+      return `All users`;
     }
     return `Selected ${task.assigned}s`;
   };

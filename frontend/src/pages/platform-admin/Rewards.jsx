@@ -458,35 +458,35 @@ const Rewards = () => {
                   <Table.Row key={reward._id} className="hover:bg-[--gray-a2]">
                     <Table.Cell>
                       <Flex direction="column" gap="1">
-                        <Text as='p' weight="medium" size="2">
-                          {reward.title}
+                        <Text title={reward?.title} as='p' weight="medium" size="2" className='line-clamp-1 min-w-[250px]'>
+                          {reward?.title}
                         </Text>
-                        <Text as='p' size="1" color="gray" className="max-w-[200px] truncate">
-                          {reward.description}
+                        <Text title={reward?.description} as='p' size="1" color="gray" className='line-clamp-2 min-w-[250px]'>
+                          {reward?.description}
                         </Text>
                       </Flex>
                     </Table.Cell>
 
                     <Table.Cell className='text-nowrap'>
                       <Flex gap="1">
-                        <Badge color={getCategoryBadgeColor(reward.category)} variant="soft">
-                          {reward.categoryName || reward.category}
+                        <Badge color={getCategoryBadgeColor(reward?.category)} variant="soft">
+                          {reward?.categoryName || reward?.category}
                         </Badge>
-                        {reward.subcategoryName && (
+                        {reward?.subcategoryName && (
                           <Badge color="gray" variant="outline" size="1">
-                            {reward.subcategoryName}
+                            {reward?.subcategoryName}
                           </Badge>
                         )}
                       </Flex>
                     </Table.Cell>
 
                     <Table.Cell>
-                      {reward.pointsCost}
+                      {reward?.pointsCost}
                     </Table.Cell>
 
                     <Table.Cell>
-                      <Badge color={getCreatorTypeBadgeColor(reward.creatorType)} variant="soft">
-                        {reward.creatorType}
+                      <Badge color={getCreatorTypeBadgeColor(reward?.creatorType)} variant="soft">
+                        {reward?.creatorType}
                       </Badge>
                     </Table.Cell>
 
@@ -495,19 +495,19 @@ const Rewards = () => {
                     </Table.Cell>
 
                     <Table.Cell>
-                      {reward.limitedQuantity ? (
-                        reward.quantity
+                      {reward?.limitedQuantity ? (
+                        reward?.quantity
                       ) : (
                         "Unlimited"
                       )}
                     </Table.Cell>
 
                     <Table.Cell className='text-nowrap'>
-                      {formatDate(reward.createdAt)}
+                      {formatDate(reward?.createdAt)}
                     </Table.Cell>
 
                     <Table.Cell>
-                      {reward.isFeatured ? <Check size={14} color='var(--green-10)' /> : <X size={14} color='var(--red-10)' />}
+                      {reward?.isFeatured ? <Check size={14} color='var(--green-10)' /> : <X size={14} color='var(--red-10)' />}
                     </Table.Cell>
 
                     <Table.Cell>

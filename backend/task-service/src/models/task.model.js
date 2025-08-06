@@ -208,6 +208,7 @@ const taskSchema = new mongoose.Schema(
     schoolId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "School",
+      default: null
     },
     classId: {
       type: mongoose.Schema.Types.ObjectId,

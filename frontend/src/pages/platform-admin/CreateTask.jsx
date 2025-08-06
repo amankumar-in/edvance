@@ -1,4 +1,4 @@
-import { Box, Button, Callout, Card, Flex, Heading, Radio, RadioGroup, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
+import { Box, Button, Callout, Card, Flex, Heading, Radio, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
 import { ArrowLeft, Eye, Info, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -46,7 +46,9 @@ const CreateTask = () => {
         url: ''
       },
       attachments: [],
-      existingAttachments: []
+      existingAttachments: [],
+      schoolId: '',
+      classId: ''
     },
   });
 
@@ -57,6 +59,7 @@ const CreateTask = () => {
   const externalResourcePlatform = watch('externalResource.platform')
   const externalResourceResourceId = watch('externalResource.resourceId')
   const externalResourceUrl = watch('externalResource.url')
+  const [schoolId, classId] = watch(['schoolId', 'classId'])
 
   // preview task form
   const [previewTaskFormOpen, setPreviewTaskFormOpen] = useState(false);
@@ -86,6 +89,12 @@ const CreateTask = () => {
     }
   }, [subCategory, taskCategories, setValue]);
 
+  // set approver type based on assigned
+  useEffect(() => {
+    if (assigned === 'school') setValue('approverType', 'teacher');
+    if (assigned === 'student' || assigned === 'parent') setValue('approverType', 'parent');
+  }, [assigned]);
+
   // populate form when editing
   useEffect(() => {
     if (isEdit && task && !isLoadingTask) {
@@ -97,7 +106,7 @@ const CreateTask = () => {
         pointValue: task.pointValue || undefined,
         dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
         requiresApproval: task.requiresApproval ? 'true' : 'false',
-        approverType: task.approverType || 'platform_admin',
+        approverType: task.approverType || 'system',
         subCategory: task.subCategory || '',
         selectedPeople: [], // We'll handle this separately
         assigned: task.assignedTo?.role || '',
@@ -108,7 +117,9 @@ const CreateTask = () => {
           url: task.externalResource?.url || ''
         },
         attachments: [], // New attachments to be uploaded
-        existingAttachments: task.attachments || [] // Existing attachments from the task
+        existingAttachments: task.attachments || [], // Existing attachments from the task
+        schoolId: task.schoolId || '',
+        classId: task.classId || ''
       };
 
       // Reset with all data at once - this should work better
@@ -143,8 +154,24 @@ const CreateTask = () => {
     // 3. APPROVAL SETTINGS
     const requiresApproval = data.requiresApproval === 'true';
     formData.append('requiresApproval', requiresApproval);
-    if (requiresApproval && data.approverType) {
-      formData.append('approverType', data.approverType);
+
+    /* 
+      - If approval is required:
+      - For rewards assigned to a school, a teacher is set as the approver, and both schoolId and classId are included.
+      - For rewards assigned to a student or a parent, a parent is set as the approver.
+    */
+    if (requiresApproval) {
+      if (assigned === 'school') {
+        formData.append('approverType', 'teacher');
+        formData.append('schoolId', schoolId || '');
+        formData.append('classId', classId || '');
+      }
+      if (assigned === 'student') {
+        formData.append('approverType', 'parent');
+      }
+      if (assigned === 'parent') {
+        formData.append('approverType', 'parent');
+      }
     }
 
     // 4. ASSIGNMENT DATA
@@ -256,7 +283,7 @@ const CreateTask = () => {
 
   return (
     <Container>
-      <div className="pb-8 space-y-6">
+      <div className="pb-8 mx-auto space-y-6 max-w-4xl">
         {/* Header */}
         <Box>
           <Button
@@ -318,7 +345,7 @@ const CreateTask = () => {
         </Text>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-4xl">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {
             (isError) && (
               <Callout.Root
@@ -636,9 +663,9 @@ const CreateTask = () => {
                   <FormFieldErrorMessage errors={errors} field="assigned" />
                 </div>
               </div>
-              {!!assigned && (
+              {!!assigned && assigned !== 'school' && (
                 <div className='flex-1'>
-                  <Callout.Root variant='surface'>
+                  <Callout.Root variant='surface' color='blue'>
                     <Callout.Icon>
                       <Info size={16} />
                     </Callout.Icon>
@@ -668,6 +695,47 @@ const CreateTask = () => {
                 </div>
               )}
             </Flex>
+
+            {/* School ID and Class ID */}
+            {assigned === 'school' && <Flex gap="4" className="flex-col lg:flex-row">
+              {/* School ID */}
+              <div className="flex-1">
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    School ID
+                  </Text>
+                  <TextField.Root
+                    placeholder="Enter school ID"
+                    className="w-full"
+                    {...register('schoolId', {
+                      required: 'School ID is required',
+                    })}
+                  />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    Leave empty for general tasks
+                  </Text>
+                  <FormFieldErrorMessage errors={errors} field="schoolId" />
+                </label>
+              </div>
+
+              {/* Class ID */}
+              <div className="flex-1">
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Class ID
+                  </Text>
+                  <TextField.Root
+                    placeholder="Enter class ID"
+                    className="w-full"
+                    {...register('classId')}
+                  />
+                  <Text as="p" size="1" color="gray" mt="1">
+                    Leave empty for school-wide tasks
+                  </Text>
+                  <FormFieldErrorMessage errors={errors} field="classId" />
+                </label>
+              </div>
+            </Flex>}
           </FormSection>
 
           {/* Approval settings - requires approval, who can approve this task */}
@@ -699,41 +767,8 @@ const CreateTask = () => {
                   Select whether the task requires approval or not
                 </Text>
               </div>
-
-              {requiresApproval && (
-                // Approver type
-                < div className='flex-1'>
-                  <label>
-                    <Text as="div" size="2" mb="2" weight="medium">
-                      Who can approve this task? *
-                    </Text>
-                    <Controller
-                      name="approverType"
-                      control={control}
-                      rules={{ required: "Approver type is required" }}
-                      render={({ field }) => (
-                        <RadioGroup.Root
-                          name="approverType"
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <Flex gap='2' wrap='wrap'>
-                            <RadioGroup.Item value="parent">Parent</RadioGroup.Item>
-                            <RadioGroup.Item value="teacher">Teacher</RadioGroup.Item>
-                          </Flex>
-                        </RadioGroup.Root>
-                      )}
-                    />
-                    <FormFieldErrorMessage errors={errors} field="approverType" />
-
-                  </label>
-                </div>
-              )}
             </Flex>
-
           </FormSection>
-
-
         </form>
 
         <PreviewTaskForm

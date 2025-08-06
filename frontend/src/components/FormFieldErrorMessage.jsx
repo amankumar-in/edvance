@@ -1,5 +1,5 @@
-import { Text } from '@radix-ui/themes'
-import { Info } from 'lucide-react'
+import { Text } from '@radix-ui/themes';
+import { CircleAlert } from 'lucide-react';
 
 export const FormFieldErrorMessage = ({ errors, field }) => {
   // This function is used to get the error message for a nested field
@@ -29,7 +29,7 @@ export const FormFieldErrorMessage = ({ errors, field }) => {
       color="red"
       className='flex gap-1 items-center mt-1'
     >
-      <Info size={12} /> {error.message}
+      <CircleAlert size={12} /> {error.message}
     </Text>
   )
 }
