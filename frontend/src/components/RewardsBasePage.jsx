@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Callout, Card, Dialog, DropdownMenu, Flex, Grid, Heading, IconButton, Inset, Select, Spinner, Text, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, Clock, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy } from 'lucide-react';
+import { AlertCircleIcon, Clock, Copy, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -53,7 +53,7 @@ function RewardsBasePage({
 
   // Mutations ------------------------------------------------
   const { mutate: redeemReward, isPending: isRedeemingReward } = useRedeemReward();
-  const { mutate: deleteReward, isPending: isDeletingReward } = useDeleteReward();
+  const { mutate: deleteReward, isPending: isDeletingReward } = useDeleteReward(role);
   const { mutate: toggleRewardVisibility, isPending: isTogglingVisibility, variables } = useToggleRewardVisibility();
 
   const { mutate: addToWishlist, isPending: isAddingToWishlist, variables: addToWishlistVariables } = useAddToWishlist();
@@ -525,7 +525,12 @@ function RewardsBasePage({
                         loading={isTogglingVisibility && variables?.id === reward._id}
                       >
                         {reward.isVisibleToMyChildren ? <Eye size={16} /> : <EyeOff size={16} />}
-                        {reward.isVisibleToMyChildren ? 'Hide from Children' : 'Show to Children'}
+                        <Text className='hidden md:block'>
+                          {reward.isVisibleToMyChildren ? 'Hide from Children' : 'Show to Children'}
+                        </Text>
+                        <Text className='block md:hidden'>
+                          {reward.isVisibleToMyChildren ? 'Hide' : 'Show'}
+                        </Text>
                       </Button>
 
 
@@ -665,6 +670,13 @@ function RewardsBasePage({
                     Cancel
                   </Button>
                 </Dialog.Close>
+                {role === 'parent' && (
+                  <Button asChild>
+                    <Link to={`/parent/rewards/create?cloneId=${selectedReward._id}`}>
+                      <Copy size={16} /> Clone Reward
+                    </Link>
+                  </Button>
+                )}
                 {role === 'student' && <Button
                   disabled={
                     !canAfford(selectedReward.pointsCost) ||

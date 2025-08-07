@@ -2,7 +2,7 @@ import { Badge, Box, Button, Card, Flex, RadioGroup, Select, Separator, Text, Te
 import { Plus, Upload, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { useCreateReward, useUpdateReward } from '../../api/rewards/rewards.mutations';
 import { useGetRewardById, useGetRewardCategories } from '../../api/rewards/rewards.queries';
@@ -13,12 +13,17 @@ import { useGetTeacherClasses } from '../../api/teacher/teacher.queries';
 const CreateReward = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const cloneId = searchParams.get('cloneId');
+  
   const isEdit = Boolean(id);
+  const isClone = Boolean(cloneId);
+  
   const { profiles } = useAuth()
   const teacherProfile = profiles?.['teacher'];
   const schoolId = teacherProfile?.schoolId;
 
-  const [isFormReady, setIsFormReady] = useState(!isEdit);
+  const [isFormReady, setIsFormReady] = useState(!isEdit && !isClone);
 
   const {
     register,
@@ -70,6 +75,10 @@ const CreateReward = () => {
   const { data: rewardData, isLoading: isLoadingReward } = useGetRewardById(id, { enabled: isEdit });
   const { data: reward } = rewardData ?? {};
 
+  // Get reward for cloning
+  const { data: cloneRewardData, isLoading: isLoadingCloneReward } = useGetRewardById(cloneId, { enabled: isClone });
+  const { data: cloneReward } = cloneRewardData ?? {};
+
   // Create and update reward mutations
   const { mutate: createReward, isPending: isCreating } = useCreateReward();
   const { mutate: updateReward, isPending: isUpdating } = useUpdateReward();
@@ -107,42 +116,53 @@ const CreateReward = () => {
     }
   };
 
-  // Populate form when editing
+  // Populate form when editing or cloning
   useEffect(() => {
+    let sourceReward = null;
+    let isReady = false;
+
     if (isEdit && reward && !isLoadingReward) {
+      sourceReward = reward;
+      isReady = true;
+    } else if (isClone && cloneReward && !isLoadingCloneReward) {
+      sourceReward = cloneReward;
+      isReady = true;
+    }
+
+    if (sourceReward && isReady) {
       const formData = {
-        title: reward.title || '',
-        description: reward.description || '',
-        pointsCost: reward.pointsCost || 50,
-        categoryId: reward.categoryId?._id || '',
-        classId: reward.classId || '',
-        limitedQuantity: reward.limitedQuantity || false,
-        quantity: reward.quantity || undefined,
-        expiryDate: reward.expiryDate ? new Date(reward.expiryDate).toISOString().slice(0, 10) : '',
-        redemptionInstructions: reward.redemptionInstructions || '',
-        restrictions: reward.restrictions || '',
+        title: isClone ? `Copy of ${sourceReward.title}` : sourceReward.title || '',
+        description: sourceReward.description || '',
+        pointsCost: sourceReward.pointsCost || 50,
+        categoryId: sourceReward.categoryId?._id || '',
+        classId: sourceReward.classId || '',
+        limitedQuantity: sourceReward.limitedQuantity || false,
+        quantity: sourceReward.quantity || undefined,
+        expiryDate: isClone ? '' : (sourceReward.expiryDate ? new Date(sourceReward.expiryDate).toISOString().slice(0, 10) : ''),
+        redemptionInstructions: sourceReward.redemptionInstructions || '',
+        restrictions: sourceReward.restrictions || '',
       };
 
       reset(formData);
 
-      // Set existing image if available
-      if (reward.image) {
-        setPreviewUrl(reward.image);
+      // Set existing image if available (for both edit and clone modes)
+      if (sourceReward.image) {
+        setPreviewUrl(sourceReward.image);
       }
 
       setIsFormReady(true);
     }
-  }, [isEdit, reward, isLoadingReward, reset]);
+  }, [isEdit, isClone, reward, cloneReward, isLoadingReward, isLoadingCloneReward, reset]);
 
-  // Set suggested point value based on category (only for new rewards)
+  // Set suggested point value based on category (only for new rewards, not clones)
   useEffect(() => {
-    if (!isEdit && rewardCategories && categoryId) {
+    if (!isEdit && !isClone && rewardCategories && categoryId) {
       const selectedCategory = rewardCategories.find(cat => cat._id === categoryId);
       if (selectedCategory) {
         setValue('pointsCost', selectedCategory.minPointValue);
       }
     }
-  }, [isEdit, categoryId, rewardCategories, setValue]);
+  }, [isEdit, isClone, categoryId, rewardCategories, setValue]);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -190,8 +210,33 @@ const CreateReward = () => {
       formData.append('restrictions', data.restrictions);
     }
 
-    // Add image file if selected
-    formData.append('image', selectedFile ? selectedFile : '');
+    // Handle image file
+    if (selectedFile) {
+      // User uploaded a new file
+      formData.append('image', selectedFile);
+    } else if (isClone && cloneReward?.image && previewUrl) {
+      // For cloning, download the original image and convert to file
+      try {
+        const response = await fetch(cloneReward.image);
+        const blob = await response.blob();
+        const fileExtension = cloneReward.image.split('.').pop() || 'jpg';
+        const fileName = `cloned-reward-image.${fileExtension}`;
+        const file = new File([blob], fileName, {
+          type: blob.type || 'image/jpeg'
+        });
+        formData.append('image', file);
+      } catch (error) {
+        console.error('Error cloning image:', error);
+        toast.error('Could not clone the image, continuing without it');
+        formData.append('image', '');
+      }
+    } else if (isEdit && reward?.image && previewUrl && !selectedFile) {
+      // For editing, preserve existing image if no new file uploaded
+      // Don't append anything - backend will keep existing image
+    } else {
+      // No image or removing image
+      formData.append('image', '');
+    }
 
     // Submit to API
     const successMessage = isEdit ? 'Reward updated successfully!' : 'Reward created successfully!';
@@ -220,10 +265,10 @@ const CreateReward = () => {
     return acc;
   }, {}) || {};
 
-  if (isEdit && (isLoadingReward || !isFormReady)) {
+  if ((isEdit && (isLoadingReward || !isFormReady)) || (isClone && (isLoadingCloneReward || !isFormReady))) {
     return (
       <div className='mx-auto space-y-6 max-w-3xl'>
-        <CreateEditRewardPageHeader isEdit={isEdit} />
+        <CreateEditRewardPageHeader isEdit={isEdit} isClone={isClone} />
         <Flex justify="center">
           <Loader />
         </Flex>
@@ -233,7 +278,7 @@ const CreateReward = () => {
 
   return (
     <div className="mx-auto space-y-6 max-w-3xl">
-      <CreateEditRewardPageHeader isEdit={isEdit} />
+      <CreateEditRewardPageHeader isEdit={isEdit} isClone={isClone} />
 
       <Text size={'1'} className='italic' color='gray' as='p'>
         * Required fields
@@ -566,7 +611,9 @@ const CreateReward = () => {
             <Plus size={16} />
             {isCreating || isUpdating
               ? (isEdit ? 'Updating...' : 'Creating...')
-              : (isEdit ? 'Update Reward' : 'Create Reward')
+              : isClone
+                ? 'Create Copy'
+                : (isEdit ? 'Update Reward' : 'Create Reward')
             }
           </Button>
         </Flex>
@@ -577,11 +624,16 @@ const CreateReward = () => {
 
 export default CreateReward;
 
-function CreateEditRewardPageHeader({ isEdit }) {
+function CreateEditRewardPageHeader({ isEdit, isClone }) {
   return (
     <PageHeader
-      title={isEdit ? 'Edit Reward' : 'Create Reward'}
-      description={isEdit ? 'Update your reward details' : 'Create a reward that your students can redeem with their points'}
+      title={isEdit ? 'Edit Reward' : isClone ? 'Clone Reward' : 'Create Reward'}
+      description={isEdit 
+        ? 'Update your reward details' 
+        : isClone 
+          ? 'Create a new reward based on an existing one'
+          : 'Create a reward that your students can redeem with their points'
+      }
       backButton
     />
   )

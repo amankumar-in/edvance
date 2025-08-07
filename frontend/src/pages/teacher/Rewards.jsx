@@ -1,5 +1,5 @@
 import { Badge, Button, Dialog, DropdownMenu, Flex, IconButton, Select, Table, Text, TextField } from '@radix-ui/themes';
-import { Eye, Gift, MoreHorizontal, PencilIcon, Plus, Search, TrashIcon, X } from 'lucide-react';
+import { Copy, Eye, Gift, MoreHorizontal, PencilIcon, Plus, Search, TrashIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { BarLoader } from 'react-spinners';
@@ -15,7 +15,7 @@ import { formatDate } from '../../utils/helperFunctions';
 
 const Rewards = () => {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20); 
+  const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('createdAt');
   const [order, setOrder] = useState('desc');
   const currentSort = { field: sort, order: order };
@@ -52,7 +52,7 @@ const Rewards = () => {
   const { rewards = [], pagination = {} } = rewardsData?.data ?? {};
 
   // mutations
-  const { mutate: deleteReward, isPending: isDeletingReward } = useDeleteReward();
+  const { mutate: deleteReward, isPending: isDeletingReward } = useDeleteReward('teacher');
 
   // function to handle page change
   const handlePageChange = (page) => {
@@ -426,6 +426,11 @@ const Rewards = () => {
                           <DropdownMenu.Item asChild>
                             <Link to={`/teacher/rewards/edit/${reward._id}`}>
                               <PencilIcon size={14} /> Edit Reward
+                            </Link>
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Item asChild>
+                            <Link to={`/teacher/rewards/create?cloneId=${reward._id}`}>
+                              <Copy size={14} /> Clone Reward
                             </Link>
                           </DropdownMenu.Item>
                           <DropdownMenu.Separator />

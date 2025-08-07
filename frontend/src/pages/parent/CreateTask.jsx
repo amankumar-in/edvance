@@ -1,5 +1,5 @@
-import { Badge, Box, Button, Callout, Flex, Heading, Select, Text, TextArea, TextField } from '@radix-ui/themes';
-import { ArrowLeft, Info, Plus } from 'lucide-react';
+import { Badge, Box, Button, Callout, Card, Flex, Select, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Info, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
@@ -8,7 +8,7 @@ import { useChildren } from '../../api/parent/parent.queries';
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { useCreateTask, useUpdateTask } from '../../api/task/task.mutations';
 import { useGetTaskById } from '../../api/task/task.queries';
-import { FileUpload, FormFieldErrorMessage, Loader } from '../../components';
+import { FileUpload, FormFieldErrorMessage, Loader, PageHeader } from '../../components';
 
 const CreateTask = () => {
   const navigate = useNavigate();
@@ -252,31 +252,14 @@ const CreateTask = () => {
   }
 
   return (
-    <div className="space-y-4 max-w-xl">
-      <Button asChild variant='ghost' color='gray' size='2'>
-        <Link to={-1}>
-          <ArrowLeft size={18} />
-          {cloneData ? 'Back to Original Task' : 'Back'}
-        </Link>
-      </Button>
+    <div className="mx-auto space-y-4 max-w-2xl">
+
       {/* Header */}
-      <Box>
-        <Heading as="h1" size="6" weight="bold" mb="1">
-          {cloneData ? 'Clone Task' : isEdit ? 'Edit Task' : 'Create New Task'}
-        </Heading>
-        <Text color="gray" size="2">
-          {cloneData
-            ? 'Creating a copy of an existing task. Modify any fields as needed.'
-            : isEdit
-              ? 'Update the task details and settings'
-              : 'Create a task for your child to complete and earn points'
-          }
-        </Text>
-      </Box>
+      <CreateTaskPageHeader isEdit={isEdit} isClone={cloneData} />
 
       {/* Clone Info Callout */}
       {cloneData && (
-        <Callout.Root variant='surface' color="blue" size="1" mb="4">
+        <Callout.Root variant='surface' color="blue" mb="4">
           <Callout.Icon>
             <Info size={16} />
           </Callout.Icon>
@@ -292,231 +275,253 @@ const CreateTask = () => {
       </Text>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Basic Information */}
-        <Box className="space-y-4">
-          {/* Title & Description */}
-          <Flex gap="4" direction={{ initial: 'column', md: 'row' }}>
+      <Card size={{ initial: '2', xs: '3' }} className='shadow-md'>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Basic Information */}
+          <Box className="space-y-4">
+            {/* Title & Description */}
+            <Flex gap="4" direction={{ initial: 'column', md: 'row' }}>
+              <Box className="flex-1">
+                <label>
+                  <Text as="p" size="2" weight="medium" mb="2">
+                    Task Title *
+                  </Text>
+                  <TextField.Root
+                    id="title"
+                    placeholder="e.g., Clean your room"
+                    {...register('title', { required: 'Task title is required' })}
+                  />
+                </label>
+                <FormFieldErrorMessage errors={errors} field="title" />
+                {/* Clone helper text */}
+                {cloneData && (
+                  <Text size="1" color="gray" mt="1">
+                    Consider updating the title to differentiate from the original task
+                  </Text>
+                )}
+              </Box>
+
+            </Flex>
+
+            {/* Description */}
+            <Box>
+              <label>
+                <Text as="p" size="2" weight="medium" mb="2">
+                  Description
+                </Text>
+                <TextArea
+                  placeholder="What needs to be done?"
+                  resize="vertical"
+                  rows={2}
+                  {...register('description')}
+                />
+              </label>
+            </Box>
+          </Box>
+
+          {/* Category & Settings */}
+          <Box className="space-y-4">
+            <Flex gap="4" direction={{ initial: 'column', xs: 'row' }}>
+              {/* Category */}
+              <Box className="flex-1">
+                <label className='w-full'>
+                  <Text as="p" size="2" weight="medium" mb="2">
+                    Category *
+                  </Text>
+                  <Controller
+                    name="subCategory"
+                    control={control}
+                    rules={{ required: 'Please select a category' }}
+                    render={({ field }) => (
+                      <Select.Root value={field.value} onValueChange={field.onChange}>
+                        <Select.Trigger className='w-full' placeholder="Select category" />
+                        <Select.Content variant="soft" position="popper">
+                          {Object.entries(groupedCategories).map(([type, categories]) => (
+                            <Select.Group key={type}>
+                              <Select.Label className="text-xs font-medium capitalize">
+                                {type}
+                              </Select.Label>
+                              {categories.map((category) => (
+                                <Select.Item key={category._id} value={category.name}>
+                                  <Flex align="center" gap="2">
+                                    <Text className="capitalize">{category.name}</Text>
+                                    <Badge variant="soft" size="1" color="gray">
+                                      {category.defaultPointValue} pts
+                                    </Badge>
+                                  </Flex>
+                                </Select.Item>
+                              ))}
+                            </Select.Group>
+                          ))}
+                        </Select.Content>
+                      </Select.Root>
+                    )}
+                  />
+                </label>
+                <FormFieldErrorMessage errors={errors} field="subCategory" />
+              </Box>
+
+              {/* Difficulty */}
+              <Box className="flex-1">
+                <label className='w-full'>
+                  <Text as="p" size="2" weight="medium" mb="2">
+                    Difficulty
+                  </Text>
+                  <Controller
+                    name="difficulty"
+                    control={control}
+                    render={({ field }) => (
+                      <Select.Root value={field.value} onValueChange={field.onChange}>
+                        <Select.Trigger className='w-full' />
+                        <Select.Content variant="soft" position="popper">
+                          <Select.Item value="easy">Easy</Select.Item>
+                          <Select.Item value="medium">Medium</Select.Item>
+                          <Select.Item value="hard">Hard</Select.Item>
+                          <Select.Item value="challenging">Challenging</Select.Item>
+                        </Select.Content>
+                      </Select.Root>
+                    )}
+                  />
+                </label>
+                <FormFieldErrorMessage errors={errors} field="difficulty" />
+              </Box>
+            </Flex>
+
+            {/* Due Date */}
             <Box className="flex-1">
               <label>
                 <Text as="p" size="2" weight="medium" mb="2">
-                  Task Title *
+                  Due Date
                 </Text>
                 <TextField.Root
-                  id="title"
-                  placeholder="e.g., Clean your room"
-                  {...register('title', { required: 'Task title is required' })}
-                />
-              </label>
-              <FormFieldErrorMessage errors={errors} field="title" />
-              {/* Clone helper text */}
-              {cloneData && (
-                <Text size="1" color="gray" mt="1">
-                  Consider updating the title to differentiate from the original task
-                </Text>
-              )}
-            </Box>
-
-          </Flex>
-
-          {/* Description */}
-          <Box>
-            <label>
-              <Text as="p" size="2" weight="medium" mb="2">
-                Description
-              </Text>
-              <TextArea
-                placeholder="What needs to be done?"
-                resize="vertical"
-                rows={2}
-                {...register('description')}
-              />
-            </label>
-          </Box>
-        </Box>
-
-        {/* Category & Settings */}
-        <Box className="space-y-4">
-          <Flex gap="4" direction={{ initial: 'column', xs: 'row' }}>
-            {/* Category */}
-            <Box className="flex-1">
-              <label className='w-full'>
-                <Text as="p" size="2" weight="medium" mb="2">
-                  Category *
-                </Text>
-                <Controller
-                  name="subCategory"
-                  control={control}
-                  rules={{ required: 'Please select a category' }}
-                  render={({ field }) => (
-                    <Select.Root value={field.value} onValueChange={field.onChange}>
-                      <Select.Trigger className='w-full' placeholder="Select category" />
-                      <Select.Content variant="soft" position="popper">
-                        {Object.entries(groupedCategories).map(([type, categories]) => (
-                          <Select.Group key={type}>
-                            <Select.Label className="text-xs font-medium capitalize">
-                              {type}
-                            </Select.Label>
-                            {categories.map((category) => (
-                              <Select.Item key={category._id} value={category.name}>
-                                <Flex align="center" gap="2">
-                                  <Text className="capitalize">{category.name}</Text>
-                                  <Badge variant="soft" size="1" color="gray">
-                                    {category.defaultPointValue} pts
-                                  </Badge>
-                                </Flex>
-                              </Select.Item>
-                            ))}
-                          </Select.Group>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-                  )}
-                />
-              </label>
-              <FormFieldErrorMessage errors={errors} field="subCategory" />
-            </Box>
-
-            {/* Difficulty */}
-            <Box className="flex-1">
-              <label className='w-full'>
-                <Text as="p" size="2" weight="medium" mb="2">
-                  Difficulty
-                </Text>
-                <Controller
-                  name="difficulty"
-                  control={control}
-                  render={({ field }) => (
-                    <Select.Root value={field.value} onValueChange={field.onChange}>
-                      <Select.Trigger className='w-full' />
-                      <Select.Content variant="soft" position="popper">
-                        <Select.Item value="easy">Easy</Select.Item>
-                        <Select.Item value="medium">Medium</Select.Item>
-                        <Select.Item value="hard">Hard</Select.Item>
-                        <Select.Item value="challenging">Challenging</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  )}
-                />
-              </label>
-              <FormFieldErrorMessage errors={errors} field="difficulty" />
-            </Box>
-          </Flex>
-
-          {/* Due Date */}
-          <Box className="flex-1">
-            <label>
-              <Text as="p" size="2" weight="medium" mb="2">
-                Due Date
-              </Text>
-              <TextField.Root
-                type="datetime-local"
-                className='w-fit'
-                {...register('dueDate', {
-                  validate: (value) => {
-                    if (!value) return true;
-                    const dateValue = new Date(value);
-                    const now = new Date();
-                    return dateValue >= now || "Due date must be in the future";
-                  }
-                })}
-              />
-            </label>
-            <FormFieldErrorMessage errors={errors} field="dueDate" />
-          </Box>
-        </Box>
-
-        {/* Resources & Files */}
-        <Box className="space-y-4">
-          <Text as='p' weight="medium">Additional Resources</Text>
-
-          {/* External Resource */}
-          <div>
-            <Text as="p" size="2" weight="medium" mb="2">
-              Helpful Link
-            </Text>
-            <Flex gap="3" direction={{ initial: 'column', xs: 'row' }}>
-              <Box className='flex-1'>
-                <TextField.Root
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  {...register('externalResource.url', {
-                    pattern: {
-                      value: /^https?:\/\/.+/,
-                      message: "Please enter a valid URL"
-                    },
-                    required: {
-                      value: (externalResourcePlatform && externalResourcePlatform.trim() !== '') || (externalResourceResourceId && externalResourceResourceId.trim() !== ''),
-                      message: 'Link is required when Platform or Resource ID is provided'
+                  type="datetime-local"
+                  className='w-fit'
+                  {...register('dueDate', {
+                    validate: (value) => {
+                      if (!value) return true;
+                      const dateValue = new Date(value);
+                      const now = new Date();
+                      return dateValue >= now || "Due date must be in the future";
                     }
                   })}
                 />
-                <FormFieldErrorMessage errors={errors} field="externalResource.url" />
-              </Box>
-
-              <Box className="flex-1">
-                <TextField.Root
-                  placeholder="Platform (e.g., YouTube)"
-                  {...register('externalResource.platform', {
-                    required: {
-                      value: (externalResourceUrl && externalResourceUrl.trim() !== '') || (externalResourceResourceId && externalResourceResourceId.trim() !== ''),
-                      message: 'Platform name is required'
-                    }
-                  })}
-                />
-                <FormFieldErrorMessage errors={errors} field="externalResource.platform" />
-              </Box>
-            </Flex>
-          </div>
-
-          {/* File Attachments */}
-          <Box>
-            <Text as="p" size="2" weight="medium" mb="2">
-              Attachments
-            </Text>
-            <FileUpload
-              onFilesChange={handleFileChange}
-              existingAttachments={watch('existingAttachments') || []}
-              maxFiles={3}
-              maxSizePerFile={10}
-              showDetailedHelp={false}
-            />
+              </label>
+              <FormFieldErrorMessage errors={errors} field="dueDate" />
+            </Box>
           </Box>
-        </Box>
 
-        {/* Info */}
-        <Callout.Root variant="surface" color="blue">
-          <Callout.Icon>
-            <Info size={16} />
-          </Callout.Icon>
-          <Callout.Text>
-            Good to know:
-          </Callout.Text>
-          <Text as="p" size="1">
-            • Tasks will require your approval when completed<br />
-            • You can manage task visibility in your task list<br />
-            • Points will be awarded after approval<br />
-            • Links and files help children understand what to do
-          </Text>
-        </Callout.Root>
+          {/* Resources & Files */}
+          <Box className="space-y-4">
+            <Text as='p' weight="medium">Additional Resources</Text>
 
-        {/* Actions */}
-        <Flex justify="end" gap="3" pt="4">
-          <Button variant="soft" color="gray" asChild>
-            <Link to="/parent/tasks">Cancel</Link>
-          </Button>
-          <Button color='grass' type="submit" disabled={isCreating || isUpdating}>
-            <Plus size={16} />
-            {isCreating || isUpdating
-              ? (isEdit ? 'Updating...' : 'Creating...')
-              : cloneData
-                ? 'Create Copy'
-                : (isEdit ? 'Update Task' : 'Create Task')
-            }
-          </Button>
-        </Flex>
-      </form>
+            {/* External Resource */}
+            <div>
+              <Text as="p" size="2" weight="medium" mb="2">
+                Helpful Link
+              </Text>
+              <Flex gap="3" direction={{ initial: 'column', xs: 'row' }}>
+                <Box className='flex-1'>
+                  <TextField.Root
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    {...register('externalResource.url', {
+                      pattern: {
+                        value: /^https?:\/\/.+/,
+                        message: "Please enter a valid URL"
+                      },
+                      required: {
+                        value: (externalResourcePlatform && externalResourcePlatform.trim() !== '') || (externalResourceResourceId && externalResourceResourceId.trim() !== ''),
+                        message: 'Link is required when Platform or Resource ID is provided'
+                      }
+                    })}
+                  />
+                  <FormFieldErrorMessage errors={errors} field="externalResource.url" />
+                </Box>
+
+                <Box className="flex-1">
+                  <TextField.Root
+                    placeholder="Platform (e.g., YouTube)"
+                    {...register('externalResource.platform', {
+                      required: {
+                        value: (externalResourceUrl && externalResourceUrl.trim() !== '') || (externalResourceResourceId && externalResourceResourceId.trim() !== ''),
+                        message: 'Platform name is required'
+                      }
+                    })}
+                  />
+                  <FormFieldErrorMessage errors={errors} field="externalResource.platform" />
+                </Box>
+              </Flex>
+            </div>
+
+            {/* File Attachments */}
+            <Box>
+              <Text as="p" size="2" weight="medium" mb="2">
+                Attachments
+              </Text>
+              <FileUpload
+                onFilesChange={handleFileChange}
+                existingAttachments={watch('existingAttachments') || []}
+                maxFiles={3}
+                maxSizePerFile={10}
+                showDetailedHelp={false}
+              />
+            </Box>
+          </Box>
+
+          {/* Info */}
+          <Callout.Root variant="surface" color="blue">
+            <Callout.Icon>
+              <Info size={16} />
+            </Callout.Icon>
+            <Callout.Text>
+              Good to know:
+            </Callout.Text>
+            <Text as="p" size="2">
+              • Tasks will require your approval when completed<br />
+              • You can manage task visibility in your task list<br />
+              • Points will be awarded after approval<br />
+              • Links and files help children understand what to do
+            </Text>
+          </Callout.Root>
+
+          {/* Actions */}
+          <Flex justify="end" gap="3">
+            <Button variant="soft" color="gray" asChild>
+              <Link to="/parent/tasks">Cancel</Link>
+            </Button>
+            <Button
+              color='grass'
+              type="submit"
+              disabled={isCreating || isUpdating}
+              className='shadow-md'
+            >
+              <Plus size={16} />
+              {isCreating || isUpdating
+                ? (isEdit ? 'Updating...' : 'Creating...')
+                : cloneData
+                  ? 'Create Copy'
+                  : (isEdit ? 'Update Task' : 'Create Task')
+              }
+            </Button>
+          </Flex>
+        </form>
+      </Card>
     </div>
   );
 };
 
 export default CreateTask;
+
+function CreateTaskPageHeader({ isEdit, isClone }) {
+  return (
+    <PageHeader
+      title={isEdit ? 'Edit Task' : isClone ? 'Clone Task' : 'Create Task'}
+      description={isEdit
+        ? 'Update the task details and settings'
+        : isClone
+          ? 'Create a new task based on an existing one'
+          : 'Create a task for your child to complete and earn points'
+      }
+      backButton
+    />
+  )
+}

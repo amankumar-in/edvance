@@ -652,6 +652,7 @@ const rewardController = {
   deleteReward: async (req, res) => {
     try {
       const { id } = req.params;
+      const role = req.body.role;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -677,14 +678,14 @@ const rewardController = {
       let isAuthorized = false;
 
       // Check if the user has the school_admin role
-      if (userRoles.includes("school_admin")) {
+      if (role === "school_admin" && userRoles.includes("school_admin")) {
         const schoolId = profiles?.['school']?._id;
 
         // Authorize if the reward belongs to the same school
         isAuthorized = reward.schoolId.equals(schoolId)
       }
       // Check if the user has the teacher role
-      else if (userRoles.includes('teacher')) {
+      else if (role === 'teacher' && userRoles.includes('teacher')) {
         const teacherProfile = profiles?.['teacher'];
         const classIds = teacherProfile?.classIds;
 
@@ -692,7 +693,7 @@ const rewardController = {
         isAuthorized = classIds.some(classId => reward.classId.equals(classId));
       }
       // Check if the user has the parent role
-      else if (userRoles.includes('parent')) {
+      else if (role === 'parent' && userRoles.includes('parent')) {
         const parentProfile = profiles?.['parent'];
         const parentId = parentProfile?._id;
 

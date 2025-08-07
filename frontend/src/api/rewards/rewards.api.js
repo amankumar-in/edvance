@@ -99,8 +99,8 @@ const updateReward = async ({ id, formData }) => {
 /**
  * Delete a reward (soft delete)
  */
-const deleteReward = async (id) => {
-  const response = await apiClient.delete(`/rewards/${id}`);
+const deleteReward = async (id, role) => {
+  const response = await apiClient.delete(`/rewards/${id}`, { data: { role: role } });
   return response.data;
 };
 

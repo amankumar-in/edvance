@@ -113,11 +113,11 @@ const useUpdateReward = () => {
 /**
  * Delete a reward
  */
-const useDeleteReward = () => {
+const useDeleteReward = (role) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteReward,
+    mutationFn: (id) => deleteReward(id, role),
     onSuccess: () => {
       return queryClient.invalidateQueries({ queryKey: REWARDS_QUERY_KEY.all });
     },

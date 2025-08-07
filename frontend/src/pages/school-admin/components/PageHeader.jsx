@@ -27,7 +27,7 @@ function PageHeader({ title, description, className, children, actions, backButt
             <Heading size={{initial: '6', sm: '7'}} weight="bold">
               {title}
             </Heading>
-            {description && <Text as='p' color="gray" mt='1'>
+            {description && <Text size='2' as='p' color="gray" mt='1'>
               {description}
             </Text>}
           </div>

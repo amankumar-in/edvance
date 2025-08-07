@@ -1,5 +1,5 @@
 import { Badge, Button, Dialog, DropdownMenu, Flex, IconButton, Select, Table, Text, TextField } from '@radix-ui/themes';
-import { Eye, Gift, MoreHorizontal, PencilIcon, Plus, Search, TrashIcon, X } from 'lucide-react';
+import { Copy, Eye, Gift, MoreHorizontal, PencilIcon, Plus, Search, TrashIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { BarLoader } from 'react-spinners';
@@ -17,9 +17,9 @@ import { useAuth } from '../../Context/AuthContext';
 import NoSchoolProfileCard from './components/NoSchoolProfileCard';
 
 const Rewards = () => {
-  const {profiles} = useAuth();
+  const { profiles } = useAuth();
   const school = profiles?.school;
-  
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState('createdAt');
@@ -62,7 +62,7 @@ const Rewards = () => {
   const { rewards = [], pagination = {} } = rewardsData?.data ?? {};
 
   // mutations
-  const { mutate: deleteReward, isPending: isDeletingReward } = useDeleteReward();
+  const { mutate: deleteReward, isPending: isDeletingReward } = useDeleteReward('school_admin');
 
   // function to handle page change
   const handlePageChange = (page) => {
@@ -188,7 +188,7 @@ const Rewards = () => {
       accessorKey: 'creatorType',
     },
     {
-      header: 'Type', 
+      header: 'Type',
       accessorKey: 'type',
     },
     {
@@ -419,7 +419,7 @@ const Rewards = () => {
                     </Table.Cell>
 
                     <Table.Cell>
-                        {reward?.classId ? 'Class' : 'School'}
+                      {reward?.classId ? 'Class' : 'School'}
                     </Table.Cell>
 
                     <Table.Cell>
@@ -453,6 +453,11 @@ const Rewards = () => {
                           <DropdownMenu.Item asChild>
                             <Link to={`/school-admin/rewards/edit/${reward._id}`}>
                               <PencilIcon size={14} /> Edit Reward
+                            </Link>
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Item asChild>
+                            <Link to={`/school-admin/rewards/create?cloneId=${reward._id}`}>
+                              <Copy size={14} /> Clone Reward
                             </Link>
                           </DropdownMenu.Item>
                           <DropdownMenu.Separator />
