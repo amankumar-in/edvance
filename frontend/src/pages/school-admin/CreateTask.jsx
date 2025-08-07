@@ -2,7 +2,7 @@ import { Badge, Box, Button, Card, ChevronDownIcon, Flex, Select, Separator, Tex
 import { Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { useGetSchoolProfile } from '../../api/school-admin/school.queries';
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
@@ -15,14 +15,18 @@ import SelectClassDialog from './components/SelectClassDialog';
 const CreateTask = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const cloneId = searchParams.get('cloneId');
+  
   const isEdit = Boolean(id);
+  const isClone = Boolean(cloneId);
 
   const [isSelectClassDialogOpen, setIsSelectClassDialogOpen] = useState(false);
 
   const { data, isLoading: isSchoolLoading, isError: isSchoolError, error: schoolError } = useGetSchoolProfile()
   const schoolId = data?.data?._id
 
-  const [isFormReady, setIsFormReady] = useState(!isEdit);
+  const [isFormReady, setIsFormReady] = useState(!isEdit && !isClone);
 
   const {
     register,
@@ -71,6 +75,10 @@ const CreateTask = () => {
   const { data: taskData, isLoading: isLoadingTask } = useGetTaskById(id, 'school_admin', { enabled: isEdit });
   const { data: task } = taskData ?? {};
 
+  // Get task for cloning
+  const { data: cloneTaskData, isLoading: isLoadingCloneTask } = useGetTaskById(cloneId, 'school_admin', { enabled: isClone });
+  const { data: cloneTask } = cloneTaskData ?? {};
+
   // Create and update task mutations
   const { mutate: createTask, isPending: isCreating } = useCreateTask();
   const { mutate: updateTask, isPending: isUpdating } = useUpdateTask('school_admin');
@@ -81,40 +89,51 @@ const CreateTask = () => {
     setValue('existingAttachments', existingAttachments);
   };
 
-  // Populate form when editing
+  // Populate form when editing or cloning
   useEffect(() => {
+    let sourceTask = null;
+    let isReady = false;
+
     if (isEdit && task && !isLoadingTask) {
+      sourceTask = task;
+      isReady = true;
+    } else if (isClone && cloneTask && !isLoadingCloneTask) {
+      sourceTask = cloneTask;
+      isReady = true;
+    }
+
+    if (sourceTask && isReady) {
       const formData = {
-        title: task.title || '',
-        description: task.description || '',
-        pointValue: task.pointValue || 10,
-        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
-        subCategory: task.subCategory || '',
-        difficulty: task.difficulty || 'easy',
+        title: isClone ? `Copy of ${sourceTask.title}` : sourceTask.title || '',
+        description: sourceTask.description || '',
+        pointValue: sourceTask.pointValue || 10,
+        dueDate: isClone ? '' : (sourceTask.dueDate ? new Date(sourceTask.dueDate).toISOString().slice(0, 16) : ''),
+        subCategory: sourceTask.subCategory || '',
+        difficulty: sourceTask.difficulty || 'easy',
         externalResource: {
-          platform: task.externalResource?.platform || '',
-          resourceId: task.externalResource?.resourceId || '',
-          url: task.externalResource?.url || ''
+          platform: sourceTask.externalResource?.platform || '',
+          resourceId: sourceTask.externalResource?.resourceId || '',
+          url: sourceTask.externalResource?.url || ''
         },
         attachments: [],
-        existingAttachments: task.attachments || [],
-        classDetails: task.class || null,
+        existingAttachments: sourceTask.attachments || [],
+        classDetails: sourceTask.class || null,
       };
 
       reset(formData);
       setIsFormReady(true);
     }
-  }, [isEdit, task, isLoadingTask, reset]);
+  }, [isEdit, isClone, task, cloneTask, isLoadingTask, isLoadingCloneTask, reset]);
 
-  // Set point value based on category
+  // Set point value based on category (only for new tasks, not clones)
   useEffect(() => {
-    if (taskCategories?.data && subCategory) {
+    if (!isEdit && !isClone && taskCategories?.data && subCategory) {
       const selectedCategory = taskCategories.data.find(cat => cat.name === subCategory);
       if (selectedCategory) {
         setValue('pointValue', selectedCategory.defaultPointValue || 10);
       }
     }
-  }, [subCategory, taskCategories, setValue]);
+  }, [isEdit, isClone, subCategory, taskCategories, setValue]);
 
   // Form submission handler
   const onSubmit = async (data) => {
@@ -189,6 +208,23 @@ const CreateTask = () => {
         ? data.existingAttachments
         : [];
       formData.append('existingAttachments', JSON.stringify(existingAttachments));
+    } else if (isClone && data.existingAttachments && data.existingAttachments.length > 0) {
+      // For cloning, download and re-upload files as new files
+      try {
+        for (const attachment of data.existingAttachments) {
+          if (attachment.url) {
+            const response = await fetch(attachment.url);
+            const blob = await response.blob();
+            const file = new File([blob], attachment.name || 'cloned-file', {
+              type: attachment.contentType || blob.type
+            });
+            formData.append('attachments', file);
+          }
+        }
+      } catch (error) {
+        console.error('Error cloning attachments:', error);
+        toast.error('Some attachments could not be cloned');
+      }
     }
 
     // Submit to API
@@ -225,10 +261,10 @@ const CreateTask = () => {
     setValue('classDetails.name', classDetails?.name || '');
   }
 
-  if (isEdit && (isLoadingTask || !isFormReady)) {
+  if ((isEdit && (isLoadingTask || !isFormReady)) || (isClone && (isLoadingCloneTask || !isFormReady))) {
     return (
       <div className="mx-auto space-y-6 max-w-3xl">
-        <CreateTaskPageHeader isEdit={isEdit} />
+        <CreateTaskPageHeader isEdit={isEdit} isClone={isClone} />
         <Flex justify="center" align="center">
           <Loader />
         </Flex>
@@ -239,7 +275,7 @@ const CreateTask = () => {
   if (isSchoolError) {
     return (
       <div className="mx-auto space-y-6 max-w-3xl">
-        <CreateTaskPageHeader isEdit={isEdit} />
+        <CreateTaskPageHeader isEdit={isEdit} isClone={isClone} />
         <ErrorCallout errorMessage={schoolError?.response?.data?.message || schoolError?.message || 'Failed to load school'} />
       </div>
     )
@@ -248,7 +284,7 @@ const CreateTask = () => {
   return (
     <div className="mx-auto space-y-6 max-w-3xl">
       {/* Header */}
-      <CreateTaskPageHeader isEdit={isEdit} />
+      <CreateTaskPageHeader isEdit={isEdit} isClone={isClone} />
 
       <Text size={'1'} className='italic' color='gray' as='p'>
         * Required fields
@@ -271,6 +307,12 @@ const CreateTask = () => {
                 {...register('title', { required: 'Task title is required' })}
               />
             </label>
+            {/* Clone helper text */}
+            {isClone && (
+              <Text size="1" color="gray" mt="1">
+                Consider updating the title to differentiate from the original task
+              </Text>
+            )}
             <FormFieldErrorMessage errors={errors} field="title" />
           </Box>
 
@@ -471,7 +513,9 @@ const CreateTask = () => {
             <Plus size={16} />
             {isCreating || isUpdating
               ? (isEdit ? 'Updating...' : 'Creating...')
-              : (isEdit ? 'Update Task' : 'Create Task')
+              : isClone
+                ? 'Create Copy'
+                : (isEdit ? 'Update Task' : 'Create Task')
             }
           </Button>
         </Flex>
@@ -482,11 +526,16 @@ const CreateTask = () => {
 
 export default CreateTask;
 
-function CreateTaskPageHeader({ isEdit }) {
+function CreateTaskPageHeader({ isEdit, isClone }) {
   return (
     <PageHeader
-      title={isEdit ? 'Edit Task' : 'Create New Task'}
-      description={isEdit ? 'Update the task details and settings' : 'Create a task for students to complete and earn points'}
+      title={isEdit ? 'Edit Task' : isClone ? 'Clone Task' : 'Create New Task'}
+      description={isEdit 
+        ? 'Update the task details and settings' 
+        : isClone 
+          ? 'Create a new task based on an existing one'
+          : 'Create a task for students to complete and earn points'
+      }
       backButton={true}
     />
   )

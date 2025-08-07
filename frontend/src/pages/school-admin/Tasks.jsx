@@ -1,5 +1,5 @@
 import { Button, DropdownMenu, Flex, IconButton, Table, Text } from '@radix-ui/themes'
-import { Check, CheckSquare, MoreHorizontal, PencilIcon, PlusIcon, TrashIcon, X } from 'lucide-react'
+import { Check, CheckSquare, Copy, MoreHorizontal, PencilIcon, PlusIcon, TrashIcon, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
@@ -18,7 +18,7 @@ import NoSchoolProfileCard from './components/NoSchoolProfileCard'
 function Tasks() {
   const { profiles } = useAuth();
   const school = profiles?.school;
-  
+
   // State for filters and search
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -29,8 +29,8 @@ function Tasks() {
     enabled: !!school?._id
   })
   const schoolId = data?.data?._id
-  const { data: tasks, isLoading: isTasksLoading, isFetching: isTasksFetching, isError: isTasksError, error: tasksError } = useGetTasks({ 
-    role: 'school_admin', 
+  const { data: tasks, isLoading: isTasksLoading, isFetching: isTasksFetching, isError: isTasksError, error: tasksError } = useGetTasks({
+    role: 'school_admin',
     schoolId: schoolId,
     page,
     limit,
@@ -169,12 +169,12 @@ function Tasks() {
     )
   }
 
-  if(isSchoolError || isTasksError){
+  if (isSchoolError || isTasksError) {
     return (
       <div className="space-y-6">
         <TaskPageHeader />
         <ErrorCallout errorMessage={schoolError?.response?.data?.message || schoolError?.message || tasksError?.response?.data?.message || tasksError?.message || 'Failed to load tasks'}
-        className={'mx-auto max-w-3xl'}
+          className={'mx-auto max-w-3xl'}
         />
       </div>
     )
@@ -270,6 +270,12 @@ function Tasks() {
                               Edit Task
                             </Link>
                           </DropdownMenu.Item>
+                          <DropdownMenu.Item asChild>
+                            <Link to={`/school-admin/tasks/create?cloneId=${task._id}`}>
+                              <Copy size={14} /> Clone Task
+                            </Link>
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Separator />
                           <DropdownMenu.Item color='red'
                             disabled={isDeleting && deleteTaskId === task._id}
                             onClick={() => handleDeleteClick(task)}

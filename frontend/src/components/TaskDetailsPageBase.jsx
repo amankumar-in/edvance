@@ -154,10 +154,12 @@ function TaskDetailsPageBase({
         <Flex gap="2" wrap="wrap" justify={'start'} mb={'5'}>
           <Button
             className='shadow-md text-nowrap'
-            onClick={handleCloneTask}
+            asChild
           >
-            <CopyPlus size={16} />
-            Clone Task
+            <Link to={`/parent/tasks/create?cloneId=${task?._id}`}>
+              <CopyPlus size={16} />
+              Clone Task
+            </Link>
           </Button>
           {isCreator && (
             <>

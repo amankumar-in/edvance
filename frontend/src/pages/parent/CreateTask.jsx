@@ -2,7 +2,7 @@ import { Badge, Box, Button, Callout, Card, Flex, Select, Text, TextArea, TextFi
 import { Info, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { useChildren } from '../../api/parent/parent.queries';
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
@@ -12,14 +12,14 @@ import { FileUpload, FormFieldErrorMessage, Loader, PageHeader } from '../../com
 
 const CreateTask = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const cloneId = searchParams.get('cloneId');
+  
   const isEdit = Boolean(id);
+  const isClone = Boolean(cloneId);
 
-  // Get clone data from navigation state
-  const cloneData = location.state?.cloneData;
-
-  const [isFormReady, setIsFormReady] = useState(!isEdit);
+  const [isFormReady, setIsFormReady] = useState(!isEdit && !isClone);
 
   const {
     register,
@@ -30,21 +30,7 @@ const CreateTask = () => {
     reset,
     formState: { errors },
   } = useForm({
-    defaultValues: cloneData ? {
-      title: cloneData.title || '',
-      description: cloneData.description || '',
-      pointValue: cloneData.pointValue || 10,
-      dueDate: cloneData.dueDate ? new Date(cloneData.dueDate).toISOString().slice(0, 16) : '',
-      subCategory: cloneData.subCategory || '',
-      difficulty: cloneData.difficulty || 'easy',
-      externalResource: {
-        platform: cloneData.externalResource?.platform || '',
-        resourceId: cloneData.externalResource?.resourceId || '',
-        url: cloneData.externalResource?.url || ''
-      },
-      attachments: [],
-      existingAttachments: cloneData.attachments || [] // Show original attachments when cloning
-    } : {
+    defaultValues: {
       title: '',
       description: '',
       pointValue: 10,
@@ -83,6 +69,10 @@ const CreateTask = () => {
   const { data: taskData, isLoading: isLoadingTask } = useGetTaskById(id, 'parent', { enabled: isEdit });
   const { data: task } = taskData ?? {};
 
+  // Get task for cloning
+  const { data: cloneTaskData, isLoading: isLoadingCloneTask } = useGetTaskById(cloneId, 'parent', { enabled: isClone });
+  const { data: cloneTask } = cloneTaskData ?? {};
+
   // Create and update task mutations
   const { mutate: createTask, isPending: isCreating } = useCreateTask();
   const { mutate: updateTask, isPending: isUpdating } = useUpdateTask('parent');
@@ -93,39 +83,50 @@ const CreateTask = () => {
     setValue('existingAttachments', existingAttachments);
   };
 
-  // Populate form when editing
+  // Populate form when editing or cloning
   useEffect(() => {
+    let sourceTask = null;
+    let isReady = false;
+
     if (isEdit && task && !isLoadingTask) {
+      sourceTask = task;
+      isReady = true;
+    } else if (isClone && cloneTask && !isLoadingCloneTask) {
+      sourceTask = cloneTask;
+      isReady = true;
+    }
+
+    if (sourceTask && isReady) {
       const formData = {
-        title: task.title || '',
-        description: task.description || '',
-        pointValue: task.pointValue || 10,
-        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
-        subCategory: task.subCategory || '',
-        difficulty: task.difficulty || 'easy',
+        title: isClone ? `Copy of ${sourceTask.title}` : sourceTask.title || '',
+        description: sourceTask.description || '',
+        pointValue: sourceTask.pointValue || 10,
+        dueDate: isClone ? '' : (sourceTask.dueDate ? new Date(sourceTask.dueDate).toISOString().slice(0, 16) : ''),
+        subCategory: sourceTask.subCategory || '',
+        difficulty: sourceTask.difficulty || 'easy',
         externalResource: {
-          platform: task.externalResource?.platform || '',
-          resourceId: task.externalResource?.resourceId || '',
-          url: task.externalResource?.url || ''
+          platform: sourceTask.externalResource?.platform || '',
+          resourceId: sourceTask.externalResource?.resourceId || '',
+          url: sourceTask.externalResource?.url || ''
         },
         attachments: [],
-        existingAttachments: task.attachments || []
+        existingAttachments: sourceTask.attachments || []
       };
 
       reset(formData);
       setIsFormReady(true);
     }
-  }, [isEdit, task, isLoadingTask, reset]);
+  }, [isEdit, isClone, task, cloneTask, isLoadingTask, isLoadingCloneTask, reset]);
 
-  // Set point value based on category
+  // Set point value based on category (only for new tasks, not clones)
   useEffect(() => {
-    if (taskCategories?.data && subCategory) {
+    if (!isEdit && !isClone && taskCategories?.data && subCategory) {
       const selectedCategory = taskCategories.data.find(cat => cat.name === subCategory);
       if (selectedCategory) {
         setValue('pointValue', selectedCategory.defaultPointValue || 10);
       }
     }
-  }, [subCategory, taskCategories, setValue]);
+  }, [isEdit, isClone, subCategory, taskCategories, setValue]);
 
   // Form submission handler
   const onSubmit = async (data) => {
@@ -191,7 +192,7 @@ const CreateTask = () => {
         ? data.existingAttachments
         : [];
       formData.append('existingAttachments', JSON.stringify(existingAttachments));
-    } else if (cloneData && data.existingAttachments && data.existingAttachments.length > 0) {
+    } else if (isClone && data.existingAttachments && data.existingAttachments.length > 0) {
       // For cloning, download and re-upload files as new files
       try {
         for (const attachment of data.existingAttachments) {
@@ -211,8 +212,8 @@ const CreateTask = () => {
     }
 
     // Submit to API
-    const successMessage = isEdit ? 'Task updated successfully!' : cloneData ? 'Task copy created successfully!' : 'Task created successfully!';
-    const errorMessage = isEdit ? 'Failed to update task' : cloneData ? 'Failed to create task copy' : 'Failed to create task';
+    const successMessage = isEdit ? 'Task updated successfully!' : 'Task created successfully!';
+    const errorMessage = isEdit ? 'Failed to update task' : 'Failed to create task';
     const mutation = isEdit ? updateTask : createTask;
     const mutationData = isEdit ? { id, data: formData } : formData;
 
@@ -243,7 +244,7 @@ const CreateTask = () => {
     return acc;
   }, {}) || {};
 
-  if (isEdit && (isLoadingTask || !isFormReady)) {
+  if ((isEdit && (isLoadingTask || !isFormReady)) || (isClone && (isLoadingCloneTask || !isFormReady))) {
     return (
       <Flex justify="center">
         <Loader />
@@ -255,16 +256,16 @@ const CreateTask = () => {
     <div className="mx-auto space-y-4 max-w-2xl">
 
       {/* Header */}
-      <CreateTaskPageHeader isEdit={isEdit} isClone={cloneData} />
+      <CreateTaskPageHeader isEdit={isEdit} isClone={isClone} />
 
       {/* Clone Info Callout */}
-      {cloneData && (
+      {isClone && (
         <Callout.Root variant='surface' color="blue" mb="4">
           <Callout.Icon>
             <Info size={16} />
           </Callout.Icon>
           <Callout.Text>
-            You're creating a copy of "{cloneData.title}".
+            You're creating a copy of "{cloneTask?.title}".
             Modify any fields as needed and save to create the new task.
           </Callout.Text>
         </Callout.Root>
@@ -294,7 +295,7 @@ const CreateTask = () => {
                 </label>
                 <FormFieldErrorMessage errors={errors} field="title" />
                 {/* Clone helper text */}
-                {cloneData && (
+                {isClone && (
                   <Text size="1" color="gray" mt="1">
                     Consider updating the title to differentiate from the original task
                   </Text>
@@ -497,7 +498,7 @@ const CreateTask = () => {
               <Plus size={16} />
               {isCreating || isUpdating
                 ? (isEdit ? 'Updating...' : 'Creating...')
-                : cloneData
+                : isClone
                   ? 'Create Copy'
                   : (isEdit ? 'Update Task' : 'Create Task')
               }

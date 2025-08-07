@@ -55,7 +55,7 @@ const AttachmentCard = ({ attachment }) => {
   };
 
   return (
-    <Card asChild>
+    <Card asChild className='transition-shadow hover:shadow-md'>
       <a href={url} target='_blank' rel='noopener noreferrer'>
         <Flex gap="2" className='' justify='between' align='center'>
           <div className='flex gap-2'>

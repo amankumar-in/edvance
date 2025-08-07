@@ -1,5 +1,5 @@
 import { Button, DropdownMenu, Flex, IconButton, Table, Text } from '@radix-ui/themes'
-import { Check, CheckSquare, MoreHorizontal, PencilIcon, PlusIcon, TrashIcon, X } from 'lucide-react'
+import { Check, CheckSquare, Copy, MoreHorizontal, PencilIcon, PlusIcon, TrashIcon, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
@@ -64,7 +64,7 @@ function Tasks() {
       header: 'Description',
       id: 'description',
       sortable: true,
-      },
+    },
     {
       header: "Category",
       id: "category",
@@ -247,6 +247,12 @@ function Tasks() {
                               Edit Task
                             </Link>
                           </DropdownMenu.Item>
+                          <DropdownMenu.Item asChild>
+                            <Link to={`/teacher/tasks/create?cloneId=${task._id}`}>
+                              <Copy size={14} /> Clone Task
+                            </Link>
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Separator />
                           <DropdownMenu.Item color='red'
                             disabled={isDeleting && deleteTaskId === task._id}
                             onClick={() => handleDeleteClick(task)}

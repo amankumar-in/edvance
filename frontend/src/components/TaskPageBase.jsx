@@ -244,7 +244,7 @@ function TaskPageBase({
           {role === 'parent' ? 'Family Tasks' : 'My Tasks'}
         </Heading>
         {role === 'parent' && (
-          <Button asChild>
+          <Button asChild className='shadow-md'>
             <Link to="/parent/tasks/create">
               <Plus size={16} />
               Create Task
