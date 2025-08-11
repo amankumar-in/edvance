@@ -1,6 +1,6 @@
-import { Badge, Box, Button, Flex, Heading, RadioGroup, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
-import { Activity, ArrowLeft, Book, Calculator, Calendar, Crown, Droplet, Gift, Heart, Home, Medal, Microscope, Music, Pen, Plus, Rocket, School, Settings, Star, Target, ThumbsUp, Trophy } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { Badge, Box, Button, Card, Flex, Heading, IconButton, RadioGroup, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Activity, ArrowLeft, Book, Calculator, Calendar, Crown, Droplet, Gift, Heart, Home, Image as ImageIcon, Medal, Microscope, Music, Pen, Plus, Rocket, School, Settings, Star, Target, ThumbsUp, Trophy, Upload, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -71,8 +71,10 @@ const CreateRewardCategory = () => {
       maxPointValue: 100,
       visibility: 'private',
       displayOrder: 0,
-      parentCategory: 'none',
       schoolId: '',
+      isFeatured: false,
+      featuredOrder: 0,
+      image: null,
     },
   });
 
@@ -155,8 +157,9 @@ const CreateRewardCategory = () => {
         maxPointValue: categoryData.maxPointValue || 100,
         visibility: categoryData.visibility || 'private',
         displayOrder: categoryData.displayOrder || 0,
-        parentCategory: categoryData.parentCategory?._id || 'none',
         schoolId: categoryData.schoolId || '',
+        isFeatured: !!categoryData.isFeatured,
+        featuredOrder: categoryData.featuredOrder || 0,
       });
 
       setTimeout(() => {
@@ -225,24 +228,33 @@ const CreateRewardCategory = () => {
 
   const onSubmit = async (data) => {
     try {
-      // Prepare submission data
-      const submitData = {
+      // Build multipart form data
+      const formData = new FormData();
+      const normalized = {
         ...data,
-        parentCategory: data.parentCategory === 'none' || !data.parentCategory ? null : data.parentCategory,
-        minPointValue: data.minPointValue ? parseInt(data.minPointValue) : undefined,
-        maxPointValue: data.maxPointValue ? parseInt(data.maxPointValue) : undefined,
+        parentCategory: data.parentCategory === 'none' || !data.parentCategory ? '' : data.parentCategory,
+        minPointValue: data.minPointValue ? parseInt(data.minPointValue) : '',
+        maxPointValue: data.maxPointValue ? parseInt(data.maxPointValue) : '',
         displayOrder: data.displayOrder ? parseInt(data.displayOrder) : 0,
+        featuredOrder: data.featuredOrder ? parseInt(data.featuredOrder) : 0,
+        isFeatured: Boolean(data.isFeatured),
       };
 
-      // Remove empty fields
-      Object.keys(submitData).forEach(key => {
-        if (submitData[key] === '' || submitData[key] === undefined) {
-          delete submitData[key];
+      Object.entries(normalized).forEach(([key, value]) => {
+        if (key === 'image') return; // handle separately
+        if (value !== '' && value !== undefined && value !== null) {
+          formData.append(key, value);
         }
       });
 
+      // Append image if provided
+      const imageFile = data.image instanceof FileList ? data.image[0] : data.image;
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
       if (isEdit) {
-        updateRewardCategory({ id, data: submitData }, {
+        updateRewardCategory({ id, formData }, {
           onSuccess: () => {
             toast.success('Category updated successfully');
             navigate('/platform-admin/dashboard/reward-categories');
@@ -252,7 +264,7 @@ const CreateRewardCategory = () => {
           }
         });
       } else {
-        createRewardCategory(submitData, {
+        createRewardCategory(formData, {
           onSuccess: () => {
             toast.success('Category created successfully');
             navigate('/platform-admin/dashboard/reward-categories');
@@ -267,6 +279,55 @@ const CreateRewardCategory = () => {
     }
   };
 
+  // Image upload state and handlers (match rewards page UX)
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Only JPG, JPEG, PNG, GIF, or WebP files are allowed');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    setValue('image', file); // keep existing submit logic intact
+    const fileUrl = URL.createObjectURL(file);
+    setPreviewUrl(fileUrl);
+  };
+
+  const removeImage = () => {
+    setSelectedFile(null);
+    setValue('image', null);
+    if (previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+  };
+
+  // Preload preview when editing and category has image
+  useEffect(() => {
+    if (isEdit && category?.data?.image) {
+      setPreviewUrl(category.data.image);
+    }
+  }, [isEdit, category]);
+
+  // Cleanup blob preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   if (isLoadingCategory) {
     return (
       <Container>
@@ -279,7 +340,7 @@ const CreateRewardCategory = () => {
 
   return (
     <Container>
-      <div className="pb-8 space-y-8">
+      <div className="pb-8 mx-auto space-y-6 max-w-4xl">
         {/* Header */}
         <Box>
           <Button
@@ -310,6 +371,7 @@ const CreateRewardCategory = () => {
                 color="grass"
                 onClick={handleSubmit(onSubmit)}
                 disabled={isCreating || isUpdating}
+                className='shadow-md'
               >
                 <Plus size={16} /> {isEdit ? 'Update Category' : 'Create Category'}
               </Button>
@@ -322,7 +384,7 @@ const CreateRewardCategory = () => {
         </Text>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl space-y-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Information */}
           <FormSection title="Basic Information">
             <div className="grid grid-cols-1 gap-6">
@@ -380,7 +442,7 @@ const CreateRewardCategory = () => {
                       value={field.value}
                       onValueChange={field.onChange}
                     >
-                      <Select.Trigger placeholder="Select type" className="w-full mt-2" />
+                      <Select.Trigger placeholder="Select type" className="mt-2 w-full" />
                       <Select.Content variant='soft' position='popper'>
                         {typeOptions.map((type) => (
                           <Select.Item key={type.value} value={type.value}>
@@ -411,7 +473,7 @@ const CreateRewardCategory = () => {
                       value={field.value}
                       onValueChange={field.onChange}
                     >
-                      <Select.Trigger placeholder="Select subcategory" className="w-full mt-2" />
+                      <Select.Trigger placeholder="Select subcategory" className="mt-2 w-full" />
                       <Select.Content variant='soft' position='popper'>
                         {subcategoryOptions.map((subcategory) => (
                           <Select.Item key={subcategory.value} value={subcategory.value}>
@@ -526,17 +588,19 @@ const CreateRewardCategory = () => {
                   Choose a color for the category icon background.
                 </Text>
               </div>
+
+
             </div>
 
             {/* Preview */}
             {watch('name') && (
-              <div className="p-4 bg-[--gray-2] rounded-md">
+              <Card size={'2'}>
                 <Text size="2" weight="medium" className="block mb-3">
                   Preview
                 </Text>
-                <Flex align="center" gap="3">
+                <Flex align="start" gap="3">
                   <div
-                    className="flex items-center justify-center w-10 h-10 text-white rounded-lg"
+                    className="flex justify-center items-center w-10 h-10 text-white rounded-lg"
                     style={{ backgroundColor: watch('color') }}
                   >
                     {renderIcon(watch('icon'), 20)}
@@ -562,8 +626,71 @@ const CreateRewardCategory = () => {
                     </Flex>
                   </div>
                 </Flex>
-              </div>
+              </Card>
             )}
+
+            {/* Category Image Upload (optional) */}
+            <div>
+              <Text as="label" size="2" weight="medium">
+                Category Image (Optional)
+              </Text>
+              <div className="mt-2 space-y-4">
+                {/* Image Preview */}
+                {previewUrl ? (
+                  <div className="relative w-full border-2 border-dashed border-[--gray-6] rounded-lg p-8 flex items-center justify-center ">
+                    <img
+                      src={previewUrl}
+                      alt="Category preview"
+                      className="object-center aspect-square rounded-full w-32 object-cover border border-[--gray-6] shadow-md bg-[--accent-contrast]"
+                    />
+                    <IconButton
+                      title='Remove Image'
+                      aria-label='Remove Image'
+                      type="button"
+                      variant="solid"
+                      color="red"
+                      size="1"
+                      className="absolute top-2 right-2"
+                      onClick={removeImage}
+                    >
+                      <X size={14} />
+                    </IconButton>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-[--gray-6] rounded-lg p-8 text-center">
+                    <ImageIcon size={32} className="mx-auto mb-3 text-[--gray-9]" />
+                    <Text size="2" color="gray" className="block mb-3">
+                      Select an image file to upload
+                    </Text>
+                    <Button type="button" variant="outline" asChild className="cursor-pointer">
+                      <label>
+                        <Upload size={16} />
+                        Choose File
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    </Button>
+                  </div>
+                )}
+
+                {/* File Info */}
+                {selectedFile && (
+                  <div className="p-3 bg-[--gray-2] rounded-md">
+                    <Text size="1" color="gray">
+                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </Text>
+                  </div>
+                )}
+
+                <Text size="1" color="gray">
+                  Supported formats: JPG, PNG, GIF, WebP (max 5MB)
+                </Text>
+              </div>
+            </div>
           </FormSection>
 
           {/* Point Value Settings */}
@@ -696,6 +823,53 @@ const CreateRewardCategory = () => {
                   </Text>
                 </div>
 
+                {/* Featured Toggle */}
+                <div>
+                  <Text as="label" size="2" weight="medium">
+                    Featured on Rewards Page
+                  </Text>
+                  <Controller
+                    name="isFeatured"
+                    control={control}
+                    render={({ field }) => (
+                      <RadioGroup.Root
+                        value={String(field.value)}
+                        onValueChange={(val) => field.onChange(val === 'true')}
+                        className="mt-2"
+                      >
+                        <Flex align="center" gap="2">
+                          <RadioGroup.Item value="true" id="featured-yes" />
+                          <Text as="label" htmlFor="featured-yes" size="2">Yes</Text>
+                        </Flex>
+                        <Flex align="center" gap="2" className="mt-2">
+                          <RadioGroup.Item value="false" id="featured-no" />
+                          <Text as="label" htmlFor="featured-no" size="2">No</Text>
+                        </Flex>
+                      </RadioGroup.Root>
+                    )}
+                  />
+                  <Text size="1" color="gray" className="block mt-1">
+                    Mark this category to be highlighted on the Rewards landing page.
+                  </Text>
+                </div>
+
+                {/* Featured Order */}
+                <div>
+                  <Text as="label" size="2" weight="medium" htmlFor="featuredOrder">
+                    Featured Order
+                  </Text>
+                  <TextField.Root
+                    id="featuredOrder"
+                    type="number"
+                    placeholder="0"
+                    {...register('featuredOrder')}
+                    className="mt-2"
+                  />
+                  <Text size="1" color="gray" className="mt-1">
+                    Lower numbers appear first among featured categories
+                  </Text>
+                </div>
+
                 {/* School ID (conditional) */}
                 {(visibility === 'school' || type === 'school') && (
                   <div>
@@ -714,41 +888,6 @@ const CreateRewardCategory = () => {
             </div>
           </FormSection>
 
-          {/* Parent Category (Optional) */}
-          <FormSection title="Hierarchy (Optional)">
-            <div>
-              <Text as="label" size="2" weight="medium">
-                Parent Category
-              </Text>
-              <Controller
-                name="parentCategory"
-                control={control}
-                render={({ field }) => (
-                  <Select.Root
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <Select.Trigger placeholder="Select parent category (optional)" className="w-full mt-2" />
-                    <Select.Content variant='soft' position='popper'>
-                      <Select.Item value="none">No parent category</Select.Item>
-                      {parentCategories.map((category) => (
-                        <Select.Item key={category._id} value={category._id}>
-                          <Flex align="center" gap="2">
-                            <span>{renderIcon(category.icon, 16)}</span>
-                            <Text>{category.name}</Text>
-                            <Badge color="gray" size="1">{category.type}</Badge>
-                          </Flex>
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                )}
-              />
-              <Text size="1" color="gray" className="mt-1">
-                Create a subcategory by selecting a parent category
-              </Text>
-            </div>
-          </FormSection>
         </form>
       </div>
     </Container>
@@ -758,15 +897,15 @@ const CreateRewardCategory = () => {
 // Helper component for form sections
 export const FormSection = ({ title, children }) => {
   return (
-    <div className="space-y-4">
+    <Card size={'3'} className='space-y-4 shadow-md'>
       <div>
         <Heading as="h3" size="4" weight="medium" className="text-[--gray-12]">
           {title}
         </Heading>
-        <Separator size="4" className="mt-2" />
+        <Separator size="4" my="3" />
       </div>
       {children}
-    </div>
+    </Card>
   );
 };
 

@@ -7,7 +7,8 @@ import { useAuth } from '../../Context/AuthContext';
 function ParentRewards() {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery);
-  const [sortBy, setSortBy] = useState('featured');
+  const [sortBy, setSortBy] = useState('price-low');
+  const [filter, setFilter] = useState({})
 
   const { profiles } = useAuth();
   const parentId = profiles.parent?._id;
@@ -17,9 +18,14 @@ function ParentRewards() {
     search: debouncedSearchQuery,
     sort: 'pointsCost',
     order: sortBy === 'price-low' ? 'asc' : 'desc',
+    ...filter,
   });
 
+  const { data: featuredRewardsData } = useGetParentRewards({ isFeatured: true, limit: 20 });
+
   const allRewards = data?.pages?.flatMap(page => page.data.rewards) || [];
+
+  const featuredRewards = featuredRewardsData?.pages?.flatMap(page => page.data.rewards) || [];
 
   return (
     <RewardsBasePage
@@ -37,6 +43,9 @@ function ParentRewards() {
       sortBy={sortBy}
       setSortBy={setSortBy}
       creatorId={parentId}
+      featuredRewards={featuredRewards}
+      filter={filter}
+      setFilter={setFilter}
     />
   )
 }

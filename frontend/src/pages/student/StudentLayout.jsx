@@ -51,7 +51,7 @@ function StudentLayout() {
         className="fixed inset-0 z-[999] bg-[--color-overlay] md:hidden"
       />}
 
-      <Flex className='relative'>
+      <Flex className='relative w-full'>
         {/* Desktop Sidebar */}
         <Box className={`overflow-y-auto fixed md:sticky transition-transform border-r border-[--gray-a6] duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--gray-2] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
           <Flex align='center' gap='4' px={'4'} className='h-16 md:hidden' justify='between'>
@@ -154,7 +154,7 @@ function StudentLayout() {
         </Box >
 
         {/* Main Content */}
-        <div className='flex-1 pb-16 md:pb-0'>
+        <div className='flex-1 pb-16 min-w-0 md:pb-0'>
           <Container>
             <Outlet />
           </Container>

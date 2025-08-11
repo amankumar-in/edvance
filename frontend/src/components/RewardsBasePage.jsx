@@ -1,9 +1,10 @@
 import { Badge, Box, Button, Callout, Card, Dialog, DropdownMenu, Flex, Grid, Heading, IconButton, Inset, Select, Spinner, Text, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, Clock, Copy, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { AlertCircleIcon, Clock, Copy, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy, X } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 // Import Swiper styles
+import useEmblaCarousel from 'embla-carousel-react';
 import { useInView } from 'react-intersection-observer';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
@@ -12,9 +13,11 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { usePointsDetailsById } from '../api/points/points.queries';
 import { useAddToWishlist, useDeleteReward, useRedeemReward, useRemoveFromWishlist, useToggleRewardVisibility } from '../api/rewards/rewards.mutations';
+import { useGetRewardCategories } from '../api/rewards/rewards.queries';
 import rewardsPlaceholder from '../assets/rewardsPlaceholder.png';
 import { ConfirmationDialog, EmptyStateCard, Loader, WishlistToggle } from '../components';
 import { useAuth } from '../Context/AuthContext';
+import { FALLBACK_IMAGES } from '../utils/constants';
 import { formatDate } from '../utils/helperFunctions';
 
 function RewardsBasePage({
@@ -33,23 +36,35 @@ function RewardsBasePage({
   setSortBy,
   showWishlistOnly,
   setShowWishlistOnly,
-  creatorId = null
+  creatorId = null,
+  filter,
+  setFilter,
+  featuredRewards
 }) {
   const [selectedReward, setSelectedReward] = useState(null);
   const [deleteConfirmReward, setDeleteConfirmReward] = useState(null);
   const { ref, inView } = useInView()
+  const [categoryName, setCategoryName] = useState('');
+
+  // Embla Carousel ----------------------------------------------------------
+  const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'start', loop: false })
+
+  // Optional: Add arrow buttons
+  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi])
+  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi])
 
   // Data - Student ID
   const { profiles, user } = useAuth();
   const studentId = profiles?.student?._id;
 
-  // Data - Featured Rewards
-  const featuredRewards = allRewards?.filter(reward => reward.isFeatured) || [];
-
   // Data - Point Account
   const { data: pointAccountData, isLoading: isLoadingPointAccount, isError: isErrorPointAccount, error: errorPointAccount } = usePointsDetailsById(studentId);
   const pointAccount = pointAccountData?.data ?? {};
   const userPoints = pointAccount?.currentBalance ?? 0;
+
+  const { data } = useGetRewardCategories({ isFeatured: true, limit: 30 })
+  const categoryData = data?.data?.categories ?? [];
+  console.log(data);
 
   // Mutations ------------------------------------------------
   const { mutate: redeemReward, isPending: isRedeemingReward } = useRedeemReward();
@@ -135,11 +150,11 @@ function RewardsBasePage({
   );
 
   return (
-    <Box className='space-y-6' >
+    <Box className='space-y-8' >
       {/* Header Section */}
       <Box>
         <Flex direction="column" gap="4">
-          <Flex justify="between" align="center" wrap={'wrap'} gap={'4'} >
+          <Flex justify="between" align="start" wrap={'wrap'} gap={'4'} >
             <div>
               <Flex align="center" gap="3">
                 <Text size="7" weight="bold">
@@ -156,25 +171,24 @@ function RewardsBasePage({
             <Flex gap="3" align="center">
               {role === 'student' &&
                 <>
-                  <Card>
-                    <Flex align="center" gap="4">
-                      <Trophy className="text-[--yellow-9]" size={24} />
-                      <Text as='p' size="5" weight="bold">{userPoints.toLocaleString()} SP</Text>
-                    </Flex>
-                  </Card>
+                  <Button variant='outline' color='gray'>
+                    <Trophy className="text-[--amber-9]" size={20} />
+                    {userPoints.toLocaleString()} SP
+                  </Button>
 
-                  <Link to="/student/redemption-history">
-                    <Button variant="outline">
+
+                  <Button asChild>
+                    <Link to="/student/redemption-history">
                       <History size={16} />
                       <Text className="hidden sm:inline">Redemption History</Text>
                       <Text className="sm:hidden">History</Text>
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </>
               }
               {role === 'parent' && (
                 <Flex gap="2" wrap={'wrap'}>
-                  <Button asChild variant="outline">
+                  <Button asChild variant='outline'>
                     <Link to="/parent/pending-redemptions">
                       <Clock size={16} />
                       Pending Redemptions
@@ -196,7 +210,7 @@ function RewardsBasePage({
       {/* Featured Rewards Banner - Hidden when showing wishlist only */}
       {!showWishlistOnly && (
         <Box className="relative flex-1">
-          <Text as='p' className='flex gap-2 items-center mb-2' weight='bold'>
+          <Text size='4' as='p' className='flex gap-2 items-center mb-4' weight='bold'>
             <Sparkles size={16} color='var(--amber-9)' />  Featured Rewards
           </Text>
           <Box className="overflow-hidden rounded-xl shadow-lg md:rounded-2xl">
@@ -219,32 +233,32 @@ function RewardsBasePage({
               className="mySwiper"
             >
               {featuredRewards.map((reward) => (
-                <SwiperSlide key={reward._id} className='!w-full !max-w-full'>
+                <SwiperSlide key={reward._id} className='w-full max-w-full'>
                   <Box className="relative p-4 md:p-6">
                     {/* Background with sophisticated gradient */}
-                    <Box className="absolute inset-0 bg-gradient-to-br from-[--accent-2] via-[--accent-3] to-[--accent-4]" />
+                    <Box className="absolute inset-0 bg-gradient-to-bl from-[--accent-4] via-[--accent-5] to-[--accent-6]" />
 
                     {/* Geometric pattern overlay */}
                     <Box
-                      className="absolute inset-0 opacity-[0.02] md:opacity-[0.05]"
+                      className="absolute inset-0 z-0 bg-center bg-cover opacity-30"
                       style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='15' height='15' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 15 0 L 0 0 0 15' fill='none' stroke='%23000' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23grid)'/%3E%3C/svg%3E")`
+                        backgroundImage: `url("https://static.vecteezy.com/system/resources/thumbnails/056/062/481/small_2x/ethereal-blue-and-white-abstract-background-photo.jpg")`
                       }}
                     />
 
                     {/* Main content */}
-                    <Grid className="relative gap-4 md:gap-6" columns={'3'} >
+                    <Grid className="relative z-10 gap-4 md:gap-6" columns={'3'} >
 
                       {/* Left image section */}
                       <Box className="col-span-1 max-w-xs" >
                         <Box className="relative">
                           {/* Main product image */}
-                          <Box className="overflow-hidden relative rounded-xl shadow-xl lg:rounded-2xl lg:shadow-2xl">
+                          <Box className="overflow-hidden relative rounded-xl">
                             <img
                               loading='lazy'
                               src={reward.image || rewardsPlaceholder}
                               alt={reward.title}
-                              className="object-cover object-center w-full h-full aspect-square"
+                              className="object-cover object-center w-full h-full aspect-square bg-[--accent-contrast]"
                               onError={(e) => {
                                 e.currentTarget.src = rewardsPlaceholder;
                               }}
@@ -271,7 +285,7 @@ function RewardsBasePage({
                         {/* Stats row */}
                         <Flex gap={{ initial: '2', sm: '3', md: '4' }} align='center' wrap={'wrap'}>
                           {/* Points card */}
-                          <Badge size={'3'} highContrast className='self-start'>
+                          <Badge size={'3'} highContrast variant='solid' className='self-start'>
                             SP Required:
                             <Text as='p' size={'3'} weight='bold'>
                               {reward.pointsCost.toLocaleString()}
@@ -310,260 +324,313 @@ function RewardsBasePage({
         </Box>
       )}
 
-      {/* Filters and Search */}
-      <Box>
-        <Flex gap="4" align='center' wrap={'wrap'}>
-          {/* Search */}
-          <Box className="flex-1 min-w-[200px]">
-            <TextField.Root
-              placeholder="Search rewards..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}>
-              <TextField.Slot>
-                <Search size={16} />
-              </TextField.Slot>
-            </TextField.Root>
-          </Box>
-
-          {/* Wishlist Filter */}
-          {role === 'student' && <Button
-            variant={showWishlistOnly ? "solid" : "outline"}
-            color={showWishlistOnly ? "red" : "gray"}
-            onClick={() => setShowWishlistOnly(!showWishlistOnly)}
-          >
-            <Heart size={16} className={showWishlistOnly ? "fill-current" : ""} />
-            {showWishlistOnly ? 'All' : 'Wish List'}
-          </Button>}
-
-          {/* Sort */}
-          <Select.Root value={sortBy} onValueChange={setSortBy}>
-            <Select.Trigger>
-              Sort by
-            </Select.Trigger>
-            <Select.Content variant='soft' position='popper'>
-              <Select.Item value="price-low">Price: Low to High</Select.Item>
-              <Select.Item value="price-high">Price: High to Low</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Flex>
-      </Box>
-
-      {/* Rewards Grid */}
-      <Flex justify="between" align="center" wrap={'wrap'} gap={'2'}>
-        <Text as='p' size="2" color="gray" className='flex gap-2 items-center'>
-          Showing {allRewards.length} {showWishlistOnly ? 'wishlist items' : 'rewards'} <Spinner loading={isFetching} />
+      {/* Reward Categories */}
+      <div>
+        <Text size='4' as='p' className='flex gap-2 items-center mb-4' weight='bold'>
+          Categories
         </Text>
-        {role === 'student' && <Flex align="center" gap="2">
-          <Text size="2" color="gray">Your balance:</Text>
-          <Badge color="green" variant="soft" size="2">
-            <Trophy size={12} />
-            {userPoints.toLocaleString()} SP
-          </Badge>
-        </Flex>}
-      </Flex>
-
-      {allRewards.length > 0 ? (
-        <>
-          <Grid columns={{ initial: '2', xs: '3', sm: '2', md: '3', lg: '4', xl: '5' }} gap="3">
-            {allRewards.map((reward) => (
-              <Card
-                size='1'
-                key={reward._id}
-                className="flex flex-col shadow-md transition cursor-pointer hover:shadow-lg"
-                onClick={() => setSelectedReward(reward)}
-              >
-                <Inset clip="padding-box" side="top">
-                  <Box className="relative">
-                    <img
-                      src={reward?.image || rewardsPlaceholder}
-                      alt={reward?.title}
-                      loading='lazy'
-                      className="object-cover object-center w-full h-full aspect-square bg-[--gray-5]"
-                      onError={(e) => {
-                        e.currentTarget.src = rewardsPlaceholder;
+        <Card className='shadow-md'>
+          <div className='relative'>
+            <div className='overflow-hidden' ref={emblaRef}>
+              <div className='flex gap-x-5 md:gap-x-6'>
+                {categoryData?.map((category, index) => (
+                  <Flex direction='column' gap='2' className='w-20 md:w-24 group shrink-0' key={category._id}>
+                    <button className={`flex overflow-hidden justify-center items-center rounded-full border  transition-shadow outline-none aspect-square hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[--focus-8]  ${filter.categoryId === category._id ? 'border-4 shadow-lg border-[--focus-8]' : 'shadow-md border-[--gray-a6]'}`}
+                      onClick={() => {
+                        // First click applies the filter, second click removes the filter
+                        if (filter.categoryId === category._id) {
+                          setFilter({ ...filter, categoryId: '' })
+                          setCategoryName('');
+                        } else {
+                          if (emblaApi) {
+                            emblaApi.scrollTo(index);  // Scroll clicked slide fully into view
+                          }
+                          setFilter({ ...filter, categoryId: category._id })
+                          setCategoryName(category?.name);
+                        }
                       }}
-                    />
-                    {reward.badge && (
-                      <Box className="absolute top-2 left-2">
-                        <Badge color="red" variant="solid" size="1">
-                          {reward.badge}
-                        </Badge>
-                      </Box>
-                    )}
+                    >
+                      <img
+                        src={category?.image || FALLBACK_IMAGES.product}
+                        alt={category?.name}
+                        onError={(e) => {
+                          e.currentTarget.src = FALLBACK_IMAGES.product;
+                        }}
+                        className='object-cover object-center w-full h-full aspect-square bg-[--accent-contrast] transition-transform group-hover:scale-105'
+                      />
+                    </button>
+                    <Text as='p' size='1' className='w-full text-center' weight='medium'>
+                      {category?.name}
+                    </Text>
+                  </Flex>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
 
-                    {reward?.isFeatured && (
-                      <Box className="absolute top-2 left-2">
-                        <Badge color="cyan" variant="solid" size="1">
-                          <Sparkles size={12} /> Featured
-                        </Badge>
-                      </Box>
-                    )}
+      {/* Filters and Search */}
+      <div className='space-y-4'>
+        <Text size='4' as='p' className='flex gap-2 items-center' weight='bold'>
+          All Rewards
+        </Text>
+        <Box>
+          <Flex gap="4" align='center' wrap={'wrap'} justify='between'>
+            {/* Search */}
+            <Box className="flex-1 min-w-[200px] max-w-lg">
+              <TextField.Root
+                size={'3'}
+                placeholder="Search rewards..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                variant='soft'
+                color='gray'
+              >
+                <TextField.Slot>
+                  {isFetching ? <Spinner /> : <Search size={16} />}
+                </TextField.Slot>
+                {searchQuery && <TextField.Slot>
+                  <IconButton variant='ghost' color='gray' size='2' onClick={() => setSearchQuery('')}>
+                    <X size={16} />
+                  </IconButton>
+                </TextField.Slot>}
+              </TextField.Root>
+            </Box>
 
-                    {/* Wishlist Toggle */}
-                    {role === 'student' && <WishlistToggle
-                      isInWishlist={reward.isInWishlist}
-                      onToggle={() => toggleWishlist(reward._id, reward.isInWishlist)}
-                      className="absolute top-2 right-2 backdrop-blur-sm bg-black/50"
-                      variant="soft"
+            <Flex gap='4' align='center' wrap={'wrap'}>
+              {/* Sort */}
+              <Flex align='center' gap='2'>
+                <Text size='2'>
+                  Sort by:
+                </Text>
+                <Select.Root value={sortBy} onValueChange={setSortBy}>
+                  <Select.Trigger variant='classic' />
+                  <Select.Content variant='soft' position='popper'>
+                    <Select.Item value="price-low">Price: Low to High</Select.Item>
+                    <Select.Item value="price-high">Price: High to Low</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+              </Flex>
 
-                      loading={((isAddingToWishlist && addToWishlistVariables?.rewardId === reward._id) || (isRemovingFromWishlist && removeFromWishlistVariables?.rewardId === reward._id))}
-                    />}
+              {/* Wishlist Filter */}
+              {role === 'student' && <Button
+                variant={showWishlistOnly ? "solid" : "outline"}
+                color={showWishlistOnly ? "red" : "gray"}
+                onClick={() => setShowWishlistOnly(!showWishlistOnly)}
+              >
+                <Heart size={16} className={showWishlistOnly ? "fill-current" : ""} />
+                {showWishlistOnly ? 'All' : 'Wish List'}
+              </Button>}
+            </Flex>
+          </Flex>
+        </Box>
 
+        {/* Rewards Grid */}
+        <Flex justify="between" align="center" wrap={'wrap'} gap={'2'}>
+          <Text as='p' size="2" color="gray" className='flex gap-2 items-center'>
+            Showing {allRewards.length} {showWishlistOnly ? 'wishlist items' : 'rewards'} {categoryName && <strong>({categoryName})</strong>}
+            <Spinner loading={isFetching} />
+          </Text>
+        </Flex>
 
-
-                    {/* Limited Quantity Badge */}
-                    {reward.limitedQuantity && (
-                      <Box className="absolute bottom-2 left-2">
-                        <Badge
-                          color={reward.quantity === 0 ? "gray" : "orange"}
-                          variant="solid"
-                          size="1"
-                        >
-                          <Clock size={10} />
-                          {reward.quantity === 0 ? 'Out of Stock' : `Only ${reward.quantity} left`}
-                        </Badge>
-                      </Box>
-                    )}
-                  </Box>
-                </Inset>
-
-                <Box mt={'2'} className='flex flex-col flex-1 justify-between'>
-                  <div>
-                    <Flex align="center" gap="2" className="mb-1">
-                      <Text size="1" color="gray" className="capitalize">
-                        {reward?.categoryId?.name}
-                      </Text>
-                    </Flex>
-
-                    <Flex justify="between" align="center" className="mb-1">
-                      <Text as='p' size="2" className="line-clamp-3" weight="medium">
-                        {reward.title}
-                      </Text>
-                      {/* More actions menu - Only for parent-created rewards */}
-                      {creatorId === reward.creatorId && (
-                        <Flex justify="end">
-                          <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
-                              <IconButton
-                                variant="ghost"
-                                color="gray"
-                                size="2"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical size={16} />
-                              </IconButton>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content variant='soft' onClick={(e) => e.stopPropagation()}>
-                              <DropdownMenu.Item asChild>
-                                <Link to={`/parent/rewards/edit/${reward._id}`}>
-                                  <Edit size={14} />
-                                  Edit Reward
-                                </Link>
-                              </DropdownMenu.Item>
-                              <DropdownMenu.Item
-                                color="red"
-                                onClick={() => setDeleteConfirmReward(reward)}
-                                disabled={isDeletingReward}
-                              >
-                                <Trash size={14} />
-                                Delete Reward
-                              </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                          </DropdownMenu.Root>
-                        </Flex>
+        {allRewards.length > 0 ? (
+          <>
+            <Grid columns={{ initial: '2', xs: '3', sm: '2', md: '3', lg: '4', xl: '5' }} gap="3">
+              {allRewards.map((reward) => (
+                <Card
+                  size='1'
+                  key={reward._id}
+                  className="flex flex-col shadow-md transition cursor-pointer hover:shadow-lg"
+                  onClick={() => setSelectedReward(reward)}
+                >
+                  <Inset clip="padding-box" side="top">
+                    <Box className="relative">
+                      <img
+                        src={reward?.image || rewardsPlaceholder}
+                        alt={reward?.title}
+                        loading='lazy'
+                        className="object-cover object-center w-full h-full aspect-square bg-[--accent-contrast]"
+                        onError={(e) => {
+                          e.currentTarget.src = rewardsPlaceholder;
+                        }}
+                      />
+                      {reward.badge && (
+                        <Box className="absolute top-2 left-2">
+                          <Badge color="red" variant="solid" size="1">
+                            {reward.badge}
+                          </Badge>
+                        </Box>
                       )}
-                    </Flex>
-                    <Flex justify="between" align="center" className="mb-3" wrap={'wrap'} gap='1'>
-                      <Flex align="center" gap="1">
-                        <Trophy size={14} />
-                        <Text as='p' className='font-semibold'>
-                          {reward.pointsCost.toLocaleString()} SP
+
+                      {reward?.isFeatured && (
+                        <Box className="absolute top-2 left-2">
+                          <Badge color="cyan" variant="solid" size="1">
+                            <Sparkles size={12} /> Featured
+                          </Badge>
+                        </Box>
+                      )}
+
+                      {/* Wishlist Toggle */}
+                      {role === 'student' && <WishlistToggle
+                        isInWishlist={reward.isInWishlist}
+                        onToggle={() => toggleWishlist(reward._id, reward.isInWishlist)}
+                        className="absolute top-2 right-2 text-black bg-white shadow-md backdrop-blur-sm"
+                        variant="soft"
+                        loading={((isAddingToWishlist && addToWishlistVariables?.rewardId === reward._id) || (isRemovingFromWishlist && removeFromWishlistVariables?.rewardId === reward._id))}
+                      />}
+
+
+
+                      {/* Limited Quantity Badge */}
+                      {reward.limitedQuantity && (
+                        <Box className="absolute bottom-2 left-2">
+                          <Badge
+                            color={reward.quantity === 0 ? "gray" : "orange"}
+                            variant="solid"
+                            size="1"
+                          >
+                            <Clock size={10} />
+                            {reward.quantity === 0 ? 'Out of Stock' : `Only ${reward.quantity} left`}
+                          </Badge>
+                        </Box>
+                      )}
+                    </Box>
+                  </Inset>
+
+                  <Box mt={'2'} className='flex flex-col flex-1 justify-between'>
+                    <div>
+                      <Flex align="center" gap="2" className="mb-1">
+                        <Text size="1" color="gray" className="capitalize">
+                          {reward?.categoryId?.name}
                         </Text>
                       </Flex>
-                      {reward.expiryDate && (
+
+                      <Flex justify="between" align="center" className="mb-1">
+                        <Text as='p' size="2" className="line-clamp-3">
+                          {reward.title}
+                        </Text>
+                        {/* More actions menu - Only for parent-created rewards */}
+                        {creatorId === reward.creatorId && (
+                          <Flex justify="end">
+                            <DropdownMenu.Root>
+                              <DropdownMenu.Trigger>
+                                <IconButton
+                                  variant="ghost"
+                                  color="gray"
+                                  size="2"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MoreVertical size={16} />
+                                </IconButton>
+                              </DropdownMenu.Trigger>
+                              <DropdownMenu.Content variant='soft' onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenu.Item asChild>
+                                  <Link to={`/parent/rewards/edit/${reward._id}`}>
+                                    <Edit size={14} />
+                                    Edit Reward
+                                  </Link>
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item
+                                  color="red"
+                                  onClick={() => setDeleteConfirmReward(reward)}
+                                  disabled={isDeletingReward}
+                                >
+                                  <Trash size={14} />
+                                  Delete Reward
+                                </DropdownMenu.Item>
+                              </DropdownMenu.Content>
+                            </DropdownMenu.Root>
+                          </Flex>
+                        )}
+                      </Flex>
+                      <Flex justify="between" align="center" className="mb-3" wrap={'wrap'} gap='1'>
                         <Flex align="center" gap="1">
-                          <Clock size={12} className="text-[--orange-11]" />
-                          <Text as='p' size="1" color="orange">
-                            Expires {formatDate(reward.expiryDate)}
+                          <Text as='p' weight='bold'>
+                            {reward.pointsCost.toLocaleString()} SP
                           </Text>
                         </Flex>
-                      )}
-                    </Flex>
-                  </div>
-                  {role === 'student' && <Button
-                    size="2"
-                    className="w-full disabled:cursor-not-allowed"
-                    disabled={!canAfford(reward.pointsCost) || (reward.limitedQuantity && reward.quantity === 0)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedReward(reward);
-                    }}
-                  >
-                    <ShoppingCart size={16} />
-                    {reward.limitedQuantity && reward.quantity === 0
-                      ? 'Out of Stock'
-                      : canAfford(reward.pointsCost)
-                        ? 'Redeem'
-                        : 'Not Enough Points'
-                    }
-                  </Button>}
-
-                  {role === 'parent' && (
-                    <div className="space-y-2">
-                      {/* Visibility Toggle Button - Available for all rewards */}
-                      <Button
-                        size="2"
-                        variant={reward.isVisibleToMyChildren
-                          ? "outline" : "solid"}
-                        color={reward.isVisibleToMyChildren
-                          ? "blue" : "gray"}
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleVisibility(reward._id, reward.isVisibleToMyChildren);
-                        }}
-                        loading={isTogglingVisibility && variables?.id === reward._id}
-                      >
-                        {reward.isVisibleToMyChildren ? <Eye size={16} /> : <EyeOff size={16} />}
-                        <Text className='hidden md:block'>
-                          {reward.isVisibleToMyChildren ? 'Hide from Children' : 'Show to Children'}
-                        </Text>
-                        <Text className='block md:hidden'>
-                          {reward.isVisibleToMyChildren ? 'Hide' : 'Show'}
-                        </Text>
-                      </Button>
-
-
+                        {reward.expiryDate && (
+                          <Flex align="center" gap="1">
+                            <Clock size={12} className="text-[--orange-11]" />
+                            <Text as='p' size="1" color="orange">
+                              Expires {formatDate(reward.expiryDate)}
+                            </Text>
+                          </Flex>
+                        )}
+                      </Flex>
                     </div>
-                  )}
-                </Box>
-              </Card>
-            ))}
-          </Grid>
+                    {role === 'student' && <Button
+                      size="2"
+                      className="w-full whitespace-nowrap disabled:cursor-not-allowed"
+                      disabled={!canAfford(reward.pointsCost) || (reward.limitedQuantity && reward.quantity === 0)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedReward(reward);
+                      }}
+                    >
+                      {reward.limitedQuantity && reward.quantity === 0
+                        ? 'Out of Stock'
+                        : canAfford(reward.pointsCost)
+                          ? 'Redeem'
+                          : 'Need More SP'
+                      }
+                    </Button>}
 
-          {isFetchingNextPage && (
-            <Flex justify='center' align='center'>
-              <Loader />
-            </Flex>
-          )}
-          {(hasNextPage && !isFetchingNextPage) && <div ref={ref}></div>}
-          {!hasNextPage && !isFetchingNextPage && (
-            <Flex justify='center' align='center'>
-              <Text as='p' size="1" color="gray" className='text-nowrap' >No more rewards to show</Text>
-            </Flex>
-          )}
-        </>
-      ) : (
-        <EmptyStateCard
-          title={showWishlistOnly ? 'Your wishlist is empty' : 'No rewards found'}
-          description={showWishlistOnly
-            ? 'Add rewards to your wishlist by clicking the heart icon on reward cards'
-            : 'Try adjusting your search or filter criteria'
-          }
-          icon={showWishlistOnly ? <Heart size={32} className="text-[--red-9]" /> : <Gift />}
-        />
-      )
-      }
+                    {role === 'parent' && (
+                      <div className="space-y-2">
+                        {/* Visibility Toggle Button - Available for all rewards */}
+                        <Button
+                          size="2"
+                          color={!reward.isVisibleToMyChildren && "gray"}
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleVisibility(reward._id, reward.isVisibleToMyChildren);
+                          }}
+                          loading={isTogglingVisibility && variables?.id === reward._id}
+                        >
+                          {reward.isVisibleToMyChildren ? <Eye size={16} /> : <EyeOff size={16} />}
+                          <Text className='hidden md:block'>
+                            {reward.isVisibleToMyChildren ? 'Hide from Children' : 'Show to Children'}
+                          </Text>
+                          <Text className='block md:hidden'>
+                            {reward.isVisibleToMyChildren ? 'Hide' : 'Show'}
+                          </Text>
+                        </Button>
+
+
+                      </div>
+                    )}
+                  </Box>
+                </Card>
+              ))}
+            </Grid>
+
+            {isFetchingNextPage && (
+              <Flex justify='center' align='center'>
+                <Loader />
+              </Flex>
+            )}
+            {(hasNextPage && !isFetchingNextPage) && <div ref={ref}></div>}
+            {!hasNextPage && !isFetchingNextPage && (
+              <Flex justify='center' align='center'>
+                <Text as='p' size="1" color="gray" className='text-nowrap' >No more rewards to show</Text>
+              </Flex>
+            )}
+          </>
+        ) : (
+          <EmptyStateCard
+            title={showWishlistOnly ? 'Your wishlist is empty' : 'No rewards found'}
+            description={showWishlistOnly
+              ? 'Add rewards to your wishlist by clicking the heart icon on reward cards'
+              : 'Try adjusting your search or filter criteria'
+            }
+            icon={showWishlistOnly ? <Heart size={32} className="text-[--red-9]" /> : <Gift />}
+          />
+        )}
+      </div>
+
 
       {/* Reward Detail Modal */}
       <Dialog.Root open={!!selectedReward} onOpenChange={setSelectedReward}>
@@ -577,7 +644,7 @@ function RewardsBasePage({
                     loading='lazy'
                     src={selectedReward?.image || rewardsPlaceholder}
                     alt={selectedReward?.title}
-                    className="object-cover object-center w-full rounded-lg md:w-1/2 aspect-auto bg-[--gray-5]"
+                    className="object-cover object-center w-full rounded-lg md:w-1/2 aspect-auto bg-[--accent-contrast]"
                     onError={(e) => {
                       e.currentTarget.src = rewardsPlaceholder;
                     }}
@@ -699,14 +766,13 @@ function RewardsBasePage({
                   }}
                   className='disabled:cursor-not-allowed'
                 >
-                  <ShoppingCart size={16} />
                   {selectedReward.limitedQuantity && selectedReward.quantity === 0
                     ? 'Out of Stock'
                     : canAfford(selectedReward.pointsCost)
                       ? isRedeemingReward
                         ? 'Processing...'
                         : 'Confirm Redemption'
-                      : 'Not Enough Points'
+                      : 'Need More SP'
                   }
                 </Button>}
               </Flex>
@@ -756,7 +822,7 @@ function RedeemButton({ reward, setSelectedReward, canAfford, }) {
           ? 'Out of Stock'
           : canAfford(reward.pointsCost)
             ? 'Redeem Now'
-            : 'Insufficient Points'
+            : 'Need More SP'
         }
       </Text>
       <Text className="sm:hidden">
@@ -764,7 +830,7 @@ function RedeemButton({ reward, setSelectedReward, canAfford, }) {
           ? 'Sold Out'
           : canAfford(reward.pointsCost)
             ? 'Redeem'
-            : 'Not Enough'
+            : 'Need More SP'
         }
       </Text>
     </Button>

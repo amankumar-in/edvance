@@ -14,6 +14,10 @@ const rewardCategorySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    // Optional image/banner representing the category
+    image: {
+      type: String,
+    },
     description: {
       type: String,
       trim: true,
@@ -88,6 +92,16 @@ const rewardCategorySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Feature category on rewards page
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    // Ordering for featured sections
+    featuredOrder: {
+      type: Number,
+      default: 0,
+    },
     // Is this category active
     isActive: {
       type: Boolean,
@@ -115,6 +129,7 @@ rewardCategorySchema.index({ schoolId: 1 });
 rewardCategorySchema.index({ visibility: 1 });
 rewardCategorySchema.index({ parentCategory: 1 });
 rewardCategorySchema.index({ isDeleted: 1, isActive: 1 });
+rewardCategorySchema.index({ isFeatured: 1, featuredOrder: 1 });
 
 // Methods
 rewardCategorySchema.methods.softDelete = async function () {

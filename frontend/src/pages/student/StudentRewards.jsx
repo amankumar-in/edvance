@@ -6,8 +6,9 @@ import { useDebounce } from '../../hooks/useDebounce';
 function StudentRewards() {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery);
-  const [sortBy, setSortBy] = useState('featured');
+  const [sortBy, setSortBy] = useState('price-low');
   const [showWishlistOnly, setShowWishlistOnly] = useState(false);
+  const [filter, setFilter] = useState({})
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching, error } = useGetStudentRewards({
     limit: 20,
@@ -15,10 +16,15 @@ function StudentRewards() {
     sort: 'pointsCost',
     order: sortBy === 'price-low' ? 'asc' : 'desc',
     wishlistOnly: showWishlistOnly,
+    ...filter,
   });
+
+  const { data: featuredRewardsData } = useGetStudentRewards({ isFeatured: true, limit: 20 });
 
   // Safely extract rewards from paginated response structure
   const allRewards = data?.pages?.flatMap(page => page.data.rewards) || [];
+
+  const featuredRewards = featuredRewardsData?.pages?.flatMap(page => page.data.rewards) || [];
 
   return (
     <RewardsBasePage
@@ -37,6 +43,9 @@ function StudentRewards() {
       setSortBy={setSortBy}
       showWishlistOnly={showWishlistOnly}
       setShowWishlistOnly={setShowWishlistOnly}
+      filter={filter}
+      setFilter={setFilter}
+      featuredRewards={featuredRewards}
     />
   )
 }

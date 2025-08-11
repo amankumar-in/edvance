@@ -15,6 +15,7 @@ import {
 } from '@radix-ui/themes';
 import {
   AlertCircle,
+  Check,
   ClipboardList,
   Edit,
   Filter,
@@ -32,7 +33,8 @@ import {
   Search,
   ShoppingCart,
   Star,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
@@ -253,7 +255,7 @@ const RewardCategories = () => {
   }, []);
 
   const renderCategoryRow = useCallback((category) => (
-    <Table.Row key={category._id} className='hover:bg-[--gray-a2]'>
+    <Table.Row key={category._id} className='hover:bg-[--gray-a3] even:bg-[--gray-a2]'>
       <Table.Cell>
         <Flex align="center" gap="3" className='text-nowrap'>
           {category.parentCategory && (
@@ -327,35 +329,45 @@ const RewardCategories = () => {
         </Flex>
       </Table.Cell>
 
+      <Table.Cell>
+        {category.isFeatured ? (
+          <Check size={16} color="var(--green-10)" />
+        ) : (
+          <X size={16} color="var(--red-10)" />
+        )}
+      </Table.Cell>
+
+      <Table.Cell>
+        {category?.featuredOrder ?? 0}
+      </Table.Cell>
+
       <Table.Cell className='text-nowrap'>
         {formatDate(category.createdAt)}
       </Table.Cell>
 
       <Table.Cell>
-        {!category.isSystem && (
-          <DropdownMenu.Root >
-            <DropdownMenu.Trigger>
-              <IconButton highContrast variant="ghost" color="gray">
-                <MoreHorizontal size={16} />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content variant='soft'>
-              <DropdownMenu.Item asChild >
-                <Link to={`edit/${category._id}`}>
-                  <Edit size={14} />
-                  Edit Category
-                </Link>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                color="red"
-                onClick={() => !category.isSystem && openDeleteDialog(category)}
-              >
-                <Trash2 size={14} />
-                Delete
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        )}
+        <DropdownMenu.Root >
+          <DropdownMenu.Trigger>
+            <IconButton highContrast variant="ghost" color="gray">
+              <MoreHorizontal size={16} />
+            </IconButton>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content variant='soft' className='w-40'>
+            <DropdownMenu.Item asChild >
+              <Link to={`edit/${category._id}`}>
+                <Edit size={14} />
+                Edit
+              </Link>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              color="red"
+              onClick={() => openDeleteDialog(category)}
+            >
+              <Trash2 size={14} />
+              Delete
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </Table.Cell>
     </Table.Row>
   ), [renderIcon, formatDate, openDeleteDialog]);
@@ -530,7 +542,7 @@ const RewardCategories = () => {
           />
         ) : (
           <>
-            <Table.Root variant='surface'>
+            <Table.Root variant='surface' className='shadow-md'>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeaderCell>
@@ -547,6 +559,12 @@ const RewardCategories = () => {
                   </Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>
                     <Text weight="medium" size="2">Status</Text>
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>
+                    <Text weight="medium" size="2">Featured</Text>
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>
+                    <Text weight="medium" size="2">Order</Text>
                   </Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>
                     <Text weight="medium" size="2">Created</Text>
@@ -612,7 +630,7 @@ export default RewardCategories;
 
 function CreateCategoryButton() {
   return (
-    <Button asChild>
+    <Button asChild className='shadow-md'>
       <Link to='create'>
         <Plus size={16} /> Add Category
       </Link>

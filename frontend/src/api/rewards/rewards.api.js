@@ -19,16 +19,20 @@ const getRewardCategoryById = async (id) => {
 /**
  * Create a new reward category
  */
-const createRewardCategory = async (data) => {
-  const response = await apiClient.post(`/rewards/categories`, data);
+const createRewardCategory = async (formData) => {
+  const response = await apiClient.post(`/rewards/categories`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 };
 
 /**
  * Update an existing reward category
  */
-const updateRewardCategory = async ({ id, data }) => {
-  const response = await apiClient.put(`/rewards/categories/${id}`, data);
+const updateRewardCategory = async ({ id, formData }) => {
+  const response = await apiClient.put(`/rewards/categories/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 };
 

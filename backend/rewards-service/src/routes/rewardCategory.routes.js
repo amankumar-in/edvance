@@ -6,6 +6,7 @@ const {
   authMiddleware,
   authorizeRoles,
 } = require("../middleware/auth.middleware");
+const { uploadSingle, handleUploadError } = require("../middleware/upload.middleware");
 
 /**
  * @openapi
@@ -17,6 +18,9 @@ const {
  *         _id:
  *           type: string
  *           description: Unique identifier for the category
+ *         image:
+ *           type: string
+ *           description: URL to category image
  *         name:
  *           type: string
  *           description: Name of the category
@@ -66,6 +70,12 @@ const {
  *         displayOrder:
  *           type: number
  *           description: Ordering for display
+ *         isFeatured:
+ *           type: boolean
+ *           description: Whether this category is featured on the rewards page
+ *         featuredOrder:
+ *           type: number
+ *           description: Ordering within featured categories
  *         isActive:
  *           type: boolean
  *           description: Whether this category is active
@@ -125,6 +135,12 @@ const {
  *         displayOrder:
  *           type: number
  *           example: 10
+ *         isFeatured:
+ *           type: boolean
+ *           example: false
+ *         featuredOrder:
+ *           type: number
+ *           example: 0
  *     RewardCategoryUpdate:
  *       type: object
  *       properties:
@@ -154,6 +170,10 @@ const {
  *           type: string
  *           enum: [private, family, class, school, public]
  *         displayOrder:
+ *           type: number
+ *         isFeatured:
+ *           type: boolean
+ *         featuredOrder:
  *           type: number
  *         isActive:
  *           type: boolean
@@ -185,9 +205,16 @@ router.use(authMiddleware);
  *       description: Category details
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/RewardCategoryCreate'
+ *             allOf:
+ *               - $ref: '#/components/schemas/RewardCategoryCreate'
+ *               - type: object
+ *                 properties:
+ *                   image:
+ *                     type: string
+ *                     format: binary
+ *                     description: Image file for the category
  *     responses:
  *       '201':
  *         description: Category created successfully
@@ -246,7 +273,7 @@ router.use(authMiddleware);
  *                 error:
  *                   type: string
  */
-router.post("/", rewardCategoryController.createCategory);
+router.post("/", uploadSingle, handleUploadError, rewardCategoryController.createCategory);
 
 /**
  * @openapi
@@ -310,9 +337,16 @@ router.get("/:id", rewardCategoryController.getCategoryById);
  *       description: Updated category details
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/RewardCategoryUpdate'
+ *             allOf:
+ *               - $ref: '#/components/schemas/RewardCategoryUpdate'
+ *               - type: object
+ *                 properties:
+ *                   image:
+ *                     type: string
+ *                     format: binary
+ *                     description: New image for the category
  *     responses:
  *       '200':
  *         description: Category updated successfully
@@ -338,7 +372,7 @@ router.get("/:id", rewardCategoryController.getCategoryById);
  *       '500':
  *         description: Failed to update category
  */
-router.put("/:id", rewardCategoryController.updateCategory);
+router.put("/:id", uploadSingle, handleUploadError, rewardCategoryController.updateCategory);
 
 /**
  * @openapi
@@ -424,6 +458,11 @@ router.delete("/:id", rewardCategoryController.deleteCategory);
  *       - name: isSystem
  *         in: query
  *         description: Filter system categories
+ *         schema:
+ *           type: boolean
+ *       - name: isFeatured
+ *         in: query
+ *         description: Only return categories featured on rewards page
  *         schema:
  *           type: boolean
  *       - name: search

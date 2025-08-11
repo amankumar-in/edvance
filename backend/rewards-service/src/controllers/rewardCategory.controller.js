@@ -1,6 +1,7 @@
 // src/controllers/rewardCategory.controller.js
 const RewardCategory = require("../models/rewardCategory.model");
 const mongoose = require("mongoose");
+const { getFileUrl } = require("../middleware/upload.middleware");
 
 /**
  * Reward Category Controller
@@ -25,6 +26,8 @@ const rewardCategoryController = {
         maxPointValue,
         visibility,
         displayOrder,
+        isFeatured,
+        featuredOrder,
       } = req.body;
 
       // Extract user info from authentication middleware
@@ -90,6 +93,16 @@ const rewardCategoryController = {
         }
       }
 
+      // Handle image upload
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = getFileUrl(req.file.filename);
+      }
+
+      // Normalize boolean fields from multipart/form-data
+      const normalizedIsFeatured =
+        typeof isFeatured === 'string' ? isFeatured === 'true' : Boolean(isFeatured);
+
       // Create new category
       const category = new RewardCategory({
         name,
@@ -107,7 +120,10 @@ const rewardCategoryController = {
         isSystem: false,
         visibility: visibility || "private",
         displayOrder: displayOrder || 0,
+        isFeatured: normalizedIsFeatured || false,
+        featuredOrder: featuredOrder || 0,
         isActive: true,
+        image: imageUrl,
       });
 
       await category.save();
@@ -248,10 +264,10 @@ const rewardCategoryController = {
       }
 
       // Cannot update system categories
-      if (category.isSystem) {
+      if (category.isSystem && !userRoles.includes("platform_admin")) {
         return res.status(403).json({
           success: false,
-          message: "System categories cannot be modified",
+          message: "System categories cannot be modified by non-platform admins",
         });
       }
 
@@ -293,6 +309,16 @@ const rewardCategoryController = {
             message: "Category cannot be its own parent",
           });
         }
+      }
+
+      // Handle image upload if provided
+      if (req.file) {
+        updateData.image = getFileUrl(req.file.filename);
+      }
+
+      // Normalize boolean from multipart/form-data
+      if (typeof updateData.isFeatured === 'string') {
+        updateData.isFeatured = updateData.isFeatured === 'true';
       }
 
       // Update the category
@@ -399,6 +425,7 @@ const rewardCategoryController = {
         visibility,
         schoolId,
         isSystem,
+        isFeatured,
         search,
         page = 1,
         limit = 50,
@@ -417,6 +444,7 @@ const rewardCategoryController = {
       if (visibility) filter.visibility = visibility;
       if (schoolId) filter.schoolId = schoolId;
       if (isSystem !== undefined) filter.isSystem = isSystem === "true";
+      if (isFeatured !== undefined) filter.isFeatured = isFeatured === "true";
 
       // Search by name
       if (search) {
@@ -452,12 +480,13 @@ const rewardCategoryController = {
       const skip = (parseInt(page) - 1) * parseInt(limit);
 
       // Get the categories with pagination
+      const sortSpec = (isFeatured === "true")
+        ? { featuredOrder: 1, displayOrder: 1, name: 1 }
+        : { displayOrder: 1, name: 1 };
+
       const categories = await RewardCategory.find(filter)
         .populate("parentCategory", "name type")
-        .sort({
-          displayOrder: 1,
-          name: 1,
-        })
+        .sort(sortSpec)
         .skip(skip)
         .limit(parseInt(limit));
 

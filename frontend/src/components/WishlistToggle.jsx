@@ -5,7 +5,7 @@ import React from 'react';
 const WishlistToggle = ({
   isInWishlist = false,
   onToggle,
-  size = 16,
+  size = 18,
   iconButtonSize = "2",
   variant = "soft",
   className = "",
@@ -28,10 +28,11 @@ const WishlistToggle = ({
       className={`${className}`}
       onClick={handleClick}
       loading={loading}
+      radius='full'
     >
       <Heart
         size={size}
-        className={`${isInWishlist ? 'scale-110 fill-[--red-9] text-[--red-9]' : 'text-white'}`}
+        className={`${isInWishlist ? 'scale-105 fill-[--red-9] text-[--red-9]' : 'text-black'}`}
       />
     </IconButton>
   );
