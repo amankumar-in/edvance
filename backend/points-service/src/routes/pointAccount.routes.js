@@ -118,7 +118,7 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware.verifyToken,
-  authMiddleware.checkRole(["platform_admin", "school_admin", "student"]),
+  authMiddleware.checkRole(["platform_admin", "school_admin", "student", "parent"]),
   pointAccountController.createAccount
 );
 

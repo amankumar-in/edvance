@@ -180,11 +180,53 @@ exports.getStudentById = async (req, res) => {
 // Create student profile
 exports.createStudentProfile = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { grade, schoolId } = req.body;
+    const actingUserId = req.user.id;
+    const roles = Array.isArray(req.user.roles) ? req.user.roles : [];
+    const { grade, schoolId, targetUserId } = req.body;
+
+    // Determine who the profile is being created for
+    let resolvedUserId = actingUserId;
+    if (targetUserId && targetUserId !== actingUserId) {
+      const canCreateForOthers =
+        roles.includes("platform_admin") ||
+        roles.includes("school_admin") ||
+        roles.includes("parent");
+      if (!canCreateForOthers) {
+        return res.status(403).json({
+          success: false,
+          message: "Not authorized to create a student profile for another user",
+        });
+      }
+      resolvedUserId = targetUserId;
+    }
+
+    // Prevent parents/admins from accidentally creating a student profile for themselves without specifying a target
+    if (resolvedUserId === actingUserId && (roles.includes("parent") || roles.includes("school_admin"))) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide 'targetUserId' to create a student profile for another user",
+      });
+    }
+
+    // Validate target user exists
+    const targetUser = await User.findById(resolvedUserId);
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Target user not found",
+      });
+    }
+
+    // Ensure target user has the 'student' role
+    const targetRoles = Array.isArray(targetUser.roles) ? targetUser.roles : [];
+    if (!targetRoles.includes("student")) {
+      targetUser.roles = [...targetRoles, "student"];
+      targetUser.updatedAt = Date.now();
+      await targetUser.save();
+    }
 
     // Check if student profile already exists
-    const existingStudent = await Student.findOne({ userId });
+    const existingStudent = await Student.findOne({ userId: resolvedUserId });
     if (existingStudent) {
       return res.status(400).json({
         success: false,
@@ -199,7 +241,7 @@ exports.createStudentProfile = async (req, res) => {
 
     // Create new student profile
     const newStudent = new Student({
-      userId,
+      userId: resolvedUserId,
       grade,
       schoolId,
       pointsAccountId: tempPointsAccountId,

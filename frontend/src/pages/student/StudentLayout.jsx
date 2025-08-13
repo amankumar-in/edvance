@@ -43,6 +43,8 @@ function StudentLayout() {
     { icon: <Settings size={20} />, label: 'Settings', href: '/student/settings' },
   ];
 
+  const handleSidebarClick = () => window.innerWidth < 768 && setIsMobileSidebarOpen(false);
+
   return (
     <>
       {/* Mobile Sidebar Overlay */}
@@ -101,6 +103,7 @@ function StudentLayout() {
                     `${isActive ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
                   p-4 py-3 text-sm  rounded-full flex items-center gap-2 relative font-medium`
                   }
+                  onClick={handleSidebarClick}
                 >
                   <span className="flex flex-1 gap-5 items-center">
                     {item.icon}
@@ -139,7 +142,7 @@ function StudentLayout() {
               <NavLink
                 key={index}
                 to={item.href || '#'}
-                className={({ isActive }) => `flex flex-col items-center gap-1 px-2 border-t-4 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11] font-semibold  border-[--accent-11]' : 'text-[--gray-11]  border-transparent'}`}
+                className={({ isActive }) => `flex flex-col items-center gap-1 px-2 border-t-4 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11] font-bold  border-[--accent-11]' : 'border-transparent'}`}
               >
                 {item.icon}
                 <Text

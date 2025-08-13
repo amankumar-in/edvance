@@ -65,12 +65,12 @@ const router = createBrowserRouter(
             <Route path="rewards/create" element={<CreateParentReward />} />
             <Route path="rewards/edit/:id" element={<CreateParentReward />} />
             <Route path="pending-redemptions" element={<PendingRedemptions />} />
+            <Route path="settings" element={<SettingsLayout />} >
+              <Route index element={<Navigate to="linked-accounts" replace />} />
+              <Route path="linked-accounts" element={<ParentLinkedAccounts />} />
+            </Route>
           </Route>
           <Route path="create-profile" element={<CreateParentProfile />} />
-          <Route path="settings" element={<SettingsLayout />} >
-            <Route index element={<Navigate to="linked-accounts" replace />} />
-            <Route path="linked-accounts" element={<ParentLinkedAccounts />} />
-          </Route>
         </Route>
       </Route>
 

@@ -310,7 +310,7 @@ router.get(
 router.post(
   "/profile",
   authMiddleware.verifyToken,
-  authMiddleware.checkRole(["student", "platform_admin"]),
+  authMiddleware.checkRole(["student", "parent", "school_admin", "platform_admin"]),
   studentController.createStudentProfile
 );
 
@@ -1023,6 +1023,7 @@ router.patch(
     "school_admin",
     "system",
     "student",
+    "parent",
   ]),
   studentController.updatePointsAccount
 );

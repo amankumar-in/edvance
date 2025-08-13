@@ -256,7 +256,7 @@ function LinkedAccounts() {
           <Tabs.Content value="connections">
             <Flex direction="column" gap="6">
               {/* FAMILY SECTION */}
-              <Card size={'3'} className='space-y-6 shadow-md'>
+              <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
                 <Text as='p' weight={'bold'}>
                   Family Connections
                 </Text>
@@ -301,7 +301,7 @@ function LinkedAccounts() {
                   />
                 )}
 
-                <Card size={'3'} className='space-y-6'>
+                <Card size={{initial: '2', sm: '3'}} className='space-y-4'>
                   <Text as='p' weight={'bold'}>
                     Connect with a Parent or Guardian
                   </Text>
@@ -330,7 +330,7 @@ function LinkedAccounts() {
                           type="submit"
                           size="2"
                           disabled={!parentCode || linkParentMutation.isPending}
-                          className="self-start"
+                          className="self-start shadow-md"
                         >
                           {linkParentMutation.isPending ? "Linking..." : "Link Parent"}
                         </Button>
@@ -361,7 +361,7 @@ function LinkedAccounts() {
                           type="submit"
                           size="2"
                           disabled={!parentEmail || requestParentLinkMutation.isPending}
-                          className="self-start"
+                          className="self-start shadow-md"
                         >
                           {requestParentLinkMutation.isPending ? "Sending..." : "Request Link"}
                         </Button>
@@ -372,7 +372,7 @@ function LinkedAccounts() {
               </Card>
 
               {/* SCHOOL SECTION */}
-              <Card size={'3'} className='space-y-6 shadow-md'>
+              <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
                 <Text as='p' weight={'bold'}>
                   Educational Institution
                 </Text>
@@ -441,7 +441,7 @@ function LinkedAccounts() {
                 )}
 
                 {!student?.schoolDetails && (
-                  <Card size={'3'} className='space-y-6'>
+                  <Card size={{initial: '2', sm: '3'}} className='space-y-4'>
                     <Text as='p' weight={'bold'}>
                       Connect with Your School
                     </Text>
@@ -469,7 +469,7 @@ function LinkedAccounts() {
                           type="submit"
                           size="2"
                           disabled={!schoolCode || linkSchoolMutation.isPending}
-                          className="self-start"
+                          className="self-start shadow-md"
                         >
                           {linkSchoolMutation.isPending ? "Processing..." : "Join School"}
                         </Button>
@@ -481,7 +481,7 @@ function LinkedAccounts() {
 
               {/* TEACHERS SECTION */}
               {student?.schoolDetails && student?.teacherIds?.length > 0 && (
-                <Card size={'3'} className='space-y-6 shadow-md'>
+                <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
                   <Text as='p' weight={'bold'}>
                     Connected Teachers
                   </Text>
@@ -535,7 +535,7 @@ function LinkedAccounts() {
             <Flex direction="column" gap="6">
               {/* REQUESTS FROM PARENTS */}
               {parentLinkRequests.length > 0 && (
-                <Card size='3' className='space-y-6 shadow-md'>
+                <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
                   <Text as='p' weight={'bold'}>
                     Parent Connection Requests
                   </Text>
@@ -610,7 +610,7 @@ function LinkedAccounts() {
               )}
 
               {/* REQUESTS I'VE SENT */}
-              <Card size={'3'} className='space-y-6 shadow-md'>
+              <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
                 <Text as='p' weight={'bold'}>
                   My Pending Connection Requests
                 </Text>

@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Callout, Card, Dialog, DropdownMenu, Flex, Grid, Heading, IconButton, Inset, Select, Spinner, Text, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, Clock, Copy, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy, X } from 'lucide-react';
+import { AlertCircleIcon, ChevronLeft, ChevronRight, Clock, Copy, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -47,7 +47,7 @@ function RewardsBasePage({
   const [categoryName, setCategoryName] = useState('');
 
   // Embla Carousel ----------------------------------------------------------
-  const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'start', loop: false })
+  const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'start', loop: false, dragFree: true })
 
   // Optional: Add arrow buttons
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi])
@@ -150,18 +150,18 @@ function RewardsBasePage({
   );
 
   return (
-    <Box className='space-y-8' >
+    <Box className='space-y-6' >
       {/* Header Section */}
       <Box>
         <Flex direction="column" gap="4">
           <Flex justify="between" align="start" wrap={'wrap'} gap={'4'} >
             <div>
               <Flex align="center" gap="3">
-                <Text size="7" weight="bold">
+                <Text size={{ initial: '6', sm: '7' }} weight="bold">
                   {showWishlistOnly ? 'My Wish List' : 'Rewards Store'}
                 </Text>
               </Flex>
-              <Text size="3" color="gray" className="block mt-2">
+              <Text size={{ initial: '2', sm: '3' }} color="gray" className="block mt-1">
                 {showWishlistOnly
                   ? 'Your saved rewards ready for redemption'
                   : 'Redeem your scholarship points for amazing rewards'
@@ -210,7 +210,7 @@ function RewardsBasePage({
       {/* Featured Rewards Banner - Hidden when showing wishlist only */}
       {!showWishlistOnly && (
         <Box className="relative flex-1">
-          <Text size='4' as='p' className='flex gap-2 items-center mb-4' weight='bold'>
+          <Text size='4' as='p' className='flex gap-2 items-center mb-3' weight='bold'>
             <Sparkles size={16} color='var(--amber-9)' />  Featured Rewards
           </Text>
           <Box className="overflow-hidden rounded-xl shadow-lg md:rounded-2xl">
@@ -326,16 +326,39 @@ function RewardsBasePage({
 
       {/* Reward Categories */}
       <div>
-        <Text size='4' as='p' className='flex gap-2 items-center mb-4' weight='bold'>
+        <Text size='4' as='div' className='flex flex-wrap gap-2 justify-between items-center mb-3' weight='bold'>
           Categories
+
+          <Flex gap='2' align='center' >
+            <IconButton
+              title='Previous'
+              aria-label='Previous'
+              variant='soft'
+              onClick={scrollPrev}
+              radius='full'
+              color='gray'
+            >
+              <ChevronLeft size={16} />
+            </IconButton>
+            <IconButton
+              title='Next'
+              aria-label='Next'
+              variant='soft'
+              onClick={scrollNext}
+              radius='full'
+              color='gray'
+            >
+              <ChevronRight size={16} />
+            </IconButton>
+          </Flex>
         </Text>
         <Card className='shadow-md'>
           <div className='relative'>
             <div className='overflow-hidden' ref={emblaRef}>
-              <div className='flex gap-x-5 md:gap-x-6'>
+              <div className='flex gap-x-3 md:gap-x-6'>
                 {categoryData?.map((category, index) => (
-                  <Flex direction='column' gap='2' className='w-20 md:w-24 group shrink-0' key={category._id}>
-                    <button className={`flex overflow-hidden justify-center items-center rounded-full border  transition-shadow outline-none aspect-square hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[--focus-8]  ${filter.categoryId === category._id ? 'border-4 shadow-lg border-[--focus-8]' : 'shadow-md border-[--gray-a6]'}`}
+                  <Flex direction='column' gap='2' className='group shrink-0' align={'center'} key={category._id}>
+                    <button className={`w-16 md:w-24 flex overflow-hidden justify-center items-center rounded-full border  transition-shadow outline-none aspect-square hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[--focus-8]  ${filter.categoryId === category._id ? 'border-4 shadow-lg border-[--focus-8]' : 'shadow-md border-[--gray-a6]'}`}
                       onClick={() => {
                         // First click applies the filter, second click removes the filter
                         if (filter.categoryId === category._id) {
@@ -359,7 +382,7 @@ function RewardsBasePage({
                         className='object-cover object-center w-full h-full aspect-square bg-[--accent-contrast] transition-transform group-hover:scale-105'
                       />
                     </button>
-                    <Text as='p' size='1' className='w-full text-center' weight='medium'>
+                    <Text as='p' size='1' className='w-full text-center max-w-20' weight='medium'>
                       {category?.name}
                     </Text>
                   </Flex>
@@ -371,7 +394,7 @@ function RewardsBasePage({
       </div>
 
       {/* Filters and Search */}
-      <div className='space-y-4'>
+      <div className='space-y-3'>
         <Text size='4' as='p' className='flex gap-2 items-center' weight='bold'>
           All Rewards
         </Text>
@@ -436,12 +459,12 @@ function RewardsBasePage({
 
         {allRewards.length > 0 ? (
           <>
-            <Grid columns={{ initial: '2', xs: '3', sm: '2', md: '3', lg: '4', xl: '5' }} gap="3">
+            <Grid columns={{ initial: '2', xs: '3', sm: '2', md: '3', lg: '4', xl: '5' }} gap={{ initial: '2', sm: '4' }}>
               {allRewards.map((reward) => (
                 <Card
                   size='1'
                   key={reward._id}
-                  className="flex flex-col shadow-md transition cursor-pointer hover:shadow-lg"
+                  className="flex flex-col border-none shadow-md transition cursor-pointer hover:shadow-lg"
                   onClick={() => setSelectedReward(reward)}
                 >
                   <Inset clip="padding-box" side="top">
@@ -450,7 +473,7 @@ function RewardsBasePage({
                         src={reward?.image || rewardsPlaceholder}
                         alt={reward?.title}
                         loading='lazy'
-                        className="object-cover object-center w-full h-full aspect-square bg-[--accent-contrast]"
+                        className="object-cover object-center w-full h-full aspect-[4/3] bg-[--accent-contrast]"
                         onError={(e) => {
                           e.currentTarget.src = rewardsPlaceholder;
                         }}
@@ -507,7 +530,7 @@ function RewardsBasePage({
                       </Flex>
 
                       <Flex justify="between" align="center" className="mb-1">
-                        <Text as='p' size="2" className="line-clamp-3">
+                        <Text as='p' size="2" className="leading-tight line-clamp-3" weight='medium'>
                           {reward.title}
                         </Text>
                         {/* More actions menu - Only for parent-created rewards */}

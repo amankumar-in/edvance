@@ -204,7 +204,7 @@ router.get(
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       description: Child information
+ *       description: Provide an existing child email to link
  *       required: true
  *       content:
  *         application/json:
@@ -214,22 +214,10 @@ router.get(
  *               childEmail:
  *                 type: string
  *                 format: email
- *                 description: Email of existing child account (optional)
+ *                 description: Email of existing child account (required)
  *                 example: "child@example.com"
- *               childName:
- *                 type: string
- *                 description: Full name of child (required when creating new account)
- *                 example: "John Doe"
- *               childAge:
- *                 type: number
- *                 description: Age of child (optional)
- *                 example: 12
- *               grade:
- *                 type: number
- *                 description: Grade level of child (optional)
- *                 example: 7
  *             required:
- *               - childName
+ *               - childEmail
  *     responses:
  *       '201':
  *         description: Child added successfully
@@ -296,6 +284,47 @@ router.post(
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["parent", "platform_admin"]),
   parentController.addChild
+);
+
+/**
+ * @openapi
+ * /parents/create-child:
+ *   post:
+ *     summary: Create a new child account (user + student profile)
+ *     description: Registers a new user with student role via auth-service, then creates the student profile via user-service. Does not auto-link; linking is handled separately.
+ *     tags:
+ *       - Parents
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password, firstName, lastName]
+ *             properties:
+ *               email: { type: string, format: email }
+ *               password: { type: string, minLength: 8 }
+ *               firstName: { type: string }
+ *               lastName: { type: string }
+ *               grade: { type: string }
+ *               schoolId: { type: string }
+ *     responses:
+ *       '201':
+ *         description: Child account created successfully
+ *       '400':
+ *         description: Missing required fields
+ *       '403':
+ *         description: Not authorized
+ *       '500':
+ *         description: Failed to create child account
+ */
+router.post(
+  "/create-child",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["parent", "school_admin", "platform_admin"]),
+  parentController.createChildAccount
 );
 
 /**

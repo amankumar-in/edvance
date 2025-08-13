@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router'
 
-function PageHeader({ title, description, className, children, actions, backButton = false, backLink = -1 }) {
+function PageHeader({ title, description, className, children, actions, backButton = false, backLink = -1 , titleSize = {initial: '6', sm: '7'}, descriptionSize = {initial: '2', sm: '3'}}) {
   return (
     <div className={className}>
 
@@ -24,10 +24,10 @@ function PageHeader({ title, description, className, children, actions, backButt
             </Tooltip>
           )}
           <div>
-            <Heading size={{ initial: '6', sm: '7' }} weight="bold" >
+            <Heading size={titleSize} weight="bold" >
               {title}
             </Heading>
-            {description && <Text as='p' size='2' color="gray" mt='1'>
+            {description && <Text as='p' size={descriptionSize} color="gray" mt='1'>
               {description}
             </Text>}
           </div>

@@ -4,6 +4,7 @@ const User = require("../models/user.model");
 const crypto = require("crypto");
 const axios = require("axios");
 const LinkRequest = require("../models/linkRequest.model");
+const School = require("../models/school.model");
 
 // Get parent profile
 exports.getParentProfile = async (req, res) => {
@@ -67,13 +68,13 @@ exports.getChildren = async (req, res) => {
 exports.addChild = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { childEmail, childName, childAge, grade } = req.body;
+    const { childEmail } = req.body;
 
-    // Check if required fields are provided
-    if (!childName) {
+    // Require existing child email for linking
+    if (!childEmail) {
       return res.status(400).json({
         success: false,
-        message: "Child name is required",
+        message: "Child email is required for linking",
       });
     }
 
@@ -86,81 +87,26 @@ exports.addChild = async (req, res) => {
       });
     }
 
-    // Check if child already exists
-    let childUser;
-    if (childEmail) {
-      childUser = await User.findOne({ email: childEmail });
-    }
+    // Find existing child user by email
+    const childUser = await User.findOne({ email: childEmail });
 
-    // Create user account for child if it doesn't exist
     if (!childUser) {
-      // Generate a temporary password or use a default one
-      const tempPassword = Math.random().toString(36).slice(-8);
-
-      // Parse name into first and last name
-      const [firstName, ...lastNameParts] = childName.split(" ");
-      const lastName = lastNameParts.join(" ") || "";
-
-      // Create user with student role
-      childUser = new User({
-        email:
-          childEmail ||
-          `${firstName.toLowerCase()}${Date.now()}@placeholder.com`,
-        password: tempPassword, // This should be hashed by the User model pre-save hook
-        firstName,
-        lastName,
-        roles: ["student"],
-        dateOfBirth: childAge
-          ? new Date(Date.now() - childAge * 365 * 24 * 60 * 60 * 1000)
-          : undefined,
-        isActive: true,
+      return res.status(404).json({
+        success: false,
+        message: "Child account not found. Create the child account first.",
       });
-
-      await childUser.save();
     }
 
     // Check if student profile exists
     let student = await Student.findOne({ userId: childUser._id });
-
-    // Create student profile if it doesn't exist
     if (!student) {
-      student = new Student({
-        userId: childUser._id,
-        grade: grade || null,
-        level: 1,
-        attendanceStreak: 0,
+      return res.status(404).json({
+        success: false,
+        message: "Child student profile not found. Complete child setup first.",
       });
-
-      await student.save();
-
-      // Create points account by calling points service
-      try {
-        const pointsServiceUrl =
-          process.env.NODE_ENV === "production"
-            ? process.env.PRODUCTION_POINTS_SERVICE_URL
-            : process.env.POINTS_SERVICE_URL;
-
-        const response = await axios.post(
-          `${pointsServiceUrl}/api/points/accounts`,
-          {
-            studentId: student._id.toString(),
-          },
-          {
-            headers: {
-              Authorization: req.headers.authorization,
-            },
-          }
-        );
-
-        console.log(
-          `Points account created for student ${student._id}:`,
-          response.data
-        );
-      } catch (error) {
-        console.error("Failed to create points account:", error.message);
-        // Continue even if points account creation fails initially
-      }
     }
+
+    // Do not create student profile or points account here (linking only)
 
     // Check if already linked
     if (parent.childIds.includes(student._id)) {
@@ -696,6 +642,154 @@ exports.getParentByUserId = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get parent",
+      error: error.message,
+    });
+  }
+};
+
+// Create a new child account (user + student profile) and link to the parent
+exports.createChildAccount = async (req, res) => {
+  try {
+    const actingUserId = req.user.id;
+    const roles = Array.isArray(req.user.roles) ? req.user.roles : [];
+
+    // Only parents or admins can create child accounts
+    const isAllowed = roles.includes("parent") || roles.includes("school_admin") || roles.includes("platform_admin");
+    if (!isAllowed) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to create child accounts",
+      });
+    }
+
+    // Validate parent profile exists
+    const parent = await Parent.findOne({ userId: actingUserId });
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: "Parent profile not found",
+      });
+    }
+
+    const { email, password, firstName, lastName, grade, schoolId } = req.body;
+
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+        fields: ["email", "password", "firstName", "lastName"],
+      });
+    }
+
+    // Optionally validate provided school exists
+    if (schoolId) {
+      const schoolExists = await School.findById(schoolId);
+      if (!schoolExists) {
+        return res.status(404).json({
+          success: false,
+          message: "School not found",
+        });
+      }
+    }
+
+    // Step 1: Create the child user via auth-service
+    const authServiceUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.PRODUCTION_AUTH_SERVICE_URL
+        : process.env.AUTH_SERVICE_URL || "http://localhost:3001";
+
+    if (!authServiceUrl) {
+      return res.status(500).json({
+        success: false,
+        message: "Auth service URL is not configured",
+      });
+    }
+
+    let createdUser;
+    try {
+      const registerResponse = await axios.post(
+        `${authServiceUrl}/api/auth/register`,
+        {
+          email,
+          password,
+          firstName,
+          lastName,
+          roles: ["student"],
+        }
+      );
+
+      const userPayload = registerResponse?.data?.data?.user || registerResponse?.data?.user;
+      if (!userPayload) {
+        return res.status(502).json({
+          success: false,
+          message: "Auth service did not return user data",
+        });
+      }
+      createdUser = userPayload;
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || error.message;
+      return res.status(error?.response?.status || 500).json({
+        success: false,
+        message: `Failed to register child user: ${errorMessage}`,
+        error: error?.response?.data || undefined,
+      });
+    }
+
+    const createdUserId = createdUser._id || createdUser.id;
+    if (!createdUserId) {
+      return res.status(502).json({
+        success: false,
+        message: "Auth service response missing user ID",
+      });
+    }
+
+    // Step 2: Create the student profile via existing endpoint (handles points itself)
+    const userServiceUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.PRODUCTION_USER_SERVICE_URL
+        : process.env.USER_SERVICE_URL || "http://localhost:3002";
+
+    let studentResponse;
+    try {
+      studentResponse = await axios.post(
+        `${userServiceUrl}/api/students/profile`,
+        {
+          grade,
+          schoolId,
+          targetUserId: createdUserId,
+        },
+        {
+          headers: { Authorization: req.headers.authorization },
+        }
+      );
+    } catch (studentErr) {
+      const errMsg = studentErr?.response?.data?.message || studentErr.message;
+      return res.status(studentErr?.response?.status || 500).json({
+        success: false,
+        message: `Failed to create student profile: ${errMsg}`,
+        error: studentErr?.response?.data || undefined,
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Child account created successfully",
+      data: {
+        user: {
+          id: createdUserId,
+          email: createdUser.email,
+          firstName: createdUser.firstName,
+          lastName: createdUser.lastName,
+          roles: createdUser.roles || ["student"],
+        },
+        student: studentResponse?.data?.data || null,
+      },
+    });
+  } catch (error) {
+    console.error("Create child account error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create child account",
       error: error.message,
     });
   }

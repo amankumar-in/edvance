@@ -141,17 +141,19 @@ const FileUpload = ({
             Existing Attachments ({existingFiles.length})
           </Text>
           {existingFiles.map((file, index) => (
-            <Flex key={`existing-${index}`} align="center" justify="between" className="p-2 bg-[--accent-a2] rounded">
-              <Flex align="center" gap="2">
-                <FileText size={16} />
-                <Text size="2">
-                  <a href={file.url} target="_blank" rel="noopener noreferrer">
-                    {file.name}
-                  </a>
-                </Text>
-                <Text size="1" color="gray">
-                  ({file.type})
-                </Text>
+            <Flex gap="2" key={`existing-${index}`} align="center" justify="between" className="p-2 bg-[--accent-a2] rounded">
+              <Flex align="start" gap="2">
+                <FileText size={16}/>
+                <div className="flex-1 space-y-1">
+                  <Text as="p" size="2" className="leading-none">
+                    <a href={file.url} target="_blank" rel="noopener noreferrer" className="line-clamp-1">
+                      {file.name}
+                    </a>
+                  </Text>
+                  <Text as="p" size="1" color="gray">
+                    ({file.type})
+                  </Text>
+                </div>
               </Flex>
               <IconButton
                 type="button"
@@ -174,17 +176,19 @@ const FileUpload = ({
             New Files ({selectedFiles.length}/{maxFiles - existingFiles.length})
           </Text>
           {selectedFiles.map((file, index) => (
-            <Flex key={`new-${index}`} align="center" justify="between" className="p-2 bg-[--gray-a2] rounded">
-              <Flex align="center" gap="2">
+            <Flex gap="2" key={`new-${index}`} align="center" justify="between" className="p-2 bg-[--gray-a2] rounded">
+              <Flex align="start" gap="2">
                 <FileText size={16} />
-                <Text as="p" size="2">
-                  <a href={file.url} target="_blank" rel="noopener noreferrer">
-                    {file.name}
-                  </a>
-                </Text>
-                <Text size="1" color="gray">
-                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                </Text>
+                <div className="flex-1 space-y-1">
+                  <Text as="p" size="2" className="leading-none">
+                    <a href={file.url} target="_blank" rel="noopener noreferrer" className="line-clamp-1">
+                      {file.name}
+                    </a>
+                  </Text>
+                  <Text size="1" color="gray">
+                    ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                  </Text>
+                </div>
               </Flex>
               <IconButton
                 type="button"

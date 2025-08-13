@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createParentProfile, updateParentProfile, generateLinkCode, unlinkChild, addChild, respondToLinkRequest, cancelOutgoingRequest } from "./parent.api";
+import { createParentProfile, updateParentProfile, generateLinkCode, unlinkChild, addChild, respondToLinkRequest, cancelOutgoingRequest, createChildAccount } from "./parent.api";
 
 export const useCreateParentProfile = () => {
   return useMutation({
@@ -119,6 +119,18 @@ export const useCancelOutgoingRequest = () => {
 
       // Also invalidate to ensure data consistency
       queryClient.invalidateQueries({ queryKey: ["parents", "outgoing-requests"] });
+    }
+  });
+};
+
+export const useCreateChildAccount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createChildAccount,
+    onSuccess: () => {
+      // New student profile is created; no linking yet. Refresh outgoing requests if any are generated later
+      queryClient.invalidateQueries({ queryKey: ["parents", "children"] });
     }
   });
 };

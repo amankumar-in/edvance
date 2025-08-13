@@ -1020,7 +1020,13 @@ const rewardController = {
         // 3. Class rewards for their children's classes
         // 4. School rewards for their children's schools (but not class-specific ones)
         const rewardAccessConditions = [
-          { creatorType: "system" }
+          {
+            creatorType: "system",
+            $nor: [
+              { schoolId: { $exists: true, $ne: null } },
+              { classId: { $exists: true, $ne: null } }
+            ]
+          }
         ];
 
         // 1. Parent's own rewards
@@ -1302,8 +1308,13 @@ const rewardController = {
         } else {
           // Apply student access rules
           const rewardAccessConditions = [
-            // System/global rewards
-            { creatorType: "system" },
+            {
+              creatorType: "system",
+              $nor: [
+                { schoolId: { $exists: true, $ne: null } },
+                { classId: { $exists: true, $ne: null } }
+              ]
+            }
           ];
 
           // School rewards (contain schoolId, no classId requirement)

@@ -62,3 +62,9 @@ export const cancelOutgoingRequest = async (requestId) => {
   const response = await apiClient.delete(`/parents/outgoing-requests/${requestId}`);
   return response.data;
 };
+
+export const createChildAccount = async (data) => {
+  // data: { email, password, firstName, lastName, grade?, schoolId? }
+  const response = await apiClient.post("/parents/create-child", data);
+  return response.data;
+};
