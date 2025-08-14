@@ -142,7 +142,7 @@ function StudentLayout() {
               <NavLink
                 key={index}
                 to={item.href || '#'}
-                className={({ isActive }) => `flex flex-col items-center gap-1 px-2 border-t-4 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11] font-bold  border-[--accent-11]' : 'border-transparent'}`}
+                className={({ isActive }) => `flex flex-col items-center gap-1 px-2 border-t-4 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11] font-bold  border-[--accent-11]' : 'border-transparent'} active:bg-[--accent-a3]`}
               >
                 {item.icon}
                 <Text

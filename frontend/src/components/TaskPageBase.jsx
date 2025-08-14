@@ -1,5 +1,5 @@
-import { Badge, Box, Button, Callout, Card, DropdownMenu, Flex, Grid, Heading, IconButton, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
-import { AlertCircleIcon, Filter, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
+import { Badge, Box, Button, Callout, Card, DropdownMenu, Flex, Grid, Heading, IconButton, Select, Separator, Spinner, Tabs, Text } from '@radix-ui/themes';
+import { AlertCircleIcon, Filter, MoreHorizontal, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
@@ -45,6 +45,7 @@ function TaskPageBase({
 }) {
   const { user, profiles } = useAuth();
   const createdByProfileId = profiles[role]?._id;
+
 
   // State for delete confirmation dialog
   const [deleteTaskId, setDeleteTaskId] = useState(null);
@@ -114,18 +115,18 @@ function TaskPageBase({
                   )}
                 </Flex>
                 {/* Show first image attachment if available, with fallback handling */}
-                  <img
-                    src={imageAttachment?.url || FALLBACK_IMAGES.landscape}
-                    alt={imageAttachment?.name || 'Task attachment'}
-                    onError={(e) => {
-                      e.currentTarget.src = FALLBACK_IMAGES.landscape;
-                    }}
-                    className="object-cover object-center w-full aspect-video"
-                  />
+                <img
+                  src={imageAttachment?.url || FALLBACK_IMAGES.landscape}
+                  alt={imageAttachment?.name || 'Task attachment'}
+                  onError={(e) => {
+                    e.currentTarget.src = FALLBACK_IMAGES.landscape;
+                  }}
+                  className="object-cover object-center w-full aspect-video"
+                />
 
                 <Heading size="2" className='line-clamp-2'>{task.title}</Heading>
               </Flex>
-{/* 
+              {/* 
               {task.description && (
                 <Text as='p' size="1" className="line-clamp-2" color="gray">{task.description}</Text>
               )}
@@ -238,8 +239,8 @@ function TaskPageBase({
 
 
   return (
-    <Box>
-      <Flex justify="between" align="center" mb="5">
+    <Box className='space-y-6'>
+      <Flex justify="between" align="center">
         <Heading as="h1" size="6" weight="bold">
           {role === 'parent' ? 'Family Tasks' : 'My Tasks'}
         </Heading>
@@ -253,55 +254,28 @@ function TaskPageBase({
         )}
       </Flex>
 
-      {/* Student-only: Status guide for task completion states */}
-      {role === 'student' && (
-        <Callout.Root variant='surface' mb="5" color="blue">
-          <Callout.Icon>
-            <AlertCircleIcon size={16} />
-          </Callout.Icon>
-          <Callout.Text className='space-y-2'>
-            <Text weight="medium">Task Status Guide:</Text>
-          </Callout.Text>
-          <Flex direction="column" gap="2">
-            <Text as='p' size="1"><Badge color="blue" size="1">Pending</Badge> - Task is waiting to be started</Text>
-            <Text as='p' size="1"><Badge color="yellow" size="1">Completed</Badge> - Task completed but not yet submitted for approval</Text>
-            <Text as='p' size="1"><Badge color="orange" size="1">Pending Approval</Badge> - Task submitted and awaiting approval</Text>
-            <Text as='p' size="1"><Badge color="green" size="1">Approved</Badge> - Task approved and points awarded</Text>
-            <Text as='p' size="1"><Badge color="red" size="1">Rejected</Badge> - Task needs to be redone</Text>
-          </Flex>
-        </Callout.Root>
-      )}
+      <div>
+        <Tabs.Root defaultValue={"all"} >
+          <Tabs.List>
+            <Tabs.Trigger value="all" onClick={() => setCategory(null)}>All Tasks</Tabs.Trigger>
+            {taskCategoryOptions && taskCategoryOptions.map((option) => (
+              <Tabs.Trigger key={option.value} value={option.value} onClick={() => setCategory(option.value)}>{option.label}</Tabs.Trigger>
+            ))}
+          </Tabs.List>
+        </Tabs.Root>
 
-      <Card mb="5" size="2">
-        <Flex justify="between" align="center" wrap="wrap" gap="4" >
-          <Tabs.Root defaultValue="all">
-            <Tabs.List>
-              <Tabs.Trigger value="all">All Tasks ({tasks.length})</Tabs.Trigger>
-            </Tabs.List>
-          </Tabs.Root>
+        <Flex my="4" justify="between" align="center">
+          <Text as='p' size="1" color='gray' className='flex gap-2 items-center'>
+            Showing {tasks.length} tasks {isFetching && <Spinner />}
+          </Text>
+
           <Flex gap="4" align="center" wrap="wrap">
-            <Tooltip content="Refresh tasks">
-              <IconButton
-                variant='ghost'
-                color='gray'
-                onClick={refetch}
-                disabled={isFetching}
-                aria-label="Refresh tasks"
-              >
-                <span className={`${isFetching ? 'animate-spin' : ''}`}>
-                  <RefreshCw size={16} />
-                </span>
-              </IconButton>
-            </Tooltip>
-
-            <Filter size={16} />
-
             {/* Student-only: Status filter for task completion states */}
             {role === 'student' && (
               <Flex gap="2" align="center">
-                <Text as='span' size="2">Status</Text>
+                <Text as='span' size="2">Status: </Text>
                 <Select.Root disabled={isFetching} value={filter} onValueChange={setFilter}>
-                  <Select.Trigger placeholder='Filter by status' />
+                  <Select.Trigger placeholder='Filter by status' variant='classic' />
                   <Select.Content position="popper" variant='soft'>
                     {statusOptions.map((option) => (
                       <Select.Item key={option.value} value={option.value}>{option.label}</Select.Item>
@@ -310,39 +284,23 @@ function TaskPageBase({
                 </Select.Root>
               </Flex>
             )}
-
-            {/* Category filter available for both roles */}
-            <Flex gap="2" align="center">
-              <Text as='span' size="2">Category</Text>
-              <Select.Root disabled={isFetching} value={category} onValueChange={setCategory}>
-                <Select.Trigger placeholder='Filter by category' />
-                <Select.Content position="popper" variant='soft'>
-                  <Select.Item value='all' key='all'>
-                    All
-                  </Select.Item>
-                  {taskCategoryOptions && taskCategoryOptions.map((option) => (
-                    <Select.Item key={option.value} value={option.value} className='capitalize'>{option.label}</Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
           </Flex>
         </Flex>
-      </Card>
 
-      {tasks.length === 0 ? (
-        <EmptyStateCard
-          title="No Tasks Found"
-          description="You don't have any tasks right now."
-          icon={<Filter size={32} className="text-[--accent-9]" />}
-        />
-      ) : (
-        <Grid columns={{ initial: '1', xs: '2', md: '3', lg: '4', xl: '5' }} gap="4">
-          {tasks.map(task => (
-            <TaskCard key={task._id} task={task} />
-          ))}
-        </Grid>
-      )}
+        {tasks.length === 0 ? (
+          <EmptyStateCard
+            title="No Tasks Found"
+            description="You don't have any tasks right now."
+            icon={<Filter size={32} className="text-[--accent-9]" />}
+          />
+        ) : (
+          <Grid columns={{ initial: '1', xs: '2', md: '3', lg: '4', xl: '5' }} gap="4">
+            {tasks.map(task => (
+              <TaskCard key={task._id} task={task} />
+            ))}
+          </Grid>
+        )}
+      </div>
 
       {/* Parent-only: Modal for managing task visibility to children */}
       {role === 'parent' && openVisibilityModal !== undefined && (
@@ -372,3 +330,5 @@ function TaskPageBase({
 }
 
 export default TaskPageBase;
+
+

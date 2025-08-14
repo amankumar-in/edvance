@@ -99,7 +99,7 @@ function ParentLayout() {
       </Box>
 
       {/* Main Content */}
-      <Box className="flex-1 pb-16 md:ml-64">
+      <Box className="flex-1 pb-16 min-w-0 md:ml-64">
         <Container>
           <Outlet />
         </Container>

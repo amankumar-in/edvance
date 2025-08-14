@@ -29,7 +29,8 @@ function TaskSubmissionDialog({
   submitButtonText = "Submit Task",
   isSubmitting = false,
   isSubmissionError = false,
-  submissionError = null
+  submissionError = null,
+  children = null
 }) {
   const [submissionNote, setSubmissionNote] = useState('');
   const [evidenceList, setEvidenceList] = useState([]);
@@ -37,16 +38,16 @@ function TaskSubmissionDialog({
 
   // Handle file selection for evidence
   const handleFileSelect = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; 
     if (file) {
       // Validate file type
       const allowedTypes = [
         'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
-        'application/pdf', 'application/msword', 
+        'application/pdf', 'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'text/plain'
       ];
-      
+
       if (!allowedTypes.includes(file.type)) {
         toast.error('Unsupported file type. Please use images, PDFs, documents, or text files.');
         return;
@@ -67,8 +68,8 @@ function TaskSubmissionDialog({
         evidenceType = 'document';
       }
 
-      setNewEvidence({ 
-        ...newEvidence, 
+      setNewEvidence({
+        ...newEvidence,
         type: evidenceType,
         file: file,
         url: file.name, // Use filename as display text
@@ -80,15 +81,15 @@ function TaskSubmissionDialog({
   // Handle adding evidence
   const addEvidence = () => {
     if (newEvidence.type === 'text' && newEvidence.content.trim()) {
-      setEvidenceList([...evidenceList, { 
-        ...newEvidence, 
+      setEvidenceList([...evidenceList, {
+        ...newEvidence,
         id: Date.now(),
         file: null // Text evidence doesn't have files
       }]);
       setNewEvidence({ type: 'text', content: '', url: '', file: null });
     } else if (newEvidence.type === 'link' && newEvidence.url.trim()) {
-      setEvidenceList([...evidenceList, { 
-        ...newEvidence, 
+      setEvidenceList([...evidenceList, {
+        ...newEvidence,
         id: Date.now(),
         file: null // Link evidence doesn't have files
       }]);
@@ -108,14 +109,14 @@ function TaskSubmissionDialog({
   const handleSubmitTask = async () => {
     // Check if we have any file evidence
     const hasFiles = evidenceList.some(evidence => evidence.file);
-    
+
     let submissionData;
-    
+
     if (hasFiles) {
       // Create FormData for file uploads
       submissionData = new FormData();
       submissionData.append('note', submissionNote || '');
-      
+
       // Process evidence - separate files from text/link evidence
       const textEvidence = [];
       evidenceList.forEach(evidence => {
@@ -131,7 +132,7 @@ function TaskSubmissionDialog({
           });
         }
       });
-      
+
       // Add text evidence as JSON string
       submissionData.append('evidence', JSON.stringify(textEvidence));
     } else {
@@ -185,12 +186,12 @@ function TaskSubmissionDialog({
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
+      {children && <Dialog.Trigger>{children}</Dialog.Trigger>}
       <Dialog.Content className='max-w-3xl'>
         <Dialog.Title>{submitButtonText}</Dialog.Title>
         <Dialog.Description>
           Add any notes and evidence to show you've completed this task: <strong>{task?.title}</strong>
         </Dialog.Description>
-
         <Flex direction="column" gap="4" mt="4">
           {/* Submission Note */}
           <Flex direction="column" gap="2">
@@ -217,7 +218,7 @@ function TaskSubmissionDialog({
                       {getEvidenceIcon(evidence.type)}
                       <Flex direction="column" gap="1" style={{ flex: 1 }}>
                         <Text size="1" weight="medium" className="capitalize">{evidence.type}</Text>
-                        <Text title={getEvidenceDisplayText(evidence)} as='p' size="1" color="gray" className={evidence.type === 'text' ? 'whitespace-pre-wrap' :  'line-clamp-1 break-all'}>
+                        <Text title={getEvidenceDisplayText(evidence)} as='p' size="1" color="gray" className={evidence.type === 'text' ? 'whitespace-pre-wrap' : 'line-clamp-1 break-all'}>
                           {getEvidenceDisplayText(evidence)}
                         </Text>
                       </Flex>
@@ -244,11 +245,11 @@ function TaskSubmissionDialog({
                     <Text size="1">Type</Text>
                     <Select.Root
                       value={newEvidence.type}
-                      onValueChange={(value) => setNewEvidence({ 
-                        type: value, 
-                        content: '', 
-                        url: '', 
-                        file: null 
+                      onValueChange={(value) => setNewEvidence({
+                        type: value,
+                        content: '',
+                        url: '',
+                        file: null
                       })}
                     >
                       <Select.Trigger className="w-full" />
@@ -263,14 +264,14 @@ function TaskSubmissionDialog({
 
                   <Flex direction="column" gap="2" style={{ flex: 2 }}>
                     <Text size="1">
-                      {newEvidence.type === 'text' 
-                        ? 'Description' 
+                      {newEvidence.type === 'text'
+                        ? 'Description'
                         : newEvidence.type === 'link'
-                        ? 'URL'
-                        : 'File Upload'
+                          ? 'URL'
+                          : 'File Upload'
                       }
                     </Text>
-                    
+
                     {newEvidence.type === 'text' ? (
                       <TextArea
                         placeholder="Describe your evidence..."
@@ -299,7 +300,7 @@ function TaskSubmissionDialog({
                               type="file"
                               className="hidden"
                               accept={
-                                newEvidence.type === 'image' 
+                                newEvidence.type === 'image'
                                   ? ".jpg,.jpeg,.png,.gif"
                                   : ".pdf,.doc,.docx,.txt,.mp4,.mov,.avi"
                               }

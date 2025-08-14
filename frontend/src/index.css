@@ -27,3 +27,39 @@
 
 	--code-font-family: 'Menlo', 'Consolas (Custom)', 'Bitstream Vera Sans Mono', monospace, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
+
+/* AndroidLoader.css */
+.android-loader {
+  display: inline-block;
+  animation: rotate 1.4s linear infinite;
+}
+
+.android-loader-path {
+  stroke-dasharray: 80px, 200px;
+  stroke-dashoffset: 0px;
+  animation: dash 1.4s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  50% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -15px;
+  }
+  100% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -126px;
+  }
+}

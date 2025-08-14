@@ -1,5 +1,5 @@
+import { AlertDialog, Box, Button, Flex } from '@radix-ui/themes';
 import React from 'react';
-import { AlertDialog, Button, Flex, Text, Box } from '@radix-ui/themes';
 
 function ConfirmationDialog({
   open,
@@ -13,10 +13,12 @@ function ConfirmationDialog({
   isLoading = false,
   onConfirm,
   confirmIcon, 
-  maxWidth = '450px'
+  maxWidth = '450px', 
+  children
 }) {
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+      {children && <AlertDialog.Trigger>{children}</AlertDialog.Trigger>}
       <AlertDialog.Content maxWidth={maxWidth}>
         <AlertDialog.Title weight={'medium'}>{title}</AlertDialog.Title>
         <AlertDialog.Description size={'2'}>

@@ -171,13 +171,27 @@ function TaskDetailsPageBase({
                   <Pencil size={16} /> Edit
                 </Link>
               </Button>
-              <Button className='text-nowrap'
-                variant='soft'
-                color='red'
-                onClick={() => setShowDeleteDialog(true)}
+
+              {/* Delete Task Button with Confirmation Dialog */}
+              <ConfirmationDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+                title="Delete Task"
+                description={`Are you sure you want to delete "${task?.title}"? This action cannot be undone.`}
+                onConfirm={handleDeleteTask}
+                confirmText="Delete Task"
+                cancelText="Cancel"
+                isLoading={isDeleting}
+                confirmColor="red"
               >
-                <Trash size={16} />Delete
-              </Button>
+                <Button className='text-nowrap'
+                  variant='soft'
+                  color='red'
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash size={16} />Delete
+                </Button>
+              </ConfirmationDialog>
             </>
           )}
         </Flex>
@@ -258,8 +272,6 @@ function TaskDetailsPageBase({
       <Grid columns={{ initial: '1', lg: '3' }} gap="5">
         {/* Main Content */}
         <Box gridColumn={{ lg: '1 / 3' }}>
-
-
 
           {/* Task Header */}
           <Card size="2" mb="5" className='shadow-md'>
@@ -527,12 +539,24 @@ function TaskDetailsPageBase({
 
 
               {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
-                <Button
-                  onClick={() => setIsSubmissionOpen(true)}
+                // Submit Task Button with TaskSubmissionDialog
+                <TaskSubmissionDialog
+                  isOpen={isSubmissionOpen}
+                  onOpenChange={setIsSubmissionOpen}
+                  onSubmit={handleTaskSubmission}
+                  task={task}
+                  submitButtonText={getSubmitButtonText(task?.completionStatus?.status)}
+                  isSubmitting={isSubmitting}
+                  isSubmissionError={isSubmissionError}
+                  submissionError={submissionError}
                 >
-                  <CheckCircle size={16} />
-                  {getSubmitButtonText(task?.completionStatus?.status)}
-                </Button>
+                  <Button
+                    onClick={() => setIsSubmissionOpen(true)}
+                  >
+                    <CheckCircle size={16} />
+                    {getSubmitButtonText(task?.completionStatus?.status)}
+                  </Button>
+                </TaskSubmissionDialog>
               )}
 
               {task?.completionStatus?.status === 'completed' && (
@@ -709,31 +733,6 @@ function TaskDetailsPageBase({
           )}
         </Box>
       </Grid>
-
-      {/* Task Submission Dialog */}
-      <TaskSubmissionDialog
-        isOpen={isSubmissionOpen}
-        onOpenChange={setIsSubmissionOpen}
-        onSubmit={handleTaskSubmission}
-        task={task}
-        submitButtonText={getSubmitButtonText(task?.completionStatus?.status)}
-        isSubmitting={isSubmitting}
-        isSubmissionError={isSubmissionError}
-        submissionError={submissionError}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        title="Delete Task"
-        description={`Are you sure you want to delete "${task?.title}"? This action cannot be undone.`}
-        onConfirm={handleDeleteTask}
-        confirmText="Delete Task"
-        cancelText="Cancel"
-        isLoading={isDeleting}
-        confirmColor="red"
-      />
     </Box>
   );
 }
