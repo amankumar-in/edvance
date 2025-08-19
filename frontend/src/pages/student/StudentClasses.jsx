@@ -3,7 +3,7 @@ import { BookOpenCheck, CalendarX, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
 import { useGetStudentClasses } from '../../api/student/student.queries';
-import Honors from '../../assets/Honors.jpg';
+import Honors from '../../assets/Honors.webp';
 import { EmptyStateCard, ErrorCallout, Loader } from '../../components';
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']

@@ -3,7 +3,7 @@ import { useGetTeacherClasses } from '../../api/teacher/teacher.queries'
 import { ConfirmationDialog, EmptyStateCard, ErrorCallout, Loader, PageHeader } from '../../components'
 import { BookOpen, Edit2Icon, Key, PlusIcon, Trash2Icon } from 'lucide-react'
 import { Button, Card, Flex, IconButton, Inset, Text, Tooltip } from '@radix-ui/themes';
-import Honors from '../../assets/Honors.jpg'
+import Honors from '../../assets/Honors.webp'
 import { Link } from 'react-router';
 import GenerateJoinCodeDialog from '../school-admin/components/GenerateJoinCodeDialog';
 import { BarLoader } from 'react-spinners';

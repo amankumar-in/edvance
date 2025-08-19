@@ -1,6 +1,6 @@
 import { Button, Select, TextField } from '@radix-ui/themes'
 import {
-  Search, 
+  Search,
   LayoutDashboard,
   Users,
   CheckSquare,
@@ -101,7 +101,7 @@ function SideBar({ isOpen, toggleSidebar }) {
 
       {/* Sidebar */}
       <div
-        className={`fixed border-r border-[--gray-a6] md:sticky top-16 h-[calc(100svh-64px)] sm:h-[calc(100vh-64px)] bg-[--color-background]  z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`fixed border-r border-[--gray-a6] md:sticky top-16 h-[calc(100dvh-64px)] sm:h-[calc(100vh-64px)] bg-[--color-background]  z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
           } md:left-0 w-72 p-4 md:p-6 flex flex-col`}
       >
 
@@ -130,7 +130,7 @@ function SideBar({ isOpen, toggleSidebar }) {
             highContrast
             asChild
             size={'3'}
-            className='w-full '
+            className='w-full'
           >
             <Link className='font-normal'>
               Manage Blog
@@ -139,33 +139,34 @@ function SideBar({ isOpen, toggleSidebar }) {
         </div>
 
 
-
-        {sideBarItems.map(({ label, href, Icon}) => {
-          if (label === 'Overview') {
+        <div className='overflow-y-auto'>
+          {sideBarItems.map(({ label, href, Icon }) => {
+            if (label === 'Overview') {
+              return (
+                <NavLink
+                  to={''}
+                  key={label}
+                  onClick={() => window.innerWidth < 768 && toggleSidebar()}
+                  className={`${pathname === '/platform-admin/dashboard' || pathname === '/platform-admin/dashboard/' ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
+                >
+                  {Icon && <Icon className='size-5' />}
+                  <span>{label}</span>
+                </NavLink>
+              );
+            }
             return (
               <NavLink
-                to={''}
+                to={href}
                 key={label}
                 onClick={() => window.innerWidth < 768 && toggleSidebar()}
-                className={`${pathname === '/platform-admin/dashboard' || pathname === '/platform-admin/dashboard/' ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
+                className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
               >
                 {Icon && <Icon className='size-5' />}
                 <span>{label}</span>
               </NavLink>
             );
-          }
-          return (
-            <NavLink
-              to={href}
-              key={label}
-              onClick={() => window.innerWidth < 768 && toggleSidebar()}
-              className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
-            >
-              {Icon && <Icon className='size-5' />}
-              <span>{label}</span>
-            </NavLink>
-          );
-        })}
+          })}
+        </div>
       </div>
     </>
   );

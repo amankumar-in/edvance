@@ -1,9 +1,13 @@
-import { useNavigate } from 'react-router';
+import { Outlet, useNavigate } from 'react-router';
 import ErrorBoundary from './ErrorBoundary';
 
-const ErrorBoundaryWrapper = ({ children }) => {
+const ErrorBoundaryWrapper = () => {
   const navigate = useNavigate();
-  return <ErrorBoundary navigate={navigate}>{children}</ErrorBoundary>;
+  return (
+    <ErrorBoundary navigate={navigate}>
+      <Outlet />
+    </ErrorBoundary>
+  );
 };
 
 export default ErrorBoundaryWrapper;

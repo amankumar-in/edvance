@@ -3,7 +3,8 @@ import { ThemeProvider } from 'next-themes'
 import React, { useState } from 'react'
 import { Outlet } from 'react-router'
 import { Container } from '../../components'
-import { TeacherHeader, Sidebar } from './index'
+import TeacherHeader from './components/Header'
+import Sidebar from './components/Sidebar'
 
 function TeacherDashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768)

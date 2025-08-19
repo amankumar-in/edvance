@@ -1,7 +1,6 @@
 import { Flex, Heading, IconButton, ScrollArea, Skeleton, TabNav, Text } from '@radix-ui/themes';
 import { Ellipsis } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { MdArrowDropDown } from "react-icons/md";
 import { Link, Outlet, useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { useTotalUserCount } from '../../api/user/user.queries';
@@ -52,13 +51,13 @@ function Users() {
   return (
     <div className='px-4 py-8 space-y-4 lg:px-8 xl:px-12'>
       <Flex as='div' justify='between' align='center' className='flex-wrap gap-4'>
-        <Heading as='h1' size={'7'} weight={'medium'} className='flex flex-wrap items-center gap-2'>
+        <Heading as='h1' size={'7'} weight={'medium'} className='flex flex-wrap gap-2 items-center'>
           User Management <span><MdArrowDropDown size={28} /></span>
           <span className='text-sm font-normal border rounded-md border-[--gray-a6] px-2 py-1 flex items-center gap-[6px]'>
             <span className='w-[6px] h-[6px] bg-[--green-8] rounded-full' /> 23 Active
           </span>
         </Heading>
-        <div className='flex flex-wrap items-center gap-2'>
+        <div className='flex flex-wrap gap-2 items-center'>
           <CreateSubAdmin />
           <AddNewUserDialog />
           <IconButton
@@ -69,7 +68,7 @@ function Users() {
           </IconButton>
         </div>
       </Flex>
-      <Text as='p' color='blue' size={'2'} className='flex flex-wrap items-center gap-6 gap-y-2'>
+      <Text as='p' color='blue' size={'2'} className='flex flex-wrap gap-y-2 gap-6 items-center'>
         <span>
           <Skeleton loading={isLoading}>
             {totalUsers?.data.total} Total Users
@@ -79,7 +78,7 @@ function Users() {
           245 New Users in this month
         </span>
       </Text>
-      <ScrollArea size={'1'} className='pb-2'  scrollbars='horizontal' >
+      <ScrollArea size={'1'} className='pb-2' scrollbars='horizontal' >
         <TabNav.Root>
           {tabs.map((tab) => (
             <TabNav.Link

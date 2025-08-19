@@ -14,7 +14,7 @@ import 'swiper/css/pagination';
 import { usePointsDetailsById } from '../api/points/points.queries';
 import { useAddToWishlist, useDeleteReward, useRedeemReward, useRemoveFromWishlist, useToggleRewardVisibility } from '../api/rewards/rewards.mutations';
 import { useGetRewardCategories } from '../api/rewards/rewards.queries';
-import rewardsPlaceholder from '../assets/rewardsPlaceholder.png';
+import rewardsPlaceholder from '../assets/rewardsPlaceholder.webp';
 import { ConfirmationDialog, EmptyStateCard, Loader, WishlistToggle } from '../components';
 import { useAuth } from '../Context/AuthContext';
 import { FALLBACK_IMAGES } from '../utils/constants';

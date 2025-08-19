@@ -1,46 +1,39 @@
 import { Text } from '@radix-ui/themes';
+import { BookOpenCheck, Check, GraduationCap, HandHelping, Landmark, UsersRound } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import MyButton from '../../components/MyButton';
-import {
-  FaChalkboardTeacher,
-  MdCheckCircle,
-  MdDomain,
-  MdGroups,
-  MdSchool,
-  RiParentFill
-} from '../../icons/index';
 
 // User roles with icons
 export const roleOptions = [
   {
     id: 'STUDENT',
     title: 'Student',
-    icon: MdSchool,
+    icon: GraduationCap,
     gradient: ['#FF8DA1', '#FF6B85'],
   },
   {
     id: 'PARENT',
     title: 'Parent',
-    icon: RiParentFill,
+    icon: UsersRound,
     gradient: ['#FFC2BA', '#FFAD9F'],
   },
   {
     id: 'SOCIAL_WORKER',
     title: 'Social Worker',
-    icon: MdGroups,
+    icon: HandHelping,
     gradient: ['#64B5F6', '#2196F3'],
   },
   {
     id: 'TEACHER',
     title: 'Teacher',
-    icon: FaChalkboardTeacher,
+    icon: BookOpenCheck,
     gradient: ['#FF9CE9', '#FF7DE0'],
   },
   {
     id: 'SCHOOL_ADMIN',
     title: 'School Admin',
-    icon: MdDomain,
+    icon: Landmark,
     gradient: ['#AD56C4', '#9548A8'],
   },
 ];
@@ -83,12 +76,12 @@ function RoleSelection() {
             >
               {/* Check icon */}
               {isSelected && <div className='absolute top-3 right-3'>
-                <MdCheckCircle className='size-6' />
+                <Check className='size-6' />
               </div>}
 
               {/* Icon and text */}
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center justify-center rounded-full size-14"
+              <div className="flex flex-col gap-4 items-center">
+                <div className="flex justify-center items-center rounded-full size-14"
                   style={{
                     background:
                       isSelected

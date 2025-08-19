@@ -1,10 +1,4 @@
-import {
-  FaChalkboardTeacher,
-  MdDomain,
-  MdGroups,
-  MdSchool,
-  RiParentFill
-} from '../icons/index';
+import { BookOpenCheck, GraduationCap, HandHelping, Landmark, UsersRound } from 'lucide-react';
 
 export const roleFields = {
   STUDENT: {
@@ -15,7 +9,7 @@ export const roleFields = {
       { label: "Password", name: "password", type: "password", required: true, placeholder: "Password" },
       { label: "Confirm Password", name: "confirmPassword", type: "password", required: true, placeholder: "Confirm password" },
     ],
-    icon: MdSchool,
+    icon: GraduationCap,
     gradient: ['#FF8DA1', '#FF6B85'],
   },
   PARENT: {
@@ -26,7 +20,7 @@ export const roleFields = {
       { label: "Password", name: "password", type: "password", required: true, placeholder: "Password" },
       { label: "Confirm Password", name: "confirmPassword", type: "password", required: true, placeholder: "Confirm password" },
     ],
-    icon: RiParentFill,
+    icon: UsersRound,
     gradient: ['#FFC2BA', '#FFAD9F'],
   },
   SOCIAL_WORKER: {
@@ -37,7 +31,7 @@ export const roleFields = {
       { label: "Password", name: "password", type: "password", required: true, placeholder: "Password" },
       { label: "Confirm Password", name: "confirmPassword", type: "password", required: true, placeholder: "Confirm password" },
     ],
-    icon: MdGroups,
+    icon: HandHelping,
     gradient: ['#64B5F6', '#2196F3'],
   },
   TEACHER: {
@@ -48,7 +42,7 @@ export const roleFields = {
       { label: "Password", name: "password", type: "password", required: true, placeholder: "Password" },
       { label: "Confirm Password", name: "confirmPassword", type: "password", required: true, placeholder: "Confirm password" },
     ],
-    icon: FaChalkboardTeacher,
+    icon: BookOpenCheck,
     gradient: ['#FF9CE9', '#FF7DE0'],
   },
   SCHOOL_ADMIN: {
@@ -58,7 +52,7 @@ export const roleFields = {
       { label: "Password", name: "password", type: "password", required: true, placeholder: "Password" },
       { label: "Confirm Password", name: "confirmPassword", type: "password", required: true, placeholder: "Confirm password" },
     ],
-    icon: MdDomain,
+    icon: Landmark,
     gradient: ['#AD56C4', '#9548A8'],
   },
 }
