@@ -239,7 +239,7 @@ const Rewards = () => {
           height={'4px'}
         />
       </div>}
-      <div className='relative px-4 py-8 space-y-6 lg:px-8 xl:px-12'>
+      <div className='relative space-y-6'>
 
         {/* Heading */}
         <Flex justify='between' align='center' wrap='wrap' gap='4'>
@@ -422,8 +422,8 @@ const Rewards = () => {
             }
           />
         ) : (
-          <>
-            <Table.Root variant='surface' className='shadow-md'>
+          <Card size={'2'} className='shadow-md'>
+            <Table.Root>
               <Table.Header>
                 <Table.Row>
                   {columns.map((column) => (
@@ -455,13 +455,13 @@ const Rewards = () => {
 
               <Table.Body>
                 {rewards.map((reward) => (
-                  <Table.Row key={reward._id} className="hover:bg-[--gray-a2]">
+                  <Table.Row key={reward._id} className="hover:bg-[--gray-a3] odd:bg-[--gray-a2]">
                     <Table.Cell>
                       <Flex direction="column" gap="1">
-                        <Text title={reward?.title} as='p' weight="medium" size="2" className='line-clamp-1 min-w-[250px]'>
+                        <Text title={reward?.title} as='p' weight="medium" size="2" className='line-clamp-1 min-w-[300px]'>
                           {reward?.title}
                         </Text>
-                        <Text title={reward?.description} as='p' size="1" color="gray" className='line-clamp-2 min-w-[250px]'>
+                        <Text title={reward?.description} as='p' size="1" color="gray" className='line-clamp-2 min-w-[300px]'>
                           {reward?.description}
                         </Text>
                       </Flex>
@@ -554,8 +554,9 @@ const Rewards = () => {
               itemsPerPageOptions={[5, 10, 20, 50, 100]}
               itemLabel="rewards"
               disabled={isLoading || isFetching}
+              className='mt-4'
             />
-          </>
+          </Card>
         )}
 
         {/* Details Dialog */}

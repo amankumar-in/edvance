@@ -1,8 +1,7 @@
-import { Avatar, Button, DropdownMenu, Flex, IconButton, Select, Separator, Text, TextField } from '@radix-ui/themes';
-import { LogOut, Menu, MenuIcon, Moon, Search, Settings as SettingsIcon, Sun } from 'lucide-react';
+import { Avatar, DropdownMenu, Flex, IconButton, Select, Separator, Text, TextField } from '@radix-ui/themes';
+import { LogOut, Menu, Moon, Search, Settings as SettingsIcon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
-import { Link } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
 import { FALLBACK_IMAGES } from '../../utils/constants';
 
@@ -11,42 +10,24 @@ function Header({ toggleSidebar }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Flex as="nav" align="center" justify="between" gap="4" className="sticky top-0 z-50 w-full h-16 px-4 md:px-6 border-b border-[--slate-6] bg-[--color-background]">
-      <Flex align="center" gap="3">
+    <Flex as="nav" align="center" justify="between" gap="4" className="sticky top-0 z-50 w-full h-16 px-4 md:px-6 bg-[--color-background] ">
+      <Flex align="center" gap="3" className="md:hidden">
         <IconButton
           size="3"
           variant="ghost"
-          className="md:hidden"
           onClick={toggleSidebar}
+          color='gray'
         >
           <Menu size={20} />
         </IconButton>
-        <Text weight="medium" size="7">
-          EdVance
-        </Text>
       </Flex>
-      <TextField.Root placeholder='Search' size={'3'} className='hidden flex-1 max-w-sm md:flex' radius='full'>
-        <TextField.Slot side="left">
-          <MenuIcon size={16} color='var(--gray-9)' />
-        </TextField.Slot>
-        <TextField.Slot side="right">
-          <Search size={16} color='var(--gray-9)' />
+      <TextField.Root placeholder='Search...' size={'3'} className='hidden flex-1 max-w-sm md:flex' radius='full'>
+        <TextField.Slot >
+          <Search size={16} />
         </TextField.Slot>
       </TextField.Root>
 
-
-
       <Flex align="center" gap="4" className='text-sm'>
-        <Button
-          variant='ghost'
-          asChild
-          className="hidden md:flex"
-        >
-          <Link>
-            Manage Blog
-          </Link>
-        </Button>
-        <Separator orientation='vertical' className="hidden md:block" />
         <div className='hidden md:block'>
           <Select.Root defaultValue="US">
             <Select.Trigger variant='ghost' />

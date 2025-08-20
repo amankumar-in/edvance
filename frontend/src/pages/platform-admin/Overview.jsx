@@ -5,10 +5,9 @@ import { Container } from '../../components'
 
 function Overview() {
   return (
-    <Container> 
-      <div>
-        <section className='flex flex-col gap-6'>        
-          <Flex gap="4" wrap="wrap">
+    <div>
+      <section className='flex flex-col gap-6'>
+        <Flex gap="4" wrap="wrap">
           {/* Total Users Card */}
           <Card className="flex-1 lg:max-w-sm min-w-[250px]">
             <Flex direction="column" gap="2" p="4">
@@ -22,7 +21,7 @@ function Overview() {
               <Text size="1" color="gray">All platform users</Text>
             </Flex>
           </Card>
-          
+
           {/* User Types Breakdown Card */}
           <Card className="flex-1 min-w-[250px]">
             <Flex direction="column" gap="2" p="4">
@@ -32,9 +31,9 @@ function Overview() {
                 </Box>
                 <Text weight="medium" size="3">User Breakdown</Text>
               </Flex>
-              
+
               <Grid className='gap-4 lg:grid-cols-2'>
-                <Flex align="center" justify="between"  gap={'2'} className="pb-2">
+                <Flex align="center" justify="between" gap={'2'} className="pb-2">
                   <Flex align="center" gap="2">
                     <GraduationCap size={16} className="text-[--purple-9]" />
                     <Text size="2">Students</Text>
@@ -85,7 +84,7 @@ function Overview() {
               {/* <Text size="2" color="gray">Currently available to students</Text> */}
             </Flex>
           </Card>
-          
+
           {/* Active Rewards Card */}
           <Card className="flex-1 min-w-[250px] max-w-sm">
             <Flex direction="column" gap="3" p="4">
@@ -106,9 +105,9 @@ function Overview() {
           </Card>
         </Flex>
       </section>
-      
+
       <Separator size={'4'} className="my-6" />
-      
+
       <section className='mt-4'>
         <Flex justify='between' align='center' gap='2'>
           <Text
@@ -147,7 +146,7 @@ function Overview() {
               </Flex> */}
             </Flex>
           </Card>
-          
+
           {/* New Users Card */}
           <Card className="flex-1 min-w-[250px]">
             <Flex direction="column" gap="3" p="4">
@@ -164,7 +163,7 @@ function Overview() {
               </Flex> */}
             </Flex>
           </Card>
-          
+
           {/* Inactive Users Card */}
           <Card className="flex-1 min-w-[250px]">
             <Flex direction="column" gap="3" p="4">
@@ -184,7 +183,6 @@ function Overview() {
         </Flex>
       </section>
     </div>
-    </Container>
   )
 }
 

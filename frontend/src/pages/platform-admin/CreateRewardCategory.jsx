@@ -330,17 +330,14 @@ const CreateRewardCategory = () => {
 
   if (isLoadingCategory) {
     return (
-      <Container>
         <Flex justify="center">
           <Loader />
         </Flex>
-      </Container>
     );
   }
 
   return (
-    <Container>
-      <div className="pb-8 mx-auto space-y-6 max-w-4xl">
+      <div className="mx-auto space-y-6 max-w-4xl">
         {/* Header */}
         <Box>
           <Button
@@ -890,7 +887,6 @@ const CreateRewardCategory = () => {
 
         </form>
       </div>
-    </Container>
   );
 };
 

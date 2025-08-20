@@ -6,6 +6,15 @@ export default {
   ],
   theme: {
     extend: {
+      container: {
+        center: true, // adds mx-auto by default, 
+        padding: {
+          DEFAULT: '1rem', // px-4 on mobile
+          md: '1.5rem',    // md:px-6
+          lg: '2rem',      // lg:px-8
+          xl: '3rem',      // xl:px-12
+        },
+      },
       animation: {
         'spin-fast': 'spin 0.6s linear infinite',
       },

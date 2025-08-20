@@ -17,16 +17,17 @@ function PlatformAdminDashboardLayout() {
       disableTransitionOnChange
       defaultTheme='light'
     >
-      <div className="flex flex-col min-h-screen">
-        <Header toggleSidebar={toggleSidebar} />
-
-        <Flex className="flex-1">
+      <div className="min-h-screen">
+        <Flex className=' bg-[--gray-background]'>
           <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
-          <div className="flex-1" style={{ minWidth: 0 }}>
-            <Outlet />
-          </div>
+          <Flex direction='column' className='flex-1' style={{ minWidth: 0 }}>
+            <Header toggleSidebar={toggleSidebar} />
+            <div className="container flex-1 pt-4 pb-12 md:pt-8" >
+              <Outlet />
+            </div>
+          </Flex>
         </Flex>
+
       </div>
     </ThemeProvider>
   )

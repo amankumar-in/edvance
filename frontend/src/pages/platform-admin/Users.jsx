@@ -49,10 +49,10 @@ function Users() {
   ]
 
   return (
-    <div className='px-4 py-8 space-y-4 lg:px-8 xl:px-12'>
+    <div className='space-y-4'>
       <Flex as='div' justify='between' align='center' className='flex-wrap gap-4'>
-        <Heading as='h1' size={'7'} weight={'medium'} className='flex flex-wrap gap-2 items-center'>
-          User Management <span><MdArrowDropDown size={28} /></span>
+        <Heading as='h1' size={'7'} weight={'medium'} className='flex flex-wrap gap-4 items-center'>
+          User Management
           <span className='text-sm font-normal border rounded-md border-[--gray-a6] px-2 py-1 flex items-center gap-[6px]'>
             <span className='w-[6px] h-[6px] bg-[--green-8] rounded-full' /> 23 Active
           </span>

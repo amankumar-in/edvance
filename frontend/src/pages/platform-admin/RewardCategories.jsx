@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Callout,
+  Card,
   DropdownMenu,
   Flex,
   Heading,
@@ -255,7 +256,7 @@ const RewardCategories = () => {
   }, []);
 
   const renderCategoryRow = useCallback((category) => (
-    <Table.Row key={category._id} className='hover:bg-[--gray-a3] even:bg-[--gray-a2]'>
+    <Table.Row key={category._id} className='hover:bg-[--gray-a3] odd:bg-[--gray-a2]'>
       <Table.Cell>
         <Flex align="center" gap="3" className='text-nowrap'>
           {category.parentCategory && (
@@ -409,7 +410,7 @@ const RewardCategories = () => {
         />
       </div>}
 
-      <div className='relative px-4 py-8 space-y-6 lg:px-8 xl:px-12'>
+      <div className='relative space-y-6'>
         {/* Header */}
         <Flex justify="between" align="center" gap="4" wrap="wrap">
           <Box className='space-y-1'>
@@ -541,8 +542,8 @@ const RewardCategories = () => {
             action={<CreateCategoryButton />}
           />
         ) : (
-          <>
-            <Table.Root variant='surface' className='shadow-md'>
+          <Card size={'2'} className='shadow-md'>
+            <Table.Root>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeaderCell>
@@ -594,8 +595,9 @@ const RewardCategories = () => {
               itemsPerPageOptions={[5, 10, 20, 50, 100]}
               itemLabel="categories"
               disabled={isLoadingRewardCategories || isFetchingRewardCategories}
+              className='mt-4'
             />
-          </>
+          </Card>
         )}
 
 

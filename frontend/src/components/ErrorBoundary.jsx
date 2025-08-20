@@ -1,5 +1,5 @@
 import { Box, Button, Card, Flex, Heading, Text } from '@radix-ui/themes';
-import { AlertTriangle, Bug, CheckCircle, Copy, Home, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Bug, Check, Copy, Home, RefreshCw } from 'lucide-react';
 import React from 'react';
 
 class ErrorBoundary extends React.Component {
@@ -112,11 +112,23 @@ Stack: ${this.state.error?.stack}
 Component Stack: ${this.state.errorInfo?.componentStack}`;
 
     try {
-      await navigator.clipboard.writeText(errorText);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        // Preferred modern API
+        await navigator.clipboard.writeText(errorText);
+      } else {
+        // Fallback: hidden textarea
+        const textArea = document.createElement("textarea");
+        textArea.value = errorText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
       this.setState({ copied: true });
       setTimeout(() => this.setState({ copied: false }), 2000);
     } catch (err) {
-      console.error('Failed to copy error details:', err);
+      console.error("Failed to copy error details:", err);
     }
   };
 
@@ -197,10 +209,16 @@ Component Stack: ${this.state.errorInfo?.componentStack}`;
                 </Flex>
 
                 {this.state.error && (
-                  <Button variant="ghost" size="2" color="gray" onClick={this.handleCopyError} className="mt-2">
+                  <Button
+                    variant="ghost"
+                    size="2"
+                    color={this.state.copied ? "green" : "gray"}
+                    onClick={this.handleCopyError}
+                    className="mt-2"
+                  >
                     {this.state.copied ? (
                       <>
-                        <CheckCircle size={14} />
+                        <Check size={14} />
                         Copied!
                       </>
                     ) : (
@@ -219,7 +237,7 @@ Component Stack: ${this.state.errorInfo?.componentStack}`;
                 )}
 
                 {process.env.NODE_ENV === 'development' && this.state.error && (
-                  <details open className="w-full mt-4">
+                  <details open className="mt-4 w-full">
                     <summary className="text-sm text-[--gray-11] cursor-pointer hover:text-[--gray-12] flex items-center gap-2">
                       <Bug size={14} />
                       Show error details (development only)
@@ -228,18 +246,18 @@ Component Stack: ${this.state.errorInfo?.componentStack}`;
                       <div className="space-y-3">
                         <div>
                           <Text as='p' size="2" weight="bold" color="red">Error:</Text>
-                          <pre className="mt-1 break-words whitespace-pre-wrap">{this.state.error.toString()}</pre>
+                          <pre className="mt-1 whitespace-pre-wrap break-words">{this.state.error.toString()}</pre>
                         </div>
                         {this.state.error.stack && (
                           <div>
                             <Text as='p' size="2" weight="bold" color="red">Stack Trace:</Text>
-                            <pre className="mt-1 text-xs break-words whitespace-pre-wrap">{this.state.error.stack}</pre>
+                            <pre className="mt-1 text-xs whitespace-pre-wrap break-words">{this.state.error.stack}</pre>
                           </div>
                         )}
                         {this.state.errorInfo?.componentStack && (
                           <div>
                             <Text as='p' size="2" weight="bold" color="red">Component Stack:</Text>
-                            <pre className="mt-1 text-xs break-words whitespace-pre-wrap">{this.state.errorInfo.componentStack}</pre>
+                            <pre className="mt-1 text-xs whitespace-pre-wrap break-words">{this.state.errorInfo.componentStack}</pre>
                           </div>
                         )}
                       </div>

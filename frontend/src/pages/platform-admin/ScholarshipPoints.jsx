@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Callout, Dialog, DropdownMenu, Flex, Heading, IconButton, Table, Tabs, Text, TextField } from '@radix-ui/themes';
+import { Badge, Box, Button, Callout, Card, Dialog, DropdownMenu, Flex, Heading, IconButton, Table, Tabs, Text, TextField } from '@radix-ui/themes';
 import { AlertCircleIcon, BarChart3, Edit, MoreVertical, Plus, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -189,73 +189,75 @@ const LevelsManagement = () => {
           }
         />
       ) : (
-        <Table.Root variant="surface">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell className='font-medium'>Level</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium'>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium'>Threshold</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell className='font-medium text-nowrap'>Points Needed</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="80px" className='font-medium'>Actions</Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {levels.map((levelData, index) => {
-              const pointsNeeded = index === 0 ? 0 : levelData.threshold - (levels[index - 1]?.threshold || 0);
-              return (
-                <Table.Row key={levelData.level} className="hover:bg-[--gray-a2]">
-                  <Table.Cell>
-                    <Flex align="center" gap="2">
-                      <Badge color="blue" variant="soft" size="1" highContrast>
-                        {levelData.level}
-                      </Badge>
-                      {levelData.level === 1 && (
-                        <Badge color="green" variant="outline" size="1">Starting</Badge>
-                      )}
-                      {levelData.level === maxLevel && (
-                        <Badge color="purple" variant="outline" size="1">Max</Badge>
-                      )}
-                    </Flex>
-                  </Table.Cell>
-                  <Table.Cell className='font-medium text-nowrap'>
-                    {levelData.name}
-                  </Table.Cell>
-                  <Table.Cell>
-                    {levelData.threshold.toLocaleString()} pts
-                  </Table.Cell>
-                  <Table.Cell>
-                    {index === 0 ? 'Starting level' : `+${pointsNeeded.toLocaleString()} pts`}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <DropdownMenu.Root>
-                      <DropdownMenu.Trigger>
-                        <IconButton
-                          variant="ghost"
-                          color="gray"
-                          disabled={addOrUpdateLevelMutation.isPending || deleteLevelMutation.isPending}
-                        >
-                          <MoreVertical size={14} />
-                        </IconButton>
-                      </DropdownMenu.Trigger>
-                      <DropdownMenu.Content variant="soft">
-                        <DropdownMenu.Item onClick={() => handleEditLevel(levelData)}>
-                          <Edit size={14} />
-                          Edit Level
-                        </DropdownMenu.Item>
-                        {levelData.level > 10 && (
-                          <DropdownMenu.Item color="red" onClick={() => handleDeleteLevel(levelData)}>
-                            <X size={14} />
-                            Delete Level
-                          </DropdownMenu.Item>
+        <Card size={'2'} className='shadow-md'>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell className='font-medium'>Level</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell className='font-medium'>Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell className='font-medium'>Threshold</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell className='font-medium text-nowrap'>Points Needed</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell width="80px" className='font-medium'>Actions</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {levels.map((levelData, index) => {
+                const pointsNeeded = index === 0 ? 0 : levelData.threshold - (levels[index - 1]?.threshold || 0);
+                return (
+                  <Table.Row key={levelData.level} className="hover:bg-[--gray-a3] odd:bg-[--gray-a2]">
+                    <Table.Cell>
+                      <Flex align="center" gap="2">
+                        <Badge color="blue" variant="soft" size="1" highContrast>
+                          {levelData.level}
+                        </Badge>
+                        {levelData.level === 1 && (
+                          <Badge color="green" variant="outline" size="1">Starting</Badge>
                         )}
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Root>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
-          </Table.Body>
-        </Table.Root>
+                        {levelData.level === maxLevel && (
+                          <Badge color="purple" variant="outline" size="1">Max</Badge>
+                        )}
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell className='font-medium text-nowrap'>
+                      {levelData.name}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {levelData.threshold.toLocaleString()} pts
+                    </Table.Cell>
+                    <Table.Cell>
+                      {index === 0 ? 'Starting level' : `+${pointsNeeded.toLocaleString()} pts`}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <DropdownMenu.Root>
+                        <DropdownMenu.Trigger>
+                          <IconButton
+                            variant="ghost"
+                            color="gray"
+                            disabled={addOrUpdateLevelMutation.isPending || deleteLevelMutation.isPending}
+                          >
+                            <MoreVertical size={14} />
+                          </IconButton>
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Content variant="soft">
+                          <DropdownMenu.Item onClick={() => handleEditLevel(levelData)}>
+                            <Edit size={14} />
+                            Edit Level
+                          </DropdownMenu.Item>
+                          {levelData.level > 10 && (
+                            <DropdownMenu.Item color="red" onClick={() => handleDeleteLevel(levelData)}>
+                              <X size={14} />
+                              Delete Level
+                            </DropdownMenu.Item>
+                          )}
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Root>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table.Root>
+        </Card>
       )}
 
       {/* Add Level Dialog */}
@@ -427,7 +429,7 @@ const ScholarshipPoints = () => {
   const [activeTab, setActiveTab] = useState('levels');
 
   return (
-    <Box className="px-4 py-8 space-y-6 lg:px-8 xl:px-12">
+    <Box className="space-y-6">
       <div>
         <Heading as='h1' size='6' weight='medium'>Scholarship Points System</Heading>
       </div>

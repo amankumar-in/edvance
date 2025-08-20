@@ -219,8 +219,7 @@ function RewardRedemptions() {
           height={'4px'}
         />
       </div>}
-      <div className='relative px-4 py-8 space-y-6 lg:px-8 xl:px-12'>
-
+      <div className='relative space-y-6'>
         {/* Heading */}
         <Flex justify='between' align='center' wrap='wrap' gap='4'>
           <div>
@@ -347,7 +346,7 @@ function RewardRedemptions() {
             icon={<Gift size={48} />}
           />
         ) : (
-          <>
+          <Card size={'2'} className='shadow-md'>
             <Table.Root variant='surface'>
               <Table.Header>
                 <Table.Row>
@@ -380,7 +379,7 @@ function RewardRedemptions() {
 
               <Table.Body>
                 {redemptions.map((redemption) => (
-                  <Table.Row key={redemption._id} className="hover:bg-[--gray-a2]">
+                  <Table.Row key={redemption._id} className="hover:bg-[--gray-a3] odd:bg-[--gray-a2]">
                     <Table.Cell>
                       <Flex direction="column" gap="1">
                         <Text as='p' weight="medium" size="2">
@@ -475,8 +474,9 @@ function RewardRedemptions() {
               showPrevNext={true}
               itemsPerPageOptions={[5, 10, 20, 50, 100]}
               disabled={isLoading || isFetching}
+              className='mt-4'
             />
-          </>
+          </Card>
         )}
 
         {/* Details Dialog */}

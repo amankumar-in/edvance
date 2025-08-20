@@ -1,22 +1,22 @@
-import { Button, Select, TextField } from '@radix-ui/themes'
+import { IconButton, Text } from '@radix-ui/themes';
 import {
-  Search,
-  LayoutDashboard,
-  Users,
-  CheckSquare,
-  ListTodo,
-  Gift,
-  Receipt,
   Award,
   BarChart3,
-  School,
-  MessageCircle,
-  Megaphone,
+  CheckSquare,
   FileBarChart,
-  Settings
-} from 'lucide-react'
-import React from 'react'
-import { Link, NavLink, useLocation } from 'react-router'
+  Gift,
+  LayoutDashboard,
+  ListTodo,
+  Megaphone,
+  MessageCircle,
+  Receipt,
+  School,
+  Settings,
+  Users,
+  X
+} from 'lucide-react';
+import React from 'react';
+import { NavLink, useLocation } from 'react-router';
 
 const sideBarItems = [
   {
@@ -50,14 +50,14 @@ const sideBarItems = [
     Icon: Receipt,
   },
   {
-    label: "Badges",
-    href: 'badges',
-    Icon: Award,
-  },
-  {
     label: "Scholarship Points",
     href: 'scholarship-points',
     Icon: BarChart3,
+  },
+  {
+    label: "Badges",
+    href: 'badges',
+    Icon: Award,
   },
   {
     label: 'Schools',
@@ -94,52 +94,24 @@ function SideBar({ isOpen, toggleSidebar }) {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-[--color-overlay] md:hidden"
+          className="fixed inset-0 z-[60] bg-[--color-overlay] md:hidden"
           onClick={toggleSidebar}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed border-r border-[--gray-a6] md:sticky top-16 h-[calc(100dvh-64px)] sm:h-[calc(100vh-64px)] bg-[--color-background]  z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
-          } md:left-0 w-72 p-4 md:p-6 flex flex-col`}
+        className={`fixed overflow-y-auto space-y-6 md:sticky top-0 h-dvh bg-[--sidebar] text-white  z-[70] transition-transform duration-200 ease-linear ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
+          } md:left-0 w-72 flex flex-col`}
       >
+        <Text weight="medium" size="7" className='flex justify-between items-center px-6 h-16'>
+          EdVance
+          <IconButton variant='ghost' color='gray' onClick={toggleSidebar} className='md:hidden'>
+            <X color='white' size={20}/>
+          </IconButton>
+        </Text>
 
-        <div className='w-full mb-4 border-b border-[--gray-a6] flex flex-col gap-2 pb-4 md:hidden'>
-          <TextField.Root
-            placeholder='Search'
-            size={'3'}
-            radius='full'
-          >
-            <TextField.Slot>
-              <Search size={18} strokeWidth={1.75} />
-            </TextField.Slot>
-          </TextField.Root>
-
-          <Select.Root size={'3'} defaultValue="US">
-            <Select.Trigger/>
-            <Select.Content variant="soft" position='popper' className='flex-1' >
-              <Select.Item value="US">United States</Select.Item>
-              <Select.Item value="UG">Uganda</Select.Item>
-            </Select.Content>
-          </Select.Root>
-
-          <Button
-            variant='soft'
-            color='gray'
-            highContrast
-            asChild
-            size={'3'}
-            className='w-full'
-          >
-            <Link className='font-normal'>
-              Manage Blog
-            </Link>
-          </Button>
-        </div>
-
-
-        <div className='overflow-y-auto'>
+        <div className='text-sm'>
           {sideBarItems.map(({ label, href, Icon }) => {
             if (label === 'Overview') {
               return (
@@ -147,9 +119,9 @@ function SideBar({ isOpen, toggleSidebar }) {
                   to={''}
                   key={label}
                   onClick={() => window.innerWidth < 768 && toggleSidebar()}
-                  className={`${pathname === '/platform-admin/dashboard' || pathname === '/platform-admin/dashboard/' ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
+                  className={`${pathname === '/platform-admin/dashboard' || pathname === '/platform-admin/dashboard/' ? 'bg-[--accent-a3] text-white' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4`}
                 >
-                  {Icon && <Icon className='size-5' />}
+                  {Icon && <Icon className='size-5' color='var(--icon-muted)' />}
                   <span>{label}</span>
                 </NavLink>
               );
@@ -159,9 +131,9 @@ function SideBar({ isOpen, toggleSidebar }) {
                 to={href}
                 key={label}
                 onClick={() => window.innerWidth < 768 && toggleSidebar()}
-                className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-[--accent-11]' : 'hover:bg-[--gray-a3]'} p-2 px-4 rounded-lg flex items-center gap-2`}
+                className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-white' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4`}
               >
-                {Icon && <Icon className='size-5' />}
+                {Icon && <Icon className='size-5' color='var(--icon-muted)' />}
                 <span>{label}</span>
               </NavLink>
             );

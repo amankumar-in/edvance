@@ -273,511 +273,507 @@ const CreateTask = () => {
   // Show loading state when fetching task for editing or when form is not ready
   if (isEdit && (isLoadingTask || !isFormReady)) {
     return (
-      <Container>
-        <Flex justify="center">
-          <Loader />
-        </Flex>
-      </Container>
+      <Flex justify="center">
+        <Loader />
+      </Flex>
     );
   }
 
   return (
-    <Container>
-      <div className="pb-8 mx-auto space-y-6 max-w-4xl">
-        {/* Header */}
-        <Box>
-          <Button
-            variant="ghost"
-            color="gray"
-            asChild
-            size="2"
-            className="mb-4"
-          >
-            <Link to={'/platform-admin/dashboard/tasks'}>
-              <ArrowLeft size={16} /> Back to Tasks
-            </Link>
-          </Button>
-          <Flex justify={'between'} align={'start'} wrap='wrap' gap='2'>
-            <Flex direction={'column'}>
-              <Heading as="h1" size="6" weight="medium">
-                {isEdit ? 'Edit Task' : 'Create New Task'}
-              </Heading>
-              <Text color="gray" size="2" className="mt-1">
-                {isEdit
-                  ? 'Modify the existing task details and settings.'
-                  : 'Create a new task for students to complete and earn scholarship points.'
-                }
-              </Text>
-            </Flex>
-
-            <Flex gap='2' align='center' wrap='wrap' >
-              {/* Preview Task Button */}
-              <Tooltip content={!isValid ? "Fill required fields to enable preview" : "Preview task before creating"}>
-                <Button
-                  type='button'
-                  variant='outline'
-                  color='gray'
-                  disabled={!isValid}
-                  onClick={() => setPreviewTaskFormOpen(true)}
-                >
-                  <Eye size={16} /> Preview Task
-                </Button>
-              </Tooltip>
-
-              {/* Create/Update Task Button */}
-              <Button
-                type="submit"
-                color="grass"
-                disabled={isPending}
-                onClick={handleSubmit(onSubmit)}
-              >
-                <Plus size={16} />
-                {isPending
-                  ? (isEdit ? 'Updating...' : 'Creating...')
-                  : (isEdit ? 'Update Task' : 'Create Task')
-                }
-              </Button>
-            </Flex>
+    <div className="pb-8 mx-auto space-y-6 max-w-4xl">
+      {/* Header */}
+      <Box>
+        <Button
+          variant="ghost"
+          color="gray"
+          asChild
+          size="2"
+          className="mb-4"
+        >
+          <Link to={'/platform-admin/dashboard/tasks'}>
+            <ArrowLeft size={16} /> Back to Tasks
+          </Link>
+        </Button>
+        <Flex justify={'between'} align={'start'} wrap='wrap' gap='2'>
+          <Flex direction={'column'}>
+            <Heading as="h1" size="6" weight="medium">
+              {isEdit ? 'Edit Task' : 'Create New Task'}
+            </Heading>
+            <Text color="gray" size="2" className="mt-1">
+              {isEdit
+                ? 'Modify the existing task details and settings.'
+                : 'Create a new task for students to complete and earn scholarship points.'
+              }
+            </Text>
           </Flex>
-        </Box>
-        <Text as="p" size="1" color="gray" className='italic'>
-          * Required fields
-        </Text>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {
-            (isError) && (
-              <Callout.Root
-                color="red"
-                variant="surface"
+          <Flex gap='2' align='center' wrap='wrap' >
+            {/* Preview Task Button */}
+            <Tooltip content={!isValid ? "Fill required fields to enable preview" : "Preview task before creating"}>
+              <Button
+                type='button'
+                variant='outline'
+                color='gray'
+                disabled={!isValid}
+                onClick={() => setPreviewTaskFormOpen(true)}
               >
-                <Callout.Icon>
-                  <Info size={16} />
-                </Callout.Icon>
-                <Callout.Text>
-                  {error?.response?.data?.message ||
-                    "Failed to create task."}
-                </Callout.Text>
-              </Callout.Root>
-            )
-          }
-          {/* Task Info - title, description, scholarship points, due date */}
-          <FormSection title={'Task Info'} >
-            <Flex gap="4" className="flex-col md:flex-row">
-              {/* Task title */}
-              <div className="flex-1">
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Task Title *
-                  </Text>
-                  <TextField.Root placeholder="Enter task title" className="w-full" {...register('title', {
-                    required: "Task title is required"
-                  })} />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    Choose a clear, descriptive title that explains what students need to do
-                  </Text>
-                  <FormFieldErrorMessage errors={errors} field="title" />
-                </label>
-              </div>
+                <Eye size={16} /> Preview Task
+              </Button>
+            </Tooltip>
 
-              {/* Due date */}
-              <div className="flex-1">
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Due Date
-                  </Text>
-                  <TextField.Root type="datetime-local" className='w-max' {...register('dueDate', {
-                    validate: (value) => {
-                      if (!value || value.trim() === '') return true;
+            {/* Create/Update Task Button */}
+            <Button
+              type="submit"
+              color="grass"
+              disabled={isPending}
+              onClick={handleSubmit(onSubmit)}
+            >
+              <Plus size={16} />
+              {isPending
+                ? (isEdit ? 'Updating...' : 'Creating...')
+                : (isEdit ? 'Update Task' : 'Create Task')
+              }
+            </Button>
+          </Flex>
+        </Flex>
+      </Box>
+      <Text as="p" size="1" color="gray" className='italic'>
+        * Required fields
+      </Text>
 
-                      const dateValue = new Date(value);
-                      if (isNaN(dateValue.getTime())) return "Please enter a valid date";
-
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0); // zero out time
-                      return dateValue >= today || "Due date must be today or in the future";
-                    },
-                  })} />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    Set a reasonable deadline that gives students enough time to complete the task
-                  </Text>
-                  <FormFieldErrorMessage errors={errors} field="dueDate" />
-                </label>
-              </div>
-
-
-            </Flex>
-            <Flex gap="4" className="flex-col md:flex-row">
-              {/* Task description */}
-              <div className='flex-1'>
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Task Description
-                  </Text>
-                  <TextArea placeholder="Enter task description"
-                    resize={'vertical'}
-                    {...register("description")}
-                    className="w-full" />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    Provide clear instructions and all details needed to complete the task successfully
-                  </Text>
-                </label>
-              </div>
-
-            </Flex>
-          </FormSection>
-
-          {/* Categorization - category, difficulty */}
-          <FormSection title={'Categorization'}>
-            <Flex gap="4" className="flex-col md:flex-row">
-              {/* Task Category */}
-              <div className='flex-1'>
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Task Category *
-                  </Text>
-                  <Controller
-                    name="subCategory"
-                    control={control}
-                    rules={{ required: 'Please select a category' }}
-                    render={({ field }) => {
-                      // Group categories by type
-                      const groupedCategories = taskCategories?.data?.reduce((acc, category) => {
-                        const type = category.type || 'Other';
-                        if (!acc[type]) {
-                          acc[type] = [];
-                        }
-                        acc[type].push(category);
-                        return acc;
-                      }, {}) || {};
-
-                      return (
-                        <Select.Root value={field.value} onValueChange={field.onChange}>
-                          <Select.Trigger placeholder="Select category" className="w-full" />
-                          <Select.Content variant="soft" position="popper">
-                            {Object.entries(groupedCategories).map(([type, categories], index) => (
-                              <Select.Group key={type}>
-                                <Select.Label className='text-xs capitalize'>
-                                  {type}
-                                </Select.Label>
-                                {categories.map((category) => (
-                                  <Select.Item key={category._id} value={category.name} className='capitalize'>
-                                    {category.name}
-                                  </Select.Item>
-                                ))}
-                                <Select.Separator className={index === Object.entries(groupedCategories).length - 1 ? 'hidden' : ''} />
-                              </Select.Group>
-                            ))}
-                          </Select.Content>
-                        </Select.Root>
-                      );
-                    }}
-                  />
-                </label>
-                <Text as="p" size="1" color="gray" mt="1">
-                  Select the category that best describes the task
+      {/* Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {
+          (isError) && (
+            <Callout.Root
+              color="red"
+              variant="surface"
+            >
+              <Callout.Icon>
+                <Info size={16} />
+              </Callout.Icon>
+              <Callout.Text>
+                {error?.response?.data?.message ||
+                  "Failed to create task."}
+              </Callout.Text>
+            </Callout.Root>
+          )
+        }
+        {/* Task Info - title, description, scholarship points, due date */}
+        <FormSection title={'Task Info'} >
+          <Flex gap="4" className="flex-col md:flex-row">
+            {/* Task title */}
+            <div className="flex-1">
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Task Title *
                 </Text>
-                <FormFieldErrorMessage errors={errors} field="subCategory" />
-              </div>
+                <TextField.Root placeholder="Enter task title" className="w-full" {...register('title', {
+                  required: "Task title is required"
+                })} />
+                <Text as="p" size="1" color="gray" mt="1">
+                  Choose a clear, descriptive title that explains what students need to do
+                </Text>
+                <FormFieldErrorMessage errors={errors} field="title" />
+              </label>
+            </div>
 
-              {/* Difficulty Level */}
-              <div className='flex-1'>
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Difficulty Level
-                  </Text>
-                  <Controller
-                    name="difficulty"
-                    control={control}
-                    render={({ field }) => (
+            {/* Due date */}
+            <div className="flex-1">
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Due Date
+                </Text>
+                <TextField.Root type="datetime-local" className='w-max' {...register('dueDate', {
+                  validate: (value) => {
+                    if (!value || value.trim() === '') return true;
+
+                    const dateValue = new Date(value);
+                    if (isNaN(dateValue.getTime())) return "Please enter a valid date";
+
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // zero out time
+                    return dateValue >= today || "Due date must be today or in the future";
+                  },
+                })} />
+                <Text as="p" size="1" color="gray" mt="1">
+                  Set a reasonable deadline that gives students enough time to complete the task
+                </Text>
+                <FormFieldErrorMessage errors={errors} field="dueDate" />
+              </label>
+            </div>
+
+
+          </Flex>
+          <Flex gap="4" className="flex-col md:flex-row">
+            {/* Task description */}
+            <div className='flex-1'>
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Task Description
+                </Text>
+                <TextArea placeholder="Enter task description"
+                  resize={'vertical'}
+                  {...register("description")}
+                  className="w-full" />
+                <Text as="p" size="1" color="gray" mt="1">
+                  Provide clear instructions and all details needed to complete the task successfully
+                </Text>
+              </label>
+            </div>
+
+          </Flex>
+        </FormSection>
+
+        {/* Categorization - category, difficulty */}
+        <FormSection title={'Categorization'}>
+          <Flex gap="4" className="flex-col md:flex-row">
+            {/* Task Category */}
+            <div className='flex-1'>
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Task Category *
+                </Text>
+                <Controller
+                  name="subCategory"
+                  control={control}
+                  rules={{ required: 'Please select a category' }}
+                  render={({ field }) => {
+                    // Group categories by type
+                    const groupedCategories = taskCategories?.data?.reduce((acc, category) => {
+                      const type = category.type || 'Other';
+                      if (!acc[type]) {
+                        acc[type] = [];
+                      }
+                      acc[type].push(category);
+                      return acc;
+                    }, {}) || {};
+
+                    return (
                       <Select.Root value={field.value} onValueChange={field.onChange}>
-                        <Select.Trigger placeholder="Select difficulty" className="w-full" />
+                        <Select.Trigger placeholder="Select category" className="w-full" />
                         <Select.Content variant="soft" position="popper">
-                          <Select.Item value="easy">Easy</Select.Item>
-                          <Select.Item value="medium">Medium</Select.Item>
-                          <Select.Item value="hard">Hard</Select.Item>
-                          <Select.Item value="challenging">Challenging</Select.Item>
+                          {Object.entries(groupedCategories).map(([type, categories], index) => (
+                            <Select.Group key={type}>
+                              <Select.Label className='text-xs capitalize'>
+                                {type}
+                              </Select.Label>
+                              {categories.map((category) => (
+                                <Select.Item key={category._id} value={category.name} className='capitalize'>
+                                  {category.name}
+                                </Select.Item>
+                              ))}
+                              <Select.Separator className={index === Object.entries(groupedCategories).length - 1 ? 'hidden' : ''} />
+                            </Select.Group>
+                          ))}
                         </Select.Content>
                       </Select.Root>
-                    )}
-                  />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    Set the difficulty level to help students understand the task complexity
-                  </Text>
-                </label>
-              </div>
-            </Flex>
+                    );
+                  }}
+                />
+              </label>
+              <Text as="p" size="1" color="gray" mt="1">
+                Select the category that best describes the task
+              </Text>
+              <FormFieldErrorMessage errors={errors} field="subCategory" />
+            </div>
+
+            {/* Difficulty Level */}
+            <div className='flex-1'>
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Difficulty Level
+                </Text>
+                <Controller
+                  name="difficulty"
+                  control={control}
+                  render={({ field }) => (
+                    <Select.Root value={field.value} onValueChange={field.onChange}>
+                      <Select.Trigger placeholder="Select difficulty" className="w-full" />
+                      <Select.Content variant="soft" position="popper">
+                        <Select.Item value="easy">Easy</Select.Item>
+                        <Select.Item value="medium">Medium</Select.Item>
+                        <Select.Item value="hard">Hard</Select.Item>
+                        <Select.Item value="challenging">Challenging</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  )}
+                />
+                <Text as="p" size="1" color="gray" mt="1">
+                  Set the difficulty level to help students understand the task complexity
+                </Text>
+              </label>
+            </div>
+          </Flex>
+
+          <Flex gap="4" className="flex-col md:flex-row">
+            {/* Scholarship points */}
+            <div className="flex-1">
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Scholarship Points *
+                </Text>
+                <TextField.Root type="number" placeholder="Enter points" className="w-full" {...register('pointValue', {
+                  valueAsNumber: true,
+                  required: "Scholarship points are required",
+                  min: {
+                    value: 1,
+                    message: "Points must be greater than 0"
+                  }
+                })} />
+                <Text as="p" size="1" color="gray" mt="1">
+                  This field will automatically fill based on the Task category selected
+                </Text>
+                <FormFieldErrorMessage errors={errors} field="pointValue" />
+              </label>
+            </div>
+          </Flex>
+        </FormSection>
+
+        {/* Resources & Attachments */}
+        <FormSection title={'Resources & Attachments'}>
+          {/* External Resource */}
+          <div className="space-y-4">
+            <Text as="div" size="3" weight="medium">
+              External Resource
+            </Text>
+            <Text as="p" size="1" color="gray">
+              Link to external platforms or resources (e.g., Khan Academy, YouTube, etc.)
+            </Text>
 
             <Flex gap="4" className="flex-col md:flex-row">
-              {/* Scholarship points */}
               <div className="flex-1">
                 <label>
                   <Text as="div" size="2" mb="2" weight="medium">
-                    Scholarship Points *
-                  </Text>
-                  <TextField.Root type="number" placeholder="Enter points" className="w-full" {...register('pointValue', {
-                    valueAsNumber: true,
-                    required: "Scholarship points are required",
-                    min: {
-                      value: 1,
-                      message: "Points must be greater than 0"
-                    }
-                  })} />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    This field will automatically fill based on the Task category selected
-                  </Text>
-                  <FormFieldErrorMessage errors={errors} field="pointValue" />
-                </label>
-              </div>
-            </Flex>
-          </FormSection>
-
-          {/* Resources & Attachments */}
-          <FormSection title={'Resources & Attachments'}>
-            {/* External Resource */}
-            <div className="space-y-4">
-              <Text as="div" size="3" weight="medium">
-                External Resource
-              </Text>
-              <Text as="p" size="1" color="gray">
-                Link to external platforms or resources (e.g., Khan Academy, YouTube, etc.)
-              </Text>
-
-              <Flex gap="4" className="flex-col md:flex-row">
-                <div className="flex-1">
-                  <label>
-                    <Text as="div" size="2" mb="2" weight="medium">
-                      Platform Name
-                    </Text>
-                    <TextField.Root
-                      placeholder="e.g., Khan Academy, YouTube"
-                      className="w-full"
-                      {...register('externalResource.platform', {
-                        required: {
-                          value: (externalResourceUrl && externalResourceUrl.trim() !== ''),
-                          message: 'Platform name is required when URL is provided'
-                        }
-                      })}
-                    />
-                  </label>
-                  <FormFieldErrorMessage errors={errors} field="externalResource.platform" />
-                </div>
-
-                <div className="flex-1">
-                  <label>
-                    <Text as="div" size="2" mb="2" weight="medium">
-                      Resource ID
-                    </Text>
-                    <TextField.Root
-                      placeholder="e.g., video ID, lesson ID"
-                      className="w-full"
-                    />
-                  </label>
-                  <FormFieldErrorMessage errors={errors} field="externalResource.resourceId" />
-                </div>
-              </Flex>
-
-              <div>
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Resource URL
+                    Platform Name
                   </Text>
                   <TextField.Root
-                    placeholder="https://..."
+                    placeholder="e.g., Khan Academy, YouTube"
                     className="w-full"
-                    {...register('externalResource.url', {
-                      pattern: {
-                        value: /^https?:\/\/.+/,
-                        message: "Please enter a valid URL starting with http:// or https://"
-                      },
+                    {...register('externalResource.platform', {
                       required: {
-                        value: (externalResourcePlatform && externalResourcePlatform.trim() !== ''),
-                        message: 'Resource URL is required when Platform is provided'
+                        value: (externalResourceUrl && externalResourceUrl.trim() !== ''),
+                        message: 'Platform name is required when URL is provided'
                       }
                     })}
                   />
-                  <FormFieldErrorMessage errors={errors} field="externalResource.url" />
                 </label>
+                <FormFieldErrorMessage errors={errors} field="externalResource.platform" />
               </div>
-            </div>
 
-            {/* File Attachments */}
-            <div className="space-y-4">
-              <Text as="div" size="3" weight="medium">
-                File Attachments
-              </Text>
-              <Text as="p" size="1" color="gray">
-                Upload supporting materials, instructions, or examples (Max 5 files, 10MB each)
-              </Text>
-
-              <FileUpload
-                onFilesChange={handleFileChange}
-                existingAttachments={watch('existingAttachments') || []}
-              />
-            </div>
-          </FormSection>
-
-          {/* Assignment - assigned to */}
-          <FormSection title={'Assignment'}>
-            {/* Assigned to */}
-            <Flex gap="4" className="flex-col lg:flex-row">
               <div className="flex-1">
-                <Text as="label" htmlFor='assigned' size="2" weight="medium">
-                  Assign To *
-                </Text>
-                <div className='mt-2'>
-                  <Flex align="start" gap="4">
-
-                    <Flex asChild gap="2">
-                      <Text as="label" size="2">
-                        <Radio id='assigned' {...register('assigned', {
-                          required: "Assigned to is required"
-                        })} value="student" />
-                        All Students
-                      </Text>
-                    </Flex>
-
-                    <Flex asChild gap="2">
-                      <Text as="label" size="2">
-                        <Radio
-                          id='assigned'
-                          {...register('assigned', {
-                            required: "Assigned to is required"
-                          })}
-                          value="parent"
-                        />
-                        Parents
-                      </Text>
-                    </Flex>
-
-                    <Flex asChild gap="2">
-                      <Text as="label" size="2">
-                        <Radio id='assigned' {...register('assigned', {
-                          required: "Assigned to is required"
-                        })} value="school" />
-                        School
-                      </Text>
-                    </Flex>
-                  </Flex>
-                  <FormFieldErrorMessage errors={errors} field="assigned" />
-                </div>
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Resource ID
+                  </Text>
+                  <TextField.Root
+                    placeholder="e.g., video ID, lesson ID"
+                    className="w-full"
+                  />
+                </label>
+                <FormFieldErrorMessage errors={errors} field="externalResource.resourceId" />
               </div>
-              {!!assigned && assigned !== 'school' && (
-                <div className='flex-1'>
-                  <Callout.Root variant='surface' color='blue'>
-                    <Callout.Icon>
-                      <Info size={16} />
-                    </Callout.Icon>
-                    <Callout.Text>
-                      This task will be visible to all {assigned}s.
-                      To assign it to specific {assigned}s only, select them from the list below.
-                    </Callout.Text>
-                  </Callout.Root>
-                  <div className='mt-4'>
-                    <Controller
-                      name="selectedPeople"
-                      control={control}
-                      defaultValue={[]}
-                      render={({ field }) => (
-                        <AsyncSelect
-                          {...field}
-                          isMulti
-                          defaultOptions={false}
-                          loadOptions={loadOptions}
-                          onChange={field.onChange}
-                          value={field.value}
-                          placeholder={`Search and select ${assigned}s...`}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
             </Flex>
 
-            {/* School ID and Class ID */}
-            {assigned === 'school' && <Flex gap="4" className="flex-col lg:flex-row">
-              {/* School ID */}
-              <div className="flex-1">
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    School ID
-                  </Text>
-                  <TextField.Root
-                    placeholder="Enter school ID"
-                    className="w-full"
-                    {...register('schoolId', {
-                      required: 'School ID is required',
-                    })}
-                  />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    Leave empty for general tasks
-                  </Text>
-                  <FormFieldErrorMessage errors={errors} field="schoolId" />
-                </label>
-              </div>
+            <div>
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Resource URL
+                </Text>
+                <TextField.Root
+                  placeholder="https://..."
+                  className="w-full"
+                  {...register('externalResource.url', {
+                    pattern: {
+                      value: /^https?:\/\/.+/,
+                      message: "Please enter a valid URL starting with http:// or https://"
+                    },
+                    required: {
+                      value: (externalResourcePlatform && externalResourcePlatform.trim() !== ''),
+                      message: 'Resource URL is required when Platform is provided'
+                    }
+                  })}
+                />
+                <FormFieldErrorMessage errors={errors} field="externalResource.url" />
+              </label>
+            </div>
+          </div>
 
-              {/* Class ID */}
-              <div className="flex-1">
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Class ID
-                  </Text>
-                  <TextField.Root
-                    placeholder="Enter class ID"
-                    className="w-full"
-                    {...register('classId')}
-                  />
-                  <Text as="p" size="1" color="gray" mt="1">
-                    Leave empty for school-wide tasks
-                  </Text>
-                  <FormFieldErrorMessage errors={errors} field="classId" />
-                </label>
-              </div>
-            </Flex>}
-          </FormSection>
+          {/* File Attachments */}
+          <div className="space-y-4">
+            <Text as="div" size="3" weight="medium">
+              File Attachments
+            </Text>
+            <Text as="p" size="1" color="gray">
+              Upload supporting materials, instructions, or examples (Max 5 files, 10MB each)
+            </Text>
 
-          {/* Approval settings - requires approval, who can approve this task */}
-          <FormSection title={'Approval Settings'}>
-            <Flex gap="4" className="flex-col md:flex-row">
-              {/* Requires approval */}
-              <div className="flex-1">
-                <label>
-                  <Text as="div" size="2" mb="2" weight="medium">
-                    Requires Approval *
-                  </Text>
-                  <Flex align="start" gap="4">
-                    <Flex asChild gap="2">
-                      <Text as="label" size="2">
-                        <Radio {...register('requiresApproval')} value={true} defaultChecked />
-                        Yes
-                      </Text>
-                    </Flex>
+            <FileUpload
+              onFilesChange={handleFileChange}
+              existingAttachments={watch('existingAttachments') || []}
+            />
+          </div>
+        </FormSection>
 
-                    <Flex asChild gap="2">
-                      <Text as="label" size="2">
-                        <Radio {...register('requiresApproval')} value={false} />
-                        No
-                      </Text>
-                    </Flex>
+        {/* Assignment - assigned to */}
+        <FormSection title={'Assignment'}>
+          {/* Assigned to */}
+          <Flex gap="4" className="flex-col lg:flex-row">
+            <div className="flex-1">
+              <Text as="label" htmlFor='assigned' size="2" weight="medium">
+                Assign To *
+              </Text>
+              <div className='mt-2'>
+                <Flex align="start" gap="4">
+
+                  <Flex asChild gap="2">
+                    <Text as="label" size="2">
+                      <Radio id='assigned' {...register('assigned', {
+                        required: "Assigned to is required"
+                      })} value="student" />
+                      All Students
+                    </Text>
                   </Flex>
-                </label>
+
+                  <Flex asChild gap="2">
+                    <Text as="label" size="2">
+                      <Radio
+                        id='assigned'
+                        {...register('assigned', {
+                          required: "Assigned to is required"
+                        })}
+                        value="parent"
+                      />
+                      Parents
+                    </Text>
+                  </Flex>
+
+                  <Flex asChild gap="2">
+                    <Text as="label" size="2">
+                      <Radio id='assigned' {...register('assigned', {
+                        required: "Assigned to is required"
+                      })} value="school" />
+                      School
+                    </Text>
+                  </Flex>
+                </Flex>
+                <FormFieldErrorMessage errors={errors} field="assigned" />
+              </div>
+            </div>
+            {!!assigned && assigned !== 'school' && (
+              <div className='flex-1'>
+                <Callout.Root variant='surface' color='blue'>
+                  <Callout.Icon>
+                    <Info size={16} />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    This task will be visible to all {assigned}s.
+                    To assign it to specific {assigned}s only, select them from the list below.
+                  </Callout.Text>
+                </Callout.Root>
+                <div className='mt-4'>
+                  <Controller
+                    name="selectedPeople"
+                    control={control}
+                    defaultValue={[]}
+                    render={({ field }) => (
+                      <AsyncSelect
+                        {...field}
+                        isMulti
+                        defaultOptions={false}
+                        loadOptions={loadOptions}
+                        onChange={field.onChange}
+                        value={field.value}
+                        placeholder={`Search and select ${assigned}s...`}
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+          </Flex>
+
+          {/* School ID and Class ID */}
+          {assigned === 'school' && <Flex gap="4" className="flex-col lg:flex-row">
+            {/* School ID */}
+            <div className="flex-1">
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  School ID
+                </Text>
+                <TextField.Root
+                  placeholder="Enter school ID"
+                  className="w-full"
+                  {...register('schoolId', {
+                    required: 'School ID is required',
+                  })}
+                />
                 <Text as="p" size="1" color="gray" mt="1">
-                  Select whether the task requires approval or not
+                  Leave empty for general tasks
                 </Text>
-              </div>
-            </Flex>
-          </FormSection>
-        </form>
+                <FormFieldErrorMessage errors={errors} field="schoolId" />
+              </label>
+            </div>
 
-        <PreviewTaskForm
-          open={previewTaskFormOpen}
-          setOpen={setPreviewTaskFormOpen}
-          task={getValues()}
-        />
-      </div >
-    </Container >
+            {/* Class ID */}
+            <div className="flex-1">
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Class ID
+                </Text>
+                <TextField.Root
+                  placeholder="Enter class ID"
+                  className="w-full"
+                  {...register('classId')}
+                />
+                <Text as="p" size="1" color="gray" mt="1">
+                  Leave empty for school-wide tasks
+                </Text>
+                <FormFieldErrorMessage errors={errors} field="classId" />
+              </label>
+            </div>
+          </Flex>}
+        </FormSection>
+
+        {/* Approval settings - requires approval, who can approve this task */}
+        <FormSection title={'Approval Settings'}>
+          <Flex gap="4" className="flex-col md:flex-row">
+            {/* Requires approval */}
+            <div className="flex-1">
+              <label>
+                <Text as="div" size="2" mb="2" weight="medium">
+                  Requires Approval *
+                </Text>
+                <Flex align="start" gap="4">
+                  <Flex asChild gap="2">
+                    <Text as="label" size="2">
+                      <Radio {...register('requiresApproval')} value={true} defaultChecked />
+                      Yes
+                    </Text>
+                  </Flex>
+
+                  <Flex asChild gap="2">
+                    <Text as="label" size="2">
+                      <Radio {...register('requiresApproval')} value={false} />
+                      No
+                    </Text>
+                  </Flex>
+                </Flex>
+              </label>
+              <Text as="p" size="1" color="gray" mt="1">
+                Select whether the task requires approval or not
+              </Text>
+            </div>
+          </Flex>
+        </FormSection>
+      </form>
+
+      <PreviewTaskForm
+        open={previewTaskFormOpen}
+        setOpen={setPreviewTaskFormOpen}
+        task={getValues()}
+      />
+    </div >
   );
 };
 

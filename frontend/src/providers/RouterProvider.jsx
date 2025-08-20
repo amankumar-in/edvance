@@ -24,8 +24,11 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route
       path="/"
-      element={<App />}
-      ErrorBoundary={ErrorBoundaryWrapper}
+      element={
+        <ErrorBoundaryWrapper>
+          <App />
+        </ErrorBoundaryWrapper>
+      }
     >
 
       {/* Public Routes */}

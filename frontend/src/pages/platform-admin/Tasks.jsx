@@ -207,7 +207,7 @@ function Tasks() {
           height={'4px'}
         />
       </div>}
-      <div className='relative px-4 py-8 space-y-6 lg:px-8 xl:px-12'>
+      <div className='relative space-y-6'>
 
         {/* Heading */}
         <Flex justify='between' align='center'>
@@ -512,8 +512,8 @@ function Tasks() {
 
         ) : tasks.length > 0 ? (
           // Main data table
-          <div>
-            <Table.Root variant='surface' layout={'auto'} className='shadow-md'>
+          <Card size={'2'} className='shadow-md'>
+            <Table.Root>
               <Table.Header>
                 <Table.Row>
                   {columns.map((column) => (
@@ -533,12 +533,12 @@ function Tasks() {
               </Table.Header>
               <Table.Body>
                 {tasks.map((task) => (
-                  <Table.Row key={task._id} className='hover:bg-[--gray-a2]'>
+                  <Table.Row key={task._id} className='hover:bg-[--gray-a3] odd:bg-[--gray-a2]'>
                     <Table.Cell>
-                      <Text title={task.title} className='line-clamp-2 min-w-[250px]'>{task.title}</Text>
+                      <Text title={task.title} className='line-clamp-1 min-w-[300px]'>{task.title}</Text>
                     </Table.Cell>
                     <Table.Cell >
-                      <Text title={task.description} className='line-clamp-2 min-w-[250px]'>{task.description || '-'}</Text>
+                      <Text title={task.description} className='line-clamp-1 min-w-[300px]'>{task.description || '-'}</Text>
                     </Table.Cell>
                     <Table.Cell className='text-nowrap'>{task.category}</Table.Cell>
                     <Table.Cell className='text-nowrap'>{task.subCategory || '-'}</Table.Cell>
@@ -602,9 +602,9 @@ function Tasks() {
               itemsPerPageOptions={[5, 10, 20, 50, 100]}
               itemLabel="tasks"
               disabled={isLoading || isFetching}
-              className='mt-6'
+              className='mt-4'
             />
-          </div>
+          </Card>
         ) : (
           // Empty state
           <EmptyStateCard

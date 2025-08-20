@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Callout, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes';
+import { Badge, Box, Button, Callout, Card, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes';
 import { Activity, AlertCircleIcon, Book, Calculator, Calendar, Database, Droplet, Edit, FunnelX, Home, ListTodo, Microscope, MoreVertical, Music, Pen, Plus, RefreshCw, Search, Settings, ThumbsUp, Trash2, TreePine } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router';
@@ -124,7 +124,7 @@ const TaskCategories = () => {
   }, []);
 
   const renderCategoryRow = useCallback((category) => (
-    <Table.Row key={category._id} className='hover:bg-[--gray-a2]'>
+    <Table.Row key={category._id} className='hover:bg-[--gray-a3] odd:bg-[--gray-a2]'>
       <Table.Cell>
         <Flex align="center" gap="3" className='text-nowrap'>
           {category.parentCategory && (
@@ -245,7 +245,7 @@ const TaskCategories = () => {
           height={'4px'}
         />
       </div>}
-      <Box className='px-4 py-8 lg:px-8 xl:px-12'>
+      <Box>
         <Flex direction="column" className='gap-6'>
           {/* Header */}
           <Flex justify="between" align="center" gap="4" wrap="wrap">
@@ -391,22 +391,24 @@ const TaskCategories = () => {
               </Callout.Text>
             </Callout.Root>
           ) : taskCategories?.data?.length > 0 ? (
-            < Table.Root variant='surface'>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell className='font-medium capitalize' key='category'>Category ({taskCategories?.data?.length > 0 && taskCategories?.data?.length})</Table.ColumnHeaderCell>
-                  {['type', 'points', 'visibility', 'status', 'created', 'actions'].map((header) => (
-                    <Table.ColumnHeaderCell className='font-medium capitalize' key={header}>{header}</Table.ColumnHeaderCell>
-                  ))}
-                </Table.Row>
-              </Table.Header>
+            <Card size={'2'} className='shadow-md'>
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell className='font-medium capitalize' key='category'>Category ({taskCategories?.data?.length > 0 && taskCategories?.data?.length})</Table.ColumnHeaderCell>
+                    {['type', 'points', 'visibility', 'status', 'created', 'actions'].map((header) => (
+                      <Table.ColumnHeaderCell className='font-medium capitalize' key={header}>{header}</Table.ColumnHeaderCell>
+                    ))}
+                  </Table.Row>
+                </Table.Header>
 
-              <Table.Body>
-                {taskCategories?.data?.map((category) => (
-                  renderCategoryRow(category)
-                ))}
-              </Table.Body>
-            </Table.Root>
+                <Table.Body>
+                  {taskCategories?.data?.map((category) => (
+                    renderCategoryRow(category)
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </Card>
           ) : (
             <EmptyStateCard
               title="No categories found"

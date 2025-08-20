@@ -1,4 +1,4 @@
-import { Box, Callout, Flex, IconButton, Select, Separator, Table, Text, Tooltip } from '@radix-ui/themes';
+import { Box, Callout, Card, Flex, IconButton, Select, Separator, Table, Text, Tooltip } from '@radix-ui/themes';
 import { AlertCircleIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown, ChevronUp, EyeIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router';
@@ -132,8 +132,8 @@ const UserTable = ({ role }) => {
           height={'4px'}
         />
       </div>}
-      <div>
-        <Table.Root variant='surface' layout={'auto'}>
+      <Card size={'2'} className='shadow-md'>
+        <Table.Root variant='ghost' layout={'auto'}>
           <Table.Header>
             <Table.Row>
               {columns.map((column) => (
@@ -166,7 +166,7 @@ const UserTable = ({ role }) => {
               </Table.Row>
             ) : (
               users.map((user) => (
-                <Table.Row key={user._id} className='hover:bg-[--gray-a2]'>
+                <Table.Row key={user._id} className='hover:bg-[--gray-a3] odd:bg-[--gray-a2]'>
                   <Table.Cell>{user._id}</Table.Cell>
                   <Table.Cell className='text-nowrap'>{user.name}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
@@ -182,7 +182,7 @@ const UserTable = ({ role }) => {
                           <PencilIcon size={14} />
                         </IconButton>
                       </Tooltip>
-                      <Separator orientation={'vertical'}/>
+                      <Separator orientation={'vertical'} />
                       <Tooltip content='View user'>
                         <IconButton
                           // variant='ghost'
@@ -196,7 +196,7 @@ const UserTable = ({ role }) => {
                           </Link>
                         </IconButton  >
                       </Tooltip>
-                      <Separator orientation={'vertical'}/>
+                      <Separator orientation={'vertical'} />
                       <Tooltip content='Delete user'>
                         <IconButton
                           // variant='ghost'
@@ -215,67 +215,67 @@ const UserTable = ({ role }) => {
             )}
           </Table.Body>
         </Table.Root>
-      </div>
 
-      <Flex justify="between" align="center" mt="4" wrap={'wrap-reverse'} gap={'2'}>
-        <Flex align="center" gap="2">
-          <Text size="2">Rows per page:</Text>
-          <Select.Root
-            value={String(limit)}
-            onValueChange={(value) => setLimit(Number(value))}
-          >
-            <Select.Trigger />
-            <Select.Content position='popper' variant='soft'>
-              <Select.Item value="10">10</Select.Item>
-              <Select.Item value="25">25</Select.Item>
-              <Select.Item value="50">50</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Flex>
+        <Flex justify="between" align="center" mt="4" wrap={'wrap-reverse'} gap={'2'}>
+          <Flex align="center" gap="2">
+            <Text size="2">Rows per page:</Text>
+            <Select.Root
+              value={String(limit)}
+              onValueChange={(value) => setLimit(Number(value))}
+            >
+              <Select.Trigger />
+              <Select.Content position='popper' variant='soft'>
+                <Select.Item value="10">10</Select.Item>
+                <Select.Item value="25">25</Select.Item>
+                <Select.Item value="50">50</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Flex>
 
-        {/* Pagination */}
-        <Flex align="center" gap="2">
-          <Text size="2">
-            {pagination.pagingCounter || 0}-{Math.min((pagination.pagingCounter || 0) + (users.length - 1), pagination.totalDocs || 0)} of {pagination.totalDocs || 0}
-          </Text>
-          <IconButton
-            aria-label='First'
-            title='First'
-            variant="ghost"
-            disabled={!pagination.hasPrevPage}
-            onClick={() => setPage(1)}
-          >
-            <ChevronsLeft size={16} />
-          </IconButton>
-          <IconButton
-            aria-label='Previous'
-            title='Previous'
-            variant="ghost"
-            disabled={!pagination.hasPrevPage}
-            onClick={handlePreviousPage}
-          >
-            <ChevronLeft size={16} />
-          </IconButton>
-          <IconButton
-            aria-label='Next'
-            title='Next'
-            variant="ghost"
-            disabled={!pagination.hasNextPage}
-            onClick={handleNextPage}
-          >
-            <ChevronRight size={16} />
-          </IconButton>
-          <IconButton
-            aria-label='Last'
-            title='Last'
-            variant="ghost"
-            disabled={!pagination.hasNextPage}
-            onClick={() => setPage(pagination.totalPages)}
-          >
-            <ChevronsRight size={16} />
-          </IconButton>
+          {/* Pagination */}
+          <Flex align="center" gap="2">
+            <Text size="2">
+              {pagination.pagingCounter || 0}-{Math.min((pagination.pagingCounter || 0) + (users.length - 1), pagination.totalDocs || 0)} of {pagination.totalDocs || 0}
+            </Text>
+            <IconButton
+              aria-label='First'
+              title='First'
+              variant="ghost"
+              disabled={!pagination.hasPrevPage}
+              onClick={() => setPage(1)}
+            >
+              <ChevronsLeft size={16} />
+            </IconButton>
+            <IconButton
+              aria-label='Previous'
+              title='Previous'
+              variant="ghost"
+              disabled={!pagination.hasPrevPage}
+              onClick={handlePreviousPage}
+            >
+              <ChevronLeft size={16} />
+            </IconButton>
+            <IconButton
+              aria-label='Next'
+              title='Next'
+              variant="ghost"
+              disabled={!pagination.hasNextPage}
+              onClick={handleNextPage}
+            >
+              <ChevronRight size={16} />
+            </IconButton>
+            <IconButton
+              aria-label='Last'
+              title='Last'
+              variant="ghost"
+              disabled={!pagination.hasNextPage}
+              onClick={() => setPage(pagination.totalPages)}
+            >
+              <ChevronsRight size={16} />
+            </IconButton>
+          </Flex>
         </Flex>
-      </Flex>
+      </Card>
     </Box>
   );
 };
