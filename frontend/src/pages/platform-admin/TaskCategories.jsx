@@ -391,7 +391,7 @@ const TaskCategories = () => {
               </Callout.Text>
             </Callout.Root>
           ) : taskCategories?.data?.length > 0 ? (
-            <Card size={'2'} className='shadow-md'>
+            <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
               <Table.Root>
                 <Table.Header>
                   <Table.Row>

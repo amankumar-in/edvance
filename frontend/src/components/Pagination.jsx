@@ -17,7 +17,7 @@ const Pagination = ({
   maxVisiblePages = 5,
   className = '',
   size = '2',
-  variant = 'outline',
+  variant = 'surface',
   disabled = false,
   showTotalCount = true,
   itemLabel = 'items',
@@ -154,6 +154,8 @@ const Pagination = ({
               disabled={shouldDisable || validCurrentPage <= 1}
               onClick={() => handlePageChange(1)}
               title="First page"
+              color='gray'
+              radius='full'
             >
               <ChevronsLeft size={16} />
             </IconButton>
@@ -167,6 +169,8 @@ const Pagination = ({
               disabled={shouldDisable || validCurrentPage <= 1}
               onClick={() => handlePageChange(validCurrentPage - 1)}
               title="Previous page"
+              color='gray'
+              radius='full'
             >
               <ChevronLeft size={16} />
             </IconButton>
@@ -182,6 +186,8 @@ const Pagination = ({
                 disabled={shouldDisable}
                 onClick={() => handlePageChange(page)}
                 className='text-sm'
+                color={page !== validCurrentPage && 'gray'}
+                radius='full'
               >
                 {page}
               </IconButton>
@@ -192,6 +198,7 @@ const Pagination = ({
               size={size}
               disabled={true}
               className='text-sm'
+              radius='full'
             >
               1
             </IconButton>
@@ -205,6 +212,8 @@ const Pagination = ({
               disabled={shouldDisable || validCurrentPage >= validTotalPages}
               onClick={() => handlePageChange(validCurrentPage + 1)}
               title="Next page"
+              color='gray'
+              radius='full'
             >
               <ChevronRight size={16} />
             </IconButton>
@@ -218,6 +227,8 @@ const Pagination = ({
               disabled={shouldDisable || validCurrentPage >= validTotalPages}
               onClick={() => handlePageChange(validTotalPages)}
               title="Last page"
+              color='gray'
+              radius='full'
             >
               <ChevronsRight size={16} />
             </IconButton>

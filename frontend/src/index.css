@@ -7,6 +7,7 @@
   --inactive-link: #e8e8ec;
   --icon-muted: #bbbbbb;
   --gray-background: var(--gray-a2);
+  --admin-navbar: rgba(255, 255, 255, 0.70);
 }
 
 .dark {
@@ -14,6 +15,7 @@
   --inactive-link: #e8e8ec;
   --icon-muted: #bbbbbb;
   --gray-background: var(--color-background);
+  --admin-navbar: rgba(17, 17, 19, 0.70);
 }
 
 .radix-themes {

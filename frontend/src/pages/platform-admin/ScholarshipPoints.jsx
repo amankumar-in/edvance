@@ -189,7 +189,7 @@ const LevelsManagement = () => {
           }
         />
       ) : (
-        <Card size={'2'} className='shadow-md'>
+        <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
           <Table.Root>
             <Table.Header>
               <Table.Row>

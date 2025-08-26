@@ -1,6 +1,6 @@
 import { Badge, Button, Callout, Card, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes'
 import { AlertCircleIcon, BookOpen, Calendar, Check, ClipboardList, Filter, MoreHorizontal, PencilIcon, Plus, Tag, TrashIcon, Users, X } from 'lucide-react'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { BarLoader } from 'react-spinners'
 import { toast } from 'sonner'
@@ -512,7 +512,7 @@ function Tasks() {
 
         ) : tasks.length > 0 ? (
           // Main data table
-          <Card size={'2'} className='shadow-md'>
+          <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
             <Table.Root>
               <Table.Header>
                 <Table.Row>

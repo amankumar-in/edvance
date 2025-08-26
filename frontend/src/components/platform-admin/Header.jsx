@@ -10,7 +10,7 @@ function Header({ toggleSidebar }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Flex as="nav" align="center" justify="between" gap="4" className="sticky top-0 z-50 w-full h-16 px-4 md:px-6 bg-[--color-background] ">
+    <Flex as="nav" align="center" justify="between" gap="4" className="sticky top-0 z-50 px-4 w-full h-16 backdrop-blur-lg bg-[--admin-navbar] md:px-6">
       <Flex align="center" gap="3" className="md:hidden">
         <IconButton
           size="3"

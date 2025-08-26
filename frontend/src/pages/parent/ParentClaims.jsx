@@ -47,7 +47,7 @@ function ParentClaims() {
       },
       onError: (error) => {
         console.log(error);
-        toast.error(toast.error(error?.response?.data?.message || error?.message || 'Failed to approve this task.'))
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to approve this task.');
       }
     });
   };

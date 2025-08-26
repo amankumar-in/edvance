@@ -122,19 +122,22 @@ const taskSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    // Who should approve this task
-    approverType: {
-      type: String,
-      enum: [
-        "parent",
-        "teacher",
-        "school_admin",
-        "social_worker",
-        "platform_admin",
-        "system",
-      ],
-      default: "system",
-    },
+    // Who can approve this task.
+    // Supports multiple roles (any user in those roles can approve)
+    approverType: [
+      {
+        type: String,
+        enum: [
+          "parent",
+          "teacher",
+          "school_admin",
+          "social_worker",
+          "platform_admin",
+          "system",
+        ],
+        default: "system",
+      }
+    ],
     // If this approverType is "parent", which specific parent ID should approve
     specificApproverId: {
       type: String,

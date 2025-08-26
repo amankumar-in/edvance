@@ -1,6 +1,6 @@
-import { Box, Button, Callout, Card, Flex, Heading, Radio, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
+import { Box, Button, Callout, Card, CheckboxGroup, Flex, Heading, Radio, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
 import { ArrowLeft, Eye, Info, Plus } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router';
 import AsyncSelect from 'react-select/async';
@@ -9,7 +9,7 @@ import { searchParents, searchStudents } from '../../api/search/search.api';
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { useCreateTask, useUpdateTask } from '../../api/task/task.mutations';
 import { useGetTaskById } from '../../api/task/task.queries';
-import { Container, FileUpload, FormFieldErrorMessage, Loader } from '../../components';
+import { FileUpload, FormFieldErrorMessage, Loader } from '../../components';
 import PreviewTaskForm from './components/PreviewTaskForm';
 
 const CreateTask = () => {
@@ -35,7 +35,7 @@ const CreateTask = () => {
       pointValue: 10,
       dueDate: '',
       requiresApproval: true,
-      approverType: 'system',
+      approverType: [],
       subCategory: '',
       selectedPeople: [],
       assigned: '',
@@ -88,12 +88,6 @@ const CreateTask = () => {
       }
     }
   }, [subCategory, taskCategories, setValue]);
-
-  // set approver type based on assigned
-  useEffect(() => {
-    if (assigned === 'school') setValue('approverType', 'teacher');
-    if (assigned === 'student' || assigned === 'parent') setValue('approverType', 'parent');
-  }, [assigned]);
 
   // populate form when editing
   useEffect(() => {
@@ -158,19 +152,15 @@ const CreateTask = () => {
     /* 
       - If approval is required:
       - For rewards assigned to a school, a teacher is set as the approver, and both schoolId and classId are included.
-      - For rewards assigned to a student or a parent, a parent is set as the approver.
+      - For rewards assigned to a student or a parent,there can be more than one approver.
     */
     if (requiresApproval) {
       if (assigned === 'school') {
-        formData.append('approverType', 'teacher');
+        formData.append('approverType', ['teacher']);
         formData.append('schoolId', schoolId || '');
         formData.append('classId', classId || '');
-      }
-      if (assigned === 'student') {
-        formData.append('approverType', 'parent');
-      }
-      if (assigned === 'parent') {
-        formData.append('approverType', 'parent');
+      } else {
+        formData.append('approverType', data.approverType);
       }
     }
 
@@ -747,14 +737,14 @@ const CreateTask = () => {
                 <Flex align="start" gap="4">
                   <Flex asChild gap="2">
                     <Text as="label" size="2">
-                      <Radio {...register('requiresApproval')} value={true} defaultChecked />
+                      <Radio {...register('requiresApproval')} value={'true'} />
                       Yes
                     </Text>
                   </Flex>
 
                   <Flex asChild gap="2">
                     <Text as="label" size="2">
-                      <Radio {...register('requiresApproval')} value={false} />
+                      <Radio {...register('requiresApproval')} value={'false'} />
                       No
                     </Text>
                   </Flex>
@@ -764,6 +754,47 @@ const CreateTask = () => {
                 Select whether the task requires approval or not
               </Text>
             </div>
+
+            {/* Approver Type */}
+            {(assigned === "student" || assigned === 'parent') && requiresApproval && (
+              <div className='flex-1'>
+                <label>
+                  <Text as="div" size="2" mb="2" weight="medium">
+                    Approver Type*
+                  </Text>
+
+                  <Controller
+                    name="approverType"
+                    control={control}
+                    rules={{
+                      validate: (value, formValues) => {
+                        if (formValues.requiresApproval && (!value || value.length === 0)) {
+                          return "Approver type is required";
+                        }
+                        return true;
+                      },
+                    }}
+                    render={({ field }) => (
+                      <CheckboxGroup.Root
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        className="space-y-2"
+                      >
+                        <CheckboxGroup.Item value="parent">Parent</CheckboxGroup.Item>
+                        <CheckboxGroup.Item value="teacher">Teacher</CheckboxGroup.Item>
+                        <CheckboxGroup.Item value="school_admin">
+                          School Admin
+                        </CheckboxGroup.Item>
+                        <CheckboxGroup.Item value="platform_admin">
+                          Platform Admin
+                        </CheckboxGroup.Item>
+                      </CheckboxGroup.Root>
+                    )}
+                  />
+                  <FormFieldErrorMessage errors={errors} field="approverType" />
+                </label>
+              </div>
+            )}
           </Flex>
         </FormSection>
       </form>
@@ -782,7 +813,7 @@ export default CreateTask;
 // This component is used to create a section in the form
 export const FormSection = ({ title, children }) => {
   return (
-    <Card className='shadow-md outline-none' size='3'>
+    <Card className='[--card-border-width:0px] shadow-md' size='3'>
       <Flex direction={'column'} gap={'3'} mb={'4'}>
         <Text size="4" weight="medium">
           {title}

@@ -119,7 +119,7 @@ function SideBar({ isOpen, toggleSidebar }) {
                   to={''}
                   key={label}
                   onClick={() => window.innerWidth < 768 && toggleSidebar()}
-                  className={`${pathname === '/platform-admin/dashboard' || pathname === '/platform-admin/dashboard/' ? 'bg-[--accent-a3] text-white' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4`}
+                  className={`${pathname === '/platform-admin/dashboard' || pathname === '/platform-admin/dashboard/' ? 'bg-[--accent-a3] text-white font-medium' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4`}
                 >
                   {Icon && <Icon className='size-5' color='var(--icon-muted)' />}
                   <span>{label}</span>
@@ -131,7 +131,7 @@ function SideBar({ isOpen, toggleSidebar }) {
                 to={href}
                 key={label}
                 onClick={() => window.innerWidth < 768 && toggleSidebar()}
-                className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-white' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4`}
+                className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-white font-medium' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4`}
               >
                 {Icon && <Icon className='size-5' color='var(--icon-muted)' />}
                 <span>{label}</span>

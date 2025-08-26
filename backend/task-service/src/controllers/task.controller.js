@@ -151,7 +151,7 @@ const taskController = {
         isRecurring,
         recurringSchedule: rawRecurringSchedule,
         requiresApproval,
-        approverType,
+        approverType: rawApproverType,
         specificApproverId,
         externalResource: rawExternalResource,
         attachments: rawAttachments,
@@ -171,6 +171,7 @@ const taskController = {
       const externalResource = parseField(rawExternalResource);
       const metadata = parseField(rawMetadata);
       const attachments = parseField(rawAttachments);
+      const approverType = parseField(rawApproverType);
 
       // Always store user ID for consistency
       const createdBy = creatorRole === 'platform_admin' || creatorRole === 'sub_admin' || creatorRole === 'school_admin' ? id : profiles[creatorRole]?._id;
@@ -233,12 +234,13 @@ const taskController = {
         requiresApproval:
           requiresApproval !== undefined ? requiresApproval === 'true' || requiresApproval === true : true,
         approverType:
-          approverType ||
-          (creatorRole === "parent"
-            ? "parent"
-            : creatorRole === "teacher" || creatorRole === "school_admin"
-              ? "teacher"
-              : "system"),
+          approverType ?
+            (Array.isArray(approverType) ? approverType : [approverType]) :
+            [(creatorRole === "parent"
+              ? "parent"
+              : creatorRole === "teacher" || creatorRole === "school_admin"
+                ? "teacher"
+                : "system")],
         specificApproverId: specificApproverId,
         externalResource,
         attachments: processedAttachments,
@@ -447,6 +449,13 @@ const taskController = {
       }
       if (updateData.recurringSchedule) {
         updateData.recurringSchedule = parseField(updateData.recurringSchedule);
+      }
+      // Handle approverType as an array
+      if (updateData.approverType) {
+        const parsedApproverType = parseField(updateData.approverType);
+        updateData.approverType = Array.isArray(parsedApproverType)
+          ? parsedApproverType
+          : [parsedApproverType];
       }
 
       // TODO:
@@ -1052,19 +1061,39 @@ const taskController = {
         const classIdsObjectIds = classIds.map(id => new mongoose.Types.ObjectId(id));
         userId = teacherId;
 
-        isAuthorized = classIdsObjectIds.some(id => id.equals(task.classId));
+        isAuthorized = classIdsObjectIds.some(id => id.equals(task.classId)) || (task.approverType === 'teacher' ||
+          (Array.isArray(task.approverType) && task.approverType.includes('teacher')));
       }
       if (userRole === 'school_admin') {
         userId = new mongoose.Types.ObjectId(req.user.id);
         const schoolProfile = await getSchoolProfile(req.headers.authorization);
         const schoolId = schoolProfile?._id;
-        isAuthorized = task.schoolId.equals(schoolId);
+        const approvers = Array.isArray(task.approverType)
+          ? task.approverType
+          : [task.approverType];
+
+        isAuthorized =
+          task.schoolId?.toString() === schoolId.toString() ||
+          approvers.some(role => ["teacher", "school_admin"].includes(role));
       }
       if (userRole === 'parent') {
         const parentProfile = profiles?.['parent'];
         const parentId = parentProfile?._id;
         userId = parentId;
-        isAuthorized = task.approverType === 'parent';
+        const childIds = parentProfile?.childIds || [];
+
+        const childIdsObjectIds = childIds.map(id => new mongoose.Types.ObjectId(id));
+        const taskSubmissionStudentId =
+          taskSubmission.studentId instanceof mongoose.Types.ObjectId
+            ? taskSubmission.studentId
+            : new mongoose.Types.ObjectId(taskSubmission.studentId);
+
+        // 1. Parent must be in the allowed approverType(s)
+        // 2. The submission must belong to one of their children
+        isAuthorized =
+          (task.approverType === 'parent' ||
+            (Array.isArray(task.approverType) && task.approverType.includes('parent'))) &&
+          childIdsObjectIds.some(id => id.equals(taskSubmissionStudentId));
       }
 
       if (!isAuthorized) {
@@ -2850,8 +2879,12 @@ const taskController = {
             }
           },
           // Ensure only tasks that require parent approval and are not deleted are included
-          { $match: { "task.approverType": "parent", "task.isDeleted": false } },
-
+          {
+            $match: {
+              "task.isDeleted": false,
+              "task.approverType": { $in: ["parent"] },
+            }
+          },
           // Final projection: send only necessary fields to the client
           {
             $project: {
@@ -2936,7 +2969,12 @@ const taskController = {
           },
           {
             $match: {
-              "task.schoolId": schoolObjectId
+              "task.isDeleted": { $ne: true },        // task must not be deleted
+              $or: [                                   // AND one of these must be true
+                { "task.dueDate": { $gte: new Date() } }, // due date is in the future
+                { "task.dueDate": { $exists: false } },   // due date not set at all
+                { "task.dueDate": null }                  // due date explicitly null
+              ]
             }
           },
           {
@@ -2976,6 +3014,24 @@ const taskController = {
                   "$childDetails.user"
                 ]
               },
+            }
+          },
+          // Match task claims for tasks that:
+          // - Require approval from a teacher or school admin
+          // - Are linked to the same school, either because:
+          //    • The child who submitted the task belongs to the school, OR
+          //    • The task itself belongs to the school
+          {
+            $match: {
+              $and: [
+                { "task.approverType": { $in: ["teacher", "school_admin"] } },
+                {
+                  $or: [
+                    { $expr: { $eq: ["$childDetails.schoolId", schoolObjectId] } },
+                    { $expr: { $eq: [{ $toObjectId: "$task.schoolId" }, schoolObjectId] } }
+                  ]
+                }
+              ]
             }
           },
           // Final projection: send only necessary fields to the client
@@ -3032,6 +3088,13 @@ const taskController = {
 
         const classIdsObjectIds = classIds.map(id => new mongoose.Types.ObjectId(id));
 
+        const classesDetails = await Promise.all(
+          classIds.map(id => getClassById(id, req.headers.authorization))
+        );
+
+        const allStudentIds = classesDetails.flatMap(c => c.studentIds);
+        const allStudentObjectIds = allStudentIds.map(id => new mongoose.Types.ObjectId(id));
+
         // Base match stage to get task completions from students in the teacher's classes
         const matchStage = {};
 
@@ -3056,11 +3119,31 @@ const taskController = {
               task: { $arrayElemAt: ["$task", 0] }
             }
           },
+          // Match only valid tasks for this teacher:
+          // 1. Exclude deleted tasks
+          // 2. Ensure approverType is "teacher" (works whether it's a string or array)
+          // 3. Then allow either:
+          //    a) Class-based tasks → if task.classId belongs to one of the teacher's classes
+          //    b) Student-based tasks → if task was created for all students (e.g., by platform admin)
+          //       i.e. no classId AND no schoolId, and the student is in this teacher's student list
           {
             $match: {
               "task.isDeleted": false,
-              "task.approverType": "teacher",
-              "task.classId": { $in: classIdsObjectIds }
+              $and: [
+                { "task.approverType": { $in: ["teacher"] } },
+                {
+                  $or: [
+                    { "task.classId": { $in: classIdsObjectIds } },
+                    {
+                      $and: [
+                        { "studentId": { $in: allStudentObjectIds } },
+                        { "task.classId": { $eq: null } },
+                        { "task.schoolId": { $eq: null } },
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           },
           {

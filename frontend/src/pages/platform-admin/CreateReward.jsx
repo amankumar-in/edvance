@@ -667,7 +667,7 @@ const CreateReward = () => {
 
 export const FormSection = ({ title, children }) => {
   return (
-    <Card className='shadow-md' size='3'>
+    <Card className='shadow-md [--card-border-width:0px]' size='3'>
       <div className="space-y-4">
         <div>
           <Heading as="h3" size="4" weight="medium" className="text-[--gray-12]">

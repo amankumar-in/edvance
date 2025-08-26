@@ -551,6 +551,7 @@ function TaskDetailsPageBase({
                   submissionError={submissionError}
                 >
                   <Button
+                  size={'3'}
                     onClick={() => setIsSubmissionOpen(true)}
                   >
                     <CheckCircle size={16} />

@@ -893,7 +893,7 @@ const CreateRewardCategory = () => {
 // Helper component for form sections
 export const FormSection = ({ title, children }) => {
   return (
-    <Card size={'3'} className='space-y-4 shadow-md'>
+    <Card size={'3'} className='space-y-4 shadow-md [--card-border-width:0px]'>
       <div>
         <Heading as="h3" size="4" weight="medium" className="text-[--gray-12]">
           {title}

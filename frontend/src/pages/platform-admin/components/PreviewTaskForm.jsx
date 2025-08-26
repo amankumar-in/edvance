@@ -7,9 +7,9 @@ function PreviewTaskForm({ open, setOpen, task }) {
   // Format assigned people for display
   const formatAssignedPeople = () => {
     if (!task?.selectedPeople || task.selectedPeople.length === 0) {
-      if(task?.assigned === 'school') return 'School';
-      if(task?.assigned === 'student') return 'All students';
-      if(task?.assigned === 'parent') return 'All parents';
+      if (task?.assigned === 'school') return 'School';
+      if (task?.assigned === 'student') return 'All students';
+      if (task?.assigned === 'parent') return 'All parents';
       return `All users`;
     }
     return `Selected ${task.assigned}s`;
@@ -18,7 +18,8 @@ function PreviewTaskForm({ open, setOpen, task }) {
   // Format approver type for display
   const formatApproverType = (approverType) => {
     if (!approverType) return 'N/A';
-    return approverType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    // return approverType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return null;
   };
 
   // Format difficulty for display
@@ -30,8 +31,8 @@ function PreviewTaskForm({ open, setOpen, task }) {
   // Check if external resource has any data
   const hasExternalResource = () => {
     return task?.externalResource && (
-      task.externalResource.platform || 
-      task.externalResource.resourceId || 
+      task.externalResource.platform ||
+      task.externalResource.resourceId ||
       task.externalResource.url
     );
   };
@@ -115,13 +116,13 @@ function PreviewTaskForm({ open, setOpen, task }) {
                           {field.value}
                         </Badge>
                       ) : field.label === 'Difficulty' ? (
-                        <Badge 
+                        <Badge
                           color={
                             field.value === 'Easy' ? 'green' :
-                            field.value === 'Medium' ? 'yellow' :
-                            field.value === 'Hard' ? 'orange' :
-                            field.value === 'Challenging' ? 'red' : 'gray'
-                          } 
+                              field.value === 'Medium' ? 'yellow' :
+                                field.value === 'Hard' ? 'orange' :
+                                  field.value === 'Challenging' ? 'red' : 'gray'
+                          }
                           variant="soft"
                         >
                           {field.value}
@@ -189,7 +190,7 @@ function PreviewTaskForm({ open, setOpen, task }) {
                         </Badge>
                       </Flex>
                     ))}
-                    
+
                     {/* New Attachments */}
                     {task?.attachments && task.attachments.map((attachment, index) => (
                       <Flex key={`new-${index}`} align="center" gap="2" className="p-2 bg-[--gray-a2] rounded">
