@@ -7,6 +7,7 @@ import { useCreateClass, useUpdateClass } from '../../../api/school-class/school
 import { FormFieldErrorMessage } from '../../../components'
 import { gradeOptions } from '../../../utils/constants'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router'
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -28,7 +29,7 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
       schedule: [{ dayOfWeek: '', startTime: '', endTime: '' }]
     }
   })
-
+  const navigate = useNavigate();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'schedule'
@@ -120,7 +121,11 @@ function CreateClassDialog({ open, onOpenChange, isEdit = false, selectedClass =
         ...formData,
         schoolId: schoolId
       }, {
-        onSuccess: () => {
+        onSuccess: ({ data }) => {
+          const classId = data._id;
+          if (classId) {
+            navigate(`/school-admin/classes/${classId}?assignTeacher=true`);
+          }
           onClose(false)
           toast.success('Class created successfully')
         },

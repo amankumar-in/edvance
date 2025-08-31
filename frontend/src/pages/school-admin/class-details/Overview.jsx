@@ -1,14 +1,14 @@
 import { Avatar, Box, Button, Callout, Card, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
 import { AlertCircle, CalendarDays, Check, Clock, Copy, Edit, Mail, Phone, Trash, User } from 'lucide-react'
-import React, { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { useDeleteClass } from '../../../api/school-class/schoolClass.mutations'
 import { useClassDetails } from '../../../api/school-class/schoolClass.queries'
 import Honors from '../../../assets/Honors.webp'
 import { ConfirmationDialog, EmptyStateCard, Loader } from '../../../components'
-import CreateClassDialog from '../components/CreateClassDialog'
 import AssignTeacherDialog from '../components/AssignTeacherDialog'
+import CreateClassDialog from '../components/CreateClassDialog'
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const dayToday = daysOfWeek[new Date().getDay()].toLowerCase();
@@ -16,10 +16,22 @@ const dayToday = daysOfWeek[new Date().getDay()].toLowerCase();
 function Overview() {
   const { classId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading, isError, error } = useClassDetails(classId);
   const classDetails = data?.data ?? {};
   const schedule = classDetails?.schedule ?? [];
   const teacherDetails = classDetails?.teacherId?.userId ?? {};
+
+  // Open assign teacher dialog if 'assignTeacher=true' query param is present
+  // Automatically removes the query param after opening to clean up URL
+  useEffect(() => {
+    if (searchParams.get('assignTeacher') === 'true') {
+      setIsAssignTeacherDialogOpen(true);
+      // Clean up URL
+      searchParams.delete('assignTeacher');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // sortedSchedule will be ordered Monday -> Sunday
   const sortedSchedule = schedule.sort((a, b) => {
