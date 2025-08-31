@@ -6,13 +6,17 @@ import { Container } from '../components'
 
 const settings = [
   {
+    name: 'Profile',
+    path: 'profile',
+  },
+  {
     name: 'Linked Accounts',
     path: 'linked-accounts',
   },
-  {
-    name: 'Notifications',
-    path: 'notifications',
-  }
+  // {
+  //   name: 'Notifications',
+  //   path: 'notifications',
+  // }
 ]
 
 function SettingsLayout() {

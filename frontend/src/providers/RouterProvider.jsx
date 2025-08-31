@@ -163,10 +163,11 @@ const router = createBrowserRouter(
             />
 
             {/* notifications */}
-            <Route path="notifications"
+            {/* TODO: When notifications are implemented, uncomment this */}
+            {/* <Route path="notifications"
               lazy={() => import("../pages/student/StudentNotifications")
                 .then(({ default: StudentNotifications }) => ({ Component: StudentNotifications, }))}
-            />
+            /> */}
 
             {/* points / rewards */}
             <Route path="points"
@@ -186,15 +187,20 @@ const router = createBrowserRouter(
               lazy={() => import("../pages/SettingsLayout")
                 .then(({ default: SettingsLayout }) => ({ Component: SettingsLayout }))}
             >
-              <Route index element={<Navigate to="linked-accounts" replace />} />
+              <Route index element={<Navigate to="profile" replace />} />
+              <Route path="profile"
+                lazy={() => import("../pages/student/settings/UserProfile")
+                  .then(({ default: UserProfile }) => ({ Component: UserProfile }))}
+              />
               <Route path="linked-accounts"
                 lazy={() => import("../pages/student/settings/LinkedAccounts")
                   .then(({ default: StudentLinkedAccounts }) => ({ Component: StudentLinkedAccounts, }))}
               />
-              <Route path="notifications"
+              {/* TODO: When notifications settings are implemented, uncomment this */}
+              {/* <Route path="notifications"
                 lazy={() => import("../pages/student/settings/NotificationSettings")
                   .then(({ default: NotificationSettings }) => ({ Component: NotificationSettings, }))}
-              />
+              /> */}
             </Route>
           </Route>
 

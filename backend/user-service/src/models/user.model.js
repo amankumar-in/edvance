@@ -57,6 +57,33 @@ const userSchema = new mongoose.Schema({
   deviceTokens: {
     type: [String],
   },
+    // Verification fields
+    isVerified: {
+      type: Boolean,
+      default: false
+    },
+    isPhoneVerified: {
+      type: Boolean,
+      default: false
+    },
+    verificationToken: {
+      type: String,
+      select: false
+    },
+    verificationTokenExpires: {
+      type: Date,
+      select: false
+    },
+    phoneVerificationOtp: {
+      type: String,
+      select: false
+    },
+    phoneVerificationOtpExpires: {
+      type: Date,
+      select: false
+    },
+}, {
+  timestamps: true,
 });
 
 // Create indexes for search
@@ -74,6 +101,17 @@ userSchema.pre("save", async function (next) {
   } catch (error) {
     next(error);
   }
+});
+
+// Update the updatedAt field and reset phone verification fields if phoneNumber is modified
+userSchema.pre('save', function(next) {
+  if(this.isModified('phoneNumber')){
+    this.isPhoneVerified = false;
+    this.phoneVerificationOtp = undefined;
+    this.phoneVerificationOtpExpires = undefined;
+  }
+  this.updatedAt = Date.now();
+  next();
 });
 
 // Method to compare passwords

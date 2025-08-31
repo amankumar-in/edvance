@@ -127,6 +127,10 @@ const userSchema = new mongoose.Schema({
       delete ret.verificationTokenExpires;
       delete ret.resetPasswordToken;
       delete ret.resetPasswordExpires;
+      delete ret.phoneVerificationOtp;
+      delete ret.phoneVerificationOtpExpires;
+      delete ret.otp;
+      delete ret.otpExpires;
       delete ret.__v;
       return ret;
     }
@@ -138,6 +142,10 @@ const userSchema = new mongoose.Schema({
       delete ret.verificationTokenExpires;
       delete ret.resetPasswordToken;
       delete ret.resetPasswordExpires;
+      delete ret.phoneVerificationOtp;
+      delete ret.phoneVerificationOtpExpires;
+      delete ret.otp;
+      delete ret.otpExpires;
       delete ret.__v;
       return ret;
     }
@@ -164,8 +172,13 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Update the updatedAt field
+// Update the updatedAt field and reset phone verification fields if phoneNumber is modified
 userSchema.pre('save', function(next) {
+  if(this.isModified('phoneNumber')){
+    this.isPhoneVerified = false;
+    this.phoneVerificationOtp = undefined;
+    this.phoneVerificationOtpExpires = undefined;
+  }
   this.updatedAt = Date.now();
   next();
 });

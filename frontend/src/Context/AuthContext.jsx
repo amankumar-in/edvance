@@ -74,6 +74,9 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setToken(null);
         setIsAuthenticated(false);
+        setActiveRole(null);
+        setSelectionList([]);
+        setProfiles(null);
         localStorage.clear();
       },
       onError: (error) => {
@@ -111,8 +114,8 @@ export const AuthProvider = ({ children }) => {
     activeRole,
     setActiveRole,
     selectionList,
-    setSelectionList, 
-    profiles, 
+    setSelectionList,
+    profiles,
     setProfiles
   }), [user, token, isAuthenticated, loading, isLoggingOut, activeRole, selectionList, profiles]);
 

@@ -1,5 +1,5 @@
-import { Avatar, Badge, Box, Button, Flex, IconButton, Skeleton, Text } from '@radix-ui/themes';
-import { BarChart3, Bell, BookOpen, Calendar, CreditCard, Home, LogOut, Settings, TrendingUp, Trophy, User, X } from 'lucide-react';
+import { Avatar, Badge, Box, Flex, IconButton, Skeleton, Text } from '@radix-ui/themes';
+import { Award, BarChart3, BookOpen, Calendar, CreditCard, Home, Settings, TrendingUp, Trophy, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useOutletContext } from 'react-router';
 import { toast } from 'sonner';
@@ -27,20 +27,14 @@ function StudentLayout() {
   // Sidebar navigation items
   const navItems = [
     { icon: <Home size={20} />, label: 'Dashboard', href: '/student/dashboard' },
-    { icon: <BookOpen size={20} />, label: 'Tasks', href: '/student/tasks' },
-    { icon: <CreditCard size={20} />, label: 'Scholarship Points', href: '/student/points' },
-    { icon: <Trophy size={20} />, label: 'Rewards', href: '/student/rewards' },
     { icon: <Calendar size={20} />, label: 'Attendance', href: '/student/attendance' },
-    {
-      icon: <Bell size={20} />,
-      label: 'Notifications',
-      href: '/student/notifications',
-      badge: unreadNotifications > 0 ? unreadNotifications : null
-    },
-    { icon: <TrendingUp size={20} />, label: 'Progress', href: '/student/progress' },
-    { icon: <BarChart3 size={20} />, label: 'Analytics', href: '/student/analytics' },
-    { icon: <User size={20} />, label: 'Profile', href: '/student/profile' },
+    { icon: <BookOpen size={20} />, label: 'Tasks', href: '/student/tasks' },
+    { icon: <Trophy size={20} />, label: 'Rewards', href: '/student/rewards' },
+    { icon: <CreditCard size={20} />, label: 'Scholarship Points', href: '/student/points' },
     { icon: <Settings size={20} />, label: 'Settings', href: '/student/settings' },
+    { icon: <TrendingUp size={20} />, label: 'Progress', href: '/student/progress', disabled: true },
+    { icon: <Award size={20} />, label: 'Badges', href: '/student/badges', disabled: true },
+    { icon: <BarChart3 size={20} />, label: 'Analytics', href: '/student/analytics', disabled: true },
   ];
 
   const handleSidebarClick = () => window.innerWidth < 768 && setIsMobileSidebarOpen(false);
@@ -55,7 +49,7 @@ function StudentLayout() {
 
       <Flex className='relative w-full'>
         {/* Desktop Sidebar */}
-        <Box className={`overflow-y-auto fixed md:sticky transition-transform border-r border-[--gray-a6] duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--gray-2] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
+        <Box className={`overflow-y-auto fixed md:sticky transition-transform duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--gray-2] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
           <Flex align='center' gap='4' px={'4'} className='h-16 md:hidden' justify='between'>
             <Text as='p' weight='bold' size="7" color='cyan'>
               EdVance
@@ -71,25 +65,27 @@ function StudentLayout() {
           </Flex>
 
           {/* Profile Section */}
-          <Flex direction="column" align="center" gap="2" className="p-4">
+          <Flex align="start" gap="4" className="p-4 md:py-8">
             <Avatar
               size="5"
-              src={user?.profileImage}
+              src={user?.avatar}
               fallback={user?.firstName?.[0] || "S"}
               radius="full"
               highContrast
             />
-            <Text as='p' size="3" weight="bold" align="center">
-              {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Student'}
-            </Text>
-            <Badge highContrast>
-              Student
-            </Badge>
-            <Skeleton loading={isLoading} className='w-28'>
-              <Text as='p' size="1" color="gray">
-                Level {pointAccount.level} {pointAccount.levelName}
+            <div className='space-y-1'>
+              <Text as='p' size="3" weight="bold">
+                {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Student'}
               </Text>
-            </Skeleton>
+              <Badge highContrast>
+                Student
+              </Badge>
+              <Skeleton loading={isLoading} className='w-28'>
+                <Text as='p' size="1" color="gray">
+                  Level {pointAccount.level} {pointAccount.levelName}
+                </Text>
+              </Skeleton>
+            </div>
           </Flex>
 
           {/* Navigation Items */}
@@ -98,16 +94,17 @@ function StudentLayout() {
               {navItems.map((item, index) => (
                 <NavLink
                   key={index}
-                  to={item.href}
+                  to={item.disabled ? '#' : item.href}
                   className={({ isActive }) =>
-                    `${isActive ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
-                  p-4 py-3 text-sm  rounded-full flex items-center gap-2 relative font-medium`
+                    `${isActive && !item.disabled ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
+                  p-4 py-3 text-sm  rounded-full flex items-center gap-2 relative font-medium ${item.disabled ? 'cursor-not-allowed opacity-80' : ''}`
                   }
-                  onClick={handleSidebarClick}
+                  onClick={item.disabled ? undefined : handleSidebarClick}
                 >
                   <span className="flex flex-1 gap-5 items-center">
                     {item.icon}
                     {item.label}
+                    {item.disabled && <Badge color='gray' ml={'auto'}>coming soon</Badge>}
                   </span>
                   {item.badge && (
                     <span className="flex justify-center items-center px-1 h-5 text-xs text-white bg-red-500 rounded-full min-w-5">
@@ -117,20 +114,6 @@ function StudentLayout() {
                 </NavLink>
               ))}
             </Flex>
-            <Button
-              variant="ghost"
-              mx='auto'
-              radius='full'
-              color="gray"
-              highContrast
-              className='flex gap-5 justify-start px-4 py-3 max-w-xs font-medium'
-              onClick={() => {
-                handleLogout();
-              }}
-              disabled={isLoggingOut}
-            >
-              <LogOut size={20} /> {isLoggingOut ? 'Logging out...' : 'Logout'}
-            </Button>
           </Flex>
         </Box >
 

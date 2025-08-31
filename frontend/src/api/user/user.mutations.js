@@ -1,9 +1,15 @@
-import { useMutation } from "@tanstack/react-query";
-import { adminUpdateUserProfile, updateUserProfile, uploadAvatar } from "./user.api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { adminUpdateUserProfile, updateUserProfile, uploadAvatar, changePassword } from "./user.api";
 
 export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateUserProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["user", "profile"],
+      });
+    }
   });
 };
 
@@ -16,5 +22,11 @@ export const useUploadAvatar = () => {
 export const useAdminUpdateUserProfile = () => {
   return useMutation({
     mutationFn: adminUpdateUserProfile,
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: changePassword,
   });
 };

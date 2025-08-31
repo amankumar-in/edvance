@@ -40,3 +40,14 @@ export const adminUpdateUserProfile = async ({id, data}) => {
   return response.data;
 }
 
+export const changePassword = async (data) => {
+  // data: { currentPassword, newPassword }
+  const response = await apiClient.put("/users/me/password", data);
+  return response.data;
+};
+
+export const getUserProfile = async () => {
+  const response = await apiClient.get("/users/me");
+  return response.data;
+};
+

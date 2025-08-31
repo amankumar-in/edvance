@@ -19,6 +19,7 @@ import { ConfirmationDialog, EmptyStateCard, Loader, WishlistToggle } from '../c
 import { useAuth } from '../Context/AuthContext';
 import { FALLBACK_IMAGES } from '../utils/constants';
 import { formatDate } from '../utils/helperFunctions';
+import allRewardsImg from '../assets/allRewards.webp'
 
 function RewardsBasePage({
   role = 'student',
@@ -64,7 +65,12 @@ function RewardsBasePage({
 
   const { data } = useGetRewardCategories({ isFeatured: true, limit: 30 })
   const categoryData = data?.data?.categories ?? [];
-  console.log(data);
+
+  // Add 'All' category to the list
+  const categoriesWithAll = [
+    { _id: 'all', name: 'All Rewards', image: allRewardsImg },
+    ...categoryData,
+  ];
 
   // Mutations ------------------------------------------------
   const { mutate: redeemReward, isPending: isRedeemingReward } = useRedeemReward();
@@ -352,45 +358,23 @@ function RewardsBasePage({
             </IconButton>
           </Flex>
         </Text>
-        <Card className='shadow-md'>
-          <div className='relative'>
-            <div className='overflow-hidden' ref={emblaRef}>
-              <div className='flex gap-x-3 md:gap-x-6'>
-                {categoryData?.map((category, index) => (
-                  <Flex direction='column' gap='2' className='group shrink-0' align={'center'} key={category._id}>
-                    <button className={`w-16 md:w-24 flex overflow-hidden justify-center items-center rounded-full border  transition-shadow outline-none aspect-square hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[--focus-8]  ${filter.categoryId === category._id ? 'border-4 shadow-lg border-[--focus-8]' : 'shadow-md border-[--gray-a6]'}`}
-                      onClick={() => {
-                        // First click applies the filter, second click removes the filter
-                        if (filter.categoryId === category._id) {
-                          setFilter({ ...filter, categoryId: '' })
-                          setCategoryName('');
-                        } else {
-                          if (emblaApi) {
-                            emblaApi.scrollTo(index);  // Scroll clicked slide fully into view
-                          }
-                          setFilter({ ...filter, categoryId: category._id })
-                          setCategoryName(category?.name);
-                        }
-                      }}
-                    >
-                      <img
-                        src={category?.image || FALLBACK_IMAGES.product}
-                        alt={category?.name}
-                        onError={(e) => {
-                          e.currentTarget.src = FALLBACK_IMAGES.product;
-                        }}
-                        className='object-cover object-center w-full h-full aspect-square bg-[--accent-contrast] transition-transform group-hover:scale-105'
-                      />
-                    </button>
-                    <Text as='p' size='1' className='w-full text-center max-w-20' weight='medium'>
-                      {category?.name}
-                    </Text>
-                  </Flex>
-                ))}
-              </div>
+        <div className='relative'>
+          <div className='overflow-hidden' ref={emblaRef}>
+            <div className='flex gap-x-3 md:gap-x-6'>
+              {categoriesWithAll?.map((category, index) => (
+                <CategoryButton
+                  key={category._id}
+                  category={category}
+                  filter={filter}
+                  setFilter={setFilter}
+                  emblaApi={emblaApi}
+                  index={index}
+                  setCategoryName={setCategoryName}
+                />
+              ))}
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -857,5 +841,49 @@ function RedeemButton({ reward, setSelectedReward, canAfford, }) {
         }
       </Text>
     </Button>
+  )
+}
+
+// Category Button Component
+function CategoryButton({ category, filter, setFilter, emblaApi, index, setCategoryName }) {
+
+  const handleCategoryClick = () => {
+    // If category is 'All', remove the filter
+    if (category._id === 'all') {
+      setFilter({ ...filter, categoryId: '' })
+      setCategoryName('');
+      return;
+    }
+    // First click applies the filter, second click removes the filter
+    if (filter.categoryId === category._id) {
+      setFilter({ ...filter, categoryId: '' })
+      setCategoryName('');
+    } else {
+      if (emblaApi) {
+        emblaApi.scrollTo(index);  // Scroll clicked slide fully into view
+      }
+      setFilter({ ...filter, categoryId: category._id })
+      setCategoryName(category?.name);
+    }
+  }
+
+  return (
+    <Flex direction='column' gap='2' className='group shrink-0' align={'center'} key={category._id}>
+      <button className={`w-16 md:w-24 flex overflow-hidden justify-center items-center rounded-full border  transition-shadow outline-none aspect-square hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[--focus-8]  ${filter.categoryId === category._id ? 'border-4 shadow-lg border-[--focus-8]' : 'shadow-md border-[--gray-a6]'}`}
+        onClick={handleCategoryClick}
+      >
+        <img
+          src={category?.image || FALLBACK_IMAGES.product}
+          alt={category?.name}
+          onError={(e) => {
+            e.currentTarget.src = FALLBACK_IMAGES.product;
+          }}
+          className='object-cover object-center w-full h-full aspect-square bg-[--accent-contrast] transition-transform group-hover:scale-105'
+        />
+      </button>
+      <Text as='p' size='1' className='w-full text-center max-w-20' weight='medium'>
+        {category?.name}
+      </Text>
+    </Flex>
   )
 }

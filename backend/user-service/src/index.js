@@ -80,10 +80,19 @@ const connectDB = async () => {
   }
 };
 
-// Serve uploaded files in development mode
+// Serve uploaded files locally in development, allowing cross-origin access
 if (process.env.NODE_ENV !== "production") {
-  app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+  app.use(
+    "/uploads",
+    express.static(path.join(__dirname, "../uploads"), {
+      setHeaders: (res) => {
+        // Allow usage from other origins
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      },
+    })
+  );
 }
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error("User Service Error:", err);
