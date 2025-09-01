@@ -1030,6 +1030,200 @@ exports.removeAdministrator = async (req, res) => {
   }
 };
 
+// Update school by ID (for platform admin)
+exports.updateSchoolById = async (req, res) => {
+  try {
+    const schoolId = req.params.id;
+    const {
+      name,
+      address,
+      city,
+      state,
+      zipCode,
+      country,
+      phone,
+      email,
+      website,
+      logo,
+    } = req.body;
+
+    // Find school by ID
+    const school = await School.findById(schoolId);
+    if (!school) {
+      return res.status(404).json({
+        success: false,
+        message: "School not found",
+      });
+    }
+
+    // Update fields
+    if (name) school.name = name;
+    if (address) school.address = address;
+    if (city) school.city = city;
+    if (state) school.state = state;
+    if (zipCode) school.zipCode = zipCode;
+    if (country) school.country = country;
+    if (phone) school.phone = phone;
+    if (email) school.email = email;
+    if (website) school.website = website;
+    if (logo) school.logo = logo;
+
+    school.updatedAt = Date.now();
+    await school.save();
+
+    res.status(200).json({
+      success: true,
+      message: "School updated successfully",
+      data: school,
+    });
+  } catch (error) {
+    console.error("Update school by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update school",
+      error: error.message,
+    });
+  }
+};
+
+// Get all schools with pagination and search
+exports.getAllSchools = async (req, res) => {
+  try {
+    // Parse query parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort || 'name';
+    const order = req.query.order === 'desc' ? -1 : 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const city = req.query.city || '';
+    const state = req.query.state || '';
+    const country = req.query.country || '';
+
+    // Build sort object
+    const sortObject = {};
+    sortObject[sort] = order;
+
+    // Build base query
+    let query = {};
+
+    // Build search conditions
+    const searchConditions = [];
+    
+    if (search) {
+      searchConditions.push(
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { address: { $regex: search, $options: 'i' } },
+        { city: { $regex: search, $options: 'i' } },
+        { state: { $regex: search, $options: 'i' } },
+        { zipCode: { $regex: search, $options: 'i' } }
+      );
+    }
+
+    // Add location filters
+    if (city) {
+      query.city = { $regex: city, $options: 'i' };
+    }
+    if (state) {
+      query.state = { $regex: state, $options: 'i' };
+    }
+    if (country) {
+      query.country = { $regex: country, $options: 'i' };
+    }
+
+    // Combine search conditions with location filters
+    if (searchConditions.length > 0) {
+      if (Object.keys(query).length > 0) {
+        query = {
+          $and: [
+            query,
+            { $or: searchConditions }
+          ]
+        };
+      } else {
+        query.$or = searchConditions;
+      }
+    }
+
+    // Execute aggregation pipeline for schools with admin details
+    const pipeline = [
+      { $match: query },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'adminIds',
+          foreignField: '_id',
+          as: 'administrators',
+          pipeline: [
+            { $project: { firstName: 1, lastName: 1, email: 1, avatar: 1, phoneNumber: 1 } }
+          ]
+        }
+      },
+      {
+        $addFields: {
+          adminCount: { $size: '$administrators' }
+        }
+      },
+      { $sort: sortObject },
+      { $skip: skip },
+      { $limit: limit }
+    ];
+
+    // Execute schools query
+    const schools = await School.aggregate(pipeline);
+
+    // Get total count for pagination
+    let totalDocs;
+    if (Object.keys(query).length > 0) {
+      totalDocs = await School.countDocuments(query);
+    } else {
+      totalDocs = await School.countDocuments();
+    }
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalDocs / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    const pagination = {
+      totalDocs,
+      limit,
+      page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      pagingCounter: skip + 1,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: hasPrevPage ? page - 1 : null
+    };
+
+    const filters = {
+      search: search || null,
+      city: city || null,
+      state: state || null,
+      country: country || null,
+      sort,
+      order: order === 1 ? 'asc' : 'desc'
+    };
+
+    res.status(200).json({
+      success: true,
+      data: schools,
+      pagination,
+      filters
+    });
+
+  } catch (error) {
+    console.error("Get all schools error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get schools",
+      error: error.message,
+    });
+  }
+};
+
 // Get school administrators
 exports.getAdministrators = async (req, res) => {
   try {

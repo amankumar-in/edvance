@@ -47,13 +47,13 @@
 /* AndroidLoader.css */
 .android-loader {
   display: inline-block;
-  animation: rotate 1.4s linear infinite;
+  animation: rotate var(--duration, 1.4s) linear infinite;
 }
 
 .android-loader-path {
   stroke-dasharray: 80px, 200px;
   stroke-dashoffset: 0px;
-  animation: dash 1.4s ease-in-out infinite;
+  animation: dash var(--duration, 1.4s) var(--easing, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
 }
 
 @keyframes rotate {
@@ -68,17 +68,17 @@
 
 @keyframes dash {
   0% {
-    stroke-dasharray: 1px, 200px;
-    stroke-dashoffset: 0px;
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
   }
 
   50% {
-    stroke-dasharray: 100px, 200px;
-    stroke-dashoffset: -15px;
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
   }
 
   100% {
-    stroke-dasharray: 100px, 200px;
-    stroke-dashoffset: -126px;
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
   }
 }

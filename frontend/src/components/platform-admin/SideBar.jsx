@@ -55,14 +55,14 @@ const sideBarItems = [
     Icon: BarChart3,
   },
   {
-    label: "Badges",
-    href: 'badges',
-    Icon: Award,
-  },
-  {
     label: 'Schools',
     href: 'schools',
     Icon: School,
+  },
+  {
+    label: "Badges",
+    href: 'badges',
+    Icon: Award,
   },
   {
     label: "Communications",
@@ -107,7 +107,7 @@ function SideBar({ isOpen, toggleSidebar }) {
         <Text weight="medium" size="7" className='flex justify-between items-center px-6 h-16'>
           EdVance
           <IconButton variant='ghost' color='gray' onClick={toggleSidebar} className='md:hidden'>
-            <X color='white' size={20}/>
+            <X color='white' size={20} />
           </IconButton>
         </Text>
 

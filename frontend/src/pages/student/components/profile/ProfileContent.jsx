@@ -58,8 +58,8 @@ export default function ProfileContent() {
             <Flex gap="4" wrap="wrap" >
               <Box className='flex-1 text-nowrap'>
                 <Text as='p' size="1" weight="medium" color="gray" mb="1">Phone Number</Text>
-                <Flex align="center" gap="2">
-                  <Phone size={16} />
+                <Flex align="center" gap="2" >
+                  <Phone size={16} className="shrink-0"/>
                   <Text as='p' size="2">{user?.phoneNumber || 'Not provided'}</Text>
                   {user?.phoneNumber && (
                     <PhoneVerificationBadge
@@ -170,7 +170,7 @@ function PhoneVerificationBadge({ isVerified, phoneNumber }) {
   }
 
   return (
-    <>
+    <Flex align={'center'} gap={'2'} wrap={'wrap'}>
       <Badge color="orange" variant="soft" size="2">
         <AlertCircle size={14} />
         Unverified
@@ -184,6 +184,6 @@ function PhoneVerificationBadge({ isVerified, phoneNumber }) {
           Verify
         </Button>
       </PhoneVerificationDialog>
-    </>
+    </Flex>
   )
 }

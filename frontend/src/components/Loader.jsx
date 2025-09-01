@@ -1,32 +1,27 @@
-// Loader.jsx
-import React from 'react';
-
-const Loader = ({
-  size = 36,
-  color = 'var(--cyan-9)',
-  className = ''
-}) => {
+const Loader = ({ size = 48, color = 'var(--cyan-9)', duration = 1.4, easing = 'cubic-bezier(0.4, 0, 0.2, 1)', className = '' }) => {
   return (
     <div
       className={`android-loader ${className}`}
       style={{
         width: size,
         height: size,
-        '--loader-color': color
+        '--loader-color': color,
+        '--duration': `${duration}s`,
+        '--easing': easing
       }}
     >
-      <svg viewBox="22 22 44 44" className="w-full h-full">
+      <svg viewBox="0 0 50 50" className="w-full h-full">
         <circle
-          cx="44"
-          cy="44"
-          r="20"            // 20.0 keeps the circle inside the box
+          cx="25"
+          cy="25"
+          r="20"
           fill="none"
           stroke="var(--loader-color)"
-          strokeWidth="4"   // new thickness
+          strokeWidth="4"
           className="android-loader-path"
+          strokeLinejoin="round" 
         />
       </svg>
-
     </div>
   );
 };

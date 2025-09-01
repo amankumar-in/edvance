@@ -80,3 +80,15 @@ export const importStudents = async (data) => {
   const response = await apiClient.post('/schools/import-students', data);
   return response.data;
 };
+
+// Get all schools with pagination and search
+export const getAllSchools = async (params = {}) => {
+  const response = await apiClient.get('/schools', { params });
+  return response.data;
+};
+
+// Update school by ID (for platform admin)
+export const updateSchoolById = async ({ id, data }) => {
+  const response = await apiClient.put(`/schools/${id}`, data);
+  return response.data;
+};

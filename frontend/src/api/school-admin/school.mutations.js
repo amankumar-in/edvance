@@ -7,7 +7,8 @@ import {
   addAdministrator,
   removeAdministrator,
   importStudents,
-  createSchoolProfile
+  createSchoolProfile,
+  updateSchoolById
 } from "./school.api";
 import { SCHOOL_QUERY_KEYS } from "./school.queries";
 
@@ -112,6 +113,20 @@ export const useImportStudents = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: SCHOOL_QUERY_KEYS.students(),
+      });
+    },
+  });
+};
+
+// Hook to update school by ID (for platform admin)
+export const useUpdateSchoolById = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateSchoolById,
+    onSuccess: () => {
+      // Invalidate all schools list to refresh the data
+      queryClient.invalidateQueries({
+        queryKey: SCHOOL_QUERY_KEYS.all,
       });
     },
   });

@@ -169,6 +169,330 @@ router.post("/", authMiddleware.verifyToken, schoolController.createSchool);
 
 /**
  * @openapi
+ * /schools:
+ *   get:
+ *     summary: Get all schools with pagination and search
+ *     description: Retrieves all schools with pagination, search, and location filtering capabilities
+ *     tags:
+ *       - Schools
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *           example: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of schools per page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *           example: 10
+ *       - name: sort
+ *         in: query
+ *         description: Field to sort by
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [name, city, state, country, createdAt, updatedAt]
+ *           default: name
+ *           example: name
+ *       - name: order
+ *         in: query
+ *         description: Sort order
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *           example: asc
+ *       - name: search
+ *         in: query
+ *         description: Search term to filter schools by name, email, address, city, state, or zipCode
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "Springfield"
+ *       - name: city
+ *         in: query
+ *         description: Filter schools by city
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "Springfield"
+ *       - name: state
+ *         in: query
+ *         description: Filter schools by state
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "IL"
+ *       - name: country
+ *         in: query
+ *         description: Filter schools by country
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "USA"
+ *     responses:
+ *       '200':
+ *         description: Schools retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/School'
+ *                       - type: object
+ *                         properties:
+ *                           administrators:
+ *                             type: array
+ *                             description: List of school administrators
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 _id:
+ *                                   type: string
+ *                                 firstName:
+ *                                   type: string
+ *                                 lastName:
+ *                                   type: string
+ *                                 email:
+ *                                   type: string
+ *                                 avatar:
+ *                                   type: string
+ *                                 phoneNumber:
+ *                                   type: string
+ *                           adminCount:
+ *                             type: integer
+ *                             description: Number of administrators
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalDocs:
+ *                       type: integer
+ *                       description: Total number of schools
+ *                       example: 50
+ *                     limit:
+ *                       type: integer
+ *                       description: Number of schools per page
+ *                       example: 10
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                       example: 5
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       description: Whether there is a next page
+ *                       example: true
+ *                     hasPrevPage:
+ *                       type: boolean
+ *                       description: Whether there is a previous page
+ *                       example: false
+ *                     pagingCounter:
+ *                       type: integer
+ *                       description: Starting counter for current page
+ *                       example: 1
+ *                     nextPage:
+ *                       type: integer
+ *                       nullable: true
+ *                       description: Next page number
+ *                       example: 2
+ *                     prevPage:
+ *                       type: integer
+ *                       nullable: true
+ *                       description: Previous page number
+ *                       example: null
+ *                 filters:
+ *                   type: object
+ *                   properties:
+ *                     search:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Applied search term
+ *                       example: "Springfield"
+ *                     city:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Applied city filter
+ *                       example: null
+ *                     state:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Applied state filter
+ *                       example: null
+ *                     country:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Applied country filter
+ *                       example: null
+ *                     sort:
+ *                       type: string
+ *                       description: Applied sort field
+ *                       example: "name"
+ *                     order:
+ *                       type: string
+ *                       description: Applied sort order
+ *                       example: "asc"
+ *       '500':
+ *         description: Failed to get schools
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get schools"
+ *                 error:
+ *                   type: string
+ */
+router.get("/", authMiddleware.verifyToken, schoolController.getAllSchools);
+
+/**
+ * @openapi
+ * /schools/{id}:
+ *   put:
+ *     summary: Update school by ID (Platform Admin)
+ *     description: Updates a school's information by ID. Only accessible by platform administrators.
+ *     tags:
+ *       - Schools
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: School ID
+ *         schema:
+ *           type: string
+ *           example: "60d0fe4f5311236168a109ca"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Springfield Elementary School"
+ *               address:
+ *                 type: string
+ *                 example: "123 Main Street"
+ *               city:
+ *                 type: string
+ *                 example: "Springfield"
+ *               state:
+ *                 type: string
+ *                 example: "IL"
+ *               zipCode:
+ *                 type: string
+ *                 example: "62701"
+ *               country:
+ *                 type: string
+ *                 example: "USA"
+ *               phone:
+ *                 type: string
+ *                 example: "+1234567890"
+ *               email:
+ *                 type: string
+ *                 example: "admin@springfield.edu"
+ *               website:
+ *                 type: string
+ *                 example: "https://springfield.edu"
+ *               logo:
+ *                 type: string
+ *                 example: "https://example.com/logo.png"
+ *     responses:
+ *       '200':
+ *         description: School updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "School updated successfully"
+ *                 data:
+ *                   $ref: '#/components/schemas/School'
+ *       '400':
+ *         description: Validation error or duplicate data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation failed"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       '404':
+ *         description: School not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "School not found"
+ *       '500':
+ *         description: Failed to update school
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to update school"
+ *                 error:
+ *                   type: string
+ */
+router.put("/:id", authMiddleware.verifyToken, schoolController.updateSchoolById);
+
+/**
+ * @openapi
  * /schools/me:
  *   get:
  *     summary: Get current user's school profile

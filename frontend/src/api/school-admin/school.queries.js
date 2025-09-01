@@ -1,9 +1,10 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getAllPendingJoinRequests, getSchoolById, getSchoolProfile, getStudents, getTeachers, getClasses, getAdministrators } from "./school.api";
+import { getAllPendingJoinRequests, getSchoolById, getSchoolProfile, getStudents, getTeachers, getClasses, getAdministrators, getAllSchools } from "./school.api";
 
 // Query keys for school admin
 export const SCHOOL_QUERY_KEYS = {
   all: ["schools"],
+  allSchools: (params) => ["schools", "all", params],
   allAdministrators:  ["schools", "administrators"],
   allClasses: ["schools", "classes"],
   allClassesFiltered: (params) => ["schools", "classes", params],
@@ -88,5 +89,14 @@ export const useAdministrators = (id, params = {}, options = {}) => {
     queryFn: () => getAdministrators(id, params),
     enabled: !!id,
     placeholderData: keepPreviousData,
+  });
+};
+
+export const useAllSchools = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: SCHOOL_QUERY_KEYS.allSchools(params),
+    queryFn: () => getAllSchools(params),
+    placeholderData: keepPreviousData,
+    ...options
   });
 };
