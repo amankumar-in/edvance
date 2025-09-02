@@ -6,8 +6,8 @@
   --sidebar: var(--cyan-12);
   --inactive-link: #e8e8ec;
   --icon-muted: #bbbbbb;
-  --gray-background: var(--gray-a2);
-  --admin-navbar: rgba(255, 255, 255, 0.70);
+  --gray-background:rgb(247, 249, 252);
+  --admin-navbar: white;
 }
 
 .dark {
@@ -42,6 +42,10 @@
   --quote-font-family: 'Times New Roman', 'Times', serif;
 
   --code-font-family: 'Menlo', 'Consolas (Custom)', 'Bitstream Vera Sans Mono', monospace, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+:where(.radix-themes) {
+  --color-panel-translucent: white;
 }
 
 /* AndroidLoader.css */

@@ -17,8 +17,8 @@ function PlatformAdminDashboardLayout() {
       disableTransitionOnChange
       defaultTheme='light'
     >
-      <div className="min-h-screen">
-        <Flex className=' bg-[--gray-background]'>
+      <div className="min-h-screen  bg-[--gray-background]">
+        <Flex className=''>
           <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
           <Flex direction='column' className='flex-1' style={{ minWidth: 0 }}>
             <Header toggleSidebar={toggleSidebar} />

@@ -11,6 +11,7 @@ import { SortIcon } from '../../components/platform-admin/UserTable';
 import { useDebounce } from '../../hooks/useDebounce';
 import { FALLBACK_IMAGES } from '../../utils/constants';
 import { formatDate } from '../../utils/helperFunctions';
+import PageHeader from '../../components/PageHeader';
 
 const Rewards = () => {
   const [page, setPage] = useState(1);
@@ -242,14 +243,10 @@ const Rewards = () => {
       <div className='relative space-y-6'>
 
         {/* Heading */}
-        <Flex justify='between' align='center' wrap='wrap' gap='4'>
-          <div>
-            <Heading as='h1' size='6' weight='medium' mb={'1'}>Rewards Management</Heading>
-            <Text as="p" color="gray" size="2">
-              Create and manage rewards that students can redeem with their points
-            </Text>
-          </div>
-
+        <PageHeader
+          title="Rewards"
+          description="Create and manage rewards that students can redeem with their points"
+        >
           {/* Navigation buttons */}
           <Flex gap="2" align="center" className='flex-wrap'>
             <Button variant="outline" color="gray" asChild>
@@ -268,7 +265,7 @@ const Rewards = () => {
               </Link>
             </Button>
           </Flex>
-        </Flex>
+        </PageHeader>
 
         <Separator size={'4'} />
 
@@ -422,7 +419,7 @@ const Rewards = () => {
             }
           />
         ) : (
-          <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
+          <Card size={'2'} className='shadow [--card-border-width:0px]'>
             <Table.Root>
               <Table.Header>
                 <Table.Row>

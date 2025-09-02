@@ -181,6 +181,14 @@ const router = createBrowserRouter(
               lazy={() => import("../pages/student/StudentRedemptionHistory")
                 .then(({ default: StudentRedemptionHistory }) => ({ Component: StudentRedemptionHistory, }))}
             />
+            <Route path="colleges"
+              lazy={() => import("../pages/student/Colleges")
+                .then(({ default: Colleges }) => ({ Component: Colleges, }))}
+            />
+            <Route path="colleges/:id"
+              lazy={() => import("../pages/student/CollegeDetails")
+                .then(({ default: CollegeDetails }) => ({ Component: CollegeDetails, }))}
+            />
 
             {/* settings nested routes */}
             <Route path="settings"
@@ -469,6 +477,22 @@ const router = createBrowserRouter(
           <Route path="schools"
             lazy={() => import("../pages/platform-admin/Schools")
               .then(({ default: Schools }) => ({ Component: Schools, }))}
+          />
+          <Route path="colleges"
+            lazy={() => import("../pages/platform-admin/Colleges")
+              .then(({ default: Colleges }) => ({ Component: Colleges, }))}
+          />
+          <Route path="colleges/:id"
+            lazy={() => import("../pages/platform-admin/CreateEditCollege")
+              .then(({ default: CreateEditCollege }) => ({ Component: CreateEditCollege, }))}
+          />
+          <Route path="colleges/create"
+            lazy={() => import("../pages/platform-admin/CreateEditCollege")
+              .then(({ default: CreateEditCollege }) => ({ Component: CreateEditCollege, }))}
+          />
+          <Route path="colleges/edit/:id"
+            lazy={() => import("../pages/platform-admin/CreateEditCollege")
+              .then(({ default: CreateEditCollege }) => ({ Component: CreateEditCollege, }))}
           />
         </Route>
       </Route>

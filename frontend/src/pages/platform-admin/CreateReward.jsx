@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { useCreateReward, useUpdateReward } from '../../api/rewards/rewards.mutations';
 import { useGetRewardById, useGetRewardCategories } from '../../api/rewards/rewards.queries';
 import { Container, FormFieldErrorMessage, Loader } from '../../components';
+import PageHeader from '../../components/PageHeader';
 
 const CreateReward = () => {
   const navigate = useNavigate();
@@ -240,48 +241,32 @@ const CreateReward = () => {
   return (
     <div className="pb-8 mx-auto space-y-6 max-w-4xl">
       {/* Header */}
-      <Box>
-        <Button
-          variant="ghost"
-          color="gray"
-          asChild
-          size="2"
-          className="mb-4"
-        >
-          <Link to={'/platform-admin/dashboard/rewards'}>
-            <ArrowLeft size={16} /> Back to Rewards
-          </Link>
-        </Button>
-        <Flex justify={'between'} align={'start'} wrap='wrap' gap='2'>
-          <Flex direction={'column'}>
-            <Heading as="h1" size="6" weight="medium">
-              {isEdit ? 'Edit Reward' : 'Create New Reward'}
-            </Heading>
-            <Text color="gray" size="2" className="mt-1">
-              {isEdit
-                ? 'Update the reward details and settings.'
-                : 'Create a new reward that students can redeem with their scholarship points.'
-              }
-            </Text>
-          </Flex>
-
-          <Flex gap='2' align='center' wrap='wrap'>
-            {/* Create Reward Button */}
-            <Button
-              type="submit"
-              color="grass"
-              disabled={isPending}
-              onClick={handleSubmit(onSubmit)}
-            >
-              <Plus size={16} />
-              {isPending
-                ? (isEdit ? 'Updating...' : 'Creating...')
-                : (isEdit ? 'Update Reward' : 'Create Reward')
-              }
-            </Button>
-          </Flex>
+      <PageHeader
+        title={isEdit ? 'Edit Reward' : 'Create Reward'}
+        description={isEdit
+          ? 'Update the reward details and settings.'
+          : 'Create a new reward that students can redeem with their scholarship points.'
+        }
+        backButton
+        backButtonLink='/platform-admin/dashboard/rewards'
+      >
+        <Flex gap='2' align='center' wrap='wrap'>
+          {/* Create Reward Button */}
+          <Button
+            type="submit"
+            color="grass"
+            disabled={isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
+            <Plus size={16} />
+            {isPending
+              ? (isEdit ? 'Updating...' : 'Creating...')
+              : (isEdit ? 'Update Reward' : 'Create Reward')
+            }
+          </Button>
         </Flex>
-      </Box>
+      </PageHeader>
+
       <Text as="p" size="1" color="gray" className='italic'>
         * Required fields
       </Text>
@@ -667,10 +652,10 @@ const CreateReward = () => {
 
 export const FormSection = ({ title, children }) => {
   return (
-    <Card className='shadow-md [--card-border-width:0px]' size='3'>
+    <Card className='shadow [--card-border-width:0px]' size='3'>
       <div className="space-y-4">
         <div>
-          <Heading as="h3" size="4" weight="medium" className="text-[--gray-12]">
+          <Heading as="h3" size="4" weight="bold" className="text-[--gray-12]">
             {title}
           </Heading>
           <Separator size="4" className="mt-2" />

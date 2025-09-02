@@ -14,7 +14,7 @@ import SchoolCard from './components/SchoolCard'
 function Schools() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(20)
   const [sortField, setSortField] = useState('name')
   const [sortOrder, setSortOrder] = useState('asc')
   const [cityFilter, setCityFilter] = useState('')

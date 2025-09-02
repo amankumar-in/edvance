@@ -13,7 +13,8 @@ import {
   useGetRewardCategories,
   useGetRewardCategoryById
 } from '../../api/rewards/rewards.queries';
-import { Container, Loader } from '../../components';
+import { Loader } from '../../components';
+import PageHeader from '../../components/PageHeader';
 
 // Icon mapping for reward categories
 const iconMap = {
@@ -330,572 +331,555 @@ const CreateRewardCategory = () => {
 
   if (isLoadingCategory) {
     return (
-        <Flex justify="center">
-          <Loader />
-        </Flex>
+      <Flex justify="center">
+        <Loader />
+      </Flex>
     );
   }
 
   return (
-      <div className="mx-auto space-y-6 max-w-4xl">
-        {/* Header */}
-        <Box>
+    <div className="mx-auto space-y-6 max-w-4xl">
+      {/* Header */}
+      <PageHeader
+        title={isEdit ? 'Edit Reward Category' : 'Create Reward Category'}
+        description={isEdit ? 'Update the reward category details' : 'Create a new category to organize rewards'}
+        backButton={true}
+        backLink={'/platform-admin/dashboard/reward-categories'}
+      >
+        <Flex gap='2' align='center' wrap='wrap'>
+          {/* Submit Button */}
           <Button
-            variant="ghost"
-            color="gray"
-            asChild
-            size="2"
-            className="mb-4"
+            type="submit"
+            color="grass"
+            onClick={handleSubmit(onSubmit)}
+            disabled={isCreating || isUpdating}
+            className='shadow-md'
           >
-            <Link to={'/platform-admin/dashboard/reward-categories'}>
-              <ArrowLeft size={16} /> Back to Categories
-            </Link>
+            <Plus size={16} /> {isEdit ? 'Update Category' : 'Create Category'}
           </Button>
-          <Flex justify={'between'} align={'start'} wrap='wrap' gap='2'>
-            <Flex direction={'column'}>
-              <Heading as="h1" size="6" weight="medium">
-                {isEdit ? 'Edit Reward Category' : 'Create New Reward Category'}
-              </Heading>
-              <Text color="gray" size="2" className="mt-1">
-                {isEdit ? 'Update the reward category details' : 'Create a new category to organize rewards'}
+        </Flex>
+      </PageHeader>
+
+      <Text as="p" size="1" color="gray" className='italic'>
+        * Required fields
+      </Text>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Basic Information */}
+        <FormSection title="Basic Information">
+          <div className="grid grid-cols-1 gap-6">
+            {/* Name */}
+            <div>
+              <Text as="label" size="2" weight="medium" htmlFor="name">
+                Category Name *
               </Text>
-            </Flex>
-
-            <Flex gap='2' align='center' wrap='wrap'>
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                color="grass"
-                onClick={handleSubmit(onSubmit)}
-                disabled={isCreating || isUpdating}
-                className='shadow-md'
-              >
-                <Plus size={16} /> {isEdit ? 'Update Category' : 'Create Category'}
-              </Button>
-            </Flex>
-          </Flex>
-        </Box>
-
-        <Text as="p" size="1" color="gray" className='italic'>
-          * Required fields
-        </Text>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
-          <FormSection title="Basic Information">
-            <div className="grid grid-cols-1 gap-6">
-              {/* Name */}
-              <div>
-                <Text as="label" size="2" weight="medium" htmlFor="name">
-                  Category Name *
+              <TextField.Root
+                id="name"
+                placeholder="Enter category name"
+                {...register('name', {
+                  required: 'Category name is required',
+                  minLength: { value: 2, message: 'Name must be at least 2 characters' }
+                })}
+                className="mt-2"
+              />
+              {errors.name && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.name.message}
                 </Text>
-                <TextField.Root
-                  id="name"
-                  placeholder="Enter category name"
-                  {...register('name', {
-                    required: 'Category name is required',
-                    minLength: { value: 2, message: 'Name must be at least 2 characters' }
-                  })}
-                  className="mt-2"
-                />
-                {errors.name && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.name.message}
-                  </Text>
-                )}
-              </div>
-
-              {/* Description */}
-              <div>
-                <Text as="label" size="2" weight="medium" htmlFor="description">
-                  Description
-                </Text>
-                <TextArea
-                  id="description"
-                  placeholder="Describe this category"
-                  {...register('description')}
-                  className="mt-2"
-                  rows={3}
-                />
-              </div>
+              )}
             </div>
-          </FormSection>
 
-          {/* Category Classification */}
-          <FormSection title="Classification">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Type */}
-              <div>
-                <Text as="label" size="2" weight="medium">
-                  Category Type *
-                </Text>
-                <Controller
-                  name="type"
-                  control={control}
-                  rules={{ required: 'Category type is required' }}
-                  render={({ field }) => (
-                    <Select.Root
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <Select.Trigger placeholder="Select type" className="mt-2 w-full" />
-                      <Select.Content variant='soft' position='popper'>
-                        {typeOptions.map((type) => (
-                          <Select.Item key={type.value} value={type.value}>
-                            {type.label}
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-                  )}
-                />
-                {errors.type && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.type.message}
-                  </Text>
-                )}
-              </div>
-
-              {/* Subcategory */}
-              <div>
-                <Text as="label" size="2" weight="medium">
-                  Subcategory Type
-                </Text>
-                <Controller
-                  name="subcategoryType"
-                  control={control}
-                  render={({ field }) => (
-                    <Select.Root
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <Select.Trigger placeholder="Select subcategory" className="mt-2 w-full" />
-                      <Select.Content variant='soft' position='popper'>
-                        {subcategoryOptions.map((subcategory) => (
-                          <Select.Item key={subcategory.value} value={subcategory.value}>
-                            {subcategory.label}
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-                  )}
-                />
-              </div>
+            {/* Description */}
+            <div>
+              <Text as="label" size="2" weight="medium" htmlFor="description">
+                Description
+              </Text>
+              <TextArea
+                id="description"
+                placeholder="Describe this category"
+                {...register('description')}
+                className="mt-2"
+                rows={3}
+              />
             </div>
-          </FormSection>
+          </div>
+        </FormSection>
 
-          {/* Visual Design */}
-          <FormSection title="Visual Design">
-            <div className="space-y-6">
-              {/* Icon Selection */}
-              <div>
-                <Text as="label" size="2" weight="medium" className="block mb-2">
-                  Icon *
-                </Text>
-                <Controller
-                  name="icon"
-                  control={control}
-                  rules={{ required: 'Icon is required' }}
-                  render={({ field }) => (
-                    <Flex gap="2" wrap="wrap">
-                      {filteredIcons.map(icon => (
-                        <button
-                          key={icon.value}
-                          type="button"
-                          onClick={() => field.onChange(icon.value)}
-                          style={{
-                            padding: '8px',
-                            backgroundColor: field.value === icon.value ? 'var(--accent-3)' : 'var(--gray-2)',
-                            border: field.value === icon.value ? '1px solid var(--accent-9)' : '1px solid var(--gray-6)',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '4px',
-                            minWidth: '60px'
-                          }}
-                        >
-                          {renderIcon(icon.value, 20)}
-                          <Text size="1">{icon.label}</Text>
-                        </button>
+        {/* Category Classification */}
+        <FormSection title="Classification">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Type */}
+            <div>
+              <Text as="label" size="2" weight="medium">
+                Category Type *
+              </Text>
+              <Controller
+                name="type"
+                control={control}
+                rules={{ required: 'Category type is required' }}
+                render={({ field }) => (
+                  <Select.Root
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <Select.Trigger placeholder="Select type" className="mt-2 w-full" />
+                    <Select.Content variant='soft' position='popper'>
+                      {typeOptions.map((type) => (
+                        <Select.Item key={type.value} value={type.value}>
+                          {type.label}
+                        </Select.Item>
                       ))}
-                    </Flex>
-                  )}
-                />
-                {errors.icon && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.icon.message}
-                  </Text>
+                    </Select.Content>
+                  </Select.Root>
                 )}
-                <Text size="1" color="gray" className="mt-1">
-                  Pick an icon to visually represent this category.
+              />
+              {errors.type && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.type.message}
                 </Text>
-              </div>
+              )}
+            </div>
 
-              {/* Color Selection */}
-              <div>
-                <Text as="label" size="2" weight="medium" className="block mb-2">
-                  Color *
-                </Text>
-                <Controller
-                  name="color"
-                  control={control}
-                  rules={{ required: 'Color is required' }}
-                  render={({ field }) => (
-                    <Flex gap="2" align="center" wrap="wrap">
-                      <input
-                        type="color"
-                        value={field.value}
-                        onChange={(e) => field.onChange(e.target.value)}
+            {/* Subcategory */}
+            <div>
+              <Text as="label" size="2" weight="medium">
+                Subcategory Type
+              </Text>
+              <Controller
+                name="subcategoryType"
+                control={control}
+                render={({ field }) => (
+                  <Select.Root
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <Select.Trigger placeholder="Select subcategory" className="mt-2 w-full" />
+                    <Select.Content variant='soft' position='popper'>
+                      {subcategoryOptions.map((subcategory) => (
+                        <Select.Item key={subcategory.value} value={subcategory.value}>
+                          {subcategory.label}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                )}
+              />
+            </div>
+          </div>
+        </FormSection>
+
+        {/* Visual Design */}
+        <FormSection title="Visual Design">
+          <div className="space-y-6">
+            {/* Icon Selection */}
+            <div>
+              <Text as="label" size="2" weight="medium" className="block mb-2">
+                Icon *
+              </Text>
+              <Controller
+                name="icon"
+                control={control}
+                rules={{ required: 'Icon is required' }}
+                render={({ field }) => (
+                  <Flex gap="2" wrap="wrap">
+                    {filteredIcons.map(icon => (
+                      <button
+                        key={icon.value}
+                        type="button"
+                        onClick={() => field.onChange(icon.value)}
                         style={{
-                          width: '40px',
-                          height: '40px',
-                          border: 'none',
+                          padding: '8px',
+                          backgroundColor: field.value === icon.value ? 'var(--accent-3)' : 'var(--gray-2)',
+                          border: field.value === icon.value ? '1px solid var(--accent-9)' : '1px solid var(--gray-6)',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px',
+                          minWidth: '60px'
+                        }}
+                      >
+                        {renderIcon(icon.value, 20)}
+                        <Text size="1">{icon.label}</Text>
+                      </button>
+                    ))}
+                  </Flex>
+                )}
+              />
+              {errors.icon && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.icon.message}
+                </Text>
+              )}
+              <Text size="1" color="gray" className="mt-1">
+                Pick an icon to visually represent this category.
+              </Text>
+            </div>
+
+            {/* Color Selection */}
+            <div>
+              <Text as="label" size="2" weight="medium" className="block mb-2">
+                Color *
+              </Text>
+              <Controller
+                name="color"
+                control={control}
+                rules={{ required: 'Color is required' }}
+                render={({ field }) => (
+                  <Flex gap="2" align="center" wrap="wrap">
+                    <input
+                      type="color"
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    {filteredColors.map(color => (
+                      <button
+                        key={color.color}
+                        type="button"
+                        onClick={() => field.onChange(color.color)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          backgroundColor: color.color,
+                          border: field.value === color.color ? '3px solid var(--accent-9)' : '1px solid var(--gray-6)',
                           borderRadius: '6px',
                           cursor: 'pointer'
                         }}
+                        title={color.name}
                       />
-                      {filteredColors.map(color => (
-                        <button
-                          key={color.color}
-                          type="button"
-                          onClick={() => field.onChange(color.color)}
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            backgroundColor: color.color,
-                            border: field.value === color.color ? '3px solid var(--accent-9)' : '1px solid var(--gray-6)',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}
-                          title={color.name}
-                        />
-                      ))}
-                    </Flex>
-                  )}
-                />
-                {errors.color && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.color.message}
-                  </Text>
+                    ))}
+                  </Flex>
                 )}
-                <Text size="1" color="gray" className="mt-1">
-                  Choose a color for the category icon background.
+              />
+              {errors.color && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.color.message}
                 </Text>
-              </div>
-
-
+              )}
+              <Text size="1" color="gray" className="mt-1">
+                Choose a color for the category icon background.
+              </Text>
             </div>
 
-            {/* Preview */}
-            {watch('name') && (
-              <Card size={'2'}>
-                <Text size="2" weight="medium" className="block mb-3">
-                  Preview
-                </Text>
-                <Flex align="start" gap="3">
-                  <div
-                    className="flex justify-center items-center w-10 h-10 text-white rounded-lg"
-                    style={{ backgroundColor: watch('color') }}
-                  >
-                    {renderIcon(watch('icon'), 20)}
-                  </div>
-                  <div>
-                    <Text weight="medium" size="3">{watch('name')}</Text>
-                    {watch('description') && (
-                      <Text size="2" color="gray" className="block">
-                        {watch('description')}
-                      </Text>
-                    )}
-                    <Flex gap="2" className="mt-1">
-                      {watch('type') && (
-                        <Badge color="blue" variant="soft" size="1">
-                          {watch('type')}
-                        </Badge>
-                      )}
-                      {watch('subcategoryType') && (
-                        <Badge color="gray" variant="outline" size="1">
-                          {watch('subcategoryType')}
-                        </Badge>
-                      )}
-                    </Flex>
-                  </div>
-                </Flex>
-              </Card>
-            )}
 
-            {/* Category Image Upload (optional) */}
+          </div>
+
+          {/* Preview */}
+          {watch('name') && (
+            <Card size={'2'}>
+              <Text size="2" weight="medium" className="block mb-3">
+                Preview
+              </Text>
+              <Flex align="start" gap="3">
+                <div
+                  className="flex justify-center items-center w-10 h-10 text-white rounded-lg"
+                  style={{ backgroundColor: watch('color') }}
+                >
+                  {renderIcon(watch('icon'), 20)}
+                </div>
+                <div>
+                  <Text weight="medium" size="3">{watch('name')}</Text>
+                  {watch('description') && (
+                    <Text size="2" color="gray" className="block">
+                      {watch('description')}
+                    </Text>
+                  )}
+                  <Flex gap="2" className="mt-1">
+                    {watch('type') && (
+                      <Badge color="blue" variant="soft" size="1">
+                        {watch('type')}
+                      </Badge>
+                    )}
+                    {watch('subcategoryType') && (
+                      <Badge color="gray" variant="outline" size="1">
+                        {watch('subcategoryType')}
+                      </Badge>
+                    )}
+                  </Flex>
+                </div>
+              </Flex>
+            </Card>
+          )}
+
+          {/* Category Image Upload (optional) */}
+          <div>
+            <Text as="label" size="2" weight="medium">
+              Category Image (Optional)
+            </Text>
+            <div className="mt-2 space-y-4">
+              {/* Image Preview */}
+              {previewUrl ? (
+                <div className="relative w-full border-2 border-dashed border-[--gray-6] rounded-lg p-8 flex items-center justify-center ">
+                  <img
+                    src={previewUrl}
+                    alt="Category preview"
+                    className="object-center aspect-square rounded-full w-32 object-cover border border-[--gray-6] shadow-md bg-[--accent-contrast]"
+                  />
+                  <IconButton
+                    title='Remove Image'
+                    aria-label='Remove Image'
+                    type="button"
+                    variant="solid"
+                    color="red"
+                    size="1"
+                    className="absolute top-2 right-2"
+                    onClick={removeImage}
+                  >
+                    <X size={14} />
+                  </IconButton>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-[--gray-6] rounded-lg p-8 text-center">
+                  <ImageIcon size={32} className="mx-auto mb-3 text-[--gray-9]" />
+                  <Text size="2" color="gray" className="block mb-3">
+                    Select an image file to upload
+                  </Text>
+                  <Button type="button" variant="outline" asChild className="cursor-pointer">
+                    <label>
+                      <Upload size={16} />
+                      Choose File
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </Button>
+                </div>
+              )}
+
+              {/* File Info */}
+              {selectedFile && (
+                <div className="p-3 bg-[--gray-2] rounded-md">
+                  <Text size="1" color="gray">
+                    Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </Text>
+                </div>
+              )}
+
+              <Text size="1" color="gray">
+                Supported formats: JPG, PNG, GIF, WebP (max 5MB)
+              </Text>
+            </div>
+          </div>
+        </FormSection>
+
+        {/* Point Value Settings */}
+        <FormSection title="Point Value Guidelines">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <Text as="label" size="2" weight="medium" htmlFor="minPointValue">
+                Minimum Point Value
+              </Text>
+              <TextField.Root
+                id="minPointValue"
+                type="number"
+                placeholder="0"
+                {...register('minPointValue', {
+                  min: { value: 0, message: 'Minimum value cannot be negative' }
+                })}
+                className="mt-2"
+              />
+              {errors.minPointValue && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.minPointValue.message}
+                </Text>
+              )}
+            </div>
+
+            <div>
+              <Text as="label" size="2" weight="medium" htmlFor="maxPointValue">
+                Maximum Point Value
+              </Text>
+              <TextField.Root
+                id="maxPointValue"
+                type="number"
+                placeholder="100"
+                {...register('maxPointValue', {
+                  min: { value: 1, message: 'Maximum value must be at least 1' }
+                })}
+                className="mt-2"
+              />
+              {errors.maxPointValue && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.maxPointValue.message}
+                </Text>
+              )}
+            </div>
+          </div>
+          <Text size="1" color="gray">
+            These values provide guidance for reward creators when setting point costs
+          </Text>
+        </FormSection>
+
+        {/* Access & Visibility */}
+        <FormSection title="Access & Visibility">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Visibility */}
             <div>
               <Text as="label" size="2" weight="medium">
-                Category Image (Optional)
+                Visibility *
               </Text>
-              <div className="mt-2 space-y-4">
-                {/* Image Preview */}
-                {previewUrl ? (
-                  <div className="relative w-full border-2 border-dashed border-[--gray-6] rounded-lg p-8 flex items-center justify-center ">
-                    <img
-                      src={previewUrl}
-                      alt="Category preview"
-                      className="object-center aspect-square rounded-full w-32 object-cover border border-[--gray-6] shadow-md bg-[--accent-contrast]"
-                    />
-                    <IconButton
-                      title='Remove Image'
-                      aria-label='Remove Image'
-                      type="button"
-                      variant="solid"
-                      color="red"
-                      size="1"
-                      className="absolute top-2 right-2"
-                      onClick={removeImage}
-                    >
-                      <X size={14} />
-                    </IconButton>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-[--gray-6] rounded-lg p-8 text-center">
-                    <ImageIcon size={32} className="mx-auto mb-3 text-[--gray-9]" />
-                    <Text size="2" color="gray" className="block mb-3">
-                      Select an image file to upload
-                    </Text>
-                    <Button type="button" variant="outline" asChild className="cursor-pointer">
-                      <label>
-                        <Upload size={16} />
-                        Choose File
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                          className="hidden"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                    </Button>
-                  </div>
+              <Controller
+                name="visibility"
+                control={control}
+                rules={{ required: 'Visibility is required' }}
+                render={({ field }) => (
+                  <RadioGroup.Root
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="mt-2"
+                  >
+                    <div className="space-y-3">
+                      <Flex align="center" gap="2">
+                        <RadioGroup.Item value="private" id="private" />
+                        <div>
+                          <Text as="label" htmlFor="private" size="2" weight="medium">
+                            Private
+                          </Text>
+                          <Text size="1" color="gray" className="block">
+                            Only visible to you
+                          </Text>
+                        </div>
+                      </Flex>
+                      <Flex align="center" gap="2">
+                        <RadioGroup.Item value="school" id="school" />
+                        <div>
+                          <Text as="label" htmlFor="school" size="2" weight="medium">
+                            School
+                          </Text>
+                          <Text size="1" color="gray" className="block">
+                            Visible to school members
+                          </Text>
+                        </div>
+                      </Flex>
+                      <Flex align="center" gap="2">
+                        <RadioGroup.Item value="public" id="public" />
+                        <div>
+                          <Text as="label" htmlFor="public" size="2" weight="medium">
+                            Public
+                          </Text>
+                          <Text size="1" color="gray" className="block">
+                            Visible to everyone
+                          </Text>
+                        </div>
+                      </Flex>
+                    </div>
+                  </RadioGroup.Root>
                 )}
-
-                {/* File Info */}
-                {selectedFile && (
-                  <div className="p-3 bg-[--gray-2] rounded-md">
-                    <Text size="1" color="gray">
-                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                    </Text>
-                  </div>
-                )}
-
-                <Text size="1" color="gray">
-                  Supported formats: JPG, PNG, GIF, WebP (max 5MB)
+              />
+              {errors.visibility && (
+                <Text size="1" color="red" className="mt-1">
+                  {errors.visibility.message}
                 </Text>
-              </div>
+              )}
             </div>
-          </FormSection>
 
-          {/* Point Value Settings */}
-          <FormSection title="Point Value Guidelines">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Additional Settings */}
+            <div className="space-y-4">
+              {/* Display Order */}
               <div>
-                <Text as="label" size="2" weight="medium" htmlFor="minPointValue">
-                  Minimum Point Value
+                <Text as="label" size="2" weight="medium" htmlFor="displayOrder">
+                  Display Order
                 </Text>
                 <TextField.Root
-                  id="minPointValue"
+                  id="displayOrder"
                   type="number"
                   placeholder="0"
-                  {...register('minPointValue', {
-                    min: { value: 0, message: 'Minimum value cannot be negative' }
-                  })}
+                  {...register('displayOrder')}
                   className="mt-2"
                 />
-                {errors.minPointValue && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.minPointValue.message}
-                  </Text>
-                )}
-              </div>
-
-              <div>
-                <Text as="label" size="2" weight="medium" htmlFor="maxPointValue">
-                  Maximum Point Value
+                <Text size="1" color="gray" className="mt-1">
+                  Lower numbers appear first
                 </Text>
-                <TextField.Root
-                  id="maxPointValue"
-                  type="number"
-                  placeholder="100"
-                  {...register('maxPointValue', {
-                    min: { value: 1, message: 'Maximum value must be at least 1' }
-                  })}
-                  className="mt-2"
-                />
-                {errors.maxPointValue && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.maxPointValue.message}
-                  </Text>
-                )}
               </div>
-            </div>
-            <Text size="1" color="gray">
-              These values provide guidance for reward creators when setting point costs
-            </Text>
-          </FormSection>
 
-          {/* Access & Visibility */}
-          <FormSection title="Access & Visibility">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Visibility */}
+              {/* Featured Toggle */}
               <div>
                 <Text as="label" size="2" weight="medium">
-                  Visibility *
+                  Featured on Rewards Page
                 </Text>
                 <Controller
-                  name="visibility"
+                  name="isFeatured"
                   control={control}
-                  rules={{ required: 'Visibility is required' }}
                   render={({ field }) => (
                     <RadioGroup.Root
-                      value={field.value}
-                      onValueChange={field.onChange}
+                      value={String(field.value)}
+                      onValueChange={(val) => field.onChange(val === 'true')}
                       className="mt-2"
                     >
-                      <div className="space-y-3">
-                        <Flex align="center" gap="2">
-                          <RadioGroup.Item value="private" id="private" />
-                          <div>
-                            <Text as="label" htmlFor="private" size="2" weight="medium">
-                              Private
-                            </Text>
-                            <Text size="1" color="gray" className="block">
-                              Only visible to you
-                            </Text>
-                          </div>
-                        </Flex>
-                        <Flex align="center" gap="2">
-                          <RadioGroup.Item value="school" id="school" />
-                          <div>
-                            <Text as="label" htmlFor="school" size="2" weight="medium">
-                              School
-                            </Text>
-                            <Text size="1" color="gray" className="block">
-                              Visible to school members
-                            </Text>
-                          </div>
-                        </Flex>
-                        <Flex align="center" gap="2">
-                          <RadioGroup.Item value="public" id="public" />
-                          <div>
-                            <Text as="label" htmlFor="public" size="2" weight="medium">
-                              Public
-                            </Text>
-                            <Text size="1" color="gray" className="block">
-                              Visible to everyone
-                            </Text>
-                          </div>
-                        </Flex>
-                      </div>
+                      <Flex align="center" gap="2">
+                        <RadioGroup.Item value="true" id="featured-yes" />
+                        <Text as="label" htmlFor="featured-yes" size="2">Yes</Text>
+                      </Flex>
+                      <Flex align="center" gap="2" className="mt-2">
+                        <RadioGroup.Item value="false" id="featured-no" />
+                        <Text as="label" htmlFor="featured-no" size="2">No</Text>
+                      </Flex>
                     </RadioGroup.Root>
                   )}
                 />
-                {errors.visibility && (
-                  <Text size="1" color="red" className="mt-1">
-                    {errors.visibility.message}
-                  </Text>
-                )}
+                <Text size="1" color="gray" className="block mt-1">
+                  Mark this category to be highlighted on the Rewards landing page.
+                </Text>
               </div>
 
-              {/* Additional Settings */}
-              <div className="space-y-4">
-                {/* Display Order */}
-                <div>
-                  <Text as="label" size="2" weight="medium" htmlFor="displayOrder">
-                    Display Order
-                  </Text>
-                  <TextField.Root
-                    id="displayOrder"
-                    type="number"
-                    placeholder="0"
-                    {...register('displayOrder')}
-                    className="mt-2"
-                  />
-                  <Text size="1" color="gray" className="mt-1">
-                    Lower numbers appear first
-                  </Text>
-                </div>
-
-                {/* Featured Toggle */}
-                <div>
-                  <Text as="label" size="2" weight="medium">
-                    Featured on Rewards Page
-                  </Text>
-                  <Controller
-                    name="isFeatured"
-                    control={control}
-                    render={({ field }) => (
-                      <RadioGroup.Root
-                        value={String(field.value)}
-                        onValueChange={(val) => field.onChange(val === 'true')}
-                        className="mt-2"
-                      >
-                        <Flex align="center" gap="2">
-                          <RadioGroup.Item value="true" id="featured-yes" />
-                          <Text as="label" htmlFor="featured-yes" size="2">Yes</Text>
-                        </Flex>
-                        <Flex align="center" gap="2" className="mt-2">
-                          <RadioGroup.Item value="false" id="featured-no" />
-                          <Text as="label" htmlFor="featured-no" size="2">No</Text>
-                        </Flex>
-                      </RadioGroup.Root>
-                    )}
-                  />
-                  <Text size="1" color="gray" className="block mt-1">
-                    Mark this category to be highlighted on the Rewards landing page.
-                  </Text>
-                </div>
-
-                {/* Featured Order */}
-                <div>
-                  <Text as="label" size="2" weight="medium" htmlFor="featuredOrder">
-                    Featured Order
-                  </Text>
-                  <TextField.Root
-                    id="featuredOrder"
-                    type="number"
-                    placeholder="0"
-                    {...register('featuredOrder')}
-                    className="mt-2"
-                  />
-                  <Text size="1" color="gray" className="mt-1">
-                    Lower numbers appear first among featured categories
-                  </Text>
-                </div>
-
-                {/* School ID (conditional) */}
-                {(visibility === 'school' || type === 'school') && (
-                  <div>
-                    <Text as="label" size="2" weight="medium" htmlFor="schoolId">
-                      School ID
-                    </Text>
-                    <TextField.Root
-                      id="schoolId"
-                      placeholder="Enter school ID"
-                      {...register('schoolId')}
-                      className="mt-2"
-                    />
-                  </div>
-                )}
+              {/* Featured Order */}
+              <div>
+                <Text as="label" size="2" weight="medium" htmlFor="featuredOrder">
+                  Featured Order
+                </Text>
+                <TextField.Root
+                  id="featuredOrder"
+                  type="number"
+                  placeholder="0"
+                  {...register('featuredOrder')}
+                  className="mt-2"
+                />
+                <Text size="1" color="gray" className="mt-1">
+                  Lower numbers appear first among featured categories
+                </Text>
               </div>
+
+              {/* School ID (conditional) */}
+              {(visibility === 'school' || type === 'school') && (
+                <div>
+                  <Text as="label" size="2" weight="medium" htmlFor="schoolId">
+                    School ID
+                  </Text>
+                  <TextField.Root
+                    id="schoolId"
+                    placeholder="Enter school ID"
+                    {...register('schoolId')}
+                    className="mt-2"
+                  />
+                </div>
+              )}
             </div>
-          </FormSection>
+          </div>
+        </FormSection>
 
-        </form>
-      </div>
+      </form>
+    </div>
   );
 };
 
 // Helper component for form sections
 export const FormSection = ({ title, children }) => {
   return (
-    <Card size={'3'} className='space-y-4 shadow-md [--card-border-width:0px]'>
+    <Card size={'3'} className='space-y-4 shadow [--card-border-width:0px]'>
       <div>
-        <Heading as="h3" size="4" weight="medium" className="text-[--gray-12]">
+        <Heading as="h3" size="4" weight="bold" className="text-[--gray-12]">
           {title}
         </Heading>
         <Separator size="4" my="3" />

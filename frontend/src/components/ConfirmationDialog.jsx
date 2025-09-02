@@ -20,7 +20,7 @@ function ConfirmationDialog({
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       {children && <AlertDialog.Trigger>{children}</AlertDialog.Trigger>}
       <AlertDialog.Content maxWidth={maxWidth}>
-        <AlertDialog.Title weight={'medium'}>{title}</AlertDialog.Title>
+        <AlertDialog.Title>{title}</AlertDialog.Title>
         <AlertDialog.Description size={'2'}>
           {description}
         </AlertDialog.Description>

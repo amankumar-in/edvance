@@ -57,7 +57,7 @@ const StatusGuide = ({
       </Flex>
       
       {showStatusInfo && (
-        <Callout.Root color="blue" variant='surface' highContrast size="1">
+        <Callout.Root color="blue" variant='surface' size="1">
           <Callout.Icon>
             <Info size={16} />
           </Callout.Icon>

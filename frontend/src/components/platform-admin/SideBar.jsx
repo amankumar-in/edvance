@@ -5,6 +5,7 @@ import {
   CheckSquare,
   FileBarChart,
   Gift,
+  GraduationCap,
   LayoutDashboard,
   ListTodo,
   Megaphone,
@@ -60,29 +61,39 @@ const sideBarItems = [
     Icon: School,
   },
   {
+    label: "Colleges",
+    href: 'colleges',
+    Icon: GraduationCap,
+  },
+  {
     label: "Badges",
     href: 'badges',
     Icon: Award,
+    disabled: true,
   },
   {
     label: "Communications",
     href: 'communications',
     Icon: MessageCircle,
+    disabled: true,  
   },
   {
     label: "Promotions",
     href: 'promotions',
     Icon: Megaphone,
+    disabled: true,
   },
   {
     label: 'Reports',
     href: 'reports',
     Icon: FileBarChart,
+    disabled: true,
   },
   {
     label: 'Settings',
     href: 'settings',
     Icon: Settings,
+    disabled: true,
   },
 ];
 
@@ -102,7 +113,7 @@ function SideBar({ isOpen, toggleSidebar }) {
       {/* Sidebar */}
       <div
         className={`fixed overflow-y-auto space-y-6 md:sticky top-0 h-dvh bg-[--sidebar] text-white  z-[70] transition-transform duration-200 ease-linear ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
-          } md:left-0 w-72 flex flex-col`}
+          } md:left-0 w-64 flex flex-col`}
       >
         <Text weight="medium" size="7" className='flex justify-between items-center px-6 h-16'>
           EdVance
@@ -112,7 +123,7 @@ function SideBar({ isOpen, toggleSidebar }) {
         </Text>
 
         <div className='text-sm'>
-          {sideBarItems.map(({ label, href, Icon }) => {
+          {sideBarItems.map(({ label, href, Icon, disabled }) => {
             if (label === 'Overview') {
               return (
                 <NavLink
@@ -128,10 +139,10 @@ function SideBar({ isOpen, toggleSidebar }) {
             }
             return (
               <NavLink
-                to={href}
+                to={disabled ? '#' : href}
                 key={label}
                 onClick={() => window.innerWidth < 768 && toggleSidebar()}
-                className={({ isActive }) => `${isActive ? 'bg-[--accent-a3] text-white font-medium' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4`}
+                className={({ isActive }) => `${isActive && !disabled ? 'bg-[--accent-a3] text-white font-medium' : 'hover:bg-[--gray-a3] text-[--inactive-link]'} p-3 px-6 flex items-center gap-4 ${disabled ? 'cursor-not-allowed' : ''}`}
               >
                 {Icon && <Icon className='size-5' color='var(--icon-muted)' />}
                 <span>{label}</span>

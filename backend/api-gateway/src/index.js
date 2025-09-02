@@ -69,7 +69,7 @@ app.use(helmet({
 app.use(cors({
   origin: true, // Allow all origins in development
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Role'],
 }));
 app.use(express.json({ limit: "1mb" }));
@@ -125,7 +125,7 @@ const createServiceProxy = (path, targetUrl) => {
         onProxyRes: (proxyRes, req, res) => {
           // Ensure CORS headers are set for all responses
           proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-          proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+          proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH';
           proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
           proxyRes.headers['Cross-Origin-Resource-Policy'] = 'cross-origin';
         },
@@ -158,6 +158,7 @@ createServiceProxy("/api/classes", USER_SERVICE_URL);
 createServiceProxy("/api/search", USER_SERVICE_URL);
 createServiceProxy("/api/social-workers", USER_SERVICE_URL);
 createServiceProxy("/api/class-attendance", USER_SERVICE_URL);
+createServiceProxy("/api/colleges", USER_SERVICE_URL);
 
 createServiceProxy("/api/tasks", TASK_SERVICE_URL);
 createServiceProxy("/api/points", POINTS_SERVICE_URL);

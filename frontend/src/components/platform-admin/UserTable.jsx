@@ -132,7 +132,7 @@ const UserTable = ({ role }) => {
           height={'4px'}
         />
       </div>}
-      <Card size={'2'} className='shadow-md'>
+      <Card size={'2'} className='shadow [--card-border-width:0px]'>
         <Table.Root variant='ghost' layout={'auto'}>
           <Table.Header>
             <Table.Row>

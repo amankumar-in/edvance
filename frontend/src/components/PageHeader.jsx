@@ -14,7 +14,6 @@ function PageHeader({ title, description, className, children, actions, backButt
               <IconButton
                 variant="surface"
                 color="gray"
-                highContrast
                 asChild
               >
                 <Link to={backLink}>

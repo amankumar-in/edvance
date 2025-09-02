@@ -9,6 +9,7 @@ import { useGetRedemptions } from '../../api/rewards/rewards.queries';
 import { EmptyStateCard, Loader, Pagination } from '../../components';
 import { SortIcon } from '../../components/platform-admin/UserTable';
 import { formatDate } from '../../utils/helperFunctions';
+import PageHeader from '../../components/PageHeader';
 
 function RewardRedemptions() {
   const [page, setPage] = useState(1);
@@ -221,14 +222,10 @@ function RewardRedemptions() {
       </div>}
       <div className='relative space-y-6'>
         {/* Heading */}
-        <Flex justify='between' align='center' wrap='wrap' gap='4'>
-          <div>
-            <Heading as='h1' size='6' weight='medium' mb={'1'}>Reward Redemptions</Heading>
-            <Text as="p" color="gray" size="2">
-              Monitor and manage reward redemptions across the platform
-            </Text>
-          </div>
-
+        <PageHeader
+          title='Reward Redemptions'
+          description='Monitor and manage reward redemptions across the platform'
+        >
           {/* Navigation buttons */}
           <Flex gap="2" align="center">
             <Button variant="outline" color="gray" asChild>
@@ -242,7 +239,7 @@ function RewardRedemptions() {
               </Link>
             </Button>
           </Flex>
-        </Flex>
+        </PageHeader>
 
         <Separator size={'4'} />
 
@@ -346,7 +343,7 @@ function RewardRedemptions() {
             icon={<Gift size={48} />}
           />
         ) : (
-          <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
+          <Card size={'2'} className='shadow [--card-border-width:0px]'>
             <Table.Root variant='surface'>
               <Table.Header>
                 <Table.Row>

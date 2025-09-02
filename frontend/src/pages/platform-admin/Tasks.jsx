@@ -9,6 +9,7 @@ import { useGetTasks } from '../../api/task/task.queries'
 import { ConfirmationDialog, EmptyStateCard, Loader, Pagination } from '../../components'
 import { SortIcon } from '../../components/platform-admin/UserTable'
 import { formatDate } from '../../utils/helperFunctions'
+import PageHeader from '../../components/PageHeader'
 
 function Tasks() {
   const [page, setPage] = useState(1);
@@ -141,7 +142,7 @@ function Tasks() {
       header: 'Description',
       accessorKey: 'description',
       sortable: true,
-      },
+    },
     {
       header: "Category",
       accessorKey: "category",
@@ -210,17 +211,14 @@ function Tasks() {
       <div className='relative space-y-6'>
 
         {/* Heading */}
-        <Flex justify='between' align='center'>
-          <div>
-            <Heading as='h1' size='6' weight='medium' mb={'1'}>Tasks Management</Heading>
-            <Text as="p" color="gray" size="2">
-              Create, assign, and manage tasks across the platform
-            </Text>
-          </div>
 
+        <PageHeader
+          title={'Tasks Management'}
+          description={'Create, assign, and manage tasks across the platform'}
+        >
           {/* Create task button */}
           <CreateTaskButton />
-        </Flex>
+        </PageHeader>
 
         <Separator size={'4'} />
 
@@ -512,7 +510,7 @@ function Tasks() {
 
         ) : tasks.length > 0 ? (
           // Main data table
-          <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
+          <Card size={'2'} className='shadow [--card-border-width:0px]'>
             <Table.Root>
               <Table.Header>
                 <Table.Row>

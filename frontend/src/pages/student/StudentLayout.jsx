@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Flex, IconButton, Skeleton, Text } from '@radix-ui/themes';
-import { Award, BarChart3, BookOpen, Calendar, CreditCard, Home, Settings, TrendingUp, Trophy, X } from 'lucide-react';
+import { Award, BarChart3, BookOpen, Calendar, CreditCard, GraduationCap, Home, Settings, TrendingUp, Trophy, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useOutletContext } from 'react-router';
 import { toast } from 'sonner';
@@ -31,6 +31,7 @@ function StudentLayout() {
     { icon: <BookOpen size={20} />, label: 'Tasks', href: '/student/tasks' },
     { icon: <Trophy size={20} />, label: 'Rewards', href: '/student/rewards' },
     { icon: <CreditCard size={20} />, label: 'Scholarship Points', href: '/student/points' },
+    { icon: <GraduationCap size={20} />, label: "Colleges", href: '/student/colleges' },
     { icon: <Settings size={20} />, label: 'Settings', href: '/student/settings' },
     { icon: <TrendingUp size={20} />, label: 'Progress', href: '/student/progress', disabled: true },
     { icon: <Award size={20} />, label: 'Badges', href: '/student/badges', disabled: true },

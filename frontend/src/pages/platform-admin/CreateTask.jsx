@@ -10,6 +10,7 @@ import { useGetTaskCategories } from '../../api/task-category/taskCategory.queri
 import { useCreateTask, useUpdateTask } from '../../api/task/task.mutations';
 import { useGetTaskById } from '../../api/task/task.queries';
 import { FileUpload, FormFieldErrorMessage, Loader } from '../../components';
+import PageHeader from '../../components/PageHeader';
 import PreviewTaskForm from './components/PreviewTaskForm';
 
 const CreateTask = () => {
@@ -272,61 +273,45 @@ const CreateTask = () => {
   return (
     <div className="pb-8 mx-auto space-y-6 max-w-4xl">
       {/* Header */}
-      <Box>
-        <Button
-          variant="ghost"
-          color="gray"
-          asChild
-          size="2"
-          className="mb-4"
-        >
-          <Link to={'/platform-admin/dashboard/tasks'}>
-            <ArrowLeft size={16} /> Back to Tasks
-          </Link>
-        </Button>
-        <Flex justify={'between'} align={'start'} wrap='wrap' gap='2'>
-          <Flex direction={'column'}>
-            <Heading as="h1" size="6" weight="medium">
-              {isEdit ? 'Edit Task' : 'Create New Task'}
-            </Heading>
-            <Text color="gray" size="2" className="mt-1">
-              {isEdit
-                ? 'Modify the existing task details and settings.'
-                : 'Create a new task for students to complete and earn scholarship points.'
-              }
-            </Text>
-          </Flex>
-
-          <Flex gap='2' align='center' wrap='wrap' >
-            {/* Preview Task Button */}
-            <Tooltip content={!isValid ? "Fill required fields to enable preview" : "Preview task before creating"}>
-              <Button
-                type='button'
-                variant='outline'
-                color='gray'
-                disabled={!isValid}
-                onClick={() => setPreviewTaskFormOpen(true)}
-              >
-                <Eye size={16} /> Preview Task
-              </Button>
-            </Tooltip>
-
-            {/* Create/Update Task Button */}
+      <PageHeader
+        title={isEdit ? 'Edit Task' : 'Create New Task'}
+        description={isEdit
+          ? 'Modify the existing task details and settings.'
+          : 'Create a new task for students to complete and earn scholarship points.'
+        }
+        backButton
+      >
+        <Flex gap='2' align='center' wrap='wrap' >
+          {/* Preview Task Button */}
+          <Tooltip content={!isValid ? "Fill required fields to enable preview" : "Preview task before creating"}>
             <Button
-              type="submit"
-              color="grass"
-              disabled={isPending}
-              onClick={handleSubmit(onSubmit)}
+              type='button'
+              variant='outline'
+              color='gray'
+              disabled={!isValid}
+              onClick={() => setPreviewTaskFormOpen(true)}
             >
-              <Plus size={16} />
-              {isPending
-                ? (isEdit ? 'Updating...' : 'Creating...')
-                : (isEdit ? 'Update Task' : 'Create Task')
-              }
+              <Eye size={16} /> Preview Task
             </Button>
-          </Flex>
+          </Tooltip>
+
+          {/* Create/Update Task Button */}
+          <Button
+            type="submit"
+            color="grass"
+            disabled={isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
+            <Plus size={16} />
+            {isPending
+              ? (isEdit ? 'Updating...' : 'Creating...')
+              : (isEdit ? 'Update Task' : 'Create Task')
+            }
+          </Button>
         </Flex>
-      </Box>
+
+      </PageHeader>
+
       <Text as="p" size="1" color="gray" className='italic'>
         * Required fields
       </Text>
@@ -813,9 +798,9 @@ export default CreateTask;
 // This component is used to create a section in the form
 export const FormSection = ({ title, children }) => {
   return (
-    <Card className='[--card-border-width:0px] shadow-md' size='3'>
+    <Card className='[--card-border-width:0px] shadow' size='3'>
       <Flex direction={'column'} gap={'3'} mb={'4'}>
-        <Text size="4" weight="medium">
+        <Text as="p" size={'4'} weight="bold">
           {title}
         </Text>
         <Separator size={'4'} />

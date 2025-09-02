@@ -8,6 +8,7 @@ import { useCreateDefaultTaskCategories, useDeleteTaskCategory } from '../../api
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { ConfirmationDialog, EmptyStateCard, Loader, StatusGuide } from '../../components';
 import { useDebounce } from '../../hooks/useDebounce';
+import PageHeader from '../../components/PageHeader';
 
 
 // Icon mapping for categories
@@ -248,13 +249,10 @@ const TaskCategories = () => {
       <Box>
         <Flex direction="column" className='gap-6'>
           {/* Header */}
-          <Flex justify="between" align="center" gap="4" wrap="wrap">
-            <Box className='space-y-1'>
-              <Heading size="6" weight={'medium'}>Task Categories Management</Heading>
-              <Text as="p" color="gray" size="2">
-                Create, organize, and manage task categories across the platform
-              </Text>
-            </Box>
+          <PageHeader
+            title="Task Categories"
+            description="Create, organize, and manage task categories across the platform"
+          >
             <Flex align="center" gap="2" wrap="wrap">
               {/* Initialize Defaults */}
               <Button
@@ -269,7 +267,7 @@ const TaskCategories = () => {
               {/* Create Category */}
               <CreateCategoryButton />
             </Flex>
-          </Flex>
+          </PageHeader>
 
           <Separator size={'4'} />
 
@@ -391,7 +389,7 @@ const TaskCategories = () => {
               </Callout.Text>
             </Callout.Root>
           ) : taskCategories?.data?.length > 0 ? (
-            <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
+            <Card size={'2'} className='shadow [--card-border-width:0px]'>
               <Table.Root>
                 <Table.Header>
                   <Table.Row>

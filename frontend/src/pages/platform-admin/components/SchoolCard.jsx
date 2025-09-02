@@ -1,6 +1,6 @@
+import { Badge, Card, Flex, IconButton, Link as RadixLink, Text, Tooltip } from '@radix-ui/themes'
+import { Building2, Edit2, Globe, Mail, MapPin, Phone } from 'lucide-react'
 import React, { useState } from 'react'
-import { Card, Flex, Text, Badge, IconButton, Tooltip } from '@radix-ui/themes'
-import { Building2, MapPin, Mail, Globe, Phone, Edit2 } from 'lucide-react'
 import EditSchoolDialog from './EditSchoolDialog'
 
 function SchoolCard({ school }) {
@@ -14,10 +14,8 @@ function SchoolCard({ school }) {
 
   return (
     <>
-      <Card size="2" className="p-4 shadow-md [--card-border-width:0px] hover:shadow-lg">
+      <Card size="2" className="p-4 shadow [--card-border-width:0px] hover:shadow-md transition-shadow">
         <Flex align={'start'} justify="between" gap="4" direction={{ initial: 'column', md: 'row' }}>
-
-
           {/* School Logo */}
           <div className="flex-shrink-0 mx-auto max-w-60 aspect-video">
             {school.logo ? (
@@ -38,10 +36,7 @@ function SchoolCard({ school }) {
           <Flex direction="column" gap="3" className="w-full">
             <Flex justify="between" align="start" gap="4">
               <div className='space-y-2'>
-                <Flex align="start" gap="2">
-                  <Building2 size={20} color='var(--blue-9)' className="mt-1 shrink-0" />
-                  <Text size="4" weight="medium">{school.name}</Text>
-                </Flex>
+                <Text size="4" weight="medium">{school.name}</Text>
 
                 {school.address && (
                   <Flex align="center" gap="2">
@@ -93,9 +88,9 @@ function SchoolCard({ school }) {
                 <Flex align="center" gap="2">
                   <Globe size={16} color='var(--gray-9)' />
                   <Text size="2" asChild>
-                    <a href={school.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    <RadixLink href={school.website} target="_blank" rel="noopener noreferrer" >
                       Website
-                    </a>
+                    </RadixLink>
                   </Text>
                 </Flex>
               )}

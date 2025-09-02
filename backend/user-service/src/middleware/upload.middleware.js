@@ -33,7 +33,7 @@ const storage = createLocalStorage();
 // File filter
 const fileFilter = (req, file, cb) => {
   // Accept images only
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+  if (!file.mimetype.startsWith("image/")) {
     return cb(new Error("Only image files are allowed!"), false);
   }
   cb(null, true);
@@ -52,6 +52,10 @@ const upload = multer({
 module.exports = {
   uploadSingle: upload.single("file"),
   uploadMultiple: upload.array("files", 5), // Max 5 files
+  uploadCollegeFiles: upload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 }
+  ]),
   getFileUrl: (filename) => {
     if (!filename) return null;
 

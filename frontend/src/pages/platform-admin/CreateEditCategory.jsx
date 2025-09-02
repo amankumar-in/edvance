@@ -1,12 +1,13 @@
-import { Badge, Box, Button, Card, Flex, Heading, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
-import { Activity, ArrowLeft, Book, Calculator, Calendar, Droplet, Eye, EyeOff, Home, Info, Microscope, Music, Pen, Save, Settings, ThumbsUp, Trash2 } from 'lucide-react';
+import { Badge, Box, Button, Card, Flex, Select, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Activity, Book, Calculator, Calendar, Droplet, Eye, EyeOff, Home, Info, Microscope, Music, Pen, Save, Settings, ThumbsUp, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { useCreateTaskCategory, useDeleteTaskCategory, useUpdateTaskCategory } from '../../api/task-category/taskCategory.mutations';
 import { useGetTaskCategories, useGetTaskCategoryById } from '../../api/task-category/taskCategory.queries';
 import { ConfirmationDialog, Loader } from '../../components';
+import PageHeader from '../../components/PageHeader';
 
 // Icon mapping for categories
 const iconMap = {
@@ -198,29 +199,12 @@ const CreateEditCategory = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Flex direction="column" gap="6">
         {/* Header */}
-        <Flex justify="between" align="center" gap="4" wrap="wrap">
-          <div className='space-y-3'>
-            <Button
-              type="button"
-              variant="ghost"
-              color="gray"
-              asChild
-            >
-              <Link to="/platform-admin/dashboard/task-categories">
-                <ArrowLeft size={16} />
-                Back to Categories
-              </Link>
-            </Button>
-            <div className='space-y-1'>
-              <Heading size="6" weight="medium">
-                {isEdit ? 'Edit Category' : 'Create New Category'}
-              </Heading>
-              <Text as="p" color="gray" size="2">
-                {isEdit ? 'Modify category settings and properties' : 'Define a new task category for the system'}
-              </Text>
-            </div>
-          </div>
-
+        <PageHeader
+          title={isEdit ? 'Edit Category' : 'Create New Category'}
+          description={isEdit ? 'Modify category settings and properties' : 'Define a new task category for the system'}
+          backButton={true}
+          backLink={"/platform-admin/dashboard/task-categories"}
+        >
           <Flex align="center" gap="2" wrap="wrap">
             <Button
               type="button"
@@ -234,7 +218,6 @@ const CreateEditCategory = () => {
             <Button
               type="submit"
               disabled={isCreating || isUpdating}
-              color='grass'
             >
               <Save size={16} />
               {isCreating || isUpdating ? 'Saving...' : (isEdit ? 'Update Category' : 'Create Category')}
@@ -264,7 +247,7 @@ const CreateEditCategory = () => {
               </>
             )}
           </Flex>
-        </Flex>
+        </PageHeader>
 
         {/* Preview Card */}
         {showPreview && (

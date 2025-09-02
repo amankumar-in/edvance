@@ -43,7 +43,7 @@ import { BarLoader } from 'react-spinners';
 import { toast } from 'sonner';
 import { useCreateDefaultRewardCategories, useDeleteRewardCategory } from '../../api/rewards/rewards.mutations';
 import { useGetRewardCategories } from '../../api/rewards/rewards.queries';
-import { ConfirmationDialog, EmptyStateCard, Loader, Pagination } from '../../components';
+import { ConfirmationDialog, EmptyStateCard, Loader, PageHeader, Pagination } from '../../components';
 import { useDebounce } from '../../hooks/useDebounce';
 
 const RewardCategories = () => {
@@ -412,14 +412,10 @@ const RewardCategories = () => {
 
       <div className='relative space-y-6'>
         {/* Header */}
-        <Flex justify="between" align="center" gap="4" wrap="wrap">
-          <Box className='space-y-1'>
-            <Heading size="6" weight={'medium'}>Reward Categories Management</Heading>
-            <Text as="p" color="gray" size="2">
-              Create, organize, and manage reward categories across the platform
-            </Text>
-          </Box>
-
+        <PageHeader
+          title="Reward Categories"
+          description="Create, organize, and manage reward categories across the platform"
+        >
           <Flex align="center" gap="2" wrap="wrap">
             <Button variant="outline" color="gray" asChild>
               <Link to='/platform-admin/dashboard/rewards'>
@@ -442,7 +438,7 @@ const RewardCategories = () => {
             </Button>
             <CreateCategoryButton />
           </Flex>
-        </Flex>
+        </PageHeader>
 
         <Separator size={'4'} />
 
@@ -542,7 +538,7 @@ const RewardCategories = () => {
             action={<CreateCategoryButton />}
           />
         ) : (
-          <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
+          <Card size={'2'} className='shadow [--card-border-width:0px]'>
             <Table.Root>
               <Table.Header>
                 <Table.Row>
