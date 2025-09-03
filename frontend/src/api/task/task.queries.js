@@ -20,6 +20,27 @@ export const useGetStudentTasks = (params = {}) => {
   });
 };
 
+// Get all tasks(for student) with infinite scroll
+export const useGetStudentTasksInfinite = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: ["tasks", "student", params],
+    queryFn: ({ pageParam = 1 }) => getStudentTasks({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.pagination?.page;
+      const totalPages = lastPage?.pagination?.pages;
+
+      if (currentPage < totalPages) {
+        return currentPage + 1;
+      }
+
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
+  });
+};
+
+
 // Get a task by id(for student)
 export const useGetStudentTaskById = (id) => {
   return useQuery({
@@ -61,6 +82,26 @@ export const useGetParentTasks = (params = {}) => {
     queryKey: ["tasks", "parent", params],
     queryFn: () => getParentTasks(params),
     placeholderData: keepPreviousData
+  });
+};
+
+// Get all tasks(for parent) with infinite scroll
+export const useGetParentTasksInfinite = (params = {}) => {
+  return useInfiniteQuery({
+    queryKey: ["tasks", "parent", params],
+    queryFn: ({ pageParam = 1 }) => getParentTasks({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.pagination?.page;
+      const totalPages = lastPage?.pagination?.pages;
+
+      if (currentPage < totalPages) {
+        return currentPage + 1;
+      }
+
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
   });
 };
 

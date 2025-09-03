@@ -1,16 +1,19 @@
-import { Box, Button, Callout, Card, CheckboxGroup, Flex, Heading, Radio, Select, Separator, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
-import { ArrowLeft, Eye, Info, Plus } from 'lucide-react';
+import { Button, Callout, CheckboxGroup, Flex, Radio, Select, Separator, Switch, Text, TextArea, TextField, Tooltip } from '@radix-ui/themes';
+import { Eye, Info, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import AsyncSelect from 'react-select/async';
 import { toast } from 'sonner';
 import { searchParents, searchStudents } from '../../api/search/search.api';
 import { useGetTaskCategories } from '../../api/task-category/taskCategory.queries';
 import { useCreateTask, useUpdateTask } from '../../api/task/task.mutations';
 import { useGetTaskById } from '../../api/task/task.queries';
-import { FileUpload, FormFieldErrorMessage, Loader } from '../../components';
+import FileUpload from '../../components/FileUpload';
+import { FormFieldErrorMessage } from '../../components/FormFieldErrorMessage';
+import Loader from '../../components/Loader';
 import PageHeader from '../../components/PageHeader';
+import FormSection from './components/FormSection';
 import PreviewTaskForm from './components/PreviewTaskForm';
 
 const CreateTask = () => {
@@ -35,7 +38,7 @@ const CreateTask = () => {
       description: '',
       pointValue: 10,
       dueDate: '',
-      requiresApproval: true,
+      requiresApproval: 'true',
       approverType: [],
       subCategory: '',
       selectedPeople: [],
@@ -49,7 +52,8 @@ const CreateTask = () => {
       attachments: [],
       existingAttachments: [],
       schoolId: '',
-      classId: ''
+      classId: '',
+      isFeatured: false,
     },
   });
 
@@ -114,7 +118,8 @@ const CreateTask = () => {
         attachments: [], // New attachments to be uploaded
         existingAttachments: task.attachments || [], // Existing attachments from the task
         schoolId: task.schoolId || '',
-        classId: task.classId || ''
+        classId: task.classId || '',
+        isFeatured: task.isFeatured || false,
       };
 
       // Reset with all data at once - this should work better
@@ -138,6 +143,7 @@ const CreateTask = () => {
     formData.append('description', data.description || '');
     formData.append('pointValue', parseInt(data.pointValue));
     formData.append('role', 'platform_admin');
+    formData.append('isFeatured', data.isFeatured);
 
     // 2. DUE DATE HANDLING
     if (data.dueDate && data.dueDate.trim() !== '') {
@@ -711,7 +717,7 @@ const CreateTask = () => {
         </FormSection>
 
         {/* Approval settings - requires approval, who can approve this task */}
-        <FormSection title={'Approval Settings'}>
+        <FormSection title={'Task Settings'}>
           <Flex gap="4" className="flex-col md:flex-row">
             {/* Requires approval */}
             <div className="flex-1">
@@ -781,6 +787,30 @@ const CreateTask = () => {
               </div>
             )}
           </Flex>
+
+          <Separator size={'4'} />
+
+          <div>
+            <Flex align={'center'} gap={'4'} wrap={'wrap'}>
+              <Text as='label' htmlFor='isFeatured' size='2' weight='medium'>
+                Featured
+              </Text>
+              <Controller
+                name='isFeatured'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Switch
+                    id='isFeatured'
+                    checked={value}
+                    onCheckedChange={onChange}
+                  />
+                )}
+              />
+            </Flex>
+            <Text as="p" size="1" color="gray" mt="1">
+              Featured tasks are highlighted and shown prominently to students
+            </Text>
+          </div>
         </FormSection>
       </form>
 
@@ -795,19 +825,3 @@ const CreateTask = () => {
 
 export default CreateTask;
 
-// This component is used to create a section in the form
-export const FormSection = ({ title, children }) => {
-  return (
-    <Card className='[--card-border-width:0px] shadow' size='3'>
-      <Flex direction={'column'} gap={'3'} mb={'4'}>
-        <Text as="p" size={'4'} weight="bold">
-          {title}
-        </Text>
-        <Separator size={'4'} />
-      </Flex>
-      <div className='space-y-4'>
-        {children}
-      </div>
-    </Card>
-  )
-}

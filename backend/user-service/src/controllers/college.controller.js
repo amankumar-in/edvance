@@ -40,16 +40,12 @@ const getAllColleges = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const sortOptions = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
 
-    console.log(JSON.stringify(filter, null, 2))
-
     // Execute query with pagination
     const colleges = await College.find(filter)
       .sort(sortOptions)
       .skip(skip)
       .limit(parseInt(limit))
       .select("-__v");
-
-      console.log(colleges)
 
     // Get total count for pagination
     const totalColleges = await College.countDocuments(filter);

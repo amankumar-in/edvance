@@ -24,6 +24,9 @@ export default {
           '100%': { transform: 'rotate(360deg)' },
         },
       },
+      screens: {
+        'xs': "520px"
+      }
     },
   },
   plugins: [],

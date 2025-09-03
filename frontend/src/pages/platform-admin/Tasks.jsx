@@ -1,4 +1,4 @@
-import { Badge, Button, Callout, Card, DropdownMenu, Flex, Heading, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes'
+import { Badge, Button, Callout, Card, DropdownMenu, Flex, IconButton, Select, Separator, Table, Text, TextField } from '@radix-ui/themes'
 import { AlertCircleIcon, BookOpen, Calendar, Check, ClipboardList, Filter, MoreHorizontal, PencilIcon, Plus, Tag, TrashIcon, Users, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
@@ -7,9 +7,9 @@ import { toast } from 'sonner'
 import { useDeleteTask } from '../../api/task/task.mutations'
 import { useGetTasks } from '../../api/task/task.queries'
 import { ConfirmationDialog, EmptyStateCard, Loader, Pagination } from '../../components'
+import PageHeader from '../../components/PageHeader'
 import { SortIcon } from '../../components/platform-admin/UserTable'
 import { formatDate } from '../../utils/helperFunctions'
-import PageHeader from '../../components/PageHeader'
 
 function Tasks() {
   const [page, setPage] = useState(1);
@@ -531,7 +531,10 @@ function Tasks() {
               </Table.Header>
               <Table.Body>
                 {tasks.map((task) => (
-                  <Table.Row key={task._id} className='hover:bg-[--gray-a3] odd:bg-[--gray-a2]'>
+                  <Table.Row
+                    className='hover:bg-[--gray-a3] odd:bg-[--gray-a2]'
+                    key={task._id}
+                  >
                     <Table.Cell>
                       <Text title={task.title} className='line-clamp-1 min-w-[300px]'>{task.title}</Text>
                     </Table.Cell>

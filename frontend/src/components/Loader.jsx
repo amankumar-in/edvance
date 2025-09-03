@@ -1,4 +1,4 @@
-const Loader = ({ size = 44, color = 'var(--cyan-9)', duration = 1.4, easing = 'cubic-bezier(0.4, 0, 0.2, 1)', className = '' }) => {
+const Loader = ({ size = 40, color = 'var(--cyan-9)', duration = 1.4, easing = 'cubic-bezier(0.4, 0, 0.2, 1)', className = '' }) => {
   return (
     <div
       className={`android-loader ${className}`}

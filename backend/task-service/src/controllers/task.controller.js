@@ -2214,6 +2214,7 @@ const taskController = {
         limit = 20,
         sort = "createdAt",
         order = "desc",
+        isFeatured,
       } = req.query;
 
       const currentProfileId = profiles[role]?._id;
@@ -2359,6 +2360,13 @@ const taskController = {
       if (status) {
         enhancedTasks = enhancedTasks.filter(task =>
           task.completionStatus.status === status
+        );
+      }
+
+      // Apply featured filter after enhancement (if provided)
+      if (isFeatured) {
+        enhancedTasks = enhancedTasks.filter(task =>
+          task.isFeatured === true
         );
       }
 
@@ -2556,6 +2564,7 @@ const taskController = {
         limit = 20,
         sort = "createdAt",
         order = "desc",
+        isFeatured,
       } = req.query;
 
       const currentProfileId = profiles[role]?._id;
@@ -2612,7 +2621,7 @@ const taskController = {
       if (subCategory) query.subCategory = subCategory;
       if (classId) query.classId = classId;
       if (status) query.status = status;
-
+      if (isFeatured) query.isFeatured = isFeatured === "true";
       if (dueDate) query.dueDate = new Date(dueDate);
       if (startDate || endDate) {
         query.createdAt = {};

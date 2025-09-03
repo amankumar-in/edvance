@@ -1,25 +1,41 @@
-import React, { useState } from 'react'
-import { useGetStudentTasks } from '../../api/task/task.queries'
-import { TaskPageBase } from '../../components'
+import React, { useState } from 'react';
+import { useGetStudentTasks, useGetStudentTasksInfinite } from '../../api/task/task.queries';
+import { TaskPageBase } from '../../components';
 
 function StudentTasks() {
   // Filter states - 'all' used instead of null for consistency with Select component
   const [filter, setFilter] = useState('all');
   const [category, setCategory] = useState('all');
-  
-  // Convert 'all' filter values to null for API calls
-  const { data, isLoading, isError, error, isFetching, refetch } = useGetStudentTasks({
+
+  const { data: taskData, isLoading, isError, error, isFetching, refetch, isFetchingNextPage,
+    hasNextPage, fetchNextPage
+  } = useGetStudentTasksInfinite({
     role: 'student',
     status: filter === 'all' ? null : filter,
     category: category === 'all' ? null : category,
+    limit: 20,
   })
-  const { data: tasks = [] } = data ?? {}
+
+  // Get infinite tasks by flat mapping pages
+  const infiniteTasks = taskData?.pages?.flatMap(page => page.data) || []
+
+  // Get total tasks count
+  const totalTasks = taskData?.pages?.[0]?.pagination?.total ?? 0;
+
+  // Get Featured Tasks
+  const { data: featuredTasksData, isLoading: featuredTasksLoading, isError: featuredTasksIsError, error: featuredTasksError } = useGetStudentTasks({
+    role: 'student',
+    isFeatured: true,
+    limit: 20,
+  });
+
+  const featuredTasks = featuredTasksData?.data ?? [];
 
   // Render shared TaskPageBase with student role - no visibility modal props needed
   return (
     <div>
-      <TaskPageBase 
-        tasks={tasks}
+      <TaskPageBase
+        tasks={infiniteTasks}
         isLoading={isLoading}
         isError={isError}
         error={error}
@@ -30,6 +46,12 @@ function StudentTasks() {
         setFilter={setFilter}
         category={category}
         setCategory={setCategory}
+        featuredTasks={featuredTasks}
+        featuredTasksLoading={featuredTasksLoading}
+        isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+        totalTasks={totalTasks}
       />
     </div>
   )
