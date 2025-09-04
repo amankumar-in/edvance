@@ -82,3 +82,8 @@ export const getStudentClassAttendanceDetails = async ({studentId, classId}) => 
   const response = await apiClient.get(`/students/${studentId}/classes/${classId}/attendance`);
   return response.data;
 }
+
+export const joinClass = async ({classCode}) => {
+  const response = await apiClient.post(`/students/join-class`, { classCode });
+  return response.data;
+}

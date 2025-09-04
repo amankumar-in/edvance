@@ -1333,4 +1333,112 @@ const getStudentClassAttendanceDetails = async (req, res) => {
   }
 };
 
+
+// Join Class using class code
+exports.joinClass = async (req, res) => {
+  const useTransactions = process.env.NODE_ENV === 'production' || process.env.USE_TRANSACTIONS === 'true';
+  let session = null;
+  if (useTransactions) {
+    session = await mongoose.startSession();
+    session.startTransaction();
+  }
+  try {
+    const { classCode } = req.body;
+    const { id: studentId } = req.user;
+
+    if (!classCode || typeof classCode !== 'string') {
+      const err = new Error("Valid class code is required");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const student = await Student.findOne({ userId: studentId }).session(session);
+
+    if (!student) {
+      const err = new Error("Student not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // Ensure student is associated with a school before joining
+    if (!student.schoolId) {
+      const err = new Error("Student is not linked to any school");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Find the class within the same school using join code
+    const schoolClass = await SchoolClass.findOne({
+      joinCode: classCode,
+      schoolId: student.schoolId
+    }).session(session);
+
+    if (!schoolClass) {
+      const err = new Error("Class not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // Prevent duplicate enrollment (ObjectId-safe comparison)
+    if (schoolClass.studentIds.some(id => id.equals(student._id))) {
+      const err = new Error("Student is already in this class");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Fixed: Use session in options object for updates
+    const updateOptions = { new: true };
+    if (session) {
+      updateOptions.session = session;
+    }
+
+    // Add student to class using $addToSet (avoids duplicates on race conditions)
+    const updatedClass = await SchoolClass.findOneAndUpdate(
+      { joinCode: classCode, schoolId: student.schoolId },
+      { $addToSet: { studentIds: student._id } },
+      updateOptions
+    )
+
+    if (!updatedClass) {
+      const err = new Error("Class no longer exists or access denied");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // Add teacher reference to student if not already linked
+    await Student.findOneAndUpdate(
+      { userId: studentId },
+      { $addToSet: { teacherIds: updatedClass.teacherId } },
+      updateOptions
+    );
+
+    // Commit transaction if using transactions
+    if (useTransactions && session) {
+      await session.commitTransaction();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Class joined successfully",
+      data: updatedClass
+    });
+
+  } catch (error) {
+    // Abort transaction if using transactions
+    if (useTransactions && session && session.inTransaction()) {
+      await session.abortTransaction();
+    }
+
+    console.error("Join class error:", error);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  } finally {
+    if (session) {
+      session.endSession();
+    }
+  }
+}
+
 exports.getStudentClassAttendanceDetails = getStudentClassAttendanceDetails;

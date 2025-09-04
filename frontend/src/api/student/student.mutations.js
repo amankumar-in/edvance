@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createStudentProfile, updateStudentProfile, linkWithParent, unlinkFromParent, requestParentLink, requestSchoolLink, linkWithSchool, unlinkFromSchool, cancelLinkRequest, respondToParentLinkRequest } from "./student.api";
+import { createStudentProfile, updateStudentProfile, linkWithParent, unlinkFromParent, requestParentLink, requestSchoolLink, linkWithSchool, unlinkFromSchool, cancelLinkRequest, respondToParentLinkRequest, joinClass } from "./student.api";
 
 export const useCreateStudentProfile = () => {
   return useMutation({
@@ -106,3 +106,15 @@ export const useRespondToParentLinkRequest = () => {
     }
   });
 };
+
+export const useJoinClass = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: joinClass,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["student", "classes"] });
+    }
+  });
+};
+

@@ -119,22 +119,27 @@ function StudentLayout() {
         </Box >
 
         {/* Mobile Bottom Navigation */}
-        < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden bg-[--gray-2]" style={{ borderTop: '1px solid var(--gray-6)' }
-        }>
+        < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden bg-[--gray-2] border-t border-[--gray-a6]">
           <Flex justify="between" className='w-full'>
             {navItems.slice(0, 5).map((item, index) => (
               <NavLink
                 key={index}
                 to={item.href || '#'}
-                className={({ isActive }) => `flex flex-col items-center gap-1 px-2 border-t-4 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11] font-bold  border-[--accent-11]' : 'border-transparent'} active:bg-[--accent-a3]`}
+                className={({ isActive }) => `flex flex-col font-medium items-center gap-1 h-full relative flex-1 justify-center ${isActive ? 'text-[--accent-11] font-semibold' : 'text-[--gray-11]'} group`}
               >
-                {item.icon}
-                <Text
-                  as='p'
-                  size="1"
-                >
-                  {item.label === 'Scholarship Points' ? 'SP' : item.label}
-                </Text>
+                {({ isActive }) => (
+                  <>
+                    <Text as='span' className={`px-[18px] py-[6px] group-active:bg-[--gray-a3] relative  rounded-full ${isActive ? "bg-[--accent-a3]" : ""}`}>
+                      {item.icon}
+                    </Text>
+                    <Text
+                      as='p'
+                      size="1"
+                    >
+                      {item.label === 'Scholarship Points' ? 'SP' : item.label === 'Dashboard' ? 'Home' : item.label}
+                    </Text>
+                  </>
+                )}
               </NavLink>
             ))}
           </Flex>

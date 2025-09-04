@@ -19,7 +19,7 @@ createRoot(document.getElementById("root")).render(
     >
       <Theme accentColor="cyan" grayColor="slate">
         <AuthProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
+          <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left"/>
           <AppRouter />
         </AuthProvider>
       </Theme>

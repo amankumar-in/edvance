@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Callout, Card, Flex, Grid, Progress, Text, Tooltip } from '@radix-ui/themes';
-import { AlertCircle, AlertCircleIcon, Award, CheckCircle, Clock, TrendingUp, XCircle, Zap } from 'lucide-react';
+import { AlertCircle, AlertCircleIcon, Award, CheckCircle, Clock, Info, TrendingUp, XCircle, Zap } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '../../Context/AuthContext';
@@ -8,7 +8,7 @@ import { useAttendanceSummary, useStudentAttendance } from '../../api/attendance
 import { EmptyStateCard, Loader, PageHeader } from '../../components';
 import ErrorCallout from '../../components/ErrorCallout';
 import { formatDate } from '../../utils/helperFunctions';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { useGetStudentClassAttendanceDetails } from '../../api/student/student.queries';
 import { useRecordClassAttendance } from '../../api/class-attendance/classAttendance.mutations';
 
@@ -142,6 +142,29 @@ function StudentAttendance() {
   return (
     <Box className="mx-auto space-y-6 max-w-5xl">
       <AttendancePageHeader classId={classId} />
+
+      {!classId && (
+        <Callout.Root variant='surface' color='blue'>
+          <Callout.Icon>
+            <Info size={18} />
+          </Callout.Icon>
+          <Callout.Text weight={'medium'} size={'3'}>
+            You haven't joined a school yet
+          </Callout.Text>
+          <Text as='p' size="2">
+            To access class attendance, please join your school using the code shared by your teacher.
+          </Text>
+          <Button
+            className='w-max'
+            asChild
+            color='cyan'
+          >
+            <Link to={'/student/settings/linked-accounts#school'}>
+              Join a school
+            </Link>
+          </Button>
+        </Callout.Root>
+      )}
 
       {/* Check-in Section */}
       <Card size="3" className='shadow-md'>

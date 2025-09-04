@@ -2024,4 +2024,12 @@ router.get(
   studentController.getMyClasses
 );
 
+// Join class using class code(student)
+router.post(
+  "/join-class",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["student"]),
+  studentController.joinClass
+);
+
 module.exports = router;

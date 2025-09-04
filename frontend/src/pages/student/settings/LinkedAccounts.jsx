@@ -1,6 +1,6 @@
 import { Avatar, Badge, Box, Button, Callout, Card, Flex, Tabs, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { AlertCircle, Building, CheckCircle, HelpCircle, Info, Link, Link2Off, Mail, School, Shield, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   useCancelLinkRequest,
@@ -17,11 +17,13 @@ import {
   useStudentProfile
 } from '../../../api/student/student.queries';
 import { ConfirmationDialog, EmptyStateCard, Loader } from '../../../components';
+import { useLocation } from 'react-router';
 
 function LinkedAccounts() {
   const [parentCode, setParentCode] = useState('');
   const [parentEmail, setParentEmail] = useState('');
   const [schoolCode, setSchoolCode] = useState('');
+  const { hash } = useLocation();
 
   // Confirmation dialog states
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -209,6 +211,16 @@ function LinkedAccounts() {
     });
   };
 
+  // Scroll to hash on load
+  useEffect(() => {
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [hash, isLoading]);
+
   if (isLoading) {
     return (
       <Flex align="center" justify="center">
@@ -372,8 +384,8 @@ function LinkedAccounts() {
               </Card>
 
               {/* SCHOOL SECTION */}
-              <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
-                <Text as='p' weight={'bold'}>
+              <Card size={{ initial: '2', sm: '3' }} className='space-y-4 shadow-md scroll-smooth'>
+                <Text as='p' weight={'bold'} id='school'>
                   Educational Institution
                 </Text>
 

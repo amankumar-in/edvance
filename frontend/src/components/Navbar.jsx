@@ -8,7 +8,7 @@ export default function Navbar({ isMobileSidebarOpen, setIsMobileSidebarOpen }) 
   const { theme, setTheme } = useTheme();
 
   return (
-    <Flex as="nav" align="center" justify="between" px="5" py="3" className="h-16 bg-[--gray-2]  w-full sticky top-0 z-50 shadow-md">
+    <Flex as="nav" align="center" justify="between" px="5" py="3" className="h-16 bg-[--gray-2]  w-full sticky top-0 z-50 shadow">
       <Flex align='center' gap='4'>
         <IconButton
           variant='ghost'
