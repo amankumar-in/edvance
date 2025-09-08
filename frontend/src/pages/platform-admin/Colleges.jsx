@@ -198,7 +198,7 @@ function Colleges() {
               showPageInfo={true}
               showFirstLast={true}
               showPrevNext={true}
-              itemsPerPageOptions={[5, 10, 25, 50]}
+              itemsPerPageOptions={[5, 10, 20, 50, 100]}
               itemLabel="colleges"
             />
           </div>

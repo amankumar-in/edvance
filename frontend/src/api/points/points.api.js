@@ -6,6 +6,31 @@ const getPointsDetailsById = async (studentId) => {
   return response.data;
 }
 
+const getActiveConfiguration = async () => {
+  const response = await apiClient.get('/points/configuration/active');
+  return response.data;
+}
+
+const getConfigurationHistory = async () => {
+  const response = await apiClient.get('/points/configuration/history');
+  return response.data;
+}
+
+const updateConfiguration = async (data) => {
+  const response = await apiClient.post('/points/configuration', data);
+  return response.data;
+}
+
+const getConfigurationVersion = async (version) => {
+  const response = await apiClient.get(`/points/configuration/${version}`);
+  return response.data;
+}
+
+const activateConfigurationVersion = async (version) => {
+  const response = await apiClient.post(`/points/configuration/${version}/activate`);
+  return response.data;
+}
+
 const getAllLevels = async () => {
   const response = await apiClient.get(`/points/configuration/levels`);
 
@@ -38,9 +63,14 @@ const getStudentTransactionSummary = async (studentId) => {
 
 export {
   getPointsDetailsById,
+  getStudentTransactions,
+  getStudentTransactionSummary,
+  getActiveConfiguration,
+  getConfigurationHistory,
+  updateConfiguration,
+  getConfigurationVersion,
+  activateConfigurationVersion,
   getAllLevels,
   addOrUpdateLevel,
-  deleteLevel,
-  getStudentTransactions,
-  getStudentTransactionSummary
+  deleteLevel
 }

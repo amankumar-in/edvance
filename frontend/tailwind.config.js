@@ -14,6 +14,13 @@ export default {
           lg: '2rem',      // lg:px-8
           xl: '3rem',      // xl:px-12
         },
+        screens: {
+          sm: '100%',  
+          md: '768px',
+          lg: '1024px',
+          xl: '1280px',
+          '2xl': '1536px',
+        }
       },
       animation: {
         'spin-fast': 'spin 0.6s linear infinite',

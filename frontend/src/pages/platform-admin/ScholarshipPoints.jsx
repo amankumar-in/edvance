@@ -1,13 +1,14 @@
 import { Badge, Box, Button, Callout, Card, Dialog, DropdownMenu, Flex, Heading, IconButton, Table, Tabs, Text, TextField } from '@radix-ui/themes';
 import { AlertCircleIcon, BarChart3, Edit, MoreVertical, Plus, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { BarLoader } from 'react-spinners';
 import { toast } from 'sonner';
 import { useAddOrUpdateLevel, useDeleteLevel } from '../../api/points/points.mutations';
 import { useGetAllLevels } from '../../api/points/points.queries';
-import { ConfirmationDialog, EmptyStateCard, Loader } from '../../components';
+import { ConfirmationDialog, EmptyStateCard, Loader, PageHeader } from '../../components';
 import { FormFieldErrorMessage } from '../../components/FormFieldErrorMessage';
+import PointConfiguration from './components/scholarship-points/PointsConfiguration';
 
 // Levels Management Component
 const LevelsManagement = () => {
@@ -167,13 +168,93 @@ const LevelsManagement = () => {
           <Badge color="blue" variant="soft">{levels.length} Levels</Badge>
           <Badge color="green" variant="outline">Max Level {maxLevel}</Badge>
         </Flex>
-        <Button
-          onClick={() => setAddLevelDialogOpen(true)}
-          disabled={addOrUpdateLevelMutation.isPending}
-        >
-          <Plus size={16} />
-          Add Level
-        </Button>
+
+        {/* Add Level Dialog */}
+        <Dialog.Root open={addLevelDialogOpen} onOpenChange={setAddLevelDialogOpen}>
+          <Dialog.Trigger>
+            <Button
+              onClick={() => setAddLevelDialogOpen(true)}
+              disabled={addOrUpdateLevelMutation.isPending}
+            >
+              <Plus size={16} />
+              Add Level
+            </Button>
+          </Dialog.Trigger>
+
+          <Dialog.Content style={{ maxWidth: '500px' }}>
+            <Dialog.Title>Add New Level</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              Create a new level above the current maximum level ({maxLevel}).
+            </Dialog.Description>
+
+            <form onSubmit={handleSubmitAdd(onSubmitAddLevel)} className="flex flex-col gap-4">
+              <label>
+                <Text size="2" weight="medium" className="block mb-1">Level Number</Text>
+                <TextField.Root
+                  type="number"
+                  {...registerAdd('level', {
+                    required: 'Level number is required',
+                    min: { value: maxLevel + 1, message: `Level must be greater than ${maxLevel}` },
+                    max: { value: 100, message: 'Level cannot exceed 100' },
+                    valueAsNumber: true
+                  })}
+                />
+                <FormFieldErrorMessage errors={errorsAdd} field="level" />
+              </label>
+
+              <label>
+                <Text size="2" weight="medium" className="block mb-1">Level Name</Text>
+                <TextField.Root
+                  {...registerAdd('name', {
+                    required: 'Level name is required',
+                    minLength: { value: 2, message: 'Name must be at least 2 characters' },
+                    maxLength: { value: 50, message: 'Name cannot exceed 50 characters' }
+                  })}
+                />
+                <FormFieldErrorMessage errors={errorsAdd} field="name" />
+              </label>
+
+              <label>
+                <Text size="2" weight="medium" className="block mb-1">Points Threshold</Text>
+                <TextField.Root
+                  type="number"
+                  {...registerAdd('threshold', {
+                    required: 'Points threshold is required',
+                    min: {
+                      value: (levels[levels.length - 1]?.threshold || 0) + 1,
+                      message: `Must be greater than ${levels[levels.length - 1]?.threshold?.toLocaleString() || 0} pts`
+                    },
+                    valueAsNumber: true
+                  })}
+                />
+                <FormFieldErrorMessage errors={errorsAdd} field="threshold" />
+                <Text size="1" color="gray" className="mt-1">
+                  Must be greater than {levels[levels.length - 1]?.threshold?.toLocaleString() || 0} pts
+                </Text>
+              </label>
+
+              <Flex gap="3" justify="end">
+                <Dialog.Close>
+                  <Button
+                    variant="soft"
+                    color="gray"
+                    type="button"
+                    disabled={addOrUpdateLevelMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                </Dialog.Close>
+                <Button
+                  type="submit"
+                  disabled={addOrUpdateLevelMutation.isPending}
+                >
+                  {addOrUpdateLevelMutation.isPending ? 'Adding...' : 'Add Level'}
+                </Button>
+              </Flex>
+            </form>
+          </Dialog.Content>
+        </Dialog.Root>
+
       </Flex>
 
       {levels.length === 0 ? (
@@ -189,7 +270,7 @@ const LevelsManagement = () => {
           }
         />
       ) : (
-        <Card size={'2'} className='shadow-md [--card-border-width:0px]'>
+        <Card size={'2'} className='shadow [--card-border-width:0px]'>
           <Table.Root>
             <Table.Header>
               <Table.Row>
@@ -259,82 +340,6 @@ const LevelsManagement = () => {
           </Table.Root>
         </Card>
       )}
-
-      {/* Add Level Dialog */}
-      <Dialog.Root open={addLevelDialogOpen} onOpenChange={setAddLevelDialogOpen}>
-        <Dialog.Content style={{ maxWidth: '500px' }}>
-          <Dialog.Title>Add New Level</Dialog.Title>
-          <Dialog.Description size="2" mb="4">
-            Create a new level above the current maximum level ({maxLevel}).
-          </Dialog.Description>
-
-          <form onSubmit={handleSubmitAdd(onSubmitAddLevel)} className="flex flex-col gap-4">
-            <label>
-              <Text size="2" weight="medium" className="block mb-1">Level Number</Text>
-              <TextField.Root
-                type="number"
-                {...registerAdd('level', {
-                  required: 'Level number is required',
-                  min: { value: maxLevel + 1, message: `Level must be greater than ${maxLevel}` },
-                  max: { value: 100, message: 'Level cannot exceed 100' },
-                  valueAsNumber: true
-                })}
-              />
-              <FormFieldErrorMessage errors={errorsAdd} field="level" />
-            </label>
-
-            <label>
-              <Text size="2" weight="medium" className="block mb-1">Level Name</Text>
-              <TextField.Root
-                {...registerAdd('name', {
-                  required: 'Level name is required',
-                  minLength: { value: 2, message: 'Name must be at least 2 characters' },
-                  maxLength: { value: 50, message: 'Name cannot exceed 50 characters' }
-                })}
-              />
-              <FormFieldErrorMessage errors={errorsAdd} field="name" />
-            </label>
-
-            <label>
-              <Text size="2" weight="medium" className="block mb-1">Points Threshold</Text>
-              <TextField.Root
-                type="number"
-                {...registerAdd('threshold', {
-                  required: 'Points threshold is required',
-                  min: {
-                    value: (levels[levels.length - 1]?.threshold || 0) + 1,
-                    message: `Must be greater than ${levels[levels.length - 1]?.threshold?.toLocaleString() || 0} pts`
-                  },
-                  valueAsNumber: true
-                })}
-              />
-              <FormFieldErrorMessage errors={errorsAdd} field="threshold" />
-              <Text size="1" color="gray" className="mt-1">
-                Must be greater than {levels[levels.length - 1]?.threshold?.toLocaleString() || 0} pts
-              </Text>
-            </label>
-
-            <Flex gap="3" justify="end">
-              <Dialog.Close>
-                <Button
-                  variant="soft"
-                  color="gray"
-                  type="button"
-                  disabled={addOrUpdateLevelMutation.isPending}
-                >
-                  Cancel
-                </Button>
-              </Dialog.Close>
-              <Button
-                type="submit"
-                disabled={addOrUpdateLevelMutation.isPending}
-              >
-                {addOrUpdateLevelMutation.isPending ? 'Adding...' : 'Add Level'}
-              </Button>
-            </Flex>
-          </form>
-        </Dialog.Content>
-      </Dialog.Root>
 
       {/* Edit Level Dialog */}
       <Dialog.Root open={editLevelDialogOpen} onOpenChange={setEditLevelDialogOpen}>
@@ -426,49 +431,34 @@ const LevelsManagement = () => {
 
 // Main ScholarshipPoints Component
 const ScholarshipPoints = () => {
-  const [activeTab, setActiveTab] = useState('levels');
+  const [activeTab, setActiveTab] = useState('configuration');
 
   return (
     <Box className="space-y-6">
-      <div>
-        <Heading as='h1' size='6' weight='medium'>Scholarship Points System</Heading>
-      </div>
+      <PageHeader
+        title="Scholarship Points System"
+        description="Manage scholarship points configuration and levels"
+      />
 
       <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
         <Tabs.List>
-          {/* TODO: <Tabs.Trigger value="configuration">
-            <Settings size={16} />
+          <Tabs.Trigger value="configuration">
             Point Configuration
-          </Tabs.Trigger> */}
+          </Tabs.Trigger>
           <Tabs.Trigger value="levels">
             Level Management
           </Tabs.Trigger>
-          {/* TODO: <Tabs.Trigger value="transactions">
-            <History size={16} />
-            Transaction History
-          </Tabs.Trigger> */}
-          {/* TODO: <Tabs.Trigger value="analytics">
-            <BarChart3 size={16} />
-            Analytics
-          </Tabs.Trigger> */}
         </Tabs.List>
 
         <Box className="mt-6">
-          {/* TODO: <Tabs.Content value="configuration">
+          <Tabs.Content value="configuration">
             <PointConfiguration />
-          </Tabs.Content> */}
+          </Tabs.Content>
 
           <Tabs.Content value="levels">
             <LevelsManagement />
           </Tabs.Content>
-          {/* TODO: 
-          <Tabs.Content value="transactions">
-            <TransactionHistory />
-          </Tabs.Content>
 
-          {/* TODO: <Tabs.Content value="analytics">
-            <ScholarshipPointsAnalytics />
-          </Tabs.Content> */}
         </Box>
       </Tabs.Root>
     </Box>

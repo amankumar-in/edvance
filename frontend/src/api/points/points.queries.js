@@ -1,5 +1,13 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { getAllLevels, getPointsDetailsById, getStudentTransactions, getStudentTransactionSummary } from './points.api'
+import { 
+  getAllLevels, 
+  getPointsDetailsById, 
+  getStudentTransactions, 
+  getStudentTransactionSummary, 
+  getActiveConfiguration, 
+  getConfigurationHistory, 
+  getConfigurationVersion 
+} from './points.api'
 
 const usePointsDetailsById = (studentId) => {
   return useQuery({
@@ -44,9 +52,34 @@ const useGetStudentTransactionSummary = (studentId) => {
   })
 }
 
+const useGetActiveConfiguration = () => {
+  return useQuery({
+    queryKey: ['points', 'configuration', 'active'],
+    queryFn: getActiveConfiguration
+  });
+}
+
+const useGetConfigurationHistory = () => {
+  return useQuery({
+    queryKey: ['points', 'configuration', 'history'],
+    queryFn: getConfigurationHistory
+  });
+}
+
+const useGetConfigurationVersion = (version) => {
+  return useQuery({
+    queryKey: ['points', 'configuration', 'version', version],
+    queryFn: () => getConfigurationVersion(version),
+    enabled: !!version
+  });
+}
+
 export {
   usePointsDetailsById,
   useGetAllLevels,
   useGetStudentTransaction,
-  useGetStudentTransactionSummary
+  useGetStudentTransactionSummary,
+  useGetActiveConfiguration,
+  useGetConfigurationHistory,
+  useGetConfigurationVersion
 }
