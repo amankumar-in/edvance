@@ -132,9 +132,9 @@ function TaskDetailsPageBase({
   );
 
   return (
-    <Box>
+    <Box className='space-y-5'>
       {/* Back and Actions Buttons */}
-      <Flex justify={'between'} align={'center'} gap="4" wrap={'wrap'} mb={'5'}>
+      <Flex justify={'between'} align={'center'} gap="4" wrap={'wrap'}>
         <Button
           asChild
           variant="ghost"
@@ -151,7 +151,7 @@ function TaskDetailsPageBase({
 
       {/* Parent Actions - Clone, Edit, Delete */}
       {role === 'parent' && (
-        <Flex gap="2" wrap="wrap" justify={'start'} mb={'5'}>
+        <Flex gap="2" wrap="wrap" justify={'start'}>
           <Button
             className='shadow-md text-nowrap'
             asChild
@@ -199,7 +199,7 @@ function TaskDetailsPageBase({
 
       {/* Success Message */}
       {task?.completionStatus?.status === 'approved' && (
-        <Card size="2" mb="5">
+        <Box>
           <Flex direction="column" gap="4">
             <Heading size="4">🎉 Well Done!</Heading>
 
@@ -215,12 +215,12 @@ function TaskDetailsPageBase({
               </Callout.Text>
             </Callout.Root>
           </Flex>
-        </Card>
+        </Box>
       )}
 
       {/* Approval Status Info */}
       {task?.completionStatus?.status === 'pending_approval' && (
-        <Card size="2" mb="5">
+        <Box>
           <Flex direction="column" gap="4">
             <Heading size="4">⏳ Under Review</Heading>
 
@@ -236,12 +236,12 @@ function TaskDetailsPageBase({
               </Callout.Text>
             </Callout.Root>
           </Flex>
-        </Card>
+        </Box>
       )}
 
       {/* Rejection Help */}
       {task?.completionStatus?.status === 'rejected' && (
-        <Card size="2" mb="5">
+        <Box>
           <Flex direction="column" gap="4">
             <Heading size="4">🔄 Resubmission Needed</Heading>
 
@@ -266,15 +266,15 @@ function TaskDetailsPageBase({
               </Callout.Text>
             </Callout.Root>
           </Flex>
-        </Card>
+        </Box>
       )}
 
       <Grid columns={{ initial: '1', lg: '3' }} gap="5">
         {/* Main Content */}
-        <Box gridColumn={{ lg: '1 / 3' }}>
+        <Box gridColumn={{ lg: '1 / 3' }} className='space-y-5'>
 
           {/* Task Header */}
-          <Card size="2" mb="5" className='shadow-md'>
+          <Card size="2" className='shadow-sm card_no_border'>
             <Flex direction="column" gap="4">
               <Flex justify="between" align="start" gap="4">
                 <Flex direction="column" gap="2" style={{ flex: 1 }}>
@@ -324,7 +324,7 @@ function TaskDetailsPageBase({
 
               {task?.description && (
                 <>
-                  <Separator size="4" />
+                  {/* <Separator size="4" /> */}
 
                   <Text as="p" size="3" className='whitespace-pre-wrap'>
                     {task.description}
@@ -335,7 +335,7 @@ function TaskDetailsPageBase({
           </Card>
 
           {/* Task Details */}
-          <Card size="2" mb="5" className='shadow-md'>
+          <Card size="2" className='shadow-sm card_no_border'>
             <Flex direction="column" gap="4">
               <Heading size="4">Task Details</Heading>
 
@@ -379,7 +379,7 @@ function TaskDetailsPageBase({
               {/* Approval Explanation */}
               {role === 'student' && task?.requiresApproval && (
                 <>
-                  <Separator size="4" />
+                  {/* <Separator size="4" /> */}
                   <Callout.Root variant='surface' color="blue" size="1">
                     <Callout.Icon>
                       <CheckCircle size={16} />
@@ -399,7 +399,7 @@ function TaskDetailsPageBase({
 
               {role === 'student' && !task?.requiresApproval && (
                 <>
-                  <Separator size="4" />
+                  {/* <Separator size="4" /> */}
                   <Callout.Root variant='surface' color="green" size="1">
                     <Callout.Icon>
                       <CheckCircle size={16} />
@@ -417,7 +417,7 @@ function TaskDetailsPageBase({
               {/* Attachments */}
               {task?.attachments && task?.attachments?.length > 0 && (
                 <>
-                  <Separator size="4" />
+                  {/* <Separator size="4" /> */}
                   <Flex direction="column" gap="3">
                     <Text size="2" weight="medium">Attachments ({task?.attachments?.length})</Text>
                     {task?.attachments?.map((attachment, index) => (
@@ -434,7 +434,7 @@ function TaskDetailsPageBase({
               {/* External Resource */}
               {task?.externalResource && task?.externalResource?.url && task?.externalResource?.platform && (
                 <>
-                  <Separator size="4" />
+                  {/* <Separator size="4" /> */}
                   <Flex direction="column" gap="3">
                     <Text size="2" weight="medium">External Resource</Text>
                     <ExternalResourcePreview
@@ -449,7 +449,7 @@ function TaskDetailsPageBase({
 
           {/* Your Submission - Show after task is submitted */}
           {task?.completionStatus?.hasSubmitted && (
-            <Card size="2" className='mb-5 shadow-md'>
+            <Card size="2" className='shadow-sm card_no_border'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Your Submission</Heading>
 
@@ -531,9 +531,9 @@ function TaskDetailsPageBase({
         </Box>
 
         {/* Sidebar */}
-        <Box>
+        <Box className='space-y-5'>
           {/* Action Panel */}
-          {role === 'student' && <Card size="2" mb="5" className='xl:sticky xl:top-[72px] z-10 bg-[--color-background] shadow-md'>
+          {role === 'student' && <Card size="2" className='xl:sticky xl:top-[72px] z-10 bg-[--color-background] card_no_border shadow-sm'>
             <Flex direction="column" gap="3">
               <Heading size="4">Actions</Heading>
 
@@ -576,7 +576,7 @@ function TaskDetailsPageBase({
           </Card>}
 
           {/* Task Progress */}
-          {role === 'student' && <Card size="2" mb="5" className='shadow-md'>
+          {role === 'student' && <Card size="2" className='card_no_border'>
             <Flex direction="column" gap="4">
               <Heading size="4">Progress</Heading>
 
@@ -624,7 +624,7 @@ function TaskDetailsPageBase({
                   </Text>
                 </Flex>}
 
-                <Separator size="4" />
+                {/* <Separator size="4" /> */}
 
                 <Flex justify="between" align="center">
                   <Text as='p' size="2">Points Value</Text>
@@ -640,7 +640,7 @@ function TaskDetailsPageBase({
           </Card>}
 
           {/* Status Guide */}
-          {role === 'student' && <Card size="2" mb="5" className='shadow-md'>
+          {role === 'student' && <Card size="2" className='card_no_border'>
             <Flex direction="column" gap="4">
               <Heading size="4">Status Guide</Heading>
 
@@ -667,7 +667,7 @@ function TaskDetailsPageBase({
 
           {/* Completion Tips */}
           {task?.completionStatus?.status === 'pending' && (
-            <Card size="2" mb="5" className='shadow-md'>
+            <Card size="2" className='card_no_border'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Completion Tips</Heading>
 
@@ -686,7 +686,7 @@ function TaskDetailsPageBase({
 
           {/* Submission Help */}
           {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
-            <Card size="2" mb="5" className='shadow-md'>
+            <Card size="2" className='card_no_border'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Submission Help</Heading>
 
@@ -707,7 +707,7 @@ function TaskDetailsPageBase({
 
           {/* Evidence Guide */}
           {task?.completionStatus?.status === 'pending' && (
-            <Card size="2" mb="5" className='shadow-md'>
+            <Card size="2" className='card_no_border'>
               <Flex direction="column" gap="4">
                 <Heading size="4">Evidence Types</Heading>
 

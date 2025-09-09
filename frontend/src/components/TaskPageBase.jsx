@@ -114,7 +114,7 @@ function TaskPageBase({
               <Flex gap="2" align="center">
                 <Text as='span' size="2">Status: </Text>
                 <Select.Root disabled={isFetching} value={filter} onValueChange={setFilter}>
-                  <Select.Trigger placeholder='Filter by status' variant='classic' />
+                  <Select.Trigger placeholder='Filter by status'/>
                   <Select.Content position="popper" variant='soft'>
                     {statusOptions.map((option) => (
                       <Select.Item key={option.value} value={option.value}>{option.label}</Select.Item>
@@ -153,9 +153,7 @@ function TaskPageBase({
             {(hasNextPage && !isFetchingNextPage) && <div ref={ref}></div>}
             {!hasNextPage && !isFetchingNextPage && (
               <Flex justify='center' align='center' gap="4">
-                <Separator size={'4'}/>
                 <Text as='p' size="1" color="gray" className='text-nowrap' >No more tasks to show</Text>
-                <Separator size={'4'}/>
               </Flex>
             )}
           </div>

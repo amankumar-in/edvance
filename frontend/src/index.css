@@ -8,6 +8,7 @@
   --icon-muted: #bbbbbb;
   --gray-background:rgb(247, 249, 252);
   --admin-navbar: white;
+  --secondary-bg: white;
 }
 
 .dark {
@@ -16,6 +17,7 @@
   --icon-muted: #bbbbbb;
   --gray-background: var(--color-background);
   --admin-navbar: rgba(17, 17, 19, 0.70);
+  --secondary-bg: var(--gray-2);
 }
 
 .radix-themes {
@@ -85,4 +87,13 @@
     stroke-dasharray: 89, 200;
     stroke-dashoffset: -124px;
   }
+}
+
+.card_no_border {
+  @apply shadow;
+  --card-border-width: 0px;
+}
+
+.dark .card_no_border {
+  --card-border-width: 1px;
 }

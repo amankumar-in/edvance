@@ -25,7 +25,7 @@ const OverviewTab = ({
       {/* Performance Overview */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Weekly Progress Card */}
-        <Card className="overflow-hidden relative shadow-md" size='2'>
+        <Card className="overflow-hidden relative card_no_border" size='2'>
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br rounded-full blur-sm transform translate-x-16 -translate-y-16 from-green-500/10 to-blue-500/10"></div>
           <div className="relative">
             <Flex align="center" gap="3" className="mb-4" >
@@ -75,7 +75,7 @@ const OverviewTab = ({
         </Card>
 
         {/* Level Progress Card */}
-        <Card className="overflow-hidden relative shadow-md" size='2'>
+        <Card className="overflow-hidden relative card_no_border" size='2'>
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br rounded-full blur-sm transform translate-x-16 -translate-y-16 from-amber-500/10 to-orange-500/10"></div>
           <div className="relative">
             <Flex align="center" gap="3" className="mb-4">
@@ -128,7 +128,7 @@ const OverviewTab = ({
       </div>
 
       {/* Quick Actions */}
-      <Card size='2'>
+      <Card size='2' className='card_no_border'>
         <Text as='p' size="4" weight="bold" className="mb-4" style={{ color: 'var(--gray-12)' }}>
           Quick Actions
         </Text>
@@ -158,10 +158,10 @@ const OverviewTab = ({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Activity Feed */}
         <div className="lg:col-span-2">
-          <Card size='2'>
+          <Card size='2' className='card_no_border'>
             <Flex justify="between" align="center" className="mb-6">
               <div>
-                <Text as='p' size="5" weight="bold" style={{ color: 'var(--gray-12)' }}>
+                <Text as='p' size="4" weight="bold" style={{ color: 'var(--gray-12)' }}>
                   Recent Activity
                 </Text>
                 <Text as='p' size="2" color="gray">Your latest achievements and activities</Text>
@@ -187,8 +187,7 @@ const OverviewTab = ({
                 </Callout.Root>
               ) : transactions?.length > 0 ? (
                 transactions?.map((transaction, index) => (
-                  <Card key={transaction._id} size='2' className="transition-all duration-200 hover:shadow-md"
-                  >
+                  <Card key={transaction._id} size='2'>
                     <Flex justify="between" align="center" wrap="wrap" gap="3">
                       <Flex align="center" gap="4">
                         <div className="relative">
@@ -244,7 +243,7 @@ const OverviewTab = ({
         {/* Sidebar Stats */}
         <div className="space-y-6">
           {/* Monthly Overview */}
-          <Card size='2' className='shadow-md'>
+          <Card size='2' className='card_no_border'>
             <Text as='p' size="4" weight="bold" className="mb-4" style={{ color: 'var(--gray-12)' }}>
               Monthly Overview
             </Text>
@@ -301,7 +300,7 @@ const OverviewTab = ({
           </Card>
 
           {/* Top Sources */}
-          <Card size='2' className='shadow-md'>
+          <Card size='2' className='card_no_border'>
             <Text as='p' size="4" weight="bold" className="mb-4" style={{ color: 'var(--gray-12)' }}>
               Points by Source
             </Text>
@@ -343,7 +342,7 @@ const OverviewTab = ({
           </Card>
 
           {/* Achievement Highlight */}
-          {pointAccount?.progressPercentage > 0 && <Card className="overflow-hidden relative shadow-md" style={{ backgroundColor: 'var(--amber-a2)' }} size='2'>
+          {pointAccount?.progressPercentage > 0 && <Card className="overflow-hidden relative card_no_border" style={{ backgroundColor: 'var(--amber-a2)' }} size='2'>
             <div className="absolute right-0 top-1/2 opacity-10 -translate-y-1/2">
               <Trophy className="w-24 h-24" />
             </div>

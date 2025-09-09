@@ -26,7 +26,7 @@ const LevelsTab = ({ pointAccount }) => {
   );
 
   return (
-    <Card size='2'>
+    <Card size='2' className='card_no_border'>
       <Text as='p' size="5" weight="bold" className="mb-6" style={{ color: 'var(--gray-12)' }}>
         Level Progression
       </Text>
@@ -39,7 +39,7 @@ const LevelsTab = ({ pointAccount }) => {
           return (
             <Card
               key={level?.level}
-              className={` transition-all ${isCurrentLevel ? 'shadow-md border bg-[--accent-a3] border-[--focus-8]' : 'border-transparent'}`}
+              className={` transition-all ${isCurrentLevel ? 'border shadow-md bg-[--accent-a3] border-[--focus-8]' : 'border-transparent'}`}
               size='2'
             >
               <Flex align="start" gap="4">
@@ -47,7 +47,7 @@ const LevelsTab = ({ pointAccount }) => {
                   className={`flex items-center justify-center w-12 h-12 rounded-full ${isAchieved ? "bg-[--green-9] text-[--gray-12]" : "bg-[--gray-6] text-[--gray-11]"}`}
                 >
                   {isAchieved
-                    ? <Trophy className="w-6 h-6" />
+                    ? <Trophy className="w-6 h-6 text-white" />
                     : <Text as='p' weight="bold">{level?.level}</Text>
                   }
                 </div>

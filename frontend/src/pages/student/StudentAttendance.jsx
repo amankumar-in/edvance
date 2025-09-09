@@ -167,7 +167,7 @@ function StudentAttendance() {
       )}
 
       {/* Check-in Section */}
-      <Card size="3" className='shadow-md'>
+      <Card size="3" className='card_no_border'>
         <Flex direction="column" gap="4">
           <Flex align="center" justify="between" gap='3' wrap={'wrap-reverse'}>
             <Box>
@@ -284,7 +284,7 @@ function StudentAttendance() {
 
       {/* Stats Grid */}
       <Grid columns={{ initial: '2', lg: '4' }} gap="4">
-        <Card size="2" className='shadow-md'>
+        <Card size="2" className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <TrendingUp size={20} className="text-[--indigo-11] flex-shrink-0" />
@@ -296,7 +296,7 @@ function StudentAttendance() {
           </Flex>
         </Card>
 
-        <Card size="2" className='shadow-md'>
+        <Card size="2" className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <Award size={20} className="text-[--green-11] flex-shrink-0" />
@@ -309,7 +309,7 @@ function StudentAttendance() {
           </Flex>
         </Card>
 
-        <Card size="2" className='shadow-md'>
+        <Card size="2" className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <CheckCircle size={20} className="text-[--blue-11] flex-shrink-0" />
@@ -327,7 +327,7 @@ function StudentAttendance() {
           </Flex>
         </Card>
 
-        <Card size="2" className='shadow-md'>
+        <Card size="2" className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <Zap size={20} className="text-[--purple-11] flex-shrink-0" />

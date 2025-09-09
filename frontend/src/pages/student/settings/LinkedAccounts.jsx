@@ -268,7 +268,7 @@ function LinkedAccounts() {
           <Tabs.Content value="connections">
             <Flex direction="column" gap="6">
               {/* FAMILY SECTION */}
-              <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
+              <Card size={{initial: '2', sm: '3'}} className='space-y-4 card_no_border'>
                 <Text as='p' weight={'bold'}>
                   Family Connections
                 </Text>
@@ -384,7 +384,7 @@ function LinkedAccounts() {
               </Card>
 
               {/* SCHOOL SECTION */}
-              <Card size={{ initial: '2', sm: '3' }} className='space-y-4 shadow-md scroll-smooth'>
+              <Card size={{ initial: '2', sm: '3' }} className='space-y-4 card_no_border scroll-smooth'>
                 <Text as='p' weight={'bold'} id='school'>
                   Educational Institution
                 </Text>
@@ -493,7 +493,7 @@ function LinkedAccounts() {
 
               {/* TEACHERS SECTION */}
               {student?.schoolDetails && student?.teacherIds?.length > 0 && (
-                <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
+                <Card size={{initial: '2', sm: '3'}} className='space-y-4 card_no_border'>
                   <Text as='p' weight={'bold'}>
                     Connected Teachers
                   </Text>
@@ -547,7 +547,7 @@ function LinkedAccounts() {
             <Flex direction="column" gap="6">
               {/* REQUESTS FROM PARENTS */}
               {parentLinkRequests.length > 0 && (
-                <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
+                <Card size={{initial: '2', sm: '3'}} className='space-y-4 card_no_border'>
                   <Text as='p' weight={'bold'}>
                     Parent Connection Requests
                   </Text>
@@ -622,7 +622,7 @@ function LinkedAccounts() {
               )}
 
               {/* REQUESTS I'VE SENT */}
-              <Card size={{initial: '2', sm: '3'}} className='space-y-4 shadow-md'>
+              <Card size={{initial: '2', sm: '3'}} className='space-y-4 card_no_border'>
                 <Text as='p' weight={'bold'}>
                   My Pending Connection Requests
                 </Text>

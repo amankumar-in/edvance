@@ -75,7 +75,7 @@ const TaskCard = ({
 
   return (
     <>
-      <Card size="1" asChild className={`shadow-md transition-shadow hover:shadow-lg`}>
+      <Card size="1" asChild className={`transition-shadow hover:shadow-md card_no_border`}>
         <Link to={`/${role}/tasks/${task._id}`}>
           <Flex direction="column" gap="3" justify="between" className='h-full'>
             <Grid columns={{ initial: "3", xs: "1" }} gap="3">

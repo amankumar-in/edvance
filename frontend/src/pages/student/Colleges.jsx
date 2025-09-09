@@ -37,7 +37,7 @@ function Colleges() {
   const { totalColleges = 0 } = data?.pagination || {}
 
   const CollegeCard = ({ college }) => (
-    <Card className="h-full shadow-md transition-shadow cursor-pointer hover:shadow-lg" asChild>
+    <Card className="h-full transition-shadow card_no_border hover:shadow-md" asChild>
       <Link to={`/student/colleges/${college._id}`} className="block h-full">
         <Box className="relative">
           {/* Banner Image */}
@@ -143,7 +143,7 @@ function Colleges() {
       />
 
       {/* Filters */}
-      <Card size={{ initial: '2', md: '3' }} className='shadow-md'>
+      <Card size={{ initial: '2', md: '3' }} className='card_no_border'>
         <Flex gap="4" align="end" wrap="wrap">
           {/* Search */}
           <Box className="flex-1 min-w-[250px]">

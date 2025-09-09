@@ -17,6 +17,7 @@ function StudentRedemptionHistory() {
   const [cancelReason, setCancelReason] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const { ref, inView } = useInView();
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
 
   // Build query params
   const queryParams = {
@@ -134,7 +135,7 @@ function StudentRedemptionHistory() {
       </Box>
 
       {/* Filters and Search */}
-      <Card size="2">
+      <Card size="2" className='card_no_border'>
         <Flex gap="4" align="center" wrap="wrap">
           <Flex align="center" gap="2">
             <Filter size={14} />
@@ -198,7 +199,7 @@ function StudentRedemptionHistory() {
             {allRedemptions.map((redemption) => (
               <Card
                 key={redemption._id}
-                className='shadow-md'
+                className='card_no_border'
               >
                 <Flex gap="4" align="start">
                   {/* Reward Image */}
@@ -265,7 +266,11 @@ function StudentRedemptionHistory() {
                         {redemption.status === 'pending' && <Button size="1" variant="soft" color="red" onClick={() => setShowCancelDialog(true)}>
                           Cancel
                         </Button>}
-                        <Button size="1" variant="outline" onClick={() => setSelectedRedemption(redemption)}>
+                        <Button size="1" variant="outline" onClick={() => {
+                          setSelectedRedemption(null);
+                          setSelectedRedemption(redemption);
+                          setOpenDetailsDialog(true);
+                        }}>
                           View Details
                         </Button>
                       </Flex>
@@ -315,8 +320,10 @@ function StudentRedemptionHistory() {
 
       {/* Redemption Detail Modal */}
       <Dialog.Root
-        open={!!selectedRedemption}
-        onOpenChange={() => setSelectedRedemption(null)}
+        open={openDetailsDialog}
+        onOpenChange={(open) => {
+          setOpenDetailsDialog(open);
+        }}
       >
         <Dialog.Content className='max-w-2xl'>
           {selectedRedemption && (

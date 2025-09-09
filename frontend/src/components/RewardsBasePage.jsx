@@ -1,5 +1,5 @@
-import { Badge, Box, Button, Callout, Card, Dialog, DropdownMenu, Flex, Grid, Heading, IconButton, Inset, Select, Spinner, Text, TextField } from '@radix-ui/themes';
-import { AlertCircleIcon, ChevronLeft, ChevronRight, Clock, Copy, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy, X } from 'lucide-react';
+import { Badge, Box, Button, Callout, Card, DropdownMenu, Flex, Grid, Heading, IconButton, Inset, Select, Spinner, Text, TextField } from '@radix-ui/themes';
+import { AlertCircleIcon, ChevronLeft, ChevronRight, Clock, Edit, Eye, EyeOff, Gift, Heart, History, MoreVertical, Plus, Search, ShoppingCart, Sparkles, Trash, Trophy, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -12,14 +12,15 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { usePointsDetailsById } from '../api/points/points.queries';
-import { useAddToWishlist, useDeleteReward, useRedeemReward, useRemoveFromWishlist, useToggleRewardVisibility } from '../api/rewards/rewards.mutations';
+import { useAddToWishlist, useDeleteReward, useRemoveFromWishlist, useToggleRewardVisibility } from '../api/rewards/rewards.mutations';
 import { useGetRewardCategories } from '../api/rewards/rewards.queries';
+import allRewardsImg from '../assets/allRewards.webp';
 import rewardsPlaceholder from '../assets/rewardsPlaceholder.webp';
 import { ConfirmationDialog, EmptyStateCard, Loader, WishlistToggle } from '../components';
 import { useAuth } from '../Context/AuthContext';
 import { FALLBACK_IMAGES } from '../utils/constants';
 import { formatDate } from '../utils/helperFunctions';
-import allRewardsImg from '../assets/allRewards.webp'
+import RewardsDetailsDialog from './rewards/RewardsDetailsDialog';
 
 function RewardsBasePage({
   role = 'student',
@@ -40,8 +41,9 @@ function RewardsBasePage({
   creatorId = null,
   filter,
   setFilter,
-  featuredRewards
+  featuredRewards = []
 }) {
+  const [openDialog, setOpenDialog] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
   const [deleteConfirmReward, setDeleteConfirmReward] = useState(null);
   const { ref, inView } = useInView()
@@ -73,7 +75,6 @@ function RewardsBasePage({
   ];
 
   // Mutations ------------------------------------------------
-  const { mutate: redeemReward, isPending: isRedeemingReward } = useRedeemReward();
   const { mutate: deleteReward, isPending: isDeletingReward } = useDeleteReward(role);
   const { mutate: toggleRewardVisibility, isPending: isTogglingVisibility, variables } = useToggleRewardVisibility();
 
@@ -177,7 +178,7 @@ function RewardsBasePage({
             <Flex gap="3" align="center">
               {role === 'student' &&
                 <>
-                  <Button variant='outline' color='gray'>
+                  <Button variant='surface' color='gray'>
                     <Trophy className="text-[--amber-9]" size={20} />
                     {userPoints.toLocaleString()} SP
                   </Button>
@@ -234,7 +235,7 @@ function RewardsBasePage({
                 bulletActiveClass: 'swiper-pagination-bullet-active'
               }}
               autoplay={{ delay: 6000, disableOnInteraction: false }}
-              loop={true}
+              loop={featuredRewards?.length > 1}
               grabCursor
               className="mySwiper"
             >
@@ -311,7 +312,7 @@ function RewardsBasePage({
                         {/* Action buttons */}
                         {role === 'student' && (
                           <div className='hidden md:block'>
-                            <RedeemButton reward={reward} setSelectedReward={setSelectedReward} canAfford={canAfford} />
+                            <RedeemButton reward={reward} setSelectedReward={setSelectedReward} canAfford={canAfford} setOpenDialog={setOpenDialog} />
                           </div>
                         )}
                       </Box>
@@ -391,8 +392,6 @@ function RewardsBasePage({
                 placeholder="Search rewards..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                variant='soft'
-                color='gray'
               >
                 <TextField.Slot>
                   {isFetching ? <Spinner /> : <Search size={16} />}
@@ -412,7 +411,7 @@ function RewardsBasePage({
                   Sort by:
                 </Text>
                 <Select.Root value={sortBy} onValueChange={setSortBy}>
-                  <Select.Trigger variant='classic' />
+                  <Select.Trigger />
                   <Select.Content variant='soft' position='popper'>
                     <Select.Item value="price-low">Price: Low to High</Select.Item>
                     <Select.Item value="price-high">Price: High to Low</Select.Item>
@@ -422,7 +421,7 @@ function RewardsBasePage({
 
               {/* Wishlist Filter */}
               {role === 'student' && <Button
-                variant={showWishlistOnly ? "solid" : "outline"}
+                variant={showWishlistOnly ? "solid" : "surface"}
                 color={showWishlistOnly ? "red" : "gray"}
                 onClick={() => setShowWishlistOnly(!showWishlistOnly)}
               >
@@ -448,8 +447,11 @@ function RewardsBasePage({
                 <Card
                   size='1'
                   key={reward._id}
-                  className="flex flex-col border-none shadow-md transition cursor-pointer hover:shadow-lg"
-                  onClick={() => setSelectedReward(reward)}
+                  className="flex flex-col transition cursor-pointer hover:shadow-md card_no_border"
+                  onClick={() => {
+                    setSelectedReward(reward);
+                    setOpenDialog(true);
+                  }}
                 >
                   <Inset clip="padding-box" side="top">
                     <Box className="relative">
@@ -486,8 +488,6 @@ function RewardsBasePage({
                         variant="soft"
                         loading={((isAddingToWishlist && addToWishlistVariables?.rewardId === reward._id) || (isRemovingFromWishlist && removeFromWishlistVariables?.rewardId === reward._id))}
                       />}
-
-
 
                       {/* Limited Quantity Badge */}
                       {reward.limitedQuantity && (
@@ -551,9 +551,11 @@ function RewardsBasePage({
                           </Flex>
                         )}
                       </Flex>
+                    </div>
+                    <div>
                       <Flex justify="between" align="center" className="mb-3" wrap={'wrap'} gap='1'>
                         <Flex align="center" gap="1">
-                          <Text as='p' weight='bold'>
+                          <Text as='p' weight='bold' color='cyan'>
                             {reward.pointsCost.toLocaleString()} SP
                           </Text>
                         </Flex>
@@ -566,49 +568,50 @@ function RewardsBasePage({
                           </Flex>
                         )}
                       </Flex>
+                      {role === 'student' && <Button
+                        size="2"
+                        className="w-full whitespace-nowrap disabled:cursor-not-allowed"
+                        disabled={!canAfford(reward.pointsCost) || (reward.limitedQuantity && reward.quantity === 0)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedReward(reward);
+                          setOpenDialog(true);
+                        }}
+                      >
+                        {reward.limitedQuantity && reward.quantity === 0
+                          ? 'Out of Stock'
+                          : canAfford(reward.pointsCost)
+                            ? 'Redeem'
+                            : 'Need More SP'
+                        }
+                      </Button>}
+
+                      {role === 'parent' && (
+                        <div className="space-y-2">
+                          {/* Visibility Toggle Button - Available for all rewards */}
+                          <Button
+                            size="2"
+                            color={!reward.isVisibleToMyChildren && "gray"}
+                            className="w-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleVisibility(reward._id, reward.isVisibleToMyChildren);
+                            }}
+                            loading={isTogglingVisibility && variables?.id === reward._id}
+                          >
+                            {reward.isVisibleToMyChildren ? <Eye size={16} /> : <EyeOff size={16} />}
+                            <Text className='hidden md:block'>
+                              {reward.isVisibleToMyChildren ? 'Hide from Children' : 'Show to Children'}
+                            </Text>
+                            <Text className='block md:hidden'>
+                              {reward.isVisibleToMyChildren ? 'Hide' : 'Show'}
+                            </Text>
+                          </Button>
+
+
+                        </div>
+                      )}
                     </div>
-                    {role === 'student' && <Button
-                      size="2"
-                      className="w-full whitespace-nowrap disabled:cursor-not-allowed"
-                      disabled={!canAfford(reward.pointsCost) || (reward.limitedQuantity && reward.quantity === 0)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedReward(reward);
-                      }}
-                    >
-                      {reward.limitedQuantity && reward.quantity === 0
-                        ? 'Out of Stock'
-                        : canAfford(reward.pointsCost)
-                          ? 'Redeem'
-                          : 'Need More SP'
-                      }
-                    </Button>}
-
-                    {role === 'parent' && (
-                      <div className="space-y-2">
-                        {/* Visibility Toggle Button - Available for all rewards */}
-                        <Button
-                          size="2"
-                          color={!reward.isVisibleToMyChildren && "gray"}
-                          className="w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleVisibility(reward._id, reward.isVisibleToMyChildren);
-                          }}
-                          loading={isTogglingVisibility && variables?.id === reward._id}
-                        >
-                          {reward.isVisibleToMyChildren ? <Eye size={16} /> : <EyeOff size={16} />}
-                          <Text className='hidden md:block'>
-                            {reward.isVisibleToMyChildren ? 'Hide from Children' : 'Show to Children'}
-                          </Text>
-                          <Text className='block md:hidden'>
-                            {reward.isVisibleToMyChildren ? 'Hide' : 'Show'}
-                          </Text>
-                        </Button>
-
-
-                      </div>
-                    )}
                   </Box>
                 </Card>
               ))}
@@ -638,155 +641,17 @@ function RewardsBasePage({
         )}
       </div>
 
-
-      {/* Reward Detail Modal */}
-      <Dialog.Root open={!!selectedReward} onOpenChange={setSelectedReward}>
-        <Dialog.Content className='max-w-4xl' aria-describedby={undefined}>
-          {selectedReward && (
-            <>
-              <Dialog.Title>{selectedReward.title}</Dialog.Title>
-              <div className='space-y-4'>
-                <Flex direction={{ initial: 'column', sm: 'row' }} align={{ sm: 'start' }} gap="4">
-                  <img
-                    loading='lazy'
-                    src={selectedReward?.image || rewardsPlaceholder}
-                    alt={selectedReward?.title}
-                    className="object-cover object-center w-full rounded-lg md:w-1/2 aspect-auto bg-[--accent-contrast]"
-                    onError={(e) => {
-                      e.currentTarget.src = rewardsPlaceholder;
-                    }}
-                  />
-                  <div className='flex-1 space-y-3'>
-                    <Flex align="center" gap="2">
-                      <Text as='p' size="2" color="gray" className="capitalize">
-                        {selectedReward.categoryId?.type}
-                      </Text>
-                      {selectedReward.badge && (
-                        <Badge color="red" variant="soft" size="1">
-                          {selectedReward.badge}
-                        </Badge>
-                      )}
-                    </Flex>
-
-                    <Text as='p' className="whitespace-pre-wrap">{selectedReward.description}</Text>
-
-                    <Flex justify="between" align="center" className="p-4 bg-[--gray-a2] rounded-lg">
-                      <Box>
-                        <Text as='p' size="2" color="gray"> Scholarship Points Required</Text>
-                        <Flex align="center" gap="1">
-                          <Trophy size={16} />
-                          <Text as='p' size="4" weight="bold" >
-                            {selectedReward.pointsCost.toLocaleString()} SP
-                          </Text>
-                        </Flex>
-                      </Box>
-                      {role === 'student' && (
-                        <Box className="text-right">
-                          <Text as='p' size="2" color="gray">Your Balance</Text>
-                          <Text as='p' size="3" weight="bold">
-                            {userPoints.toLocaleString()}
-                          </Text>
-                        </Box>
-                      )}
-                    </Flex>
-
-                    {selectedReward.limitedQuantity && (
-                      <Callout.Root
-                        variant='surface'
-                        color={selectedReward.quantity === 0 ? 'gray' : 'orange'}
-                      >
-                        <Callout.Icon>
-                          <Clock size={16} />
-                        </Callout.Icon>
-                        <Callout.Text>
-                          {selectedReward.quantity === 0
-                            ? 'This reward is currently out of stock'
-                            : `Limited quantity: Only ${selectedReward.quantity} remaining`
-                          }
-                        </Callout.Text>
-                      </Callout.Root>
-                    )}
-
-                    {selectedReward.expiryDate && (
-                      <Callout.Root variant='surface' color='yellow'>
-                        <Callout.Icon>
-                          <Clock size={16} />
-                        </Callout.Icon>
-                        <Callout.Text>
-                          Expires on {formatDate(selectedReward.expiryDate)}
-                        </Callout.Text>
-                      </Callout.Root>
-                    )}
-                  </div>
-
-                </Flex>
-                {selectedReward.redemptionInstructions && (
-                  <div>
-                    <Text as='p' size="2" weight="medium" mb="1" color="gray">Redemption Instructions</Text>
-                    <Text as='p' className="pl-4 whitespace-pre-wrap">
-                      {selectedReward.redemptionInstructions}
-                    </Text>
-                  </div>
-                )}
-
-                {selectedReward.restrictions && (
-                  <div>
-                    <Text as='p' size="2" weight="medium" mb="1" color="gray">Restrictions</Text>
-                    <Text as='p' className="pl-4 whitespace-pre-wrap">
-                      {selectedReward.restrictions}
-                    </Text>
-                  </div>
-                )}
-              </div>
-              <Flex gap="3" mt="4" justify="end">
-                <Dialog.Close>
-                  <Button disabled={isRedeemingReward} variant="soft" color="gray">
-                    Cancel
-                  </Button>
-                </Dialog.Close>
-                {role === 'parent' && (
-                  <Button asChild>
-                    <Link to={`/parent/rewards/create?cloneId=${selectedReward._id}`}>
-                      <Copy size={16} /> Clone Reward
-                    </Link>
-                  </Button>
-                )}
-                {role === 'student' && <Button
-                  disabled={
-                    !canAfford(selectedReward.pointsCost) ||
-                    isRedeemingReward ||
-                    (selectedReward.limitedQuantity && selectedReward.quantity === 0)
-                  }
-                  onClick={() => {
-                    redeemReward({
-                      id: selectedReward._id,
-                      studentId
-                    }, {
-                      onSuccess: () => {
-                        toast.success('Reward redeemed successfully');
-                        setSelectedReward(null);
-                      },
-                      onError: (error) => {
-                        toast.error(error?.response?.data?.message || error?.message || 'Failed to redeem reward');
-                      }
-                    });
-                  }}
-                  className='disabled:cursor-not-allowed'
-                >
-                  {selectedReward.limitedQuantity && selectedReward.quantity === 0
-                    ? 'Out of Stock'
-                    : canAfford(selectedReward.pointsCost)
-                      ? isRedeemingReward
-                        ? 'Processing...'
-                        : 'Confirm Redemption'
-                      : 'Need More SP'
-                  }
-                </Button>}
-              </Flex>
-            </>
-          )}
-        </Dialog.Content>
-      </Dialog.Root>
+      {/* Rewards Details Dialog */}
+      <RewardsDetailsDialog
+        openDialog={openDialog}
+        setOpenDialog={setOpenDialog}
+        selectedReward={selectedReward}
+        setSelectedReward={setSelectedReward}
+        role={role}
+        userPoints={userPoints}
+        canAfford={canAfford}
+        studentId={studentId}
+      />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog
@@ -810,7 +675,7 @@ function RewardsBasePage({
 
 export default RewardsBasePage;
 
-function RedeemButton({ reward, setSelectedReward, canAfford, }) {
+function RedeemButton({ reward, setSelectedReward, canAfford, setOpenDialog }) {
   return (
     <Button
       size={{ initial: '2', md: '3' }}
@@ -821,7 +686,10 @@ function RedeemButton({ reward, setSelectedReward, canAfford, }) {
           : 'bg-[--gray-6] text-[--gray-11] cursor-not-allowed'
         }`}
       disabled={!canAfford(reward.pointsCost) || (reward.limitedQuantity && reward.quantity === 0)}
-      onClick={() => setSelectedReward(reward)}
+      onClick={() => {
+        setSelectedReward(reward);
+        setOpenDialog(true);
+      }}
     >
       <ShoppingCart size={16} className="md:w-[18px] md:h-[18px]" />
       <Text className="hidden sm:inline">

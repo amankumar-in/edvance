@@ -80,7 +80,7 @@ function CollegeDetails() {
             </Box>
           </Flex>
           {college.shortDescription && (
-            <Text as='p' size="3" color='gray'>
+            <Text as='p' size="3">
               {college.shortDescription}
             </Text>
           )}
@@ -134,7 +134,7 @@ function CollegeDetails() {
         <Box className="space-y-6 lg:col-span-2">
           {/* About Section */}
           {college.description && (
-            <Card size={{ initial: '2', xs: '3' }} className='space-y-4 shadow-md'>
+            <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
               <Heading size="5">
                 About {college.name}
               </Heading>
@@ -146,7 +146,7 @@ function CollegeDetails() {
 
           {/* Programs & Courses */}
           {college.courses && college.courses.length > 0 && (
-            <Card size={{ initial: '2', xs: '3' }} className='space-y-4 shadow-md'>
+            <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
               <Heading size="5">
                 Programs & Courses
               </Heading>
@@ -167,7 +167,7 @@ function CollegeDetails() {
         {/* Right Column - Sidebar */}
         <Box className="space-y-6">
           {/* Contact Information */}
-          {college.contactEmail || college.contactPhone || college.website ? <Card size={{ initial: '2', xs: '3' }} className='space-y-4 shadow-md'>
+          {college.contactEmail || college.contactPhone || college.website ? <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
             <Heading size="4" className="mb-4">
               Contact Information
             </Heading>
@@ -243,7 +243,7 @@ function CollegeDetails() {
           </Card> : null}
 
           {/* Quick Stats */}
-          {college.courses && college.courses.length > 0 && <Card size={{ initial: '2', xs: '3' }} className='space-y-4 shadow-md'>
+          {college.courses && college.courses.length > 0 && <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
             <Heading size="4" className="mb-4">
               Quick Facts
             </Heading>
@@ -295,7 +295,7 @@ function CollegeDetails() {
           </Card>}
 
           {/* Apply Now CTA */}
-          {(college.website || college.contactEmail) && <Card size={{ initial: '2', xs: '3' }} className='space-y-4 shadow-md'>
+          {(college.website || college.contactEmail) && <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
             <Heading size="4">
               Interested in {college.name}?
             </Heading>

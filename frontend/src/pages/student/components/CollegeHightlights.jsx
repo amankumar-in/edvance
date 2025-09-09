@@ -25,7 +25,7 @@ export default function HighlightsSection({ college }) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {college.highlight1 && (
               <Card size="3" className="relative z-10 shadow-lg transition duration-300 hover:-translate-y-2">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[--blue-a1] to-[--blue-a3]"/>
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[--blue-a2] to-[--blue-a4]"/>
                 <Flex direction="column" align="center" gap="3" className="text-center">
                   <Box className="p-3 bg-[--blue-a3] rounded-full">
                     <Award size={24} className="text-[--blue-11]" />
@@ -38,7 +38,7 @@ export default function HighlightsSection({ college }) {
             )}
             {college.highlight2 && (
               <Card size="3" className="relative z-10 shadow-lg transition duration-300 hover:-translate-y-2">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[--green-a1] to-[--green-a3]"/>
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[--green-a2] to-[--green-a4]"/>
                 <Flex direction="column" align="center" gap="3" className="text-center">
                   <Box className="p-3 bg-[--green-a3] rounded-full">
                     <TrendingUp size={24} className="text-[--green-11]" />
@@ -51,7 +51,7 @@ export default function HighlightsSection({ college }) {
             )}
             {college.highlight3 && (
               <Card size="3" className="relative z-10 shadow-lg transition duration-300 hover:-translate-y-2">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[--purple-a1] to-[--purple-a3]"/>
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[--purple-a2] to-[--purple-a4]"/>
                 <Flex direction="column" align="center" gap="3" className="text-center">
                   <Box className="p-3 bg-[--purple-a3] rounded-full">
                     <Star size={24} className="text-[--purple-11]" />

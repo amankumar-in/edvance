@@ -6,6 +6,7 @@ import { useAuth } from '../../Context/AuthContext';
 import ActivityTab from './components/ActivityTab';
 import LevelsTab from './components/LevelsTab';
 import OverviewTab from './components/OverviewTab';
+import PageHeader from '../../components/PageHeader';
 
 const StudentPoints = () => {
   const [selectedTab, setSelectedTab] = useState('overview');
@@ -90,14 +91,7 @@ const StudentPoints = () => {
   return (
     <div className="mx-auto space-y-6 max-w-5xl">
       {/* Header */}
-      <div className="text-center sm:text-left">
-        <Text size="7" weight="bold">
-          Scholarship Points
-        </Text>
-        <Text size="3" color="gray" className="block mt-2">
-          Track your academic achievements and rewards
-        </Text>
-      </div>
+      <ScholarshipPointsHeader />
 
       {isError && (
         <Callout.Root color='red'>
@@ -111,7 +105,7 @@ const StudentPoints = () => {
       )}
 
       {/* Main Balance Card */}
-      <Card className="overflow-hidden relative text-center" size='2'>
+      <Card className="overflow-hidden relative text-center card_no_border" size='2'>
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
         <div className="relative">
           <Text size="2" color="gray" className="font-medium tracking-wide uppercase">
@@ -158,9 +152,13 @@ const StudentPoints = () => {
       </Card>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card size='2' className='shadow-md'>
-          <Flex align="center" gap="3" className="mb-3">
+      <div className="grid gap-4"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))'
+        }}
+      >
+        <Card size='2' className='card_no_border'>
+          <Flex align="start" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--green-a3)' }}>
               <TrendingUp className="w-5 h-5" style={{ color: 'var(--green-9)' }} />
             </div>
@@ -175,8 +173,8 @@ const StudentPoints = () => {
           </Flex>
         </Card>
 
-        <Card size='2' className='shadow-md'>
-          <Flex align="center" gap="3" className="mb-3">
+        <Card size='2' className='card_no_border'>
+          <Flex align="start" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--red-a3)' }}>
               <ArrowDownRight className="w-5 h-5" style={{ color: 'var(--red-9)' }} />
             </div>
@@ -191,8 +189,8 @@ const StudentPoints = () => {
           </Flex>
         </Card>
 
-        <Card size='2' className='shadow-md'>
-          <Flex align="center" gap="3" className="mb-3">
+        <Card size='2' className='card_no_border'>
+          <Flex align="start" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--blue-a3)' }}>
               <Calendar className="w-5 h-5" style={{ color: 'var(--blue-9)' }} />
             </div>
@@ -207,8 +205,8 @@ const StudentPoints = () => {
           </Flex>
         </Card>
 
-        <Card size='2' className='shadow-md'>
-          <Flex align="center" gap="3" className="mb-3">
+        <Card size='2' className='card_no_border'>
+          <Flex align="start" gap="3" className="mb-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--purple-a3)' }}>
               <Target className="w-5 h-5" style={{ color: 'var(--purple-9)' }} />
             </div>
@@ -278,3 +276,12 @@ const StudentPoints = () => {
 };
 
 export default StudentPoints;
+
+function ScholarshipPointsHeader() {
+  return (
+    <PageHeader
+      title="Scholarship Points"
+      description="Track your academic achievements and rewards"
+    />
+  )
+}

@@ -40,7 +40,7 @@ const ActivityTab = ({
   );
 
   return (
-    <Card className="space-y-6" size='2'>
+    <Card className="space-y-6 card_no_border" size='2'>
       {/* Filters */}
       <div>
         <Flex justify="between" align="center" className="mb-4">
@@ -51,7 +51,7 @@ const ActivityTab = ({
             {transactions?.length} {transactions?.length === 1 ? "activity" : "activities"}
           </Text>
         </Flex>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap gap-3 items-center">
           <Select.Root disabled={isFetching} value={transactionFilter} onValueChange={setTransactionFilter}>
             <Select.Trigger placeholder="Type" />
             <Select.Content variant='soft' position='popper'>
@@ -101,7 +101,7 @@ const ActivityTab = ({
                 }}>
                   {getTransactionIcon(transaction?.type)}
                 </div>
-                <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex-1 space-y-2 min-w-0">
                   <Text as='p' size="3" weight="medium" className="block">
                     {transaction?.description}
                   </Text>
@@ -118,11 +118,6 @@ const ActivityTab = ({
                       dateStyle: "medium", timeStyle: "short"
                     })}</Text>
                   </Flex>
-                  {transaction?.sourceId && (
-                    <Text as='p' size="1" color="gray" className="mt-1">
-                      ID: {transaction?.sourceId}
-                    </Text>
-                  )}
                 </div>
               </Flex>
               <div className="flex-1 ml-4 text-right text-nowrap">

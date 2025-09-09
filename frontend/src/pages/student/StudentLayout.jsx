@@ -50,7 +50,7 @@ function StudentLayout() {
 
       <Flex className='relative w-full'>
         {/* Desktop Sidebar */}
-        <Box className={`overflow-y-auto fixed md:sticky transition-transform duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--gray-2] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
+        <Box className={` overflow-y-auto fixed md:sticky transition-transform duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--secondary-bg] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
           <Flex align='center' gap='4' px={'4'} className='h-16 md:hidden' justify='between'>
             <Text as='p' weight='bold' size="7" color='cyan'>
               EdVance
@@ -119,7 +119,7 @@ function StudentLayout() {
         </Box >
 
         {/* Mobile Bottom Navigation */}
-        < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden bg-[--gray-2] border-t border-[--gray-a6]">
+        < Box className="flex fixed right-0 bottom-0 left-0 z-50 h-16 md:hidden bg-[--secondary-bg] border-t border-[--gray-a5]">
           <Flex justify="between" className='w-full'>
             {navItems.slice(0, 5).map((item, index) => (
               <NavLink
@@ -146,7 +146,7 @@ function StudentLayout() {
         </Box >
 
         {/* Main Content */}
-        <div className='flex-1 pb-16 min-w-0 md:pb-0'>
+        <div className='flex-1 pb-16 min-w-0 md:pb-0 bg-[--gray-background]'>
           <Container>
             <Outlet />
           </Container>

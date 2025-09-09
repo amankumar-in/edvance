@@ -34,7 +34,7 @@ export default function ProfileContent() {
         <ChangePasswordDialog />
       </Flex>
       {/* Profile Overview Card */}
-      <Card size="3" className="space-y-6 shadow-md">
+      <Card size={{initial: '2', sm: '3'}} className="space-y-6 card_no_border">
         <Flex align="start" gap="6" wrap="wrap">
           <AvatarSection user={user} />
           <Box style={{ flex: 1 }}>

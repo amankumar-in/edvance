@@ -49,7 +49,7 @@ function SettingsLayout() {
       <Flex gap="6">
         {/* Sidebar */}
         <div
-          className={`fixed md:static top-16 h-[calc(100vh-64px)] z-30 bg-[--color-background] w-64 p-4 md:p-0 transition-transform duration-300 ease-in-out ${sidebarOpen ? '-translate-x-4' : '-translate-x-[101%] md:translate-x-0'
+          className={`fixed md:static top-16 h-[calc(100vh-64px)] z-30 bg-[--gray-background] w-64 p-4 md:p-0 transition-transform duration-300 ease-in-out ${sidebarOpen ? '-translate-x-4' : '-translate-x-[101%] md:translate-x-0'
             }`}
         >
           {settings.map((setting) => (

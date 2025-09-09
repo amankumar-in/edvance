@@ -69,7 +69,7 @@ export default StudentClasses
 
 function ClassCard({ classData, hasClassToday }) {
   return (
-    <Card key={classData._id} size={'2'} className='flex flex-col justify-between shadow-md transition hover:shadow-lg aspect-square' asChild>
+    <Card key={classData._id} size={'2'} className='flex flex-col justify-between transition hover:shadow-md aspect-square card_no_border' asChild>
       <Link to={`/student/attendance/${classData._id}`}>
 
         <div className='space-y-4'>
