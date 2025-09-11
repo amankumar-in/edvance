@@ -19,7 +19,7 @@ export default function TopLoadingBar() {
 
   return (
     <LoadingBar
-      color="#06b6d4"
+      color='oklch(82.8% 0.111 230.318)'
       ref={ref}
       height={3}
       className="z-50"

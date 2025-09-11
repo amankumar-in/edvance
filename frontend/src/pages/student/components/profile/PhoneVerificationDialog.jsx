@@ -163,6 +163,7 @@ function PhoneVerificationDialog({ isOpen, setIsOpen, phoneNumber, children }) {
                   Verification Code *
                 </Text>
                 <TextField.Root
+                  size={'3'}
                   type='number'
                   {...registerVerify('otp',
                     {

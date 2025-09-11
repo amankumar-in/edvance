@@ -9,6 +9,7 @@ import { ErrorCallout, Loader } from '../../../components';
 import EmptyStateCard from '../../../components/EmptyStateCard';
 import PageHeader from '../components/PageHeader';
 import { useRecordClassAttendance } from '../../../api/class-attendance/classAttendance.mutations';
+import { BRAND_COLOR } from '../../../utils/constants';
 
 const monthNames = [
   "January",
@@ -250,7 +251,7 @@ function Attendance() {
               >
                 <Text as='p'
                   mb='2'
-                  color={hasClass ? "cyan" : "gray"}
+                  color={hasClass ? BRAND_COLOR : "gray"}
                 >
                   {day}
                 </Text>

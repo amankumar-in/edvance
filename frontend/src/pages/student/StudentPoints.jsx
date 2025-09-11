@@ -7,6 +7,7 @@ import ActivityTab from './components/ActivityTab';
 import LevelsTab from './components/LevelsTab';
 import OverviewTab from './components/OverviewTab';
 import PageHeader from '../../components/PageHeader';
+import { BRAND_COLOR } from '../../utils/constants';
 
 const StudentPoints = () => {
   const [selectedTab, setSelectedTab] = useState('overview');
@@ -106,17 +107,17 @@ const StudentPoints = () => {
 
       {/* Main Balance Card */}
       <Card className="overflow-hidden relative text-center card_no_border" size='2'>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-700/10 to-purple-700/10"></div>
         <div className="relative">
           <Text size="2" color="gray" className="font-medium tracking-wide uppercase">
             Current Balance
           </Text>
           <Skeleton loading={isLoading} className='mx-auto w-40'>
             <Flex align="center" justify="center" gap="3" className="mt-2 mb-4">
-              <Text as='p' size="9" weight="bold" className='text-[var(--accent-10)]'>
+              <Text as='p' size="9" weight="bold" color={BRAND_COLOR}>
                 {pointAccount?.currentBalance?.toLocaleString()}
               </Text>
-              <Coins className="w-12 h-12 sm:w-16 sm:h-16" style={{ color: 'var(--accent-10)' }} />
+              <Coins className="w-12 h-12 sm:w-16 sm:h-16" style={{ color: 'var(--accent-11)' }} />
             </Flex>
           </Skeleton>
 
@@ -142,7 +143,7 @@ const StudentPoints = () => {
                 <Text size="1" color="gray">Level {pointAccount.level}</Text>
                 <Text size="1" color="gray">{pointAccount.pointsToNextLevel ?? 0} to Level {(pointAccount.level ?? 0) + 1}</Text>
               </Flex>
-              <Progress value={pointAccount?.progressPercentage ?? 0} className="w-full" />
+              <Progress value={pointAccount?.progressPercentage ?? 0} className="w-full" variant='classic'/>
               <Text size="1" color="gray" className="mt-1">
                 {pointAccount?.progressPercentage?.toFixed(2)}% progress to next level
               </Text>

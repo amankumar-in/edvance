@@ -1,5 +1,6 @@
 import { AlertDialog, Box, Button, Flex } from '@radix-ui/themes';
 import React from 'react';
+import { BRAND_COLOR } from '../utils/constants';
 
 function ConfirmationDialog({
   open,
@@ -9,7 +10,7 @@ function ConfirmationDialog({
   additionalContent,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  confirmColor = 'blue',
+  confirmColor = BRAND_COLOR,
   isLoading = false,
   onConfirm,
   confirmIcon, 

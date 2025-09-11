@@ -56,7 +56,7 @@ const LevelsTab = ({ pointAccount }) => {
                     <Text as='p' size="2">
                       Level {level?.level}
                     </Text>
-                    {isCurrentLevel && <Badge color="cyan" variant="solid">Current</Badge>}
+                    {isCurrentLevel && <Badge variant="solid">Current</Badge>}
                     {isNext && <Badge color="orange" variant="soft">Next</Badge>}
                     {isAchieved && !isCurrentLevel && <Badge color="green" variant="soft">Achieved</Badge>}
                   </Flex>

@@ -144,7 +144,7 @@ function Colleges() {
 
       {/* Filters */}
       <Card size={{ initial: '2', md: '3' }} className='card_no_border'>
-        <Flex gap="4" align="end" wrap="wrap">
+        <Flex gap="4" align="center" wrap="wrap">
           {/* Search */}
           <Box className="flex-1 min-w-[250px]">
             <Text as="div" size="2" mb="2" weight="medium">

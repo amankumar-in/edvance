@@ -2,8 +2,165 @@
 @tailwind components;
 @tailwind utilities;
 
+:root,
+.light,
+.light-theme {
+  /* Brand Colors */
+  --brand-blue-light: oklch(97% 0.014 254.604);
+  --brand-purple-light: oklch(97.7% 0.014 308.299);
+  --brand-pink-light: oklch(97.1% 0.014 343.198);
+
+  --violet-1: #fdfdff;
+  --violet-2: #f7f9ff;
+  --violet-3: #eef1ff;
+  --violet-4: #e1e8ff;
+  --violet-5: #d3ddff;
+  --violet-6: #c2ceff;
+  --violet-7: #acbaff;
+  --violet-8: #8f9eff;
+  --violet-9: #504eec;
+  --violet-10: #4542d3;
+  --violet-11: #4c4cdd;
+  --violet-12: #24266b;
+
+  --violet-a1: #0000ff02;
+  --violet-a2: #0040ff08;
+  --violet-a3: #002dff11;
+  --violet-a4: #003cff1e;
+  --violet-a5: #003aff2c;
+  --violet-a6: #0033ff3d;
+  --violet-a7: #002cff53;
+  --violet-a8: #0023ff70;
+  --violet-a9: #0300e4b1;
+  --violet-a10: #0400c4bd;
+  --violet-a11: #0000cfb3;
+  --violet-a12: #000253db;
+
+  --violet-contrast: #fff;
+  --violet-surface: #f5f8ffcc;
+  --violet-indicator: #504eec;
+  --violet-track: #504eec;
+}
+
+.dark,
+.dark-theme {
+  --brand-blue-light: var(--color-background);
+  --brand-purple-light: var(--color-background);
+  --brand-pink-light: var(--color-background);
+
+  --violet-1: #0e101d;
+  --violet-2: #131628;
+  --violet-3: #1d204f;
+  --violet-4: #24266f;
+  --violet-5: #2d3081;
+  --violet-6: #363b90;
+  --violet-7: #4147a5;
+  --violet-8: #4e55c4;
+  --violet-9: #504eec;
+  --violet-10: #484dbb;
+  --violet-11: #9eaeff;
+  --violet-12: #d8e0ff;
+
+  --violet-a1: #0000fd0d;
+  --violet-a2: #2644fc19;
+  --violet-a3: #3e4afd43;
+  --violet-a4: #4147ff65;
+  --violet-a5: #4d53ff78;
+  --violet-a6: #565ffe89;
+  --violet-a7: #5e68ff9f;
+  --violet-a8: #626cffc0;
+  --violet-a9: #5654ffeb;
+  --violet-a10: #5e65feb7;
+  --violet-a11: #9eaeff;
+  --violet-a12: #d8e0ff;
+
+  --violet-contrast: #fff;
+  --violet-surface: #151b3f80;
+  --violet-indicator: #504eec;
+  --violet-track: #504eec;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+
+    :root,
+    .light,
+    .light-theme {
+      --violet-1: oklch(99.4% 0.0028 275.7);
+      --violet-2: oklch(98.2% 0.011 275.7);
+      --violet-3: oklch(96.1% 0.0214 275.7);
+      --violet-4: oklch(93.5% 0.043 275.7);
+      --violet-5: oklch(90.4% 0.0644 275.7);
+      --violet-6: oklch(86.4% 0.0866 275.7);
+      --violet-7: oklch(80.8% 0.1087 275.7);
+      --violet-8: oklch(72.9% 0.1444 275.7);
+      --violet-9: oklch(52.9% 0.2298 275.7);
+      --violet-10: oklch(48.2% 0.2138 275.7);
+      --violet-11: oklch(51% 0.2138 275.7);
+      --violet-12: oklch(31.4% 0.1176 275.7);
+
+      --violet-a1: color(display-p3 0.0196 0.0196 1 / 0.008);
+      --violet-a2: color(display-p3 0.0196 0.2667 0.8784 / 0.032);
+      --violet-a3: color(display-p3 0.0078 0.1294 0.9412 / 0.063);
+      --violet-a4: color(display-p3 0.0039 0.2118 0.9333 / 0.114);
+      --violet-a5: color(display-p3 0.0039 0.1922 0.9294 / 0.165);
+      --violet-a6: color(display-p3 0.0039 0.1725 0.9333 / 0.232);
+      --violet-a7: color(display-p3 0.0039 0.1412 0.9412 / 0.314);
+      --violet-a8: color(display-p3 0.0039 0.1137 0.9373 / 0.428);
+      --violet-a9: color(display-p3 0.0118 0 0.8431 / 0.695);
+      --violet-a10: color(display-p3 0.0118 0 0.7255 / 0.742);
+      --violet-a11: color(display-p3 0 0 0.7647 / 0.702);
+      --violet-a12: color(display-p3 0 0.0078 0.3059 / 0.859);
+
+      --violet-contrast: #fff;
+      --violet-surface: color(display-p3 0.9608 0.9725 1 / 0.8);
+      --violet-indicator: oklch(52.9% 0.2298 275.7);
+      --violet-track: oklch(52.9% 0.2298 275.7);
+    }
+  }
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+
+    .dark,
+    .dark-theme {
+      --violet-1: oklch(17.8% 0.0279 275.7);
+      --violet-2: oklch(20.6% 0.0365 275.7);
+      --violet-3: oklch(27.1% 0.085 275.7);
+      --violet-4: oklch(31.8% 0.123 275.7);
+      --violet-5: oklch(35.9% 0.1335 275.7);
+      --violet-6: oklch(40% 0.1376 275.7);
+      --violet-7: oklch(44.9% 0.1483 275.7);
+      --violet-8: oklch(50.6% 0.1701 275.7);
+      --violet-9: oklch(52.9% 0.2298 275.7);
+      --violet-10: oklch(48.2% 0.1701 275.7);
+      --violet-11: oklch(77.6% 0.159 275.7);
+      --violet-12: oklch(91.3% 0.0518 275.7);
+
+      --violet-a1: color(display-p3 0 0 0.9882 / 0.047);
+      --violet-a2: color(display-p3 0.1961 0.2784 0.9961 / 0.093);
+      --violet-a3: color(display-p3 0.2745 0.3059 1 / 0.248);
+      --violet-a4: color(display-p3 0.2627 0.2824 0.9961 / 0.379);
+      --violet-a5: color(display-p3 0.3216 0.3373 1 / 0.45);
+      --violet-a6: color(display-p3 0.3608 0.3882 1 / 0.513);
+      --violet-a7: color(display-p3 0.3882 0.4235 1 / 0.597);
+      --violet-a8: color(display-p3 0.4039 0.4353 1 / 0.723);
+      --violet-a9: color(display-p3 0.3451 0.3373 1 / 0.883);
+      --violet-a10: color(display-p3 0.3882 0.4118 1 / 0.685);
+      --violet-a11: color(display-p3 0.6471 0.6941 1 / 0.975);
+      --violet-a12: color(display-p3 0.8627 0.8902 1 / 0.988);
+
+      --violet-contrast: #fff;
+      --violet-surface: color(display-p3 0.0784 0.102 0.2353 / 0.5);
+      --violet-indicator: oklch(52.9% 0.2298 275.7);
+      --violet-track: oklch(52.9% 0.2298 275.7);
+    }
+  }
+}
+
 :root {
-  --sidebar: var(--cyan-12);
+  --sidebar: var(--violet-12);
   --inactive-link: #e8e8ec;
   --icon-muted: #bbbbbb;
   --gray-background:rgb(247, 249, 252);
@@ -12,7 +169,7 @@
 }
 
 .dark {
-  --sidebar: var(--cyan-1);
+  --sidebar: var(--violet-2);
   --inactive-link: #e8e8ec;
   --icon-muted: #bbbbbb;
   --gray-background: var(--color-background);
@@ -44,10 +201,6 @@
   --quote-font-family: 'Times New Roman', 'Times', serif;
 
   --code-font-family: 'Menlo', 'Consolas (Custom)', 'Bitstream Vera Sans Mono', monospace, 'Apple Color Emoji', 'Segoe UI Emoji';
-}
-
-:where(.radix-themes) {
-  --color-panel-translucent: white;
 }
 
 /* AndroidLoader.css */

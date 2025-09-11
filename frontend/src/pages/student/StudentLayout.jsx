@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../../Context/AuthContext';
 import { usePointsDetailsById } from '../../api/points/points.queries';
 import { Container } from '../../components';
+import { BRAND_COLOR } from '../../utils/constants';
 
 function StudentLayout() {
   const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useOutletContext();
@@ -52,7 +53,7 @@ function StudentLayout() {
         {/* Desktop Sidebar */}
         <Box className={` overflow-y-auto fixed md:sticky transition-transform duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--secondary-bg] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
           <Flex align='center' gap='4' px={'4'} className='h-16 md:hidden' justify='between'>
-            <Text as='p' weight='bold' size="7" color='cyan'>
+            <Text as='span' weight='bold' size="6" color={BRAND_COLOR}>
               EdVance
             </Text>
             <IconButton
@@ -146,7 +147,7 @@ function StudentLayout() {
         </Box >
 
         {/* Main Content */}
-        <div className='flex-1 pb-16 min-w-0 md:pb-0 bg-[--gray-background]'>
+        <div className='flex-1 pb-16 min-w-0 bg-gradient-to-br from-[--brand-blue-light] to-[--brand-purple-light]'>
           <Container>
             <Outlet />
           </Container>

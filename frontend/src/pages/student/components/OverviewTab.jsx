@@ -101,7 +101,7 @@ const OverviewTab = ({
                     <Text size="2" color="gray">Level {pointAccount.level}</Text>
                     <Text size="2" color="gray">Level {pointAccount.level + 1}</Text>
                   </Flex>
-                  <Progress value={pointAccount?.progressPercentage ?? 0} className="mb-2" />
+                  <Progress value={pointAccount?.progressPercentage ?? 0} className="mb-2" variant='classic'/>
                   <Text size="1" color="gray" className="text-center">
                     {pointAccount.pointsToNextLevel} points until next level
                   </Text>
@@ -313,7 +313,7 @@ const OverviewTab = ({
                 statistics.bySource.map((source) => {
                   return (
                     <div key={source.source}>
-                      <Flex align="center" gap="3" className="mb-2">
+                      <Flex align="start" gap="3" className="mb-2">
                         <div className="relative">
                           <div className="p-2 rounded-lg bg-[--gray-a3]">
                             {getSourceIcon(source.source)}
@@ -324,7 +324,7 @@ const OverviewTab = ({
                             <Text size="2" weight="medium">{formatSource(source.source)}</Text>
                             <Text size="2" weight="bold">{source.amount}</Text>
                           </Flex>
-                          <Progress value={source.percentage} className="mb-1" />
+                          <Progress value={source.percentage} className="mb-1" variant='classic'/>
                           <Text size="1" color="gray">{source.percentage}% of total points</Text>
                         </div>
                       </Flex>

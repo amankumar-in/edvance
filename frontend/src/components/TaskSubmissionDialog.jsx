@@ -157,9 +157,11 @@ function TaskSubmissionDialog({
   const handleClose = () => {
     onOpenChange(false);
     // Reset form when closing
-    setSubmissionNote('');
-    setEvidenceList([]);
-    setNewEvidence({ type: 'text', content: '', url: '', file: null });
+    setTimeout(() => {
+      setSubmissionNote('');
+      setEvidenceList([]);
+      setNewEvidence({ type: 'text', content: '', url: '', file: null });
+    }, 0)
   };
 
   // Get evidence icon
@@ -189,10 +191,10 @@ function TaskSubmissionDialog({
       {children && <Dialog.Trigger>{children}</Dialog.Trigger>}
       <Dialog.Content className='max-w-3xl'>
         <Dialog.Title>{submitButtonText}</Dialog.Title>
-        <Dialog.Description>
+        <Dialog.Description size="2" mb="4">
           Add any notes and evidence to show you've completed this task: <strong>{task?.title}</strong>
         </Dialog.Description>
-        <Flex direction="column" gap="4" mt="4">
+        <Flex direction="column" gap="4" className='max-h-[60vh] overflow-y-auto p-1'>
           {/* Submission Note */}
           <Flex direction="column" gap="2">
             <Text size="2" weight="medium">Completion Notes (Optional)</Text>
@@ -336,7 +338,7 @@ function TaskSubmissionDialog({
           </Flex>
         </Flex>
 
-        <Flex gap="3" mt="6" justify="end">
+        <Flex gap="3" mt="4" justify="end" className='pt-4 border-t border-t-[--gray-a6]'>
           <Dialog.Close>
             <Button variant="soft" color="gray" onClick={handleClose} disabled={isSubmitting}>
               Cancel

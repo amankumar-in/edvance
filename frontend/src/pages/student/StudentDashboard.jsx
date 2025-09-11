@@ -7,7 +7,7 @@ function StudentDashboard() {
   const { user } = useAuth();
   return (
     <Container>
-      <Box className="max-w-2xl mx-auto py-8 space-y-6">
+      <Box className="py-8 mx-auto space-y-6 max-w-2xl">
         <Text as="h1" size="8" weight="bold" color="indigo">
           Welcome{user?.firstName ? `, ${user.firstName}` : ''}!
         </Text>
@@ -33,7 +33,7 @@ function StudentDashboard() {
             <Text size="4" weight="bold">Progress</Text>
             <Badge color="green">7 day streak</Badge>
           </Flex>
-          <Progress value={70} max={100} color="green" size="3" mb="2" />
+          <Progress value={70} max={100} color="green" size="3" mb="2" variant='classic'/>
           <Text size="2" color="gray">You're making great progress! Keep it up!</Text>
         </Card>
       </Box>

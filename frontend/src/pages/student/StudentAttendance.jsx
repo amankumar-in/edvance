@@ -157,7 +157,6 @@ function StudentAttendance() {
           <Button
             className='w-max'
             asChild
-            color='cyan'
           >
             <Link to={'/student/settings/linked-accounts#school'}>
               Join a school
@@ -167,7 +166,7 @@ function StudentAttendance() {
       )}
 
       {/* Check-in Section */}
-      <Card size="3" className='card_no_border'>
+      <Card size={{initial: '2', sm: '3'}} className='card_no_border'>
         <Flex direction="column" gap="4">
           <Flex align="center" justify="between" gap='3' wrap={'wrap-reverse'}>
             <Box>
@@ -216,7 +215,8 @@ function StudentAttendance() {
               <>
                 <Flex align="center" gap="3" wrap='wrap'>
                   <Button
-                    color={todaysClass?.attendanceStatus === 'present' ? 'green' : todaysClass?.attendanceStatus === 'absent' ? 'red' : ''}
+                    size={'3'}
+                    color={todaysClass?.attendanceStatus === 'present' && todaysClass?.attendanceStatus === 'absent' ? 'red' : ''}
                     className="flex-1 gap-2 items-center capitalize shadow-md max-w-64 text-nowrap"
                     onClick={() => {
                       if (todaysClass?.attendanceMarked) return;
@@ -262,7 +262,7 @@ function StudentAttendance() {
               content={checkInMutation.isPending ? 'Checking In...' : hasCheckedInToday() ? 'You have already checked in today' : 'Check In Now'}
             >
               <Button
-                color="green"
+                size={'3'}
                 disabled={checkInMutation.isPending || hasCheckedInToday() || isAttendanceSummaryFetching}
                 onClick={handleCheckIn}
                 className="flex-1 shadow-md max-w-64 text-nowrap"
@@ -284,7 +284,7 @@ function StudentAttendance() {
 
       {/* Stats Grid */}
       <Grid columns={{ initial: '2', lg: '4' }} gap="4">
-        <Card size="2" className='card_no_border'>
+        <Card size={{initial: '2', sm: '3'}} className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <TrendingUp size={20} className="text-[--indigo-11] flex-shrink-0" />
@@ -296,7 +296,7 @@ function StudentAttendance() {
           </Flex>
         </Card>
 
-        <Card size="2" className='card_no_border'>
+        <Card size={{initial: '2', sm: '3'}} className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <Award size={20} className="text-[--green-11] flex-shrink-0" />
@@ -309,7 +309,7 @@ function StudentAttendance() {
           </Flex>
         </Card>
 
-        <Card size="2" className='card_no_border'>
+        <Card size={{initial: '2', sm: '3'}} className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <CheckCircle size={20} className="text-[--blue-11] flex-shrink-0" />
@@ -323,11 +323,11 @@ function StudentAttendance() {
                 {summary?.present || statistics?.presentDaysInMonth || 0} / {summary?.totalDays || statistics?.totalScheduledDaysInMonth || 0}
               </Text>
             </Flex>
-            <Progress value={summary?.attendanceRate || statistics?.attendanceRate || 0} color="blue" size="1" />
+            <Progress value={summary?.attendanceRate || statistics?.attendanceRate || 0} color="blue" size="1" variant='classic'/>
           </Flex>
         </Card>
 
-        <Card size="2" className='card_no_border'>
+        <Card size={{initial: '2', sm: '3'}} className='card_no_border'>
           <Flex direction="column" gap="2">
             <Flex align="center" gap="2">
               <Zap size={20} className="text-[--purple-11] flex-shrink-0" />

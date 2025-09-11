@@ -1,5 +1,6 @@
 import { Card, Badge, Heading, Text, Flex, Box } from "@radix-ui/themes";
 import { Award, TrendingUp, Star } from "lucide-react";
+import { BRAND_COLOR } from "../../../utils/constants";
 
 export default function HighlightsSection({ college }) {
   return (
@@ -14,7 +15,7 @@ export default function HighlightsSection({ college }) {
                 Excellence Showcase
               </Badge>
             </div>
-            <Heading size="7" className="mb-4 font-bold" color="cyan">
+            <Heading size="7" className="mb-4 font-bold" color={BRAND_COLOR}>
               Why Choose {college.name}?
             </Heading>
             <Text size="3" color="gray" className="mx-auto max-w-3xl font-medium leading-relaxed">

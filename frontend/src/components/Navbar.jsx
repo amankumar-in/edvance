@@ -8,32 +8,33 @@ export default function Navbar({ isMobileSidebarOpen, setIsMobileSidebarOpen }) 
   const { theme, setTheme } = useTheme();
 
   return (
-    <Flex as="nav" align="center" justify="between" px="5" py="3" className="h-16 bg-[--secondary-bg]  w-full sticky top-0 z-50 border-b border-[--gray-a5]">
+    <Flex as="nav" align="center" justify="between" px={{initial: '4', md: '8'}} className="h-16 bg-gradient-to-r from-blue-600/90 to-purple-600/90  w-full sticky top-0 z-50 border-b border-[--gray-a5] backdrop-blur-lg shadow-md">
       <Flex align='center' gap='4'>
         <IconButton
           variant='ghost'
           color='gray'
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          className='md:hidden'
+          className='text-white md:hidden'
         >
           {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </IconButton>
-        <Text as='span' weight='bold' size="7" color='cyan'>
+        <Text as='span' weight='bold' size="6" className='text-white'>
           EdVance
         </Text>
       </Flex>
       <div className="flex gap-6 items-center">
-        <IconButton variant='ghost' color='gray' size='3' highContrast disabled className='disabled:cursor-not-allowed'>
+        <IconButton variant='ghost' color='gray' size='3' highContrast disabled className='text-white disabled:cursor-not-allowed disabled:text-opacity-50'>
           <Bell size={16}/>
         </IconButton>
-        <IconButton variant='ghost' color='gray' size='3' highContrast onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+        <IconButton variant='ghost' color='gray' size='3' highContrast onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className='text-white' >
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </IconButton>
         <IconButton
           disabled={isLoggingOut}
           variant="ghost"
-          color='gray'
+          highContrast
           onClick={handleLogout}
+          className='text-white'
         >
           <LogOut size={16} />
         </IconButton>

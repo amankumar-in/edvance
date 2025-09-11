@@ -18,7 +18,7 @@ import allRewardsImg from '../assets/allRewards.webp';
 import rewardsPlaceholder from '../assets/rewardsPlaceholder.webp';
 import { ConfirmationDialog, EmptyStateCard, Loader, WishlistToggle } from '../components';
 import { useAuth } from '../Context/AuthContext';
-import { FALLBACK_IMAGES } from '../utils/constants';
+import { BRAND_COLOR, FALLBACK_IMAGES } from '../utils/constants';
 import { formatDate } from '../utils/helperFunctions';
 import RewardsDetailsDialog from './rewards/RewardsDetailsDialog';
 
@@ -474,7 +474,7 @@ function RewardsBasePage({
 
                       {reward?.isFeatured && (
                         <Box className="absolute top-2 left-2">
-                          <Badge color="cyan" variant="solid" size="1">
+                          <Badge color={BRAND_COLOR} variant="solid" size="1" className='shadow-md'>
                             <Sparkles size={12} /> Featured
                           </Badge>
                         </Box>
@@ -555,7 +555,7 @@ function RewardsBasePage({
                     <div>
                       <Flex justify="between" align="center" className="mb-3" wrap={'wrap'} gap='1'>
                         <Flex align="center" gap="1">
-                          <Text as='p' weight='bold' color='cyan'>
+                          <Text as='p' weight='bold' color={BRAND_COLOR}>
                             {reward.pointsCost.toLocaleString()} SP
                           </Text>
                         </Flex>

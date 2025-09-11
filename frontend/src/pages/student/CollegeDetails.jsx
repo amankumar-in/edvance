@@ -34,7 +34,7 @@ function CollegeDetails() {
   }
 
   return (
-    <Box className="mx-auto space-y-6 max-w-6xl">
+    <Box className="space-y-6">
       <Button asChild variant="ghost" color="gray" highContrast>
         <Link to="/student/colleges">
           <ArrowLeft size={16} />
@@ -59,7 +59,7 @@ function CollegeDetails() {
                   }}
                 />
               ) : (
-                <Box className="flex justify-center items-center w-20 h-20 bg-[--cyan-a3] rounded-full">
+                <Box className="flex justify-center items-center w-20 h-20 bg-[--accent-a3] rounded-full">
                   <GraduationCap size={32} />
                 </Box>
               )}
@@ -138,7 +138,7 @@ function CollegeDetails() {
               <Heading size="5">
                 About {college.name}
               </Heading>
-              <Text as='p' size="3" className="whitespace-pre-wrap">
+              <Text as='p' size="3" className="text-justify whitespace-pre-line">
                 {college.description}
               </Text>
             </Card>
@@ -168,7 +168,7 @@ function CollegeDetails() {
         <Box className="space-y-6">
           {/* Contact Information */}
           {college.contactEmail || college.contactPhone || college.website ? <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
-            <Heading size="4" className="mb-4">
+            <Heading size="5" className="mb-4">
               Contact Information
             </Heading>
             <div className="space-y-3">
@@ -244,7 +244,7 @@ function CollegeDetails() {
 
           {/* Quick Stats */}
           {college.courses && college.courses.length > 0 && <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
-            <Heading size="4" className="mb-4">
+            <Heading size="5" className="mb-4">
               Quick Facts
             </Heading>
             <div className="space-y-3">
@@ -296,7 +296,7 @@ function CollegeDetails() {
 
           {/* Apply Now CTA */}
           {(college.website || college.contactEmail) && <Card size={{ initial: '2', xs: '3' }} className='space-y-4 card_no_border'>
-            <Heading size="4">
+            <Heading size="5">
               Interested in {college.name}?
             </Heading>
             <Text as="p" size="2" color="gray">

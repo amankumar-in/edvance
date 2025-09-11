@@ -14,6 +14,7 @@ import React from 'react';
 import { NavLink, useMatch, useResolvedPath } from 'react-router';
 import { useAuth } from '../../../Context/AuthContext';
 import profileFallback from '../../../assets/profileImage.webp';
+import { BRAND_COLOR } from '../../../utils/constants';
 
 
 const sideBarItems = [
@@ -71,7 +72,7 @@ function SideBar({ isOpen, toggleSidebar }) {
         className={`fixed top-0 h-dvh sm:h-screen bg-[--gray-2] z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
           } w-72 flex flex-col`}
       >
-        <Text as="div" weight="bold" size="6" mt='3' color='cyan' className='flex items-center px-8 h-14'>
+        <Text as="div" weight="bold" size="6" mt='3' color={BRAND_COLOR} className='flex items-center px-8 h-14'>
           EdVance
         </Text>
         <div className='overflow-y-auto flex-1 px-4 py-2'>

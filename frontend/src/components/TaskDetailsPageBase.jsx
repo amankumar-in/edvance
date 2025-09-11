@@ -297,7 +297,7 @@ function TaskDetailsPageBase({
                         >
                           <Flex align="center" gap="1">
                             {getStatusIcon(task?.completionStatus?.status)}
-                            {task?.completionStatus?.status}
+                            {task?.completionStatus?.status.split('_').join(' ')}
                           </Flex>
                         </Badge>
                       )}
@@ -584,7 +584,7 @@ function TaskDetailsPageBase({
                 <Flex justify="between" align="center">
                   <Text size="2">Status</Text>
                   <Badge color={getStatusColor(task?.completionStatus?.status)} className="capitalize">
-                    {task?.completionStatus?.status}
+                    {task?.completionStatus?.status.split('_').join(' ')}
                   </Badge>
                 </Flex>
 

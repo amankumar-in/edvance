@@ -7,6 +7,7 @@ import { AuthProvider } from "./Context/AuthContext";
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import AppRouter from "./providers/RouterProvider";
+import { BRAND_COLOR } from "./utils/constants";
 
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
@@ -17,7 +18,12 @@ createRoot(document.getElementById("root")).render(
       enableSystem
       disableTransitionOnChange
     >
-      <Theme accentColor="cyan" grayColor="slate">
+      <Theme
+        accentColor={BRAND_COLOR}
+        grayColor="gray"
+        panelBackground="solid"
+        radius="large"
+      >
         <AuthProvider>
           <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left"/>
           <AppRouter />

@@ -605,7 +605,6 @@ const RewardCategories = () => {
           description="This will create system default reward categories. Any existing categories with the same names will be skipped."
           onConfirm={handleCreateDefaultCategories}
           confirmText="Create Defaults"
-          confirmColor="cyan"
           isLoading={isCreatingDefaultRewardCategories}
         />
 

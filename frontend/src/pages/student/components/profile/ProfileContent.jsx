@@ -145,7 +145,6 @@ function AvatarSection({ user }) {
             src={user?.avatar}
             fallback={user?.firstName?.[0] || 'S'}
             radius="full"
-            color='cyan'
             highContrast
           />
           <Badge size="2" className="absolute bottom-2 left-2" variant="solid" highContrast color="gray"><Edit size={'14'} /> Edit</Badge>

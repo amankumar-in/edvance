@@ -11,7 +11,7 @@ import { Link } from 'react-router';
 
 function FeaturedTasksCarousel({ featuredTasks, role }) {
   return (
-    <div className='overflow-hidden rounded-2xl shadow-md'>
+    <div className='overflow-hidden rounded-lg shadow-md md:rounded-2xl'>
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         spaceBetween={0}
@@ -58,7 +58,7 @@ function FeaturedTasksCarousel({ featuredTasks, role }) {
                       <Box className="col-span-1 max-w-64" >
                         <Box className="relative">
                           {/* Main product image */}
-                          <Box className="overflow-hidden relative rounded-xl">
+                          <Box className="overflow-hidden relative rounded-md md:rounded-xl">
                             <img
                               src={taskImage?.url || FALLBACK_IMAGES.landscape}
                               alt={taskImage?.name || 'Task attachment'}
@@ -81,13 +81,13 @@ function FeaturedTasksCarousel({ featuredTasks, role }) {
                         <Heading
                           size={{ initial: '3', sm: '4', md: '6' }}
                           weight="bold"
-                          className="mb-1 line-clamp-2"
+                          className="mb-1 line-clamp-2 md:line-clamp-none"
                         >
                           {task.title}
                         </Heading>
 
                         {/* Points badge */}
-                        <Badge size={{ initial: '2', sm: '3' }} highContrast variant='solid' className='self-start'>
+                        <Badge size={{ initial: '2', sm: '3' }} variant='solid' className='self-start'>
                           {task.pointValue} Scholarship Points
                         </Badge>
                       </Box>
