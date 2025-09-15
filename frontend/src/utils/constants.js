@@ -1,4 +1,7 @@
-export const BRAND_COLOR = 'violet'
+export const BRAND_COLOR = 'violet';
+export const APP_NAME = 'EdVance';
+export const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.';
+export const OTP_TIMER = 45;
 
 export const gradeOptions = [
   'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade',

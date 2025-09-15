@@ -3,6 +3,7 @@ import {
   login,
   register,
   verifyEmail,
+  resendVerificationEmail,
   forgotPassword,
   verifyResetToken,
   resetPassword,
@@ -33,6 +34,15 @@ const useVerifyEmail = () => {
     // onSuccess: (data) => {
     //   console.log('Email verification successful', data);
     // }
+  });
+};
+
+/**
+ * Hook for resending verification email
+ */
+const useResendVerificationEmail = () => {
+  return useMutation({
+    mutationFn: resendVerificationEmail,
   });
 };
 
@@ -108,6 +118,7 @@ function useVerifyPhone() {
 export {
   useRegister,
   useVerifyEmail,
+  useResendVerificationEmail,
   useLogin,
   useForgotPassword,
   useVerifyResetToken,

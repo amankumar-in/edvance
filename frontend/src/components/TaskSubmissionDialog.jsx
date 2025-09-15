@@ -1,23 +1,5 @@
-import {
-  Button,
-  Card,
-  Dialog,
-  Flex,
-  IconButton,
-  Select,
-  Text,
-  TextArea,
-  TextField,
-} from '@radix-ui/themes';
-import {
-  FileImage,
-  FileText,
-  Link as LinkIcon,
-  MessageSquare,
-  Plus,
-  Upload,
-  X,
-} from 'lucide-react';
+import { Button, Card, Dialog, Flex, IconButton, Inset, ScrollArea, Select, Text, TextArea, TextField, } from '@radix-ui/themes';
+import { FileImage, FileText, Link as LinkIcon, MessageSquare, Plus, Upload, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -38,7 +20,7 @@ function TaskSubmissionDialog({
 
   // Handle file selection for evidence
   const handleFileSelect = (e) => {
-    const file = e.target.files[0]; 
+    const file = e.target.files[0];
     if (file) {
       // Validate file type
       const allowedTypes = [
@@ -154,8 +136,8 @@ function TaskSubmissionDialog({
   };
 
   // Handle dialog close
-  const handleClose = () => {
-    onOpenChange(false);
+  const handleClose = (open) => {
+    onOpenChange(open);
     // Reset form when closing
     setTimeout(() => {
       setSubmissionNote('');
@@ -187,160 +169,164 @@ function TaskSubmissionDialog({
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog.Root open={isOpen} onOpenChange={handleClose}>
       {children && <Dialog.Trigger>{children}</Dialog.Trigger>}
       <Dialog.Content className='max-w-3xl'>
         <Dialog.Title>{submitButtonText}</Dialog.Title>
         <Dialog.Description size="2" mb="4">
           Add any notes and evidence to show you've completed this task: <strong>{task?.title}</strong>
         </Dialog.Description>
-        <Flex direction="column" gap="4" className='max-h-[60vh] overflow-y-auto p-1'>
-          {/* Submission Note */}
-          <Flex direction="column" gap="2">
-            <Text size="2" weight="medium">Completion Notes (Optional)</Text>
-            <TextArea
-              placeholder="Describe how you completed the task, any challenges you faced, or additional comments..."
-              value={submissionNote}
-              onChange={(e) => setSubmissionNote(e.target.value)}
-              rows={4}
-              resize={'vertical'}
-            />
-          </Flex>
-
-          {/* Evidence Section */}
-          <Flex direction="column" gap="3">
-            <Text size="2" weight="medium">Evidence (Optional)</Text>
-
-            {/* Existing Evidence */}
-            {evidenceList.length > 0 && (
-              <Flex direction="column" gap="3">
-                {evidenceList.map((evidence) => (
-                  <Card key={evidence.id} variant="surface" size="1">
-                    <Flex align="start" gap="3">
-                      {getEvidenceIcon(evidence.type)}
-                      <Flex direction="column" gap="1" style={{ flex: 1 }}>
-                        <Text size="1" weight="medium" className="capitalize">{evidence.type}</Text>
-                        <Text title={getEvidenceDisplayText(evidence)} as='p' size="1" color="gray" className={evidence.type === 'text' ? 'whitespace-pre-wrap' : 'line-clamp-1 break-all'}>
-                          {getEvidenceDisplayText(evidence)}
-                        </Text>
-                      </Flex>
-                      <IconButton
-                        size="1"
-                        variant="ghost"
-                        color="gray"
-                        onClick={() => removeEvidence(evidence.id)}
-                      >
-                        <X size={14} />
-                      </IconButton>
-                    </Flex>
-                  </Card>
-                ))}
+        <Inset py='current'>
+          <ScrollArea className='max-h-[60vh]' type='auto' size={'2'} scrollbars='vertical'>
+            <Flex direction="column" gap="4" px={'5'}>
+              {/* Submission Note */}
+              <Flex direction="column" gap="2">
+                <Text size="2" weight="medium">Completion Notes (Optional)</Text>
+                <TextArea
+                  placeholder="Describe how you completed the task, any challenges you faced, or additional comments..."
+                  value={submissionNote}
+                  onChange={(e) => setSubmissionNote(e.target.value)}
+                  rows={4}
+                  resize={'vertical'}
+                />
               </Flex>
-            )}
 
-            {/* Add Evidence */}
-            <Card variant="surface" size="1">
+              {/* Evidence Section */}
               <Flex direction="column" gap="3">
-                <Text size="2" weight="medium">Add Evidence</Text>
-                <Flex gap="3" direction={'column'} wrap="wrap">
-                  <Flex direction="column" gap="2" style={{ flex: 1 }}>
-                    <Text size="1">Type</Text>
-                    <Select.Root
-                      value={newEvidence.type}
-                      onValueChange={(value) => setNewEvidence({
-                        type: value,
-                        content: '',
-                        url: '',
-                        file: null
-                      })}
-                    >
-                      <Select.Trigger className="w-full" />
-                      <Select.Content position='popper' variant='soft'>
-                        <Select.Item value="text">Text Description</Select.Item>
-                        <Select.Item value="image">Upload Image</Select.Item>
-                        <Select.Item value="document">Upload Document</Select.Item>
-                        <Select.Item value="link">Link/URL</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
+                <Text size="2" weight="medium">Evidence (Optional)</Text>
+
+                {/* Existing Evidence */}
+                {evidenceList.length > 0 && (
+                  <Flex direction="column" gap="3">
+                    {evidenceList.map((evidence) => (
+                      <Card key={evidence.id} variant="surface" size="1">
+                        <Flex align="start" gap="3">
+                          {getEvidenceIcon(evidence.type)}
+                          <Flex direction="column" gap="1" style={{ flex: 1 }}>
+                            <Text size="1" weight="medium" className="capitalize">{evidence.type}</Text>
+                            <Text title={getEvidenceDisplayText(evidence)} as='p' size="1" color="gray" className={evidence.type === 'text' ? 'whitespace-pre-wrap' : 'line-clamp-1 break-all'}>
+                              {getEvidenceDisplayText(evidence)}
+                            </Text>
+                          </Flex>
+                          <IconButton
+                            size="1"
+                            variant="ghost"
+                            color="gray"
+                            onClick={() => removeEvidence(evidence.id)}
+                          >
+                            <X size={14} />
+                          </IconButton>
+                        </Flex>
+                      </Card>
+                    ))}
                   </Flex>
+                )}
 
-                  <Flex direction="column" gap="2" style={{ flex: 2 }}>
-                    <Text size="1">
-                      {newEvidence.type === 'text'
-                        ? 'Description'
-                        : newEvidence.type === 'link'
-                          ? 'URL'
-                          : 'File Upload'
-                      }
-                    </Text>
-
-                    {newEvidence.type === 'text' ? (
-                      <TextArea
-                        placeholder="Describe your evidence..."
-                        value={newEvidence.content}
-                        onChange={(e) => setNewEvidence({ ...newEvidence, content: e.target.value })}
-                        resize={'vertical'}
-                      />
-                    ) : newEvidence.type === 'link' ? (
-                      <TextField.Root
-                        placeholder="Enter URL..."
-                        value={newEvidence.url}
-                        onChange={(e) => setNewEvidence({ ...newEvidence, url: e.target.value })}
-                      />
-                    ) : (
-                      <Flex direction="column" gap="2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          asChild
-                          className="w-full cursor-pointer"
+                {/* Add Evidence */}
+                <Card variant="surface" size="1">
+                  <Flex direction="column" gap="3">
+                    <Text size="2" weight="medium">Add Evidence</Text>
+                    <Flex gap="3" direction={'column'} wrap="wrap">
+                      <Flex direction="column" gap="2" style={{ flex: 1 }}>
+                        <Text size="1">Type</Text>
+                        <Select.Root
+                          value={newEvidence.type}
+                          onValueChange={(value) => setNewEvidence({
+                            type: value,
+                            content: '',
+                            url: '',
+                            file: null
+                          })}
                         >
-                          <label>
-                            <Upload size={16} />
-                            {newEvidence.file ? 'Change File' : 'Select File'}
-                            <input
-                              type="file"
-                              className="hidden"
-                              accept={
-                                newEvidence.type === 'image'
-                                  ? ".jpg,.jpeg,.png,.gif"
-                                  : ".pdf,.doc,.docx,.txt,.mp4,.mov,.avi"
-                              }
-                              onChange={handleFileSelect}
-                            />
-                          </label>
-                        </Button>
-                        {newEvidence.file && (
-                          <Text size="1" color="gray">
-                            Selected: {newEvidence.file.name} ({(newEvidence.file.size / 1024 / 1024).toFixed(2)} MB)
-                          </Text>
+                          <Select.Trigger className="w-full" />
+                          <Select.Content position='popper' variant='soft'>
+                            <Select.Item value="text">Text Description</Select.Item>
+                            <Select.Item value="image">Upload Image</Select.Item>
+                            <Select.Item value="document">Upload Document</Select.Item>
+                            <Select.Item value="link">Link/URL</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </Flex>
+
+                      <Flex direction="column" gap="2" style={{ flex: 2 }}>
+                        <Text size="1">
+                          {newEvidence.type === 'text'
+                            ? 'Description'
+                            : newEvidence.type === 'link'
+                              ? 'URL'
+                              : 'File Upload'
+                          }
+                        </Text>
+
+                        {newEvidence.type === 'text' ? (
+                          <TextArea
+                            placeholder="Describe your evidence..."
+                            value={newEvidence.content}
+                            onChange={(e) => setNewEvidence({ ...newEvidence, content: e.target.value })}
+                            resize={'vertical'}
+                          />
+                        ) : newEvidence.type === 'link' ? (
+                          <TextField.Root
+                            placeholder="Enter URL..."
+                            value={newEvidence.url}
+                            onChange={(e) => setNewEvidence({ ...newEvidence, url: e.target.value })}
+                          />
+                        ) : (
+                          <Flex direction="column" gap="2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              asChild
+                              className="w-full cursor-pointer"
+                            >
+                              <label>
+                                <Upload size={16} />
+                                {newEvidence.file ? 'Change File' : 'Select File'}
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  accept={
+                                    newEvidence.type === 'image'
+                                      ? ".jpg,.jpeg,.png,.gif"
+                                      : ".pdf,.doc,.docx,.txt,.mp4,.mov,.avi"
+                                  }
+                                  onChange={handleFileSelect}
+                                />
+                              </label>
+                            </Button>
+                            {newEvidence.file && (
+                              <Text size="1" color="gray">
+                                Selected: {newEvidence.file.name} ({(newEvidence.file.size / 1024 / 1024).toFixed(2)} MB)
+                              </Text>
+                            )}
+                          </Flex>
                         )}
                       </Flex>
-                    )}
-                  </Flex>
 
-                  <Button
-                    className='mt-auto'
-                    size="2"
-                    onClick={addEvidence}
-                    disabled={
-                      (newEvidence.type === 'text' && !newEvidence.content.trim()) ||
-                      (newEvidence.type === 'link' && !newEvidence.url.trim()) ||
-                      (['image', 'document'].includes(newEvidence.type) && !newEvidence.file && !newEvidence.url.trim())
-                    }
-                  >
-                    <Plus size={16} />
-                    Add
-                  </Button>
-                </Flex>
+                      <Button
+                        className='mt-auto'
+                        size="2"
+                        onClick={addEvidence}
+                        disabled={
+                          (newEvidence.type === 'text' && !newEvidence.content.trim()) ||
+                          (newEvidence.type === 'link' && !newEvidence.url.trim()) ||
+                          (['image', 'document'].includes(newEvidence.type) && !newEvidence.file && !newEvidence.url.trim())
+                        }
+                      >
+                        <Plus size={16} />
+                        Add
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </Card>
               </Flex>
-            </Card>
-          </Flex>
-        </Flex>
+            </Flex>
+          </ScrollArea>
+        </Inset>
 
         <Flex gap="3" mt="4" justify="end" className='pt-4 border-t border-t-[--gray-a6]'>
           <Dialog.Close>
-            <Button variant="soft" color="gray" onClick={handleClose} disabled={isSubmitting}>
+            <Button variant="soft" color="gray" onClick={() => handleClose(false)} disabled={isSubmitting}>
               Cancel
             </Button>
           </Dialog.Close>

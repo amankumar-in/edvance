@@ -1,9 +1,11 @@
-import { Button, Callout, Text } from "@radix-ui/themes";
-import { ArrowLeft, CircleCheck } from "lucide-react";
+import { Button, Callout, Card, Text } from "@radix-ui/themes";
+import { AlertTriangle, ArrowLeft, CircleCheck, Info } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
-import { useVerifyEmail } from "../../api/auth/auth.mutations";
-import MyButton from "../../components/MyButton";
+import { toast } from "sonner";
+import { useResendVerificationEmail, useVerifyEmail } from "../../api/auth/auth.mutations";
+import ErrorCallout from "../../components/ErrorCallout";
+import Loader from '../../components/Loader';
 
 const EmailVerification = () => {
   const location = useLocation();
@@ -12,6 +14,8 @@ const EmailVerification = () => {
   const email = location.state?.user?.email || searchParams.get("email");
   const [isVerified, setIsVerified] = useState(false);
 
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const {
     mutate: verifyEmailMutation,
     isPending: isVerifying,
@@ -19,9 +23,16 @@ const EmailVerification = () => {
     error: verifyError,
   } = useVerifyEmail();
 
+  const {
+    mutate: resendVerificationMutation,
+    isPending: isResending,
+    isError: isResendError,
+    error: resendError,
+  } = useResendVerificationEmail();
+
   // Check for email and token in URL
   useEffect(() => {
-    // // If we have both email and token in the URL, attempt verification
+    // If we have both email and token in the URL, attempt verification
     if (!token || !email) return;
 
     verifyEmailMutation(
@@ -29,6 +40,9 @@ const EmailVerification = () => {
       {
         onSuccess: () => {
           setIsVerified(true);
+          toast.success("Email verified successfully", {
+            description: "Your email has been verified. You can now log in to your account.",
+          });
         },
         onError: (error) => {
           // Check for specific error messages indicating verification is effectively complete
@@ -42,8 +56,17 @@ const EmailVerification = () => {
           ) {
             // Treat these specific errors as a success case for the UI
             setIsVerified(true);
+            toast.success("Email verified successfully", {
+              description: "Your email has been verified. You can now log in to your account.",
+            });
           } else {
-            // Otherwise, log the actual error for debugging other potential issues
+            // Set error message for UI display
+            const errorMessage =
+              error?.response?.data?.message || error?.message ||
+              "Invalid or expired verification token. Please request a new verification email.";
+            toast.error("Email verification failed", {
+              description: errorMessage,
+            });
             console.error(
               "Email verification failed:",
               error?.response?.data || error?.message || error
@@ -54,144 +77,206 @@ const EmailVerification = () => {
     );
   }, [email, token, verifyEmailMutation]);
 
+  // Cooldown timer effect
+  useEffect(() => {
+    let interval = null;
+    if (resendCooldown > 0) {
+      interval = setInterval(() => {
+        setResendCooldown(cooldown => cooldown - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendCooldown]);
+
+  // Handle resend verification email
+  const handleResendVerification = () => {
+    if (!email || resendCooldown > 0 || isResending) return;
+
+    resendVerificationMutation(
+      { email },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            toast.success("Verification email sent", {
+              description: "Please check your inbox for the new verification email.",
+            });
+            setResendCooldown(60); // 60 second cooldown
+          } else {
+            toast.error("Failed to send email", {
+              description: data.message || "Could not send verification email. Please try again later.",
+            });
+          }
+        },
+        onError: (error) => {
+          const errorMessage = error?.response?.data?.message || error?.message || "Failed to send verification email. Please try again.";
+          toast.error("Failed to send email", {
+            description: errorMessage,
+          });
+        },
+      }
+    );
+  };
+
   if (isVerifying)
     return (
-      <div className="w-full max-w-lg space-y-6 text-[--gray-1]">
+      <div className="space-y-6 text-white">
         <Text as="p" size={"4"} align={"center"}>
           Verifying your email...
         </Text>
+        <Loader color="white" center />
       </div>
     );
 
   if (isVerified)
     return (
-      <div className="w-full max-w-md p-6 mx-auto text-center bg-white shadow-xl rounded-2xl">
-        <div className="p-4 mx-auto mb-4 rounded-full bg-gradient-to-br from-teal-700 to-teal-500 w-fit">
-          <CircleCheck className="w-10 h-10 text-white" />
+      <Card size={'3'} className="space-y-6 text-center shadow-lg shadow-black/20">
+        <div className="mx-auto space-y-4 w-full max-w-lg text-center">
+          <div className="p-4 mx-auto bg-[--green-a8] rounded-full w-fit animate-bounceCheck ">
+            <CircleCheck className="w-10 h-10 text-white" />
+          </div>
+
+          <Text as="p" size={"6"} weight={"bold"} color="green">
+            Email Verified!
+          </Text>
+
+          <Text as="p" size={"2"} color="gray">
+            Your email has been successfully verified. You can now log in to your
+            account.
+          </Text>
         </div>
-
-        <h2 className="text-2xl font-semibold text-gray-800">
-          Email Verified!
-        </h2>
-
-        <p className="mt-2 text-gray-600">
-          Your email has been successfully verified. You can now log in to your
-          account.
-        </p>
-
+        {/* Go to Login Button */}
         <Button
           asChild
-          className="mt-6 text-gray-800 transition border border-gray-300 bg-gradient-to-r from-white to-gray-100 hover:bg-gray-200"
+          variant="ghost"
+          color="gray"
+          size={'1'}
         >
-          <Link to="/login">Go to Login</Link>
+          <Link to="/login"><ArrowLeft size={14} /> Go to Login</Link>
         </Button>
-      </div>
+      </Card>
     );
 
   if (isVerifyError && !isVerified)
     return (
-      <div className="w-full max-w-md p-6 mx-auto text-centershadow-xl rounded-2xl">
-        <h2 className="text-2xl font-semibold text-red-600">
-          Verification Failed
-        </h2>
-        <p className="mt-2 ">
-          {verifyError?.message ||
-            "The verification link is invalid or has expired."}
-        </p>
-        <Button asChild className="mt-6">
-          <Link to="/login">Go to Login</Link>
-        </Button>
+      <div className="space-y-6 w-full max-w-lg">
+        <Card size={'3'} className="space-y-6 shadow-lg shadow-black/20">
+          <div className="text-center">
+            <div className="p-4 mx-auto mb-4 bg-[--red-9] rounded-full w-fit animate-bounceCheck ">
+              <AlertTriangle className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <Text align={"center"} color="red" as="p" size={"7"} weight={"bold"}>
+            Verification Failed
+          </Text>
+
+          {/* Error Callout */}
+          <ErrorCallout errorMessage={verifyError?.response?.data?.message || verifyError?.message || "The verification link is invalid or has expired."} />
+
+          {/* Request New Verification Email Button */}
+          <div className="text-center">
+            <Button
+              size={"4"}
+              className="w-full shadow-md"
+              onClick={handleResendVerification}
+              disabled={!email || resendCooldown > 0 || isResending}
+            >
+              {isResending 
+                ? "Sending..." 
+                : resendCooldown > 0 
+                  ? `Resend in ${resendCooldown}s` 
+                  : "Resend Verification Email"
+              }
+            </Button>
+          </div>
+
+          {/* Go to Login Button */}
+          <div className="text-center">
+            <Button size={'1'} variant="ghost" asChild color="gray">
+              <Link to={"/login"}>
+                <ArrowLeft size={14} />
+                Back to Login
+              </Link>
+            </Button>
+          </div>
+        </Card>
       </div>
     );
 
   return (
-    <div className="w-full max-w-lg space-y-6 text-[--gray-1]">
+    <div className="space-y-6 w-full max-w-lg">
       {/* Header */}
-      <div className="text-center">
-        <Text as="p" size={"8"} weight={"bold"}>
+      <div className="text-center text-white">
+        <Text as="p" size={"7"} weight={"bold"}>
           Verify Your Email
         </Text>
-        <Text as="p" size={"4"} mt={"4"}>
+        <Text as="p" mt={"2"}>
           Just one more step to complete your registration
         </Text>
       </div>
 
       {/* 📩 Default state: Check inbox */}
-      <div className="p-6 space-y-4 bg-[--gray-a6] rounded-xl">
-        <Text as="p" size={"6"} weight={"medium"}>
+      <Card size={'3'} className="space-y-4 shadow-lg shadow-black/20">
+        <Text as="p" size={"6"} weight={"bold"}>
           Check your inbox
         </Text>
         <Text as="p">We've sent a verification link to:</Text>
         <Text as="p" weight={"medium"}>
           {email}
         </Text>
-        <Text as="p" className="text-[--gray-6]" size={"2"}>
-          Please check your email and click on the verification link. Check your
-          spam folder if you don't see it.
-        </Text>
-        {/* ✅ Success message */}
-        {/* <Callout.Root variant='soft' className='text-[--gray-1] bg-[--green-a8]'>
-          <Callout.Icon >
-            <CircleCheck size={'20'} color='var(--gray-1)' />
+        <Callout.Root variant="surface" color="blue">
+          <Callout.Icon>
+            <Info size={16} />
           </Callout.Icon>
           <Callout.Text>
-            Verification email resent successfully!
+            Please check your email and click on the verification link. Check your
+            spam folder if you don't see it.
           </Callout.Text>
-        </Callout.Root> */}
+        </Callout.Root>
 
-        {/* ❌ Error message */}
-        {/* <div className="flex items-center space-x-2 text-red-400">
-            <span>Failed to send verification email.</span>
-          </div> */}
+        <Text as="p" size="1" color="gray">
+          Usually arrives within 2-3 minutes
+        </Text>
 
         {/* Resend Button */}
         <div className="text-center">
-          <MyButton>
-            Resend verification email
-          </MyButton>
+          <Button
+            size={'4'}
+            className="w-full shadow-md"
+            onClick={handleResendVerification}
+            disabled={!email || resendCooldown > 0 || isResending}
+          >
+            {isResending 
+              ? "Sending..." 
+              : resendCooldown > 0 
+                ? `Resend in ${resendCooldown}s` 
+                : "Resend verification email"
+            }
+          </Button>
         </div>
 
+        {/* Show error message if resend failed */}
+        {isResendError && (
+          <ErrorCallout 
+            errorMessage={resendError?.response?.data?.message || resendError?.message || "Failed to send verification email. Please try again."} 
+          />
+        )}
+
         {/* Go to Login */}
-        <div className="text-center">
-          <Button radius="full" variant="ghost" asChild size={'3'}>
+        <div className="pt-2 text-center">
+          <Button variant="ghost" asChild color="gray" size={'1'}>
             <Link to={"/login"}>
-              <ArrowLeft color="var(--gray-1)" size={"20"} />
-              <Text as="span" weight={"medium"} className="text-[--gray-1]">
-                Go to Login
-              </Text>
+              <ArrowLeft size={14} />
+              Go to Login
             </Link>
           </Button>
         </div>
-      </div>
-
-      {/* 🛑 Error card (token expired or invalid) */}
-      {/* <div className="p-6 space-y-4 bg-red-700/20 rounded-xl">
-          <div className="flex items-center justify-center">
-            <div className="p-4 bg-red-600 rounded-full">
-            </div>
-          </div>
-          <h2 className="text-xl font-semibold text-center text-red-300">Verification Failed</h2>
-          <p className="text-center text-red-200">The verification link is invalid or has expired.</p>
-          <p className="text-sm text-center text-gray-300">Please try again or request a new verification email.</p>
-        </div>
- */}
-      {/* ✅ Success card */}
-      {/* <div className="p-6 space-y-4 bg-green-700/20 rounded-xl">
-          <div className="flex items-center justify-center">
-            <div className="p-4 bg-green-600 rounded-full">
-            </div>
-          </div>
-          <h2 className="text-xl font-semibold text-center text-green-300">Email Verified!</h2>
-          <p className="text-center text-green-100">
-            Your email has been successfully verified. You can now log in to your account.
-          </p>
-          <button className="w-full px-4 py-2 text-black transition bg-white rounded hover:bg-gray-100">
-            Go to Login
-          </button>
-        </div> */}
+      </Card>
 
       {/* Footer */}
-      <Text as="p" size={"2"} align={"center"} className="text-[--gray-6]">
+      {/* TODO: Add support contact link */}
+      <Text as="p" size={"2"} align={"center"} className="text-white">
         If you're having trouble, please contact support.
       </Text>
     </div>

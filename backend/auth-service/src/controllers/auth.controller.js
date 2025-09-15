@@ -865,6 +865,8 @@ exports.sendOtp = async (req, res) => {
 
     const normalizedPurpose = purpose.toLowerCase();
 
+    const normalizePhone = (num) => num.replace(/\D/g, '');
+
     // Validate input
     if (!phoneNumber) {
       return res.status(400).json({ success: false, message: "Phone number is required" });
@@ -877,7 +879,11 @@ exports.sendOtp = async (req, res) => {
     // Find user
     const user = await User.findOne({ phoneNumber });
     if (!user) {
-      return res.status(404).json({ success: false, message: "No user found with this phone number" });
+      // Always return success to prevent user enumeration
+      return res.status(200).json({
+        success: true,
+        message: "If this phone number is registered, you will receive an OTP shortly."
+      });
     }
 
     // If purpose is 'verify', require authentication and check phone number matches logged in user
@@ -885,10 +891,10 @@ exports.sendOtp = async (req, res) => {
       const userId = req.user.id;
       const authUser = await User.findById(userId).select('+phoneNumber');
       if (!authUser) {
-        return res.status(404).json({ success: false, message: "Authenticated user not found" });
+        return res.status(404).json({ success: false, message: "Authentication expired. Please log in again." });
       }
-      if (authUser.phoneNumber !== phoneNumber) {
-        return res.status(403).json({ success: false, message: "You can only request a verification OTP for your own phone number." });
+      if (normalizePhone(authUser.phoneNumber) !== normalizePhone(phoneNumber)) {
+        return res.status(403).json({ success: false, message: "You can only verify your own phone number." });
       }
     }
 
@@ -922,22 +928,33 @@ exports.sendOtp = async (req, res) => {
     const otp = crypto.randomInt(100000, 1000000).toString();
     const otpExpires = now + 5 * 60 * 1000; // 5 minutes
 
+    let updateResult;
+
     // Set OTP on user based on purpose
     if (normalizedPurpose === "login") {
       if (!user.isPhoneVerified) {
-        return res.status(403).json({
-          success: false,
-          message: "Phone number is not verified. Please verify your phone number first."
+        // Return generic success message to prevent enumeration
+        return res.status(200).json({
+          success: true,
+          message: "If this phone number is registered and verified, you will receive an OTP shortly."
         });
       }
-      user.otp = otp;
-      user.otpExpires = otpExpires;
+
+      updateResult = await User.findOneAndUpdate(
+        { _id: user._id },
+        { $set: { otp: otp, otpExpires: otpExpires } }
+      );
     } else {
-      user.phoneVerificationOtp = otp;
-      user.phoneVerificationOtpExpires = otpExpires;
+      updateResult = await User.findOneAndUpdate(
+        { _id: user._id },
+        { $set: { phoneVerificationOtp: otp, phoneVerificationOtpExpires: otpExpires } }
+      );
     }
 
-    await user.save();
+    if (!updateResult) {
+      console.error(`Failed to update OTP for user ${user._id}, purpose: ${normalizedPurpose}`);
+      throw new Error('Failed to update OTP');
+    }
 
     // Send SMS via Twilio
     const message =
@@ -949,7 +966,29 @@ exports.sendOtp = async (req, res) => {
       await sendOTP(phoneNumber, message);
     } catch (twilioErr) {
       console.error("Twilio send error:", twilioErr);
-      return res.status(500).json({ success: false, message: "Failed to send OTP via SMS" });
+
+      // Different messages based on error type
+      const isRateLimitError = twilioErr.code === 20003;
+      const isInvalidNumber = twilioErr.code === 21211;
+
+      if (isRateLimitError) {
+        return res.status(429).json({
+          success: false,
+          message: "SMS service temporarily unavailable. Please try again in a few minutes."
+        });
+      }
+
+      if (isInvalidNumber) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid phone number format. Please check and try again."
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to send OTP at this time. Please try again later."
+      });
     }
 
     return res.json({ success: true, message: "OTP sent successfully" });
@@ -975,29 +1014,63 @@ exports.verifyPhone = async (req, res) => {
   try {
     const { phoneNumber, otp } = req.body;
     const userId = req.user.id; // from auth middleware
+
+    const normalizePhone = (num) => num.replace(/\D/g, '');
+
     if (!phoneNumber || !otp) {
       return res.status(400).json({ success: false, message: "Phone number and OTP are required" });
     }
-    const user = await User.findById(userId).select('+phoneVerificationOtp +phoneVerificationOtpExpires +phoneNumber');
+
+    // Generic error response for security
+    const invalidResponse = {
+      success: false,
+      message: "Invalid or expired verification code"
+    };
+
+    const user = await User.findById(userId).select(
+      '+phoneVerificationOtp +phoneVerificationOtpExpires +phoneNumber +isPhoneVerified'
+    );
+
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(400).json(invalidResponse);
     }
-    if (user.phoneNumber !== phoneNumber) {
-      return res.status(403).json({ success: false, message: "You can only verify your own phone number." });
+
+    // Check if phone is already verified
+    if (user.isPhoneVerified && user.phoneNumber && normalizePhone(user.phoneNumber) === normalizePhone(phoneNumber)) {
+      return res.json({
+        success: true,
+        message: "Phone number is already verified"
+      });
     }
-    if (!user.phoneVerificationOtp || !user.phoneVerificationOtpExpires) {
-      return res.status(400).json({ success: false, message: "No OTP request found for this phone number" });
+
+    const isValidRequest = (
+      normalizePhone(user.phoneNumber) === normalizePhone(phoneNumber) &&
+      user.phoneVerificationOtp &&
+      user.phoneVerificationOtpExpires &&
+      user.phoneVerificationOtp.toString().trim() === otp.toString().trim() &&
+      user.phoneVerificationOtpExpires > Date.now()
+    )
+
+    if (!isValidRequest) {
+      return res.status(400).json(invalidResponse);
     }
-    if (user.phoneVerificationOtp !== otp) {
-      return res.status(401).json({ success: false, message: "Invalid OTP" });
+
+    // ATOMIC UPDATE: Prevents race conditions
+    const updateResult = await User.findOneAndUpdate(
+      { _id: userId },
+      {
+        $set: { isPhoneVerified: true },
+        $unset: {
+          phoneVerificationOtp: 1,
+          phoneVerificationOtpExpires: 1
+        }
+      }
+    )
+
+    if (!updateResult) {
+      throw new Error('Failed to update user verification status');
     }
-    if (user.phoneVerificationOtpExpires < Date.now()) {
-      return res.status(401).json({ success: false, message: "OTP has expired" });
-    }
-    user.isPhoneVerified = true;
-    user.phoneVerificationOtp = undefined;
-    user.phoneVerificationOtpExpires = undefined;
-    await user.save();
+
     return res.json({ success: true, message: "Phone number verified successfully" });
   } catch (err) {
     console.error("VerifyPhone error:", err);

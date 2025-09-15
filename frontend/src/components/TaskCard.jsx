@@ -117,7 +117,7 @@ const TaskCard = ({
             <Flex justify="between" align="center" gap="2">
               <Text size="1" color='gray'>Assigned by: {task?.creatorRole}</Text>
               {task.completionStatus && (
-                <Badge className='capitalize' color={getStatusColor(task.completionStatus.status)} >
+                <Badge size={'1'} color={getStatusColor(task.completionStatus.status)} >
                   {task.completionStatus.status.split('_').join(' ')}
                 </Badge>
               )}

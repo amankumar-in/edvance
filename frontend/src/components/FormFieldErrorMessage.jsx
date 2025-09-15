@@ -1,7 +1,7 @@
 import { Text } from '@radix-ui/themes';
 import { CircleAlert } from 'lucide-react';
 
-export const FormFieldErrorMessage = ({ errors, field }) => {
+export const FormFieldErrorMessage = ({ errors, field, size = "1", iconSize = 12 }) => {
   // This function is used to get the error message for a nested field
   const getNestedError = (errors, fieldPath) => {
     const keys = fieldPath.split('.');
@@ -25,11 +25,11 @@ export const FormFieldErrorMessage = ({ errors, field }) => {
   return (
     <Text
       as="p"
-      size={"1"}
+      size={size}
       color="red"
       className='flex gap-1 items-center mt-1'
     >
-      <CircleAlert size={12} /> {error.message}
+      <CircleAlert size={iconSize} /> {error.message}
     </Text>
   )
 }

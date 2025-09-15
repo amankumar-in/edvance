@@ -1,19 +1,22 @@
-import { Button, Callout, Text, TextField } from "@radix-ui/themes";
+import { Button, Callout, Card, Flex, Text, TextField } from "@radix-ui/themes";
 import {
+  AlertTriangle,
   ArrowLeft,
-  Shield,
-  AlertCircle,
   CircleCheck,
-  Loader,
+  Lock,
+  Shield
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
 import { useForm } from "react-hook-form";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { toast } from "sonner";
 import {
   useResetPassword,
   useVerifyResetToken,
 } from "../../api/auth/auth.mutations";
-import { toast } from "sonner";
+import ErrorCallout from "../../components/ErrorCallout";
+import { FormFieldErrorMessage } from "../../components/FormFieldErrorMessage";
+import Loader from '../../components/Loader';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -31,12 +34,13 @@ export default function ResetPassword() {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm({
     defaultValues: {
       newPassword: "",
       confirmPassword: "",
     },
+    mode: "onTouched"
   });
 
   // Watch password field for validation
@@ -54,13 +58,11 @@ export default function ResetPassword() {
   // Verify token when component mounts
   useEffect(() => {
     if (!token || !email) {
+      const errorMessage = "Missing token or email. Please request a new password reset link."
       setIsVerifying(false);
-      setTokenError(
-        "Missing token or email. Please request a new password reset link."
-      );
+      setTokenError(errorMessage);
       toast.error("Invalid reset link", {
-        description:
-          "Missing token or email. Please request a new password reset link.",
+        description: errorMessage,
       });
       return;
     }
@@ -123,18 +125,11 @@ export default function ResetPassword() {
   // Loading state
   if (isVerifying) {
     return (
-      <div className="relative z-10 w-full max-w-lg space-y-6 rounded-2xl text-[--gray-1]">
-        <div className="text-center">
-          <Text as="p" size={"8"} weight={"bold"}>
-            Reset Password
-          </Text>
-          <Text as="p" size={"4"} mt={"4"}>
-            Verifying your reset link...
-          </Text>
-        </div>
-        <div className="flex items-center justify-center">
-          <Loader className="w-8 h-8 animate-spin" />
-        </div>
+      <div className="space-y-6 text-white">
+        <Text as="p" size={"4"} align={"center"}>
+          Verifying your reset link...
+        </Text>
+        <Loader color="white" center />
       </div>
     );
   }
@@ -142,44 +137,41 @@ export default function ResetPassword() {
   // Invalid token state
   if (!isTokenValid && !isResetComplete) {
     return (
-      <div className="relative z-10 w-full max-w-lg space-y-6 rounded-2xl text-[--gray-1]">
-        <div className="text-center">
-          <Text as="p" size={"8"} weight={"bold"}>
+      <div className="space-y-6 w-full max-w-lg">
+        <Card size={'3'} className="space-y-6 shadow-lg shadow-black/20">
+          <div className="text-center">
+            <div className="p-4 mx-auto mb-4 bg-[--red-9] rounded-full w-fit animate-bounceCheck ">
+              <AlertTriangle className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <Text align={"center"} color="red" as="p" size={"7"} weight={"bold"}>
             Invalid Reset Link
           </Text>
-        </div>
-        <div className="p-6 space-y-6 rounded-xl bg-[--gray-a6]">
-          <Callout.Root
-            variant="soft"
-            color="red"
-            className="text-[--gray-1] bg-[--red-a8]"
-          >
-            <Callout.Icon>
-              <AlertCircle size={"20"} color="var(--gray-1)" />
-            </Callout.Icon>
-            <Callout.Text>{tokenError}</Callout.Text>
-          </Callout.Root>
+
+          {/* Error Callout */}
+          <ErrorCallout errorMessage={tokenError} />
+
+          {/* Request New Reset Link Button */}
           <div className="text-center">
             <Button
-              radius="full"
               size={"4"}
-              className="w-full max-w-sm"
+              className="w-full shadow-md"
               asChild
             >
               <Link to={"/forgot-password"}>Request New Reset Link</Link>
             </Button>
           </div>
+
+          {/* Go to Login Button */}
           <div className="text-center">
-            <Button radius="full" size={"4"} variant="ghost" asChild>
+            <Button size={'1'} variant="ghost" asChild color="gray">
               <Link to={"/login"}>
-                <ArrowLeft color="var(--gray-1)" size={"20"} />
-                <Text as="span" weight={"medium"} className="text-[--gray-1]">
-                  Back to login
-                </Text>
+                <ArrowLeft size={14} />
+                Back to Login
               </Link>
             </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -187,166 +179,155 @@ export default function ResetPassword() {
   // Reset complete state
   if (isResetComplete) {
     return (
-      <div className="relative z-10 w-full max-w-lg space-y-6 rounded-2xl text-[--gray-1]">
-        <div className="text-center">
-          <Text as="p" size={"8"} weight={"bold"}>
-            Password Reset Complete
-          </Text>
-        </div>
-        <div className="p-6 space-y-6 rounded-xl bg-[--gray-a6]">
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="p-3 rounded-full bg-[--green-a8]">
-              <CircleCheck size={32} color="var(--gray-1)" />
+      <div className="space-y-6 w-full max-w-lg">
+        <Card size={'3'} className="space-y-6 text-center shadow-lg shadow-black/20">
+          <div className="flex flex-col justify-center items-center space-y-4">
+            <div className="p-4 mx-auto mb-4 bg-[--green-a8] rounded-full w-fit animate-bounceCheck ">
+              <CircleCheck className="w-10 h-10 text-white" />
             </div>
-            <Text as="p" size={"5"} weight={"medium"}>
-              Success!
+            <Text as="p" size={"6"} weight={"bold"} color="green">
+              Password Reset Complete
             </Text>
-            <Text as="p" align="center">
-              Your password has been reset successfully.
-            </Text>
-            <Text as="p" size={"2"} className="text-center text-[--gray-6]">
-              You can now log in with your new password.
+            <Text as="p" size={"2"} align="center" color="gray">
+              Your password has been reset successfully. You can now log in with your new password.
             </Text>
           </div>
-          <div className="text-center">
-            <Button
-              radius="full"
-              size={"4"}
-              className="w-full max-w-sm"
-              asChild
-            >
-              <Link to={"/login"}>Go to Login</Link>
-            </Button>
-          </div>
-        </div>
+          
+          {/* Go to Login Button */}
+          <Button
+            asChild
+            variant="ghost"
+            color="gray"
+            size={'1'}
+          >
+            <Link to="/login"><ArrowLeft size={14} /> Go to Login</Link>
+          </Button>
+        </Card>
       </div>
     );
   }
 
   // Default state - password reset form
   return (
-    <div className="relative z-10 w-full max-w-lg space-y-6 rounded-2xl text-[--gray-1]">
-      <div className="text-center">
-        <Text as="p" size={"8"} weight={"bold"}>
+    <div className="space-y-6 w-full max-w-lg">
+      <div className="text-center text-white">
+        <Text as="p" size={"7"} weight={"bold"}>
           Reset Password
         </Text>
-        <Text as="p" size={"4"} mt={"4"}>
+        <Text as="p" mt={"2"}>
           Create a new password for your account
         </Text>
       </div>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="p-6 space-y-6 rounded-xl bg-[--gray-a6]"
-      >
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label>
-              <Text as="div" size="2" mb="1" weight="medium">
-                New Password
-              </Text>
-              <TextField.Root
-                radius="large"
-                className="h-12"
-                size={"3"}
-                placeholder="New Password"
-                type={passwordVisible ? "text" : "password"}
-                color={errors.newPassword ? "red" : undefined}
-                {...register("newPassword", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 8,
-                    message: "Password must be at least 8 characters",
-                  },
-                })}
+      <Card size={'3'} className="space-y-6 shadow-lg shadow-black/20">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
+          <div className="space-y-4">
+            {/* Error Callout */}
+            {isResetError && (
+              <ErrorCallout
+                errorMessage={resetError?.response?.data?.message || resetError?.message ||
+                  "Failed to reset password. Please try again."}
               />
-            </label>
-            {errors.newPassword && (
-              <Text as="p" size={"1"} color="red">
-                {errors.newPassword.message}
-              </Text>
             )}
-            <Text as="p" size={"1"} className="text-[--gray-6]">
-              Must be at least 8 characters
-            </Text>
-          </div>
-          <div className="space-y-2">
-            <label>
-              <Text as="div" size="2" mb="1" weight="medium">
-                Confirm Password
-              </Text>
-              <TextField.Root
-                radius="large"
-                className="h-12"
-                size={"3"}
-                placeholder="Confirm Password"
-                type={passwordVisible ? "text" : "password"}
-                color={errors.confirmPassword ? "red" : undefined}
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                  validate: (value) =>
-                    value === newPassword || "Passwords do not match",
-                })}
-              />
-            </label>
-            {errors.confirmPassword && (
-              <Text as="p" size={"1"} color="red">
-                {errors.confirmPassword.message}
-              </Text>
-            )}
-          </div>
-        </div>
 
-        {isResetError && (
+            <div className="space-y-2">
+              <label>
+                <Text as="div" size="2" mb="1" weight="medium">
+                  New Password
+                </Text>
+                <TextField.Root
+                  radius="large"
+                  className="h-12"
+                  size={"3"}
+                  placeholder="New Password"
+                  type={passwordVisible ? "text" : "password"}
+                  color={errors.newPassword ? "red" : undefined}
+                  {...register("newPassword", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                  })}
+                >
+                  <TextField.Slot side="left">
+                    <Lock size={16} />
+                  </TextField.Slot>
+                </TextField.Root>
+              </label>
+              <FormFieldErrorMessage errors={errors} field="newPassword" />
+              <Text as="p" size={"1"} color="gray">
+                Must be at least 8 characters
+              </Text>
+            </div>
+            <div className="space-y-2">
+              <label>
+                <Text as="div" size="2" mb="1" weight="medium">
+                  Confirm Password
+                </Text>
+                <TextField.Root
+                  radius="large"
+                  className="h-12"
+                  size={"3"}
+                  placeholder="Confirm Password"
+                  type={passwordVisible ? "text" : "password"}
+                  color={errors.confirmPassword ? "red" : undefined}
+                  {...register("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value) =>
+                      value === newPassword || "Passwords do not match",
+                  })}
+                >
+                  <TextField.Slot side="left">
+                    <Lock size={16} />
+                  </TextField.Slot>
+                </TextField.Root>
+              </label>
+              <FormFieldErrorMessage errors={errors} field="confirmPassword" />
+            </div>
+          </div>
+
+          {/* Reset Password Button */}
+          <div className="text-center">
+            <Button
+              size={"4"}
+              className="w-full shadow-md"
+              type="submit"
+              disabled={isResetting}
+            >
+              {isResetting ? "Resetting..." : "Reset Password"}
+            </Button>
+          </div>
+
+          {/* Reset Password Callout */}
           <Callout.Root
-            variant="soft"
-            color="red"
-            className="text-[--gray-1] bg-[--red-a8]"
+            variant="surface"
+            color="blue"
           >
             <Callout.Icon>
-              <AlertCircle size={"20"} color="var(--gray-1)" />
+              <Shield size={16} />
             </Callout.Icon>
             <Callout.Text>
-              {resetError?.response?.data?.message ||
-                "Failed to reset password. Please try again."}
+              For better security, create a strong password with a mix of letters,
+              numbers, and special characters.
             </Callout.Text>
           </Callout.Root>
-        )}
+        </form>
 
-        <div className="text-center">
+        {/* Go to Login Button */}
+        <Flex justify="center">
           <Button
-            radius="full"
-            size={"4"}
-            className="w-full max-w-sm"
-            type="submit"
-            disabled={isResetting}
+            asChild
+            variant="ghost"
+            color="gray"
+            size={'1'}
           >
-            {isResetting ? "Resetting..." : "Reset Password"}
+            <Link to="/login"><ArrowLeft size={14} /> Go to Login</Link>
           </Button>
-        </div>
-        <div className="text-center">
-          <Button radius="full" size={"4"} variant="ghost" asChild>
-            <Link to={"/login"}>
-              <ArrowLeft color="var(--gray-1)" size={"20"} />
-              <Text as="span" weight={"medium"} className="text-[--gray-1]">
-                Back to login
-              </Text>
-            </Link>
-          </Button>
-        </div>
-        <Callout.Root
-          variant="soft"
-          color="purple"
-          className="text-[--gray-1] bg-[--gray-a8]"
-        >
-          <Callout.Icon>
-            <Shield size={"20"} color="var(--gray-1)" />
-          </Callout.Icon>
-          <Callout.Text>
-            For better security, create a strong password with a mix of letters,
-            numbers, and special characters.
-          </Callout.Text>
-        </Callout.Root>
-      </form>
+        </Flex>
+      </Card>
     </div>
   );
 }

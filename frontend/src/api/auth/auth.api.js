@@ -14,6 +14,11 @@ const verifyEmail = async ({ email, token }) => {
   return response.data;
 };
 
+const resendVerificationEmail = async ({ email }) => {
+  const response = await apiClient.post("/auth/resend-verification", { email });
+  return response.data;
+};
+
 const login = async (loginData) => {
   const response = await apiClient.post("/auth/login", loginData);
 
@@ -83,6 +88,7 @@ async function verifyPhone({ phoneNumber, otp }) {
 export {
   register,
   verifyEmail,
+  resendVerificationEmail,
   login,
   forgotPassword,
   verifyResetToken,

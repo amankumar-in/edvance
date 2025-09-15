@@ -551,8 +551,9 @@ function TaskDetailsPageBase({
                   submissionError={submissionError}
                 >
                   <Button
-                  size={'3'}
+                    size={'3'}
                     onClick={() => setIsSubmissionOpen(true)}
+                    className='shadow-md'
                   >
                     <CheckCircle size={16} />
                     {getSubmitButtonText(task?.completionStatus?.status)}
@@ -675,32 +676,10 @@ function TaskDetailsPageBase({
                   <Text size="2">• <strong>Read carefully:</strong> Make sure you understand all requirements</Text>
                   <Text size="2">• <strong>Show your work:</strong> Especially for academic tasks</Text>
                   <Text size="2">• <strong>Add evidence:</strong> Photos, documents, or detailed descriptions help</Text>
-                  <Text size="2">• <strong>Ask questions:</strong> Use comments if you need clarification</Text>
                   {task?.dueDate && (
                     <Text size="2">• <strong>Due date:</strong> Complete before {formatDate(new Date(task.dueDate))}</Text>
                   )}
                 </Flex>
-              </Flex>
-            </Card>
-          )}
-
-          {/* Submission Help */}
-          {(task?.completionStatus?.status === 'pending' || task?.completionStatus?.status === 'rejected') && (
-            <Card size="2" className='card_no_border'>
-              <Flex direction="column" gap="4">
-                <Heading size="4">Submission Help</Heading>
-
-                <Callout.Root variant='surface' color="amber" size="1">
-                  <Callout.Icon>
-                    <Upload size={16} />
-                  </Callout.Icon>
-                  <Callout.Text>
-                    <Text size="2">
-                      <strong>Before submitting:</strong> Double-check your work and add evidence to show completion.
-                      {task?.requiresApproval ? ' Your submission will be reviewed for approval.' : ' You\'ll receive points immediately upon submission.'}
-                    </Text>
-                  </Callout.Text>
-                </Callout.Root>
               </Flex>
             </Card>
           )}

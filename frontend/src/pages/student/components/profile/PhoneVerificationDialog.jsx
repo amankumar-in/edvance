@@ -20,7 +20,7 @@ function PhoneVerificationDialog({ isOpen, setIsOpen, phoneNumber, children }) {
   const sendOtpMutation = useSendOtp()
   const verifyPhoneMutation = useVerifyPhone()
 
-  const { register: registerSend, handleSubmit: handleSubmitSend, formState: { errors: errorsSend }, control, reset } = useForm({
+  const { register: registerSend, handleSubmit: handleSubmitSend, formState: { errors: errorsSend }, control, reset, getValues } = useForm({
     defaultValues: { phoneNumber: phoneNumber || '' }
   })
 
@@ -62,13 +62,17 @@ function PhoneVerificationDialog({ isOpen, setIsOpen, phoneNumber, children }) {
     setOtpSent(false);
     reset();
     resetVerify();
+    sendOtpMutation.reset();
+    verifyPhoneMutation.reset();
   }
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(o) => {
       setIsOpen(o)
       if (!o) {
-        resetAll();
+        setTimeout(() => {
+          resetAll();
+        }, 0);
       }
     }}>
       {children && (
@@ -153,7 +157,7 @@ function PhoneVerificationDialog({ isOpen, setIsOpen, phoneNumber, children }) {
                   <Phone size={16} />
                 </Callout.Icon>
                 <Callout.Text>
-                  Verification code sent to {phoneNumber}
+                  Verification code sent to {getValues('phoneNumber')}
                 </Callout.Text>
               </Callout.Root>
 

@@ -11,7 +11,7 @@ function App() {
     <>
       <TopLoadingBar />
       <Toaster
-        position="top-center"
+        position="bottom-right"
         richColors
         theme={resolvedTheme}
       />

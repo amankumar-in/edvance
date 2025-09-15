@@ -6,6 +6,10 @@
 .light,
 .light-theme {
   /* Brand Colors */
+  --brand-blue: #2563eb;
+  --brand-purple: #9333ea;
+  --brand-pink: #db2777;
+
   --brand-blue-light: oklch(97% 0.014 254.604);
   --brand-purple-light: oklch(97.7% 0.014 308.299);
   --brand-pink-light: oklch(97.1% 0.014 343.198);
@@ -206,12 +210,24 @@
 /* AndroidLoader.css */
 .android-loader {
   display: inline-block;
-  animation: rotate var(--duration, 1.4s) linear infinite;
+  animation: rotate 1.4s linear infinite;
 }
 
+/* Only apply color animation when static-color is not present */
 .android-loader-path {
   stroke-dasharray: 80px, 200px;
   stroke-dashoffset: 0px;
+  animation: dash var(--duration, 1.4s) var(--easing, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
+}
+
+/* Apply color animation only if NOT using static-color class */
+.android-loader:not(.static-color) .android-loader-path {
+  animation: dash var(--duration, 1.4s) var(--easing, cubic-bezier(0.4, 0, 0.2, 1)) infinite,
+    color 5.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Static color overrides the animation */
+.android-loader.static-color .android-loader-path {
   animation: dash var(--duration, 1.4s) var(--easing, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
 }
 
@@ -239,6 +255,24 @@
   100% {
     stroke-dasharray: 89, 200;
     stroke-dashoffset: -124px;
+  }
+}
+
+@keyframes color {
+  0% {
+    stroke: var(--brand-blue);
+  }
+
+  33% {
+    stroke: var(--brand-purple);
+  }
+
+  66% {
+    stroke: var(--brand-pink);
+  }
+
+  100% {
+    stroke: var(--brand-blue);
   }
 }
 

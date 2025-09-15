@@ -24,11 +24,17 @@ export default {
       },
       animation: {
         'spin-fast': 'spin 0.6s linear infinite',
+        bounceCheck: 'bounceCheck 0.6s ease-out',
       },
       keyframes: {
         'spin-fast': {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
+        },
+        bounceCheck: {
+          '0%': { transform: 'scale(0)' },
+          '50%': { transform: 'scale(1.2)' },
+          '100%': { transform: 'scale(1)' },
         },
       },
       screens: {

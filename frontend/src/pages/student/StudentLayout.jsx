@@ -33,7 +33,7 @@ function StudentLayout() {
     { icon: <Trophy size={20} />, label: 'Rewards', href: '/student/rewards' },
     { icon: <CreditCard size={20} />, label: 'Scholarship Points', href: '/student/points' },
     { icon: <GraduationCap size={20} />, label: "Colleges", href: '/student/colleges' },
-    { icon: <Settings size={20} />, label: 'Settings', href: '/student/settings' },
+    { icon: <Settings size={20} />, label: 'Settings', href: '/student/settings/profile' },
     { icon: <TrendingUp size={20} />, label: 'Progress', href: '/student/progress', disabled: true },
     { icon: <Award size={20} />, label: 'Badges', href: '/student/badges', disabled: true },
     { icon: <BarChart3 size={20} />, label: 'Analytics', href: '/student/analytics', disabled: true },
@@ -147,7 +147,7 @@ function StudentLayout() {
         </Box >
 
         {/* Main Content */}
-        <div className='flex-1 pb-16 min-w-0 bg-gradient-to-br from-[--brand-blue-light] to-[--brand-purple-light]'>
+        <div className='flex-1 pb-16 min-w-0 bg-gradient-to-b from-[--brand-blue-light] to-[--gray-background]'>
           <Container>
             <Outlet />
           </Container>

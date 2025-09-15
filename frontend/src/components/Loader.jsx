@@ -1,9 +1,14 @@
+import { Flex } from "@radix-ui/themes";
 import { BRAND_COLOR } from "../utils/constants";
 
-const Loader = ({ size = 40, color = `var(--${BRAND_COLOR}-9)`, duration = 1.4, easing = 'cubic-bezier(0.4, 0, 0.2, 1)', className = '' }) => {
-  return (
+const Loader = ({ size = 40, color = `var(--${BRAND_COLOR}-9)`, duration = 1.4, easing = 'cubic-bezier(0.4, 0, 0.2, 1)', className = '', center = false }) => {
+  const useColorAnimation = !color || color.startsWith('var(--'); // If no color or CSS variable, use animation
+
+  const loaderClass = `android-loader ${useColorAnimation ? '' : 'static-color'} ${className}`;
+
+  const LoaderComponent = (
     <div
-      className={`android-loader ${className}`}
+      className={loaderClass}
       style={{
         width: size,
         height: size,
@@ -21,12 +26,20 @@ const Loader = ({ size = 40, color = `var(--${BRAND_COLOR}-9)`, duration = 1.4, 
           stroke="var(--loader-color)"
           strokeWidth="4"
           className="android-loader-path"
-          strokeLinecap="round"
-          strokeLinejoin="round" 
         />
       </svg>
     </div>
   );
+
+  if (center) {
+    return (
+      <Flex justify="center" align="center">
+        {LoaderComponent}
+      </Flex>
+    );
+  }
+
+  return LoaderComponent;
 };
 
 export default Loader;
