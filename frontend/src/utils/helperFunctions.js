@@ -1,3 +1,10 @@
+import { clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs) {
+  return twMerge(clsx(inputs))
+}
+
 // Dynamically builds a list of profiles or actions for a user based on their roles and existing profiles.
 export const buildSelectionList = (user, profiles) => {
   // Ensure roles is an array, defaulting to empty if not provided

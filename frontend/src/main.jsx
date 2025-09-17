@@ -20,7 +20,7 @@ createRoot(document.getElementById("root")).render(
     >
       <Theme
         accentColor={BRAND_COLOR}
-        grayColor="gray"
+        grayColor="slate"
         panelBackground="solid"
         radius="large"
       >

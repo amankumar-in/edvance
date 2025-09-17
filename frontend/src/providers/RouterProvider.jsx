@@ -3,15 +3,14 @@ import App from "../App";
 import ErrorBoundaryWrapper from "../components/ErrorBoundaryWrapper";
 import ProtectedLayout from "../components/ProtectedLayout";
 import AuthLayout from "../pages/auth/AuthLayout";
-import EmailVerification from '../pages/auth/EmailVerification'
-import ForgotPassword from "../pages/auth/ForgotPassword";
-import Home from "../pages/Home";
+import EmailVerification from '../pages/auth/EmailVerification';
 import Login from "../pages/auth/Login";
-import NotFound from "../pages/NotFound";
 import Register from "../pages/auth/Register";
-import ResetPassword from "../pages/auth/ResetPassword";
 import RoleSelection from "../pages/auth/RoleSelection";
 import SelectProfile from "../pages/auth/SelectProfile";
+import Home from "../pages/Home";
+import Layout from "../pages/Layout";
+import NotFound from "../pages/NotFound";
 import ParentLayout from "../pages/parent/ParentLayout";
 import PlatformAdminDashboardLayout from "../pages/platform-admin/PlatformAdminDashboardLayout";
 import ProtectedRoute, { RoleBasedRedirect } from "../pages/ProtectedRoute";
@@ -35,13 +34,33 @@ const router = createBrowserRouter(
       <Route element={<RoleBasedRedirect />}>
         <Route element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="reset-password" element={<ResetPassword />} />
+          <Route path="forgot-password"
+            lazy={() => import("../pages/auth/ForgotPassword")
+              .then(({ default: ForgotPassword }) => ({ Component: ForgotPassword, }))}
+          />
+          <Route path="reset-password"
+            lazy={() => import("../pages/auth/ResetPassword")
+              .then(({ default: ResetPassword }) => ({ Component: ResetPassword, }))}
+          />
           <Route path="role-selection" element={<RoleSelection />} />
           <Route path="email-verification" element={<EmailVerification />} />
           <Route path="register" element={<Register />} />
         </Route>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="rfe/students"
+            lazy={() => import("../pages/ForStudents").then(({ default: ForStudents }) => ({ Component: ForStudents }))}
+          />
+          <Route path="rfe/parents"
+            lazy={() => import("../pages/ForParents").then(({ default: ForParents }) => ({ Component: ForParents }))}
+          />
+          <Route path="rfe/schools"
+            lazy={() => import("../pages/ForSchools").then(({ default: ForSchools }) => ({ Component: ForSchools }))}
+          />
+          <Route path="rfe/sponsors"
+            lazy={() => import("../pages/ForSponsors").then(({ default: ForSponsors }) => ({ Component: ForSponsors }))}
+          />
+        </Route>
       </Route>
 
       {/* TODO: Protect <SelectProfile /> route — allow access only post-login if user has multiple roles to choose from */}

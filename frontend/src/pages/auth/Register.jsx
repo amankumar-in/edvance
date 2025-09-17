@@ -62,14 +62,14 @@ function Register() {
   return (
     <div className="relative z-10 space-y-6 w-full max-w-2xl">
       <Card size={'3'} className='space-y-6 shadow-lg shadow-black/20'>
-        <div className="text-center">
-          <Text as="p" size={"8"} weight={"bold"} className="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-blue] to-[--brand-purple] drop-shadow">
+        <Link to='/' className="text-center">
+          <Text as="p" size={"8"} weight={"bold"} className="text-transparent bg-clip-text bg-gradient-to-r from-[--blue-9] to-[--purple-9] drop-shadow">
             {APP_NAME}
           </Text>
           <Text as="p" mt={"4"} className='capitalize'>
             Create Your {normalizedRole?.replace("_", " ")} Account
           </Text>
-        </div>
+        </Link>
 
         {/* Error Message Display */}
         {isError && (

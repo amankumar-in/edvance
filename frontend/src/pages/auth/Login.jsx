@@ -164,14 +164,14 @@ export default function Login() {
           className="relative z-10 space-y-6"
         >
           {/* Header Text */}
-          < div className="space-y-2 text-center" >
-            <Text as="p" size={"8"} weight={"bold"} className="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-blue] to-[--brand-purple] drop-shadow">
+          <Link to='/' className="space-y-2 text-center" >
+            <Text as="p" size={"8"} weight={"bold"} className="text-transparent bg-clip-text bg-gradient-to-r from-[--blue-9] to-[--purple-9] drop-shadow">
               {APP_NAME}
             </Text>
             {/* <Text as="p" color="gray">
               Login to your account
             </Text> */}
-          </div >
+          </Link >
 
           <div className="flex p-1 rounded-lg shadow-md border border-[--gray-a6]">
             <button
@@ -270,6 +270,8 @@ export default function Login() {
                       <TextField.Slot side="right">
                         <IconButton
                           type="button"
+                          title={showPassword ? "Hide password" : "Show password"}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                           onClick={() => setShowPassword((prev) => !prev)}
                           variant="ghost"
                           color="gray"
