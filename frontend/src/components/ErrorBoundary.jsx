@@ -236,13 +236,13 @@ Component Stack: ${this.state.errorInfo?.componentStack}`;
                   </Text>
                 )}
 
-                {process.env.NODE_ENV === 'development' && this.state.error && (
+                {import.meta.env.DEV && this.state.error && (
                   <details open className="mt-4 w-full">
                     <summary className="text-sm text-[--gray-11] cursor-pointer hover:text-[--gray-12] flex items-center gap-2">
                       <Bug size={14} />
                       Show error details (development only)
                     </summary>
-                    <Box mt="3" p="4" className="bg-[--gray-2] rounded-md border border-[--gray-6] text-xs font-mono text-[--gray-11] overflow-auto max-h-64">
+                    <Box mt="3" p="4" className="bg-[--gray-2] rounded-md border border-[--gray-6] text-xs font-mono text-[--gray-11] overflow-auto max-h-48">
                       <div className="space-y-3">
                         <div>
                           <Text as='p' size="2" weight="bold" color="red">Error:</Text>

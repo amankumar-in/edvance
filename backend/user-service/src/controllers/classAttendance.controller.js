@@ -1,7 +1,431 @@
+const { isValidObjectId } = require("mongoose");
 const ClassAttendance = require("../models/classAttendance.model");
 const SchoolClass = require("../models/schoolClass.model");
 const Student = require("../models/student.model");
 const axios = require("axios");
+const AttendanceStreak = require("../models/attendanceStreak.model");
+
+// =============================================================================
+// Utility functions
+// =============================================================================
+
+// Get class schedule days
+async function getClassScheduleDays(classId) {
+  const schoolClass = await SchoolClass.findById(classId);
+  if (!schoolClass) {
+    throw new Error("Class not found");
+  }
+  return schoolClass.schedule.map(schedule => schedule.dayOfWeek.toLowerCase());
+}
+
+// Check if a date string is a scheduled class day
+async function isScheduledClassDay(classId, dateString) {
+  const scheduleDays = await getClassScheduleDays(classId);
+
+  // Parse YYYY-MM-DD to get day of week
+  const date = new Date(dateString + 'T00:00:00Z');
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayOfWeek = dayNames[date.getUTCDay()];
+
+  return scheduleDays.includes(dayOfWeek);
+}
+
+/**
+ * Get all scheduled class dates between two dates
+ */
+function getScheduledDatesBetween(startDate, endDate, scheduleDays) {
+  const dates = [];
+  const current = new Date(startDate);
+  const end = new Date(endDate);
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+  while (current <= end) {
+    const dayOfWeek = dayNames[current.getUTCDay()];
+    if (scheduleDays.includes(dayOfWeek)) {
+      dates.push(new Date(current));
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  return dates;
+}
+
+/**
+ * Calculate how many scheduled class days have occurred between start date and end date (inclusive)
+ */
+function calculateClassesHeldInMonth(startDate, endDate, scheduledDays) {
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  let classesHeld = 0;
+  
+  const current = new Date(startDate);
+  const end = new Date(endDate);
+  
+  while (current <= end) {
+    const dayOfWeek = dayNames[current.getUTCDay()];
+    if (scheduledDays.includes(dayOfWeek)) {
+      classesHeld++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  
+  return classesHeld;
+}
+
+/**
+ * Update streak record in database
+ */
+async function updateStudentStreak(studentId, classId, attendanceDate) {
+  try {
+    const streakData = await calculateStudentStreak(studentId, classId, attendanceDate);
+
+    // Get class info for academic year
+    const schoolClass = await SchoolClass.findById(classId);
+
+    const updated = await AttendanceStreak.findOneAndUpdate(
+      { studentId, classId },
+      {
+        currentStreak: streakData.currentStreak,
+        longestStreak: streakData.longestStreak,
+        lastCalculatedAt: new Date(),
+        academicYear: schoolClass.academicYear,
+        academicTerm: schoolClass.academicTerm
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true
+      }
+    );
+
+    return updated;
+  } catch (error) {
+    console.error('Error updating streak:', error);
+    throw error;
+  }
+}
+
+// Calculate streak for a specific student in a specific class
+async function calculateStudentStreak(studentId, classId, attendanceDate) {
+  try {
+    const scheduleDays = await getClassScheduleDays(classId);
+    const today = new Date(attendanceDate);
+    const attendanceDateOnly = new Date(Date.UTC(today.getFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    
+    const attendanceRecords = await ClassAttendance.find({
+      studentId,
+      classId,
+    })
+      .sort({ attendanceDate: -1 })
+      .lean();
+
+    if (attendanceRecords.length === 0) {
+      return { currentStreak: 0, longestStreak: 0 };
+    }
+
+    // get all dates in the period
+    const startDate = attendanceRecords[attendanceRecords.length - 1].attendanceDate;
+    const scheduledDates = getScheduledDatesBetween(startDate, attendanceDateOnly, scheduleDays);
+
+    // Create attendance map
+    const attendanceMap = new Map();
+    attendanceRecords.forEach(record => {
+      attendanceMap.set(record.attendanceDate.toISOString().split('T')[0], record.status);
+    })
+
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+
+    // Calculate current streak (from today backwards)
+    for (let i = scheduledDates.length - 1; i >= 0; i--) {
+      const date = scheduledDates[i];
+      const status = attendanceMap.get(date.toISOString().split('T')[0]);
+
+      if (status === 'present') {
+        currentStreak++;
+      } else if (status === 'absent') {
+        break; // Streak broken
+      } else {
+        // No record - for current streak calculation, treat as absent
+        break;
+      }
+    }
+
+    // Calculate longest streak from all data
+    for (const date of scheduledDates) {
+      const status = attendanceMap.get(date.toISOString().split('T')[0]);
+      
+      if (status === 'present') {
+        tempStreak++;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      } else if (status === 'absent') {
+        tempStreak = 0;
+      }
+      // Missing records don't break historical longest streak calculation
+    }
+
+    return {
+      currentStreak,
+      longestStreak: Math.max(longestStreak, currentStreak)
+    };
+  } catch (error) {
+    console.error('Error calculating streak:', error);
+    return { currentStreak: 0, longestStreak: 0 };
+  }
+}
+
+// Get streak info for a student in a class
+async function getStudentStreakForClass(studentId, classId) {
+  try {
+    let streakRecord = await AttendanceStreak.findOne({ studentId, classId });
+
+    if (!streakRecord) {
+      // Calculate and create if doesn't exist
+      streakRecord = await updateStudentStreak(studentId, classId);
+    }
+
+    return {
+      currentStreak: streakRecord.currentStreak,
+      longestStreak: streakRecord.longestStreak,
+      lastCalculatedAt: streakRecord.lastCalculatedAt
+    };
+  } catch (error) {
+    console.error('Error getting student streak:', error);
+    return { currentStreak: 0, longestStreak: 0, lastCalculatedAt: null };
+  }
+}
+
+// =============================================================================
+// Controller functions
+// =============================================================================
+
+// TODO: Implement the points earned logic and optimize the code for efficient querying
+/**
+ * Student marks themselves present(only allowed if class is scheduled today)
+ */
+const studentMarkPresent = async (req, res) => {
+  try {
+    const { classId, studentId } = req.params;
+    const {
+      attendanceDate,
+      status = 'present',
+      comments = 'marked by student',
+    } = req.body;
+    const id = req.user.id;
+
+    // Validation
+    if (!attendanceDate || !status || !classId || !studentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
+    }
+
+    if (!isValidObjectId(classId) || !isValidObjectId(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid IDs",
+      });
+    }
+
+    // Convert date string to UTC Date
+    const dateToMark = new Date(attendanceDate);
+
+    if (isNaN(dateToMark.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date",
+      });
+    }
+
+    // Check if student exists
+    const student = await Student.exists({ _id: studentId, userId: id });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Get the class details to check schedule
+    const schoolClass = await SchoolClass.findById(classId);
+    if (!schoolClass) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // Check if the student is enrolled in this class
+    if (!schoolClass.studentIds.includes(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Student is not enrolled in this class",
+      });
+    }
+
+    // Check if class is scheduled today
+    const isTodayScheduled = await isScheduledClassDay(classId, attendanceDate);
+
+    if (!isTodayScheduled) {
+      return res.status(400).json({
+        success: false,
+        message: "Class is not scheduled today",
+      });
+    }
+
+    // Check if already marked for today
+    const existingRecord = await ClassAttendance.findOne({
+      studentId,
+      classId,
+      attendanceDate: dateToMark,
+    })
+
+    if (existingRecord) {
+      return res.status(400).json({
+        success: false,
+        message: "Attendance already marked for today",
+      });
+    }
+
+    // Create history entry
+    const historyEntry = {
+      status,
+      recordedBy: studentId,
+      recordedByRole: 'student',
+      comments,
+      recordedAt: new Date(),
+    };
+
+    // Create new attendance record
+    const attendanceRecord = new ClassAttendance({
+      studentId,
+      classId,
+      attendanceDate: dateToMark,
+      status,
+      recordedBy: studentId,
+      recordedByRole: 'student',
+      comments,
+      history: [historyEntry],
+    })
+
+    await attendanceRecord.save();
+
+    // TODO: Award points if present
+
+    // Update streak record
+    await updateStudentStreak(studentId, classId, attendanceDate);
+
+    res.status(201).json({
+      success: true,
+      message: "Attendance recorded successfully",
+      data: attendanceRecord,
+    });
+  } catch (error) {
+    console.error("Failed to record student attendance:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to record student attendance",
+      error: error.message,
+    });
+  }
+}
+
+/**
+ * Get student's attendance details for a specific class for current month (for class card display)
+ */
+const getStudentClassAttendanceInfo = async (req, res) => {
+  try {
+    const { classId, studentId } = req.params;
+    // ✅ Get date from client or use server UTC
+    const todayString = req.query.date || new Date().toISOString().split('T')[0];
+    const todayDateUTC = new Date(todayString);
+
+    const classInfo = await SchoolClass.findById(classId).select('name grade schedule');
+    const scheduledDays = classInfo.schedule.map(schedule => schedule.dayOfWeek.toLowerCase());
+
+    if (!classInfo) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // Check if class is scheduled today
+    const isScheduledToday = await isScheduledClassDay(classId, todayString);
+
+    // Get today's attendance if exists
+    const todayAttendance = await ClassAttendance.findOne({
+      classId,
+      studentId,
+      attendanceDate: todayDateUTC,
+    });
+
+    // Get streak info
+    const streakInfo = await getStudentStreakForClass(studentId, classId);
+
+    // Create UTC dates for MongoDB queries
+    const startOfMonth = new Date(Date.UTC(todayDateUTC.getUTCFullYear(), todayDateUTC.getUTCMonth(), 1));
+    const endOfMonth = new Date(Date.UTC(todayDateUTC.getUTCFullYear(), todayDateUTC.getUTCMonth() + 1, 0));
+
+    // Get this month's attendance records
+    const thisMonthAttendance = await ClassAttendance.find({
+      classId,
+      studentId,
+      attendanceDate: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    // Get present days in month
+    const presentDaysInMonth = thisMonthAttendance.filter(r => r.status === 'present').length;
+
+    // Calculate classes held so far in the month
+    const classesHeldSoFar = calculateClassesHeldInMonth(startOfMonth, todayDateUTC, scheduledDays);
+    
+    // Calculate attendance rate
+    const attendanceRate = classesHeldSoFar > 0 
+      ? Math.round((presentDaysInMonth / classesHeldSoFar) * 100) 
+      : 0;
+
+    // Transform to object with YYYY-MM-DD keys
+    const attendanceObject = thisMonthAttendance.reduce((acc, record) => {
+      acc[record.attendanceDate.toISOString().split('T')[0]] = record.status;
+      return acc;
+    }, {});
+
+    // TODO: Get points earned
+
+    // Final response data
+    const responseData = {
+      todayDate: todayDateUTC,
+      startDate: startOfMonth,
+      endDate: endOfMonth,
+      classInfo,
+      scheduledDays,
+      isClassScheduledToday: isScheduledToday,
+      canMarkToday: isScheduledToday && !todayAttendance,
+      todayStatus: todayAttendance ? todayAttendance.status : null,
+      currentStreak: streakInfo.currentStreak,
+      longestStreak: streakInfo.longestStreak,
+      attendanceRate,
+      presentDaysInMonth,
+      classesHeldSoFar,
+      pointsEarned: 0,
+      monthlyInfo: attendanceObject,
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Student class attendance info retrieved successfully",
+      data: responseData,
+    })
+  } catch (error) {
+    console.error('Error getting student class attendance info:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting student class attendance info",
+      error: error.message,
+    });
+  }
+}
 
 // Record attendance for a student in a class session
 const recordStudentAttendance = async (req, res) => {
@@ -524,8 +948,6 @@ const getClassAttendanceForDay = async (req, res) => {
       });
     }
 
-    console.log(schoolClass)
-
     const targetDate = new Date(date);
     const dayOfWeek = targetDate.toLocaleDateString('en-US', { weekday: 'long' });
 
@@ -723,7 +1145,7 @@ const getClassAttendanceForWeek = async (req, res) => {
     const dailyAttendance = scheduledDays.map(day => {
       const dateKey = day.date.toISOString().split('T')[0];
       const dayAttendanceRecords = attendanceByDate[dateKey] || {};
-      
+
       const summary = {
         present: 0,
         absent: 0,
@@ -981,6 +1403,7 @@ const getClassAttendanceForMonth = async (req, res) => {
 };
 
 module.exports = {
+  studentMarkPresent,
   recordStudentAttendance,
   recordBulkAttendance,
   getStudentClassAttendance,
@@ -988,4 +1411,5 @@ module.exports = {
   getClassAttendanceForDay,
   getClassAttendanceForWeek,
   getClassAttendanceForMonth,
+  getStudentClassAttendanceInfo,
 }; 

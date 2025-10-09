@@ -4,11 +4,11 @@ import { useTheme } from 'next-themes';
 import { useAuth } from '../Context/AuthContext';
 
 export default function Navbar({ isMobileSidebarOpen, setIsMobileSidebarOpen }) {
-  const { handleLogout, isLoggingOut, user } = useAuth();
+  const { handleLogout, isLoggingOut } = useAuth();
   const { theme, setTheme } = useTheme();
 
   return (
-    <Flex as="nav" align="center" justify="between" px={{initial: '4', md: '8'}} className="h-16 bg-gradient-to-r from-blue-600/90 to-purple-600/90  w-full sticky top-0 z-50 border-b border-[--gray-a5] backdrop-blur-lg shadow-md">
+    <Flex as="nav" align="center" justify="between" px={'4'} className="h-16 bg-gradient-to-r from-[--blue-a9] to-[--purple-a9]  w-full sticky top-0 z-50 border-b border-[--gray-a5] backdrop-blur-lg shadow-md">
       <Flex align='center' gap='4'>
         <IconButton
           variant='ghost'

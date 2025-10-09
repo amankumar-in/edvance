@@ -147,7 +147,7 @@ function StudentLayout() {
         </Box >
 
         {/* Main Content */}
-        <div className='flex-1 pb-16 min-w-0 bg-gradient-to-b from-[--brand-blue-light] to-[--gray-background]'>
+        <div className='flex-1 pb-16 min-w-0 bg-gradient-to-t from-[--brand-blue-light] to-[--gray-background]'>
           <Container>
             <Outlet />
           </Container>

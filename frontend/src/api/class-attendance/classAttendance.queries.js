@@ -1,5 +1,14 @@
-import { getDayAttendance, getMonthAttendance, getWeekAttendance } from "./classAttendance.api"
+import { getDayAttendance, getMonthAttendance, getStudentClassAttendanceInfo, getWeekAttendance } from "./classAttendance.api"
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+
+const useGetStudentClassAttendanceInfo = ({classId, studentId, options = {}}) => {
+  return useQuery({
+    queryKey: ['class-attendance', 'student', classId, studentId],
+    queryFn: () => getStudentClassAttendanceInfo({classId, studentId}),
+    enabled: !!classId && !!studentId,
+    ...options
+  })
+}
 
 const useGetMonthAttendance = (classId, month, year) => {
   return useQuery({
@@ -29,4 +38,5 @@ export {
   useGetMonthAttendance,
   useGetDayAttendance,
   useGetWeekAttendance,
+  useGetStudentClassAttendanceInfo,
 }

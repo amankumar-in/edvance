@@ -80,79 +80,15 @@ const router = express.Router();
  *           description: Academic term
  */
 
-/**
- * @openapi
- * /class-attendance/classes/{classId}/students/{studentId}:
- *   put:
- *     summary: Record attendance for a specific student in a class
- *     description: Records or updates attendance status for a student on a specific date. Validates that the class is scheduled on the given day and awards points for present status.
- *     tags:
- *       - Class Attendance
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: classId
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the class
- *       - name: studentId
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the student
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               attendanceDate:
- *                 type: string
- *                 format: date
- *                 description: Date of attendance (cannot be in the future)
- *               status:
- *                 type: string
- *                 enum: [present, absent]
- *                 description: Attendance status
- *               comments:
- *                 type: string
- *                 description: Additional comments about the attendance
- *               activeRole:
- *                 type: string
- *                 description: Role of the user recording the attendance
- *             required:
- *               - attendanceDate
- *               - status
- *     responses:
- *       '200':
- *         description: Attendance recorded or updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/ClassAttendance'
- *       '400':
- *         description: Invalid input (missing required fields, invalid status, future date, student not enrolled, or class not scheduled on that day)
- *       '404':
- *         description: Class not found
- *       '500':
- *         description: Server error
- */
+router
+  .route("/classes/:classId/students/:studentId")
+  .get(authMiddleware.verifyToken, authMiddleware.checkRole(["teacher", "school_admin", "platform_admin", "student"]), classAttendanceController.getStudentClassAttendanceInfo);
+
 router.put(
   "/classes/:classId/students/:studentId",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin", "student"]),
-  classAttendanceController.recordStudentAttendance
+  classAttendanceController.studentMarkPresent
 );
 
 /**

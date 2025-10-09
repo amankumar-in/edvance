@@ -1,5 +1,10 @@
 import apiClient from "../apiClient"
 
+const getStudentClassAttendanceInfo = async ({classId, studentId}) => {
+  const response = await apiClient.get(`/class-attendance/classes/${classId}/students/${studentId}?date=${new Date().toLocaleDateString('en-CA')}`);
+  return response.data;
+}
+
 const getMonthAttendance = async (classId, month, year) => {
   const response = await apiClient.get(`/class-attendance/classes/${classId}/month?month=${month}&year=${year}`);
   return response.data;
@@ -21,6 +26,7 @@ const recordClassAttendance = async ({ classId, studentId, attendanceDate, statu
 }
 
 export {
+  getStudentClassAttendanceInfo,
   getMonthAttendance,
   recordClassAttendance,
   getDayAttendance,
