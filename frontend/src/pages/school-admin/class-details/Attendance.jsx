@@ -1,15 +1,18 @@
-import { Avatar, Badge, Button, Card, Flex, IconButton, Popover, Select, Separator, Spinner, Text, TextField, Tooltip } from '@radix-ui/themes';
-import { Calendar, ChevronLeftIcon, ChevronRightIcon, Clock, Gauge, Minus, Search, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import { Badge, Button, Card, Flex, IconButton, Popover, Select, Spinner, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { format } from 'date-fns';
+import { Calendar, ChevronLeftIcon, ChevronRightIcon, Clock, Gauge, Search, Users } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
-import { useGetDayAttendance, useGetMonthAttendance, useGetWeekAttendance } from '../../../api/class-attendance/classAttendance.queries';
-import { useClassDetails } from '../../../api/school-class/schoolClass.queries';
-import { ErrorCallout, Loader } from '../../../components';
-import EmptyStateCard from '../../../components/EmptyStateCard';
-import PageHeader from '../components/PageHeader';
 import { useRecordClassAttendance } from '../../../api/class-attendance/classAttendance.mutations';
+import { useGetClassAttendanceInfo } from '../../../api/class-attendance/classAttendance.queries';
+import { ErrorCallout, Loader } from '../../../components';
 import { BRAND_COLOR } from '../../../utils/constants';
+import { cn } from '../../../utils/helperFunctions';
+import PageHeader from '../components/PageHeader';
+import DayView from './DayView';
+import MonthView from './MonthView';
+import WeekView from './WeekView';
 
 const monthNames = [
   "January",
@@ -28,36 +31,41 @@ const monthNames = [
 
 function Attendance() {
   const { classId } = useParams();
-  const { data } = useClassDetails(classId);
-  const classDetails = data?.data ?? {};
-  const schedule = classDetails?.schedule ?? [];
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [currentView, setCurrentView] = useState("month")
+  const [currentView, setCurrentView] = useState("day")
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const selectedDateString = selectedDate.toISOString().split('T')[0]
+  const selectedDateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
   const [searchQuery, setSearchQuery] = useState("")
-
+  const [loading, setLoading] = useState(false)
   const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate()
   const today = new Date()
 
   // Queries
-  const { data: monthAttendance, isLoading, isError, error, isFetching } = useGetMonthAttendance(classId, selectedMonth + 1, selectedYear);
-  const students = monthAttendance?.data?.students ?? []
-  const monthlySummary = monthAttendance?.data?.monthlySummary ?? {}
+  const {
+    data: classAttendanceInfo,
+    isLoading: isClassAttendanceInfoLoading,
+    isError: isClassAttendanceInfoError,
+    error: classAttendanceInfoError
+  } = useGetClassAttendanceInfo({ classId, enabled: !!classId });
 
-  const { data: dayAttendance, isLoading: isDayLoading, isError: isDayError, error: dayError, isFetching: isDayFetching } = useGetDayAttendance(classId, selectedDateString);
-  const dayAttendanceData = dayAttendance?.data ?? {};
-  const dayAttendanceStudents = dayAttendanceData?.students ?? [];
+  const classAttendanceInfoData = classAttendanceInfo?.data ?? {};
 
-  const { data: weekAttendance, isLoading: isWeekLoading, isError: isWeekError, error: weekError, isFetching: isWeekFetching } = useGetWeekAttendance(classId, selectedDateString);
-  const weekAttendanceData = weekAttendance?.data ?? {};
+  const {
+    totalStudents = 0,
+    totalClassesHeld = 0,
+    averageAttendance = 0,
+    classInfo: { name = "", grade = "", createdAt } = {},
+    schedule = [],
+    calculatedUpTo = new Date()
+  } = classAttendanceInfoData;
 
   // Mutations
   const recordAttendanceMutation = useRecordClassAttendance();
 
-  const handleRecordAttendance = async ({ studentId, attendanceDate, status }) => {
+  // TODO: Implement this functionality in backend and integrate it with the frontend
+  const handleRecordAttendance = useCallback(async ({ studentId, attendanceDate, status }) => {
     recordAttendanceMutation.mutate({
       classId,
       studentId,
@@ -73,7 +81,7 @@ function Attendance() {
         toast.error(error?.response?.data?.message || "Failed to record attendance")
       }
     })
-  }
+  }, [classId, recordAttendanceMutation])
 
   const navigateDate = (direction) => {
     const newDate = new Date(selectedDate)
@@ -148,6 +156,15 @@ function Attendance() {
     return days
   }
 
+  const getWeekStartDate = () => {
+    const startOfWeek = new Date(selectedDate);
+    let dayOfWeek = startOfWeek.getDay();
+    // Adjust so Monday is 0, Sunday is 6
+    dayOfWeek = (dayOfWeek + 6) % 7;
+    startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+    return startOfWeek.toISOString().split('T')[0];
+  };
+
   function getDateOfISOWeek(week, year) {
     const simple = new Date(year, 0, 1 + (week - 1) * 7);
     const dayOfWeek = simple.getDay();
@@ -168,23 +185,12 @@ function Attendance() {
     return Math.ceil((((temp - week1) / 86400000) + week1.getDay() + 1) / 7);
   }
 
-  const getInputValue = () => {
-    if (currentView === 'day') {
-      return selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
-    } else if (currentView === 'week') {
-      const year = selectedDate.getFullYear();
-      const week = getISOWeekNumber(selectedDate);
-      return `${year}-W${String(week).padStart(2, '0')}`;
-    } else if (currentView === 'month') {
-      return `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`; // YYYY-MM
-    }
-  };
-
   const handleDateChange = (e) => {
     const value = e.target.value;
 
     if (currentView === 'day') {
-      setSelectedDate(new Date(value));
+      const [year, month, day] = value.split('-').map(Number);
+      setSelectedDate(new Date(year, month - 1, day));
     } else if (currentView === 'week') {
       const [year, weekStr] = value.split('-W');
       const week = parseInt(weekStr, 10);
@@ -198,13 +204,30 @@ function Attendance() {
     }
   };
 
+  const getInputValue = () => {
+    if (currentView === 'day') {
+      return `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+    } else if (currentView === 'week') {
+      const year = selectedDate.getFullYear();
+      const week = getISOWeekNumber(selectedDate);
+      return `${year}-W${String(week).padStart(2, '0')}`;
+    } else if (currentView === 'month') {
+      return `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`; // YYYY-MM
+    }
+  };
+
+  // TODO: Implement the client side search
   const handleSearch = (e) => {
     setSearchQuery(e.target.value)
   }
 
-  const filteredStudents = students.filter((student) => student.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  // const filteredStudents = students.filter((student) => student.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  if (isLoading) {
+  function handleLoading(loading) {
+    setLoading(loading)
+  }
+
+  if (isClassAttendanceInfoLoading) {
     return (
       <div className='space-y-6'>
         <AttendancePageHeader />
@@ -215,11 +238,11 @@ function Attendance() {
     )
   }
 
-  if (isError) {
+  if (isClassAttendanceInfoError) {
     return (
       <div className='space-y-6'>
         <AttendancePageHeader />
-        <ErrorCallout errorMessage={error?.response?.data?.message || "Something went wrong"} />
+        <ErrorCallout errorMessage={classAttendanceInfoError?.response?.data?.message || "Something went wrong"} />
       </div>
     )
   }
@@ -234,20 +257,30 @@ function Attendance() {
         <Flex align='center' gap='2' wrap='wrap'>
           <Flex align='center' gap='2'>
             <Clock size={20} className='shrink-0' />
-            <Text as='p' size={'5'} weight='medium'>Class Schedule - {classDetails?.name}</Text>
+            <Text as='p' size={'5'} weight='medium'>
+              Class Schedule - {name || "-"}
+            </Text>
           </Flex>
-          <Text as='p' size={'2'} color='gray'>({classDetails?.grade})</Text>
+          <Text as='p' size={'2'} color='gray'>
+            ({grade || "-"})
+          </Text>
         </Flex>
         <div style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }} className='grid gap-4' >
-          {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day, index) => {
-            const hasClass = schedule.some(s => s.dayOfWeek.toLowerCase() === day.toLowerCase())
-            const isToday = new Date().getDay() === index
+          {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day, index) => {
+            // Find the schedule once and reuse it
+            const daySchedule = schedule?.find(s => s.dayOfWeek.toLowerCase() === day.toLowerCase());
+            const hasClass = !!daySchedule; // Convert to boolean
+            const isToday = new Date().getDay() === index;
 
             return (
               <Card
                 size={'2'}
                 key={day}
-                className={` text-center ${hasClass ? "":"bg-[--gray-a3] opacity-70"} ${isToday && "ring-1 ring-[--accent-9]"} shadow-md`}
+                className={cn(
+                  "text-center shadow-md",
+                  hasClass ? "":"bg-[--gray-a3] opacity-70",
+                  isToday ? "ring-1 ring-[--accent-9]" : "",
+                )}
               >
                 <Text as='p'
                   mb='2'
@@ -257,7 +290,7 @@ function Attendance() {
                 </Text>
                 {hasClass ? (
                   <Badge variant='solid' className='flex justify-center items-center w-full'>
-                    {schedule.find(s => s.dayOfWeek === day)?.startTime} - {schedule.find(s => s.dayOfWeek === day)?.endTime}
+                    {daySchedule.startTime} - {daySchedule.endTime}
                   </Badge>
                 ) : (
                   <div className="space-y-1">
@@ -275,7 +308,7 @@ function Attendance() {
             <div className="flex gap-4 items-center">
               <div className="flex flex-wrap gap-1 items-center">
                 <Text as='p' size={'2'} color='gray'>Weekly Schedule:</Text>
-                <Text as='p' size={'2'} color='white'>{schedule?.length ?? 0} classes per week</Text>
+                <Text as='p' size={'2'} color='white'>{schedule?.length || 0} classes per week</Text>
               </div>
             </div>
 
@@ -288,10 +321,12 @@ function Attendance() {
         <Card size={'3'} className='shadow-md'>
           <Flex align='center' gap='2'>
             <Users size={16} />
-            <Text as='p' size={'2'} color='gray'>{searchQuery ? "Filtered Students" : "Total Students"}</Text>
+            <Text as='p' size={'2'} color='gray'>
+              Total Students
+            </Text>
           </Flex>
           <Text as='p' size={'6'} weight='bold' mt={'2'} >
-            {searchQuery ? `${filteredStudents.length}/${students.length}` : students.length}
+            {totalStudents}
           </Text>
         </Card>
 
@@ -302,7 +337,12 @@ function Attendance() {
               Total Classes
             </Text>
           </Flex>
-          <Text as='p' size={'6'} weight='bold' mt={'2'} >{monthlySummary?.totalScheduledDays ?? 0}</Text>
+          <Text as='p' size={'6'} weight='bold' mt={'2'} >
+            {totalClassesHeld}
+          </Text>
+          <Text as='p' size={'1'} color='gray' mt={'2'}>
+            {createdAt ? format(createdAt, 'MMM do, yyyy') : '-'} - {calculatedUpTo ? format(calculatedUpTo, 'MMM do, yyyy') : '-'}
+          </Text>
         </Card>
 
         <Card size={'3'} className='shadow-md'>
@@ -312,7 +352,13 @@ function Attendance() {
               Schedule
             </Text>
           </Flex>
-          <Text as='p' size={'2'} weight='medium' mt={'2'} >{schedule?.length > 0 ? schedule?.map(s => s.dayOfWeek?.slice(0, 3)).join(", ") : "-"}</Text>
+          <Text as='p' size={'2'} weight='medium' mt={'2'} >
+            {
+              schedule?.length > 0 ?
+                schedule?.map(s => s.dayOfWeek?.slice(0, 3)).join(", ") :
+                "-"
+            }
+          </Text>
         </Card>
 
         <Card size={'3'} className='shadow-md'>
@@ -322,7 +368,9 @@ function Attendance() {
               Avg Attendance
             </Text>
           </Flex>
-          <Text as='p' size={'6'} weight='bold' mt={'2'} >{monthlySummary?.averageAttendanceRate ?? 0}%</Text>
+          <Text as='p' size={'6'} weight='bold' mt={'2'} >
+            {averageAttendance}%
+          </Text>
         </Card>
       </div>
 
@@ -377,7 +425,7 @@ function Attendance() {
             onChange={handleDateChange}
           />
 
-          <Spinner size={'3'} loading={isFetching || isDayFetching} />
+          <Spinner size={'3'} loading={loading} />
 
         </Flex>
 
@@ -404,24 +452,47 @@ function Attendance() {
         </Flex>
       </Flex>
 
-      {filteredStudents?.length === 0 && (
+      {/* {filteredStudents?.length === 0 && (
         <EmptyStateCard
           title="No students found"
           description="Try adjusting your search terms"
           icon={<Search />}
           action={<Button variant='outline' color='gray' onClick={() => setSearchQuery("")}>Clear Search</Button>}
         />
-      )}
+      )} */}
 
       {/* view */}
-      {filteredStudents?.length > 0 && (
-        <>
-          {currentView === "day" && renderDayView({ selectedDate, classSchedule: schedule, handleRecordAttendance, attendanceData: dayAttendanceData })}
-          {currentView === "week" && renderWeekView({ selectedDate, getWeekDays, classSchedule: schedule, attendanceData: weekAttendanceData, handleRecordAttendance })}
-          {currentView === "month" && renderMonthView({ daysInMonth, selectedYear, selectedMonth, today, classSchedule: schedule, students: filteredStudents, handleRecordAttendance, monthlySummary })}
-        </>
+      {currentView === "day" && (
+        <DayView
+          selectedDate={selectedDate}
+          classId={classId}
+          currentView={currentView}
+          selectedDateString={selectedDateString}
+          handleRecordAttendance={handleRecordAttendance}
+          handleLoading={handleLoading}
+        />
       )}
-
+      {currentView === "week" && (
+        <WeekView
+          getWeekDays={getWeekDays}
+          classId={classId}
+          currentView={currentView}
+          selectedDateString={getWeekStartDate()}
+          handleRecordAttendance={handleRecordAttendance}
+          handleLoading={handleLoading}
+        />
+      )}
+      {currentView === "month" && (
+        <MonthView
+          classId={classId}
+          currentView={currentView}
+          daysInMonth={daysInMonth}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          today={today}
+          handleLoading={handleLoading}
+        />
+      )}
     </div>
   )
 }
@@ -438,358 +509,8 @@ function AttendancePageHeader() {
   )
 }
 
-const renderWeekView = ({ selectedDate, getWeekDays, classSchedule, attendanceData, handleRecordAttendance }) => {
-  const students = attendanceData?.students ?? [];
-  const classDays = attendanceData?.classDays ?? [];
-  console.log(students)
-
-  const weekDays = getWeekDays()
-  const today = new Date()
-  return (
-    <Card size={'3'} className='shadow-md'>
-      <div className="overflow-auto w-full max-h-[65vh]">
-        {/* Header Row */}
-        <div className="flex pb-2">
-          <div className="flex gap-2 items-center px-4 py-2 w-64 font-medium shrink-0">
-            <span>Student</span>
-            {/* <Badge variant="secondary" className="bg-gray-700">
-                  {searchQuery ? `${filteredStudents.length}/${students.length}` : filteredStudents.length}
-                </Badge> */}
-          </div>
-          <div className="flex flex-1 gap-2">
-            {weekDays.map((day, index) => {
-              const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`
-              const dayName = day.toLocaleDateString("en-US", { weekday: "short" })
-              const isToday =
-                day.getDate() === today.getDate() &&
-                day.getMonth() === today.getMonth() &&
-                day.getFullYear() === today.getFullYear()
-
-              return (
-                <div
-                  key={index}
-                  className={`flex flex-col flex-1 items-center p-1 min-w-20 rounded ${isToday ? "bg-[--accent-9] text-[--accent-contrast]" : ""}`}
-                >
-                  <Text as='p' size={'1'}>
-                    {dayName}
-                  </Text>
-                  <Text as='p' size={'2'} weight='medium'>
-                    {day.getDate()}
-                  </Text>
-
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Student Rows */}
-        <div className="pb-2 space-y-2">
-          {students?.length === 0 && (
-            <div className="py-12 text-center text-gray-400">
-              <Search className="mx-auto mb-4 w-12 h-12 opacity-50" />
-              <p className="text-lg">No students found</p>
-              <p className="text-sm">Try adjusting your search terms</p>
-              <Button
-                variant="outline"
-                onClick={() => setSearchQuery("")}
-                className="mt-4 text-gray-300 border-gray-600 hover:bg-gray-700"
-              >
-                Clear Search
-              </Button>
-            </div>
-          )}
-          {students?.map((student) => {
-            return (
-              <div key={student.studentId} className="flex flex-1 items-center rounded-lg">
-                <div className="flex gap-3 items-center px-2 w-64 min-w-64">
-                  <Avatar radius='full' fallback={student?.name?.charAt(0)} size={'2'} highContrast />
-                  <div className="flex-1 min-w-0">
-                    <Text as='p' size={'2'} className='truncate'>{student?.name}</Text>
-                  </div>
-                </div>
-
-                <div className="flex flex-1 gap-2">
-                  {weekDays.map((day, index) => {
-                    const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`
-                    const hasClass = classDays.some(d => d === dateStr);
-                    const status = student?.attendance?.[dateStr] ?? null;
-
-                    if (!hasClass) {
-                      return (
-                        <Button
-                          key={index}
-                          variant="surface"
-                          color='gray'
-                          className="flex-1 h-12 min-w-20 disabled:opacity-50"
-                          disabled
-                        >
-                          <Minus size={16} />
-                        </Button>
-                      )
-                    }
-
-                    return (
-                      <AttendancePopover
-                        student={student}
-                        dateStr={dateStr}
-                        status={status}
-                        handleRecordAttendance={handleRecordAttendance}
-                      >
-                        <Button
-                          key={index}
-                          variant={status === 'present' || status === 'absent' ? 'solid' : 'outline'}
-                          color={status === 'present' ? 'green' : status === 'absent' ? 'red' : 'gray'}
-                          className="flex-1 h-12 min-w-20"
-                        >
-                          {status === 'present' ? 'P' : status === 'absent' && 'A'}
-                        </Button>
-                      </AttendancePopover>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-
-          })}
-        </div>
-      </div>
-    </Card>
-  )
-}
-
-const renderDayView = ({ selectedDate, classSchedule, handleRecordAttendance, attendanceData }) => {
-  const students = attendanceData?.students ?? [];
-  const hasClass = attendanceData?.isScheduled ?? false;
-
-  const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
-  const dayName = selectedDate.toLocaleDateString("en-US", { weekday: "long" })
-
-  return (
-    <div className='space-y-4'>
-      <Separator size={'4'} />
-      <Flex justify='between' align='center' gap='4' wrap='wrap'>
-        <Text as='p' size={'4'} weight='medium' className='flex gap-2 items-center'>
-          <Calendar size={16} /> Daily Attendance - {dayName}
-        </Text>
-        {hasClass ? (
-          <Flex align='center' gap='2' wrap='wrap'>
-            <Text as='p' size={'2'} color='gray'>
-              Bulk Actions:
-            </Text>
-            <Flex gap='2' wrap='wrap'>
-              <Button variant='surface' color='green' >
-                Mark All Present
-              </Button>
-              <Button variant='surface' color='red'>
-                Mark All Absent
-              </Button>
-            </Flex>
-          </Flex>
-        ) : (
-          <Badge
-            variant="soft"
-            color='gray'
-          >
-            No Class
-          </Badge>
-        )}
-      </Flex>
-      {!hasClass ? (
-        <EmptyStateCard
-          title="No class scheduled for this day"
-          icon={<Calendar />}
-        />
-      ) : (
-        <div className='grid gap-4' style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 320px))" }}>
-          {students.length === 0 && (
-            <div className="py-12 text-center text-gray-400">
-              <Search className="mx-auto mb-4 w-12 h-12 opacity-50" />
-              <p className="text-lg">No students found</p>
-              <p className="text-sm">Try adjusting your search terms</p>
-              <Button
-                variant="outline"
-                onClick={() => setSearchQuery("")}
-                className="mt-4 text-gray-300 border-gray-600 hover:bg-gray-700"
-              >
-                Clear Search
-              </Button>
-            </div>
-          )}
-          {students.map((student) => {
-            return (
-              <>
-                <Card key={student.studentId} size={'2'} className='flex flex-col justify-between hover:shadow-md'>
-                  <div className="flex gap-3 items-start mb-3">
-                    <Avatar radius='full' fallback={student?.studentName?.charAt(0)} size={'2'} highContrast />
-                    <div className="flex-1">
-                      <Text as='p' size={'2'} weight='medium'>{student.studentName}</Text>
-                      <Text as='p' size={'1'} color='gray'>{student.email}</Text>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      color={student?.status === 'present' ? 'green' : 'gray'}
-                      variant={student?.status === 'present' ? 'solid' : 'soft'}
-                      onClick={() => {
-                        if (student?.status === 'present') return;  // if present, do not allow to mark absent
-                        handleRecordAttendance({
-                          studentId: student.studentId,
-                          attendanceDate: dateStr,
-                          status: 'present'
-                        })
-                      }}
-                      className='flex-1'
-                    >
-                      Present
-                    </Button>
-                    <Button
-                      color={student?.status === 'absent' ? 'red' : 'gray'}
-                      variant={student?.status === 'absent' ? 'solid' : 'soft'}
-                      onClick={() => {
-                        if (student?.status === 'absent') return;  // if absent, do not allow to mark present
-                        handleRecordAttendance({
-                          studentId: student.studentId,
-                          attendanceDate: dateStr,
-                          status: 'absent'
-                        })
-                      }}
-                      className='flex-1'
-                    >
-                      Absent
-                    </Button>
-                  </div>
-                </Card>
-              </>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
-const renderMonthView = ({ daysInMonth, selectedYear, selectedMonth, today, classSchedule, students, handleRecordAttendance, monthlySummary }) => {
-  return (
-    <Card size={'3'} className='shadow-md'>
-      <div className='space-y-4'>
-        <div className='overflow-x-auto max-h-[65vh] pb-2'>
-          <div className="flex items-center">
-            <div className="flex gap-3 items-center px-4 py-3 w-64 font-medium shrink-0">
-              Student
-            </div>
-            <div className="flex gap-2 px-4">
-              {Array.from({ length: daysInMonth }, (_, i) => {
-                const day = i + 1
-                const date = new Date(selectedYear, selectedMonth, day)
-                const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "short" }) // e.g., "Mon"
-                const isToday =
-                  date.getDate() === today.getDate() &&
-                  date.getMonth() === today.getMonth() &&
-                  date.getFullYear() === today.getFullYear()
-
-                return (
-                  <div
-                    key={day}
-                    className={`flex flex-col rounded-full items-center py-1 w-10 ${isToday ? "bg-[--accent-9] text-[--accent-contrast]" : ""}`}
-                  >
-                    <Text as='p' align='center' size={'1'}>
-                      {dayOfWeek}
-                    </Text>
-                    <Text as='p' align='center' size={'2'} weight='medium'>
-                      {day}
-                    </Text>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          <div>
-            {students?.map(student => {
-              return (
-                <div key={student.id} className="flex items-center">
-                  <div className="flex gap-3 items-center px-2 py-3 w-64 shrink-0">
-                    <Avatar fallback={student?.name?.charAt(0)} radius='full' size={'2'} highContrast />
-                    <p className="text-sm truncate" title={student.name}>{student.name}</p>
-                    <Text as='p' size={'2'} color='gray' className='ml-auto whitespace-nowrap'>
-                      {student?.present ?? 0} / {monthlySummary?.totalScheduledDays ?? 0}
-                    </Text>
-                  </div>
-
-                  <div className="flex flex-1 gap-2 px-4">
-                    {Array.from({ length: daysInMonth }, (_, i) => {
-                      const day = i + 1
-                      const dateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-                      const status = student?.attendance?.[dateStr] ?? null
-
-                      if (!status) {
-                        return (
-                          <IconButton
-                            key={day}
-                            variant="surface"
-                            color='gray'
-                            size={'3'}
-                            disabled
-                            radius='full'
-                            className='disabled:opacity-50'
-                          >
-                            <Minus size={16} />
-                          </IconButton>
-                        )
-                      }
-
-                      return (
-                        <AttendancePopover
-                          student={student}
-                          dateStr={dateStr}
-                          status={status}
-                          handleRecordAttendance={handleRecordAttendance}
-                        >
-                          <IconButton
-                            key={day}
-                            variant={status === 'present' || status === 'absent' ? 'solid' : 'outline'}
-                            color={status === 'present' ? 'green' : status === 'absent' ? 'red' : 'gray'}
-                            size={'3'}
-                            radius='full'
-                          >
-                            {status === 'present' ? 'P' : status === 'absent' && 'A'}
-                          </IconButton>
-                        </AttendancePopover>
-                      )
-                    })}
-                  </div>
-
-                </div>
-              )
-            })}
-          </div>
-
-        </div>
-        <div className='flex flex-wrap gap-y-2 gap-x-6 items-center'>
-          <Flex align='center' gap='1'>
-            <div className='bg-[--green-9] rounded-full size-4' />
-            <Text as='p' size={'2'}>Present (P)</Text>
-          </Flex>
-          <Flex align='center' gap='1'>
-            <div className='bg-[--red-9] rounded-full size-4' />
-            <Text as='p' size={'2'}>Absent (A)</Text>
-          </Flex>
-          <Flex align='center' gap='1'>
-            <div className='border border-[--gray-a8] rounded-full size-4' />
-            <Text as='p' size={'2'}>Not Marked</Text>
-          </Flex>
-          <Flex align='center' gap='1'>
-            <div className='border border-[--gray-a8] rounded-full size-4 bg-[--gray-a3] opacity-50 flex items-center justify-center' >-</div>
-            <Text as='p' size={'2'}>No Class</Text>
-          </Flex>
-        </div>
-      </div>
-    </Card>
-  )
-}
-
-const AttendancePopover = ({ open, setOpen, children, student, dateStr, status, handleRecordAttendance }) => {
+// TODO: Move this to a separate file and make it a component
+export const AttendancePopover = ({ children, student, dateStr, status, handleRecordAttendance }) => {
   return (
     <Popover.Root>
       <Popover.Trigger>

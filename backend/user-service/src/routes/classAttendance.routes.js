@@ -80,6 +80,13 @@ const router = express.Router();
  *           description: Academic term
  */
 
+router.get(
+  "/classes/:classId",
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
+  classAttendanceController.getClassAttendanceInfo
+);
+
 router
   .route("/classes/:classId/students/:studentId")
   .get(authMiddleware.verifyToken, authMiddleware.checkRole(["teacher", "school_admin", "platform_admin", "student"]), classAttendanceController.getStudentClassAttendanceInfo);

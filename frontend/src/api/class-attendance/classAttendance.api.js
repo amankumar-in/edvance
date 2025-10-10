@@ -5,8 +5,15 @@ const getStudentClassAttendanceInfo = async ({classId, studentId}) => {
   return response.data;
 }
 
+const getClassAttendanceInfo = async ({classId, date}) => {
+  const dateString = date || new Date().toLocaleDateString('en-CA');
+  const response = await apiClient.get(`/class-attendance/classes/${classId}?date=${dateString}`);
+  return response.data;
+}
+
 const getMonthAttendance = async (classId, month, year) => {
-  const response = await apiClient.get(`/class-attendance/classes/${classId}/month?month=${month}&year=${year}`);
+  const today = new Date().toISOString().split('T')[0];
+  const response = await apiClient.get(`/class-attendance/classes/${classId}/month?month=${month}&year=${year}&date=${today}`);
   return response.data;
 }
 
@@ -16,7 +23,8 @@ const getDayAttendance = async (classId, date) => {
 }
 
 const getWeekAttendance = async (classId, startDate) => {
-  const response = await apiClient.get(`/class-attendance/classes/${classId}/week?startDate=${startDate}`);
+  const today = new Date().toISOString().split('T')[0];
+  const response = await apiClient.get(`/class-attendance/classes/${classId}/week?startDate=${startDate}&today=${today}`);
   return response.data;
 }
 
@@ -27,6 +35,7 @@ const recordClassAttendance = async ({ classId, studentId, attendanceDate, statu
 
 export {
   getStudentClassAttendanceInfo,
+  getClassAttendanceInfo,
   getMonthAttendance,
   recordClassAttendance,
   getDayAttendance,
