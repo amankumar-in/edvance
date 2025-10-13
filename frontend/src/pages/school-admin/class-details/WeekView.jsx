@@ -2,16 +2,17 @@ import { Avatar, Button, Card, Flex, Text } from '@radix-ui/themes';
 import { Minus, Search } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useGetWeekAttendance } from '../../../api/class-attendance/classAttendance.queries';
-import { ErrorCallout, Loader } from '../../../components';
-import { AttendancePopover } from './Attendance';
+import { EmptyStateCard, ErrorCallout, Loader } from '../../../components';
+import AttendancePopover from '../../../components/AttendancePopover';
 
 const WeekView = ({
   getWeekDays,
-  handleRecordAttendance,
   classId,
   currentView,
+  today,
   selectedDateString,
-  handleLoading
+  handleLoading,
+  searchQuery
 }) => {
   const {
     data: weekAttendance,
@@ -27,7 +28,6 @@ const WeekView = ({
   const classDays = weekAttendanceData?.classDays ?? [];
 
   const weekDays = getWeekDays()
-  const today = new Date()
 
   useEffect(() => {
     handleLoading(isWeekFetching && !isWeekLoading)
@@ -51,8 +51,18 @@ const WeekView = ({
     )
   }
 
+  const filteredStudents = students.filter((student) => student.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  if (filteredStudents?.length === 0) return (
+    <EmptyStateCard
+      title="No students found"
+      description="Try adjusting your search terms"
+      icon={<Search />}
+    />
+  )
+
   return (
-    <Card size={'3'} className='shadow-md'>
+    <Card size={'3'} className=''>
       <div className="overflow-auto w-full max-h-[65vh]">
         {/* Header Row */}
         <div className="flex pb-2">
@@ -61,7 +71,6 @@ const WeekView = ({
           </div>
           <div className="flex flex-1 gap-2">
             {weekDays.map((day, index) => {
-              // const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`
               const dayName = day.toLocaleDateString("en-US", { weekday: "short" })
               const isToday =
                 day.getDate() === today.getDate() &&
@@ -88,21 +97,7 @@ const WeekView = ({
 
         {/* Student Rows */}
         <div className="pb-2 space-y-2">
-          {students?.length === 0 && (
-            <div className="py-12 text-center text-gray-400">
-              <Search className="mx-auto mb-4 w-12 h-12 opacity-50" />
-              <p className="text-lg">No students found</p>
-              <p className="text-sm">Try adjusting your search terms</p>
-              <Button
-                variant="outline"
-                // onClick={() => setSearchQuery("")}
-                className="mt-4 text-gray-300 border-gray-600 hover:bg-gray-700"
-              >
-                Clear Search
-              </Button>
-            </div>
-          )}
-          {students?.map((student) => {
+          {filteredStudents?.map((student) => {
             return (
               <div key={student.studentId} className="flex flex-1 items-center rounded-lg">
                 <div className="flex gap-3 items-center px-2 w-64 min-w-64">
@@ -129,7 +124,7 @@ const WeekView = ({
                     if (!hasClass) {
                       return (
                         <Button
-                          key={index}
+                          key={`${student.studentId}-${index}`}
                           variant="surface"
                           color='gray'
                           className="flex-1 h-12 min-w-20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -146,7 +141,7 @@ const WeekView = ({
                     if (isFuture) {
                       return (
                         <Button
-                          key={index}
+                          key={`${student.studentId}-${index}`}
                           variant="outline"
                           color='gray'
                           className="flex-1 h-12 min-w-20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -159,13 +154,13 @@ const WeekView = ({
 
                     return (
                       <AttendancePopover
+                        key={`${student.studentId}-${index}`}
                         student={student}
                         dateStr={dateStr}
                         status={status}
-                        handleRecordAttendance={handleRecordAttendance}
+                        classId={classId}
                       >
                         <Button
-                          key={index}
                           variant={status === 'present' || status === 'absent' ? 'solid' : 'outline'}
                           color={status === 'present' ? 'green' : status === 'absent' ? 'red' : 'gray'}
                           className="flex-1 h-12 min-w-20"
@@ -178,7 +173,6 @@ const WeekView = ({
                 </div>
               </div>
             )
-
           })}
         </div>
       </div>

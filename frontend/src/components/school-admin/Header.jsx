@@ -7,7 +7,7 @@ function Header({ toggleSidebar }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Flex as="nav" align="center" justify="between" gap="4" className="z-50 w-full h-14 px-4 md:px-6 border-b border-[--slate-6] bg-[--color-background]">
+    <Flex as="nav" align="center" justify="between" gap="4" className="z-50 w-full h-14 px-4 md:px-6 border-b border-[--gray-6] bg-[--color-background]">
       <Flex align="center" gap="4">
         <IconButton
           size="3"
@@ -25,7 +25,7 @@ function Header({ toggleSidebar }) {
         </Text>
       </Flex>
       <Flex align="center" gap="4" className='text-sm'>
-        <IconButton variant='ghost' size='3' highContrast onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+        <IconButton variant='ghost' color='gray' size='3' highContrast onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </IconButton>
       </Flex>

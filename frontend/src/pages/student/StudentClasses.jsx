@@ -1,5 +1,5 @@
-import { Avatar, Button, Card, Flex, Grid, IconButton, Inset, Text, Tooltip } from '@radix-ui/themes';
-import { BookOpenCheck, CalendarX, GraduationCap, Plus } from 'lucide-react';
+import { Avatar, Card, Flex, Grid, Inset, Text } from '@radix-ui/themes';
+import { BookOpenCheck, CalendarX, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAuth } from '../../Context/AuthContext';
 import { useGetStudentClasses } from '../../api/student/student.queries';

@@ -273,7 +273,7 @@ function StudentAttendance() {
           <Grid columns={{ initial: '2' }} gap="4">
             {/* Current Streak */}
             <Card size={{ initial: '2', sm: '3' }} className='overflow-hidden relative card_no_border'>
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--orange-a2]"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[--orange-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
                   <Flame size={20} className="text-[--orange-11] flex-shrink-0" />
@@ -286,8 +286,8 @@ function StudentAttendance() {
             </Card>
 
             {/* Longest Streak */}
-            <Card size={{ initial: '2', sm: '3' }} className='overflow-hidden relative card_no_border'>
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--purple-a2]"></div>
+                <Card size={{ initial: '2', sm: '3' }} className='overflow-hidden relative card_no_border'>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[--purple-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
                   <Medal size={20} className="text-[--purple-11] flex-shrink-0" />
@@ -302,14 +302,14 @@ function StudentAttendance() {
 
             {/* Attendance Rate */}
             <Card size={{ initial: '2', sm: '3' }} className='card_no_border'>
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--blue-a2]"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[--sky-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
-                  <TrendingUp size={20} className="text-[--blue-11] flex-shrink-0" />
+                  <TrendingUp size={20} className="text-[--sky-11] flex-shrink-0" />
                   <Text as='p' size="2" color="gray" weight="medium">Attendance Rate</Text>
                 </Flex>
                 <Flex justify={'between'} align={'baseline'} wrap={'wrap'} gap={'2'}>
-                  <Text as='p' size="6" weight="bold" color="blue">
+                  <Text as='p' size="6" weight="bold" color="sky">
                     {attendanceRate}%
                   </Text>
                   <Text as='p' size="1" color="gray">
@@ -322,7 +322,7 @@ function StudentAttendance() {
 
             {/* Points This Month */}
             <Card size={{ initial: '2', sm: '3' }} className='card_no_border'>
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--green-a2]"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[--green-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
                   <Coins size={20} className="text-[--green-11] flex-shrink-0" />
@@ -356,7 +356,6 @@ function AttendancePageHeader({ classId }) {
     <PageHeader
       title={classId ? 'Class Attendance' : 'Daily Attendance'}
       description={classId ? 'Track your class attendance and build your streak' : 'Track your daily attendance and build your streak'}
-      backButton={classId ? true : false}
     />
   )
 }

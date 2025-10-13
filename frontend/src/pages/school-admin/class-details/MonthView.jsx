@@ -1,19 +1,19 @@
 import { Avatar, Card, Flex, IconButton, Text } from '@radix-ui/themes';
-import { Minus } from 'lucide-react';
+import { Minus, Search } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useGetMonthAttendance } from '../../../api/class-attendance/classAttendance.queries';
-import { ErrorCallout, Loader } from '../../../components';
-import { AttendancePopover } from './Attendance';
+import { EmptyStateCard, ErrorCallout, Loader } from '../../../components';
+import AttendancePopover from '../../../components/AttendancePopover';
 
 const MonthView = ({
   daysInMonth,
   selectedYear,
   selectedMonth,
   today,
-  handleRecordAttendance,
   classId,
   currentView,
-  handleLoading
+  handleLoading,
+  searchQuery
 }) => {
   const {
     data: monthAttendance,
@@ -28,6 +28,8 @@ const MonthView = ({
   useEffect(() => {
     handleLoading(isFetching && !isLoading)
   }, [isFetching, isLoading, handleLoading])
+
+  const filteredStudents = students.filter((student) => student.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   if (isLoading) {
     return (
@@ -46,8 +48,16 @@ const MonthView = ({
     )
   }
 
+  if (filteredStudents?.length === 0) return (
+    <EmptyStateCard
+      title="No students found"
+      description="Try adjusting your search terms"
+      icon={<Search />}
+    />
+  )
+
   return (
-    <Card size={'3'} className='shadow-md'>
+    <Card size={'3'} className=''>
       <div className='space-y-4'>
         <div className='overflow-x-auto max-h-[65vh] pb-2'>
           <div className="flex items-center">
@@ -63,15 +73,14 @@ const MonthView = ({
                   date.getDate() === today.getDate() &&
                   date.getMonth() === today.getMonth() &&
                   date.getFullYear() === today.getFullYear()
-                
+
                 // Check if this is a future date
                 const isFuture = date > today;
 
                 return (
                   <div
                     key={day}
-                    className={`flex flex-col rounded-full items-center py-1 w-10 ${
-                      isToday ? "bg-[--accent-9] text-[--accent-contrast]" : 
+                    className={`flex flex-col rounded-full items-center py-1 w-10 ${isToday ? "bg-[--accent-9] text-[--accent-contrast]" :
                       isFuture ? "opacity-50" : ""}`}
                   >
                     <Text as='p' align='center' size={'1'}>
@@ -87,7 +96,7 @@ const MonthView = ({
           </div>
 
           <div>
-            {students?.map(student => {
+            {filteredStudents?.map(student => {
               return (
                 <div key={student.studentId} className="flex items-center">
                   <div className="flex gap-3 items-center px-2 py-3 w-64 shrink-0">
@@ -154,7 +163,7 @@ const MonthView = ({
                           student={student}
                           dateStr={dateStr}
                           status={status}
-                          handleRecordAttendance={handleRecordAttendance}
+                          classId={classId}
                         >
                           <IconButton
                             variant={status === 'present' || status === 'absent' ? 'solid' : 'outline'}

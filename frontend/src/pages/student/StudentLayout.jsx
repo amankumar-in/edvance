@@ -10,7 +10,7 @@ import { BRAND_COLOR } from '../../utils/constants';
 
 function StudentLayout() {
   const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useOutletContext();
-  const { user, handleLogout, isLoggingOut, profiles } = useAuth();
+  const { user, profiles } = useAuth();
   const studentId = profiles?.student?._id;
 
   const { data, isLoading, isError, error } = usePointsDetailsById(studentId);
@@ -21,9 +21,6 @@ function StudentLayout() {
       toast.error(error?.response?.data?.message || 'Error fetching points details');
     }
   }, [isError, error])
-
-  // Mock unread notifications count - replace with actual data
-  const unreadNotifications = 3;
 
   // Sidebar navigation items
   const navItems = [

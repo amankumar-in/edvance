@@ -46,7 +46,6 @@ function AddStudentsDialog({ open, onOpenChange, classId, classStudents = [] }) 
 
         <Flex direction="column" gap="3">
           <TextField.Root
-            size="3"
             placeholder="Search students by name or email"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -68,7 +67,7 @@ function AddStudentsDialog({ open, onOpenChange, classId, classStudents = [] }) 
               <>
                 <Flex key={student._id} gap="2" align="center" className='p-2 hover:bg-[--gray-a2] last:border-b-0 border-b border-[--gray-a6]' justify="between">
                   <Flex gap="2">
-                    <Avatar src={student?.userId?.profilePicture} fallback={student?.userId?.firstName?.charAt(0)} radius="full" />
+                    <Avatar src={student?.userId?.avatar} fallback={student?.userId?.firstName?.charAt(0)} radius="full" />
                     <div>
                       <Text as="p" size="2" weight={'medium'}>{student?.userId?.firstName} {student?.userId?.lastName}</Text>
                       <Text as="p" size="1" color="gray">{student?.userId?.email}</Text>

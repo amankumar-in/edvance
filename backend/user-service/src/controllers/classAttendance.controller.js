@@ -196,7 +196,7 @@ async function getStudentStreakForClass(studentId, classId, attendanceDate) {
         classId,
         currentStreak: streakRecord.currentStreak,
         longestStreak: streakRecord.longestStreak
-      });      
+      });
     }
 
     return {
@@ -532,6 +532,150 @@ const getClassAttendanceInfo = async (req, res) => {
     });
   }
 }
+
+
+/**
+ * Teacher/School Admin marks or updates attendance for any student, any day
+ */
+const teacherMarkAttendance = async (req, res) => {
+  try {
+    const { classId, studentId } = req.params;
+    const { attendanceDate, status, comments, activeRole } = req.body;
+    const recordedBy = req.user.id;
+
+    // Validation
+    if (!attendanceDate || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "Attendance date and status are required",
+      });
+    }
+
+    // Validate status
+    if (!['present', 'absent'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Status must be either 'present' or 'absent'",
+      });
+    }
+
+    // Validate IDs
+    if (!isValidObjectId(classId) || !isValidObjectId(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid class or student ID",
+      });
+    }
+
+    // Validate that attendance date is not in the future
+    const attendanceDateObj = new Date(attendanceDate);
+
+    if (isNaN(attendanceDateObj.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid attendance date",
+      });
+    }
+
+    // Get the class details
+    const schoolClass = await SchoolClass.findById(classId);
+    if (!schoolClass) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // Check if the student is enrolled in this class
+    if (!schoolClass.studentIds.includes(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Student is not enrolled in this class",
+      });
+    }
+
+    // Check if class is scheduled today
+    const isTodayScheduled = await isScheduledClassDay(classId, attendanceDate);
+
+    if (!isTodayScheduled) {
+      return res.status(400).json({
+        success: false,
+        message: "Class is not scheduled today",
+      });
+    }
+
+    // Create date range for the entire day
+    const startOfDay = new Date(attendanceDateObj);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(attendanceDateObj);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Find existing attendance record
+    let attendanceRecord = await ClassAttendance.findOne({
+      classId,
+      studentId,
+      attendanceDate: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    });
+
+    // Create history entry
+    const historyEntry = {
+      status,
+      recordedBy,
+      recordedByRole: activeRole,
+      comments,
+      recordedAt: new Date(),
+    };
+
+    if (attendanceRecord) {
+      // Update existing record
+      attendanceRecord.history.push(historyEntry);
+      attendanceRecord.status = status;
+      attendanceRecord.recordedBy = recordedBy;
+      attendanceRecord.recordedByRole = activeRole;
+      attendanceRecord.comments = comments;
+      attendanceRecord.recordedAt = new Date();
+    } else {
+      // Create new record
+      attendanceRecord = new ClassAttendance({
+        studentId,
+        classId,
+        attendanceDate: attendanceDateObj,
+        status,
+        recordedBy,
+        recordedByRole: activeRole,
+        comments,
+        recordedAt: new Date(),
+        history: [historyEntry],
+      });
+    }
+
+    await attendanceRecord.save();
+
+    try {
+      await updateStudentStreak(studentId, classId, attendanceDate);
+    } catch (error) {
+      console.error("Failed to update streak:", error.message);
+      // Don't fail the request if streak update fails
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Attendance recorded successfully",
+      data: attendanceRecord,
+    });
+  } catch (error) {
+    console.error('Error marking attendance:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error marking attendance",
+      error: error.message,
+    });
+  }
+};
 
 // Record attendance for a student in a class session
 const recordStudentAttendance = async (req, res) => {
@@ -1619,6 +1763,7 @@ const getClassAttendanceForMonth = async (req, res) => {
 
 module.exports = {
   studentMarkPresent,
+  teacherMarkAttendance,
   recordStudentAttendance,
   recordBulkAttendance,
   getStudentClassAttendance,

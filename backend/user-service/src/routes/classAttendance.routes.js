@@ -91,12 +91,19 @@ router
   .route("/classes/:classId/students/:studentId")
   .get(authMiddleware.verifyToken, authMiddleware.checkRole(["teacher", "school_admin", "platform_admin", "student"]), classAttendanceController.getStudentClassAttendanceInfo);
 
-router.put(
+router.post(
   "/classes/:classId/students/:studentId",
   authMiddleware.verifyToken,
   authMiddleware.checkRole(["teacher", "school_admin", "platform_admin", "student"]),
   classAttendanceController.studentMarkPresent
 );
+
+router.put(
+  '/classes/:classId/students/:studentId',
+  authMiddleware.verifyToken,
+  authMiddleware.checkRole(["teacher", "school_admin", "platform_admin"]),
+  classAttendanceController.teacherMarkAttendance
+)
 
 /**
  * @openapi

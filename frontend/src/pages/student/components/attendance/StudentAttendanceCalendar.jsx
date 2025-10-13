@@ -85,7 +85,7 @@ const StudentAttendanceCalendar = ({
 
     return cn(
       // Base styles
-      "w-10 h-10 flex items-center justify-center text-sm hover:translate-y-[-1px] rounded-md transition-all",
+      "w-10 h-10 flex items-center justify-center text-sm hover:translate-y-[-1px] rounded-full transition-all",
 
       // Text color
       isOutside ? "text-[--gray-6]" : "text-[--gray-12]",
@@ -160,7 +160,10 @@ const StudentAttendanceCalendar = ({
             >
               <div
                 key={index}
-                className={`relative cursor-default ${getDayClasses(date)}`}
+                className={cn(
+                  "relative cursor-default",
+                  getDayClasses(date)
+                )}
               >
                 <span className={cn(
                   getDayModifiers(date).includes("scheduled") && "absolute left-1/2 rounded-full -translate-x-1/2 bg-[--blue-11] top-[3px] size-1"
@@ -175,11 +178,11 @@ const StudentAttendanceCalendar = ({
       {/* Legend */}
       <div className="flex flex-wrap gap-4 text-xs">
         <Text as="div" color="gray" size="1" className="flex gap-1 items-center">
-          <div className="w-2 h-2 bg-[--green-6] rounded-sm"></div>
+          <div className=" size-3 bg-[--green-6] rounded-full"></div>
           Present
         </Text>
         <Text as="div" color="gray" size="1" className="flex gap-1 items-center">
-          <div className="w-2 h-2 bg-[--red-6] rounded-sm"></div>
+          <div className=" size-3 bg-[--red-6] rounded-full"></div>
           Absent
         </Text>
         <Text as="div" color="gray" size="1" className="flex gap-1 items-center">

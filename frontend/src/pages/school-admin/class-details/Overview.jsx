@@ -130,7 +130,7 @@ function Overview() {
 
       <Grid columns={{ initial: '1', md: '2' }} className='gap-6'>
         {/* Class Information */}
-        <Card size={{ initial: '2', sm: '3' }} className='shadow-md'>
+        <Card size={{ initial: '2', sm: '3' }} className=''>
           <Flex direction="column" gap="4">
             <Heading size="4">Class Information</Heading>
             <Separator size='4' />
@@ -176,7 +176,7 @@ function Overview() {
         </Card>
 
         {/* Teacher Information */}
-        <Card size={{ initial: '2', sm: '3' }} className='shadow-md'>
+        <Card size={{ initial: '2', sm: '3' }} className=''>
           <Flex direction="column" gap="4">
             <Heading size="4">Teacher</Heading>
             <Separator size='4' />
@@ -229,14 +229,14 @@ function Overview() {
       </Grid>
 
       {/* Schedule */}
-      <Card size={{ initial: '2', sm: '3' }} className='shadow-md'>
+      <Card size={{ initial: '2', sm: '3' }} className=''>
         <Flex direction="column" gap="4">
           <Heading size="4">Class Schedule</Heading>
           <Separator size='4' />
           <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
             {sortedSchedule.length > 0 ? (
               sortedSchedule.map((details) => (
-                <Card key={details._id} variant="soft" size="2" className={`transition-all shadow-md hover:-translate-y-1 ${details.dayOfWeek.toLowerCase() === dayToday ? 'bg-[--accent-a2] border border-[--accent-9]' : ''}  ${details.dayOfWeek.toLowerCase() === 'saturday' || details.dayOfWeek.toLowerCase() === 'sunday' ? 'opacity-50' : ''}`} >
+                <Card key={details._id} variant="soft" size="2" className={`transition-all hover:shadow ${details.dayOfWeek.toLowerCase() === dayToday ? 'bg-[--accent-a2] border border-[--accent-9]' : ''}  ${details.dayOfWeek.toLowerCase() === 'saturday' || details.dayOfWeek.toLowerCase() === 'sunday' ? 'opacity-50' : ''}`} >
                   <Flex direction="column" gap="2">
                     <Text weight="medium" size="3">{details.dayOfWeek}</Text>
                     <Flex align="center" gap="2">

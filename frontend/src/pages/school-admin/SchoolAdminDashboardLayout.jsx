@@ -24,7 +24,7 @@ function SchoolAdminDashboardLayout() {
           <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
           <div
-            className={`flex-1 bg-[--color-surface] overflow-hidden transition-all duration-300 ease-in-out md:rounded-2xl md:shadow-md md:m-3 ${isSidebarOpen && 'md:ml-[290px]'}`}
+            className={`flex-1 bg-[--color-background] overflow-hidden transition-all duration-300 ease-in-out md:rounded-2xl md:border border-[--gray-6]  md:m-3 ${isSidebarOpen && 'md:ml-[290px]'}`}
             style={{ minWidth: 0 }}
           >
             <Header toggleSidebar={toggleSidebar} />

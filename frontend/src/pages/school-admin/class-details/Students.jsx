@@ -150,10 +150,6 @@ function Students() {
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Content variant='soft'>
                       <DropdownMenu.Label>Actions</DropdownMenu.Label>
-                      <DropdownMenu.Item>
-                        View Profile
-                      </DropdownMenu.Item>
-                      <DropdownMenu.Separator />
                       <DropdownMenu.Item color="red" onClick={() => setSelectedStudent(student)}>
                         Remove from Class
                       </DropdownMenu.Item>

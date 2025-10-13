@@ -31,7 +31,7 @@ function ClassDetails() {
       <Flex align="center" gap="4" className='overflow-x-auto'>
         <Tooltip content='Back'>
           <IconButton variant='surface' color='gray' asChild highContrast>
-            <Link to={-1} >
+            <Link to={'/school-admin/classes'} >
               <ChevronLeft size={16} />
             </Link>
           </IconButton>
