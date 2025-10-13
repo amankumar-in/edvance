@@ -16,7 +16,6 @@ const OverviewTab = ({
   isLoadingTransactions,
   isErrorTransactions,
   errorTransactions,
-  studentId,
   isLoadingPointsDetails
 }) => {
 
@@ -186,7 +185,7 @@ const OverviewTab = ({
                   </Callout.Text>
                 </Callout.Root>
               ) : transactions?.length > 0 ? (
-                transactions?.map((transaction, index) => (
+                transactions?.map((transaction) => (
                   <Card key={transaction._id} size='2'>
                     <Flex justify="between" align="center" wrap="wrap" gap="3">
                       <Flex align="center" gap="4">

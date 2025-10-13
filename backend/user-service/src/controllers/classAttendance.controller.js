@@ -5,6 +5,8 @@ const Student = require("../models/student.model");
 const axios = require("axios");
 const AttendanceStreak = require("../models/attendanceStreak.model");
 
+const isDebug = process.env.NODE_ENV === 'development';
+
 // =============================================================================
 // Utility functions
 // =============================================================================
@@ -157,10 +159,10 @@ async function calculateStudentStreak(studentId, classId, attendanceDate) {
       if (status === 'present') {
         tempStreak++;
         longestStreak = Math.max(longestStreak, tempStreak);
-      } else if (status === 'absent') {
+      } else {
+        // Both absent and missing records break the streak
         tempStreak = 0;
       }
-      // Missing records don't break historical longest streak calculation
     }
 
     return {
@@ -174,13 +176,27 @@ async function calculateStudentStreak(studentId, classId, attendanceDate) {
 }
 
 // Get streak info for a student in a class
-async function getStudentStreakForClass(studentId, classId) {
+async function getStudentStreakForClass(studentId, classId, attendanceDate) {
   try {
     let streakRecord = await AttendanceStreak.findOne({ studentId, classId });
 
-    if (!streakRecord) {
-      // Calculate and create if doesn't exist
-      streakRecord = await updateStudentStreak(studentId, classId);
+    const todayDateString = attendanceDate.toISOString().split('T')[0];
+    const lastCalculatedAtString = streakRecord?.lastCalculatedAt?.toISOString().split('T')[0];
+    const isCalculatedToday = lastCalculatedAtString === todayDateString;
+
+    if (!streakRecord || !isCalculatedToday) {
+      // Calculate and create if doesn't exist or if it has not been calculated today
+      if (isDebug) {
+        console.log(`🔄 Recalculating streak for student ${studentId} in class ${classId}: ${!streakRecord ? 'new record' : `stale (${lastCalculatedAtString} → ${todayDateString})`}`);
+      }
+      streakRecord = await updateStudentStreak(studentId, classId, attendanceDate);
+    } else if (isDebug) {
+      console.log('⚡ Cache hit for streak record:', {
+        studentId,
+        classId,
+        currentStreak: streakRecord.currentStreak,
+        longestStreak: streakRecord.longestStreak
+      });      
     }
 
     return {
@@ -361,7 +377,7 @@ const getStudentClassAttendanceInfo = async (req, res) => {
     });
 
     // Get streak info
-    const streakInfo = await getStudentStreakForClass(studentId, classId);
+    const streakInfo = await getStudentStreakForClass(studentId, classId, todayDateUTC);
 
     // Create UTC dates for MongoDB queries
     const startOfMonth = new Date(Date.UTC(todayDateUTC.getUTCFullYear(), todayDateUTC.getUTCMonth(), 1));

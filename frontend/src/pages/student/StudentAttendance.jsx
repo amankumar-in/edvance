@@ -1,6 +1,6 @@
 import { Badge, Box, Button, Callout, Card, Flex, Grid, Progress, Text, Tooltip } from '@radix-ui/themes';
 import { format } from 'date-fns';
-import { AlertCircle, Award, CheckCircle, Info, TrendingUp, XCircle, Zap } from 'lucide-react';
+import { AlertCircle, Award, CheckCircle, Coins, Flame, Info, Medal, TrendingUp, XCircle, Zap } from 'lucide-react';
 import React from 'react';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -202,7 +202,7 @@ function StudentAttendance() {
                     <Flex align="center" gap="3" wrap='wrap'>
                       <Button
                         size={'3'}
-                        color={attendanceStatus === 'present' && attendanceStatus === 'absent' ? 'red' : ''}
+                        color={attendanceStatus === 'present' && attendanceStatus === 'absent' ? 'red' : 'grass'}
                         className="flex-1 gap-2 items-center capitalize shadow-md max-w-64 text-nowrap disabled:cursor-not-allowed"
                         onClick={handleMarkClassAttendance}
                         disabled={
@@ -272,26 +272,28 @@ function StudentAttendance() {
           {/* Stats Grid */}
           <Grid columns={{ initial: '2' }} gap="4">
             {/* Current Streak */}
-            <Card size={{ initial: '2', sm: '3' }} className='card_no_border'>
+            <Card size={{ initial: '2', sm: '3' }} className='overflow-hidden relative card_no_border'>
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--orange-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
-                  <TrendingUp size={20} className="text-[--indigo-11] flex-shrink-0" />
+                  <Flame size={20} className="text-[--orange-11] flex-shrink-0" />
                   <Text as='p' size="2" color="gray" weight="medium">Current Streak</Text>
                 </Flex>
-                <Text size="6" weight="bold" color="indigo">
+                <Text size="6" weight="bold" color="orange">
                   {currentStreak}x
                 </Text>
               </Flex>
             </Card>
 
             {/* Longest Streak */}
-            <Card size={{ initial: '2', sm: '3' }} className='card_no_border'>
+            <Card size={{ initial: '2', sm: '3' }} className='overflow-hidden relative card_no_border'>
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--purple-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
-                  <Award size={20} className="text-[--green-11] flex-shrink-0" />
+                  <Medal size={20} className="text-[--purple-11] flex-shrink-0" />
                   <Text as='p' size="2" color="gray" weight="medium">Longest Streak</Text>
                 </Flex>
-                <Text size="6" weight="bold" color="green">
+                <Text size="6" weight="bold" color="purple">
                   {longestStreak}
                 </Text>
                 <Text as='p' size="1" color="gray">personal best</Text>
@@ -300,9 +302,10 @@ function StudentAttendance() {
 
             {/* Attendance Rate */}
             <Card size={{ initial: '2', sm: '3' }} className='card_no_border'>
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--blue-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
-                  <CheckCircle size={20} className="text-[--blue-11] flex-shrink-0" />
+                  <TrendingUp size={20} className="text-[--blue-11] flex-shrink-0" />
                   <Text as='p' size="2" color="gray" weight="medium">Attendance Rate</Text>
                 </Flex>
                 <Flex justify={'between'} align={'baseline'} wrap={'wrap'} gap={'2'}>
@@ -319,12 +322,13 @@ function StudentAttendance() {
 
             {/* Points This Month */}
             <Card size={{ initial: '2', sm: '3' }} className='card_no_border'>
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[--green-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
-                  <Zap size={20} className="text-[--purple-11] flex-shrink-0" />
+                  <Coins size={20} className="text-[--green-11] flex-shrink-0" />
                   <Text as='p' size="2" color="gray" weight="medium">SP This Month</Text>
                 </Flex>
-                <Text as='p' size="6" weight="bold" color="purple">
+                <Text as='p' size="6" weight="bold" color="green">
                   {pointsEarnedThisMonth}
                 </Text>
                 <Text as='p' size="1" color="gray">scholarship points</Text>
