@@ -214,7 +214,6 @@ async function getStudentStreakForClass(studentId, classId, attendanceDate) {
 // Controller functions
 // =============================================================================
 
-// TODO: Implement the points earned logic and optimize the code for efficient querying
 /**
  * Student marks themselves present(only allowed if class is scheduled today)
  */
@@ -326,10 +325,50 @@ const studentMarkPresent = async (req, res) => {
 
     await attendanceRecord.save();
 
-    // TODO: Award points if present
-
     // Update streak record
-    await updateStudentStreak(studentId, classId, attendanceDate);
+    const { currentStreak, longestStreak } = await updateStudentStreak(studentId, classId, attendanceDate);
+
+    if (status === 'present') {
+      try {
+        const pointsServiceUrl =
+          process.env.NODE_ENV === "production"
+            ? process.env.PRODUCTION_POINTS_SERVICE_URL
+            : process.env.POINTS_SERVICE_URL;
+
+        const pointsResponse = await axios.post(
+          `${pointsServiceUrl}/api/points/transactions`,
+          {
+            studentId,
+            amount: 5, // Base points for class attendance
+            type: "earned",
+            source: "attendance",
+            sourceId: attendanceRecord._id.toString(),
+            description: `Class attendance - ${schoolClass.name} - ${attendanceDate}`,
+            awardedBy: studentId,
+            awardedByRole: 'student',
+            metadata: {
+              sourceType: "daily_check_in",
+              classId: classId,
+              attendanceDate: attendanceDate,
+              dayOfWeek: attendanceDate,
+              streak: currentStreak,
+            },
+          },
+          {
+            headers: {
+              Authorization: req.headers.authorization,
+            },
+          }
+        );
+
+        if (pointsResponse.data?.data?.transaction?.amount) {
+          attendanceRecord.pointsAwarded = pointsResponse.data.data.transaction.amount;
+          await attendanceRecord.save();
+        }
+      } catch (error) {
+        console.error("Failed to award class attendance points:", error.message);
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -346,6 +385,7 @@ const studentMarkPresent = async (req, res) => {
   }
 }
 
+// TODO: Optimize the code for efficient querying
 /**
  * Get student's attendance details for a specific class for current month (for class card display)
  */
@@ -357,14 +397,14 @@ const getStudentClassAttendanceInfo = async (req, res) => {
     const todayDateUTC = new Date(todayString);
 
     const classInfo = await SchoolClass.findById(classId).select('name grade schedule');
-    const scheduledDays = classInfo.schedule.map(schedule => schedule.dayOfWeek.toLowerCase());
-
     if (!classInfo) {
       return res.status(404).json({
         success: false,
         message: "Class not found",
       });
     }
+
+    const scheduledDays = classInfo.schedule.map(schedule => schedule.dayOfWeek.toLowerCase());
 
     // Check if class is scheduled today
     const isScheduledToday = await isScheduledClassDay(classId, todayString);
@@ -407,7 +447,10 @@ const getStudentClassAttendanceInfo = async (req, res) => {
       return acc;
     }, {});
 
-    // TODO: Get points earned
+    // Calculate points earned this month for this class
+    const pointsEarnedThisMonth = thisMonthAttendance.reduce((total, record) => {
+      return total + (record.pointsAwarded || 0);
+    }, 0);
 
     // Final response data
     const responseData = {
@@ -424,8 +467,10 @@ const getStudentClassAttendanceInfo = async (req, res) => {
       attendanceRate,
       presentDaysInMonth,
       classesHeldSoFar,
-      pointsEarned: 0,
+      pointsEarned: pointsEarnedThisMonth,
       monthlyInfo: attendanceObject,
+      markedBy: todayAttendance?.recordedBy || null,
+      markedByRole: todayAttendance?.recordedByRole || null,
     }
 
     return res.status(200).json({
@@ -655,11 +700,51 @@ const teacherMarkAttendance = async (req, res) => {
 
     await attendanceRecord.save();
 
-    try {
-      await updateStudentStreak(studentId, classId, attendanceDate);
-    } catch (error) {
-      console.error("Failed to update streak:", error.message);
-      // Don't fail the request if streak update fails
+    const { currentStreak, longestStreak } = await updateStudentStreak(studentId, classId, attendanceDate);
+
+    // Award points ONLY if:
+    // 1. Status is 'present' AND
+    // 2. Points haven't been awarded yet
+    if (status === 'present' && (!attendanceRecord.pointsAwarded || attendanceRecord.pointsAwarded === 0)) {
+      try {
+        const pointsServiceUrl =
+          process.env.NODE_ENV === "production"
+            ? process.env.PRODUCTION_POINTS_SERVICE_URL
+            : process.env.POINTS_SERVICE_URL;
+
+        const pointsResponse = await axios.post(
+          `${pointsServiceUrl}/api/points/transactions`,
+          {
+            studentId,
+            amount: 5,
+            type: "earned",
+            source: "attendance",
+            sourceId: attendanceRecord._id.toString(),
+            description: `Class attendance - ${schoolClass.name} - ${attendanceDate}`,
+            awardedBy: recordedBy,
+            awardedByRole: activeRole,
+            metadata: {
+              sourceType: "daily_check_in",
+              classId: classId,
+              attendanceDate: attendanceDate,
+              dayOfWeek: attendanceDate,
+              streak: currentStreak,
+            },
+          },
+          {
+            headers: {
+              Authorization: req.headers.authorization,
+            },
+          }
+        );
+
+        if (pointsResponse.data?.data?.transaction?.amount) {
+          attendanceRecord.pointsAwarded = pointsResponse.data.data.transaction.amount;
+          await attendanceRecord.save();
+        }
+      } catch (error) {
+        console.error("Failed to award class attendance points:", error.message);
+      }
     }
 
     res.status(200).json({

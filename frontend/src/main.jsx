@@ -25,7 +25,7 @@ createRoot(document.getElementById("root")).render(
         radius="large"
       >
         <AuthProvider>
-          <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left"/>
+          <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right"/>
           <AppRouter />
         </AuthProvider>
       </Theme>

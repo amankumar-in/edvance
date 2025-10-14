@@ -1,5 +1,6 @@
 export const BRAND_COLOR = 'violet';
 export const APP_NAME = 'EdVance';
+export const YEAR = '2025';
 export const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.';
 export const OTP_TIMER = 45;
 

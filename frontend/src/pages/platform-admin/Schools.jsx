@@ -40,7 +40,6 @@ function Schools() {
   const { data, isLoading, isFetching, isError, error } = useAllSchools(queryParams)
   const schools = data?.data || []
   const pagination = data?.pagination || {}
-  const filters = data?.filters || {}
 
   const handlePageChange = (page) => {
     setCurrentPage(page)
@@ -133,7 +132,7 @@ function Schools() {
               <Flex gap="2" align="center" wrap="wrap">
                 <Text size="2" color="gray">Sort by:</Text>
                 <Select.Root value={sortField} onValueChange={setSortField}>
-                  <Select.Trigger />
+                  <Select.Trigger variant='classic'/>
                   <Select.Content position="popper" variant="soft">
                     <Select.Item value="name">Name</Select.Item>
                     <Select.Item value="city">City</Select.Item>
@@ -143,7 +142,7 @@ function Schools() {
                   </Select.Content>
                 </Select.Root>
                 <Select.Root value={sortOrder} onValueChange={setSortOrder}>
-                  <Select.Trigger />
+                  <Select.Trigger variant='classic'/>
                   <Select.Content position="popper" variant="soft">
                     <Select.Item value="asc">Ascending</Select.Item>
                     <Select.Item value="desc">Descending</Select.Item>
@@ -181,7 +180,7 @@ function Schools() {
               showPageInfo={true}
               showFirstLast={true}
               showPrevNext={true}
-              itemsPerPageOptions={[5, 10, 25, 50]}
+              itemsPerPageOptions={[5, 10, 20, 50, 100]}
               itemLabel="schools"
             />
           </div>

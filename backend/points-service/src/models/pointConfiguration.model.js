@@ -6,6 +6,7 @@ const pointConfigurationSchema = new mongoose.Schema({
     type: Number,
     default: 1,
     required: true,
+    unique: true,
   },
   isActive: {
     type: Boolean,
@@ -258,6 +259,13 @@ pointConfigurationSchema.statics.createNewVersion = async function (
     // Get current active config
     const currentConfig = await this.getActive();
 
+    // Find the highest version number in database
+    const maxVersionConfig = await this.findOne()
+      .sort({ version: -1 })
+      .select('version');
+
+    const nextVersion = maxVersionConfig ? maxVersionConfig.version + 1 : 1;
+
     // Deactivate current config
     currentConfig.isActive = false;
     await currentConfig.save();
@@ -266,7 +274,7 @@ pointConfigurationSchema.statics.createNewVersion = async function (
     const newConfig = new this({
       ...currentConfig.toObject(),
       _id: new mongoose.Types.ObjectId(), // Generate new ID
-      version: currentConfig.version + 1,
+      version: nextVersion,
       isActive: true,
       createdBy: updatedBy,
       createdAt: new Date(),

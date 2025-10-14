@@ -109,7 +109,7 @@ const Home = () => {
                 <div className="relative group">
                   <div className="absolute -inset-1 bg-gradient-to-r from-[--blue-11] to-[--purple-11] rounded-lg opacity-75 blur transition duration-1000 group-hover:opacity-100 group-hover:duration-200"></div>
                   <Button size="lg" className="relative transition duration-200 transform hover:scale-105">
-                    <Download className="mr-2 w-5 h-5 animate-bounce" />
+                    <Download className="mr-2 w-5 h-5" />
                     Download App Now
                     <Sparkles className="ml-2 w-4 h-4" />
                   </Button>

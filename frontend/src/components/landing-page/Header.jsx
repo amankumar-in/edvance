@@ -55,7 +55,7 @@ const Header = ({ currentPage }) => {
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link className="flex items-center space-x-3 cursor-pointer group" to='/'>
+          <Link className="flex items-center space-x-3 cursor-pointer group" to='/' viewTransition>
             <div className="relative">
               <img src="/images/RFE-logo-black-by-cfc.svg" alt="RFE Logo" className={cn(
                 "w-auto h-10 transition-transform duration-300",
@@ -73,6 +73,7 @@ const Header = ({ currentPage }) => {
                   'transition-colors',
                   isActive ? 'text-[--accent-11] font-medium' : 'text-[--gray-11] hover:text-[--accent-11]'
                 )}
+                viewTransition
               >
                 {item.label}
               </NavLink>
@@ -81,7 +82,7 @@ const Header = ({ currentPage }) => {
               <Download className="mr-2 w-4 h-4" />
               Download App
             </Button>
-            <Link to='/login'>
+            <Link to='/login' viewTransition>
               <Button tabIndex={-1} size='sm' className='w-fit' variant='outline'>
                 Login
               </Button>

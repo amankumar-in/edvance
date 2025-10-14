@@ -164,7 +164,7 @@ export default function Login() {
           className="relative z-10 space-y-6"
         >
           {/* Header Text */}
-          <Link to='/' className="space-y-2 text-center" >
+          <Link to='/' className="space-y-2 text-center" viewTransition>
             <Text as="p" size={"8"} weight={"bold"} className="text-transparent bg-clip-text bg-gradient-to-r from-[--blue-9] to-[--purple-9] drop-shadow">
               {APP_NAME}
             </Text>

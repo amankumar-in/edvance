@@ -1,12 +1,12 @@
-import { Avatar, Badge, Box, Flex, IconButton, Skeleton, Text } from '@radix-ui/themes';
-import { Award, BarChart3, BookOpen, Calendar, CreditCard, GraduationCap, Home, Settings, TrendingUp, Trophy, X } from 'lucide-react';
+import { Avatar, Badge, Box, Flex, IconButton, ScrollArea, Separator, Skeleton, Text, Link as RadixLink } from '@radix-ui/themes';
+import { Award, BarChart3, BookOpen, Calendar, Copyright, CreditCard, GraduationCap, Home, Menu, Settings, TrendingUp, Trophy, X } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { NavLink, Outlet, useOutletContext } from 'react-router';
+import { Link, NavLink, Outlet, useOutletContext } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '../../Context/AuthContext';
 import { usePointsDetailsById } from '../../api/points/points.queries';
 import { Container } from '../../components';
-import { BRAND_COLOR } from '../../utils/constants';
+import { APP_NAME, BRAND_COLOR, YEAR } from '../../utils/constants';
 
 function StudentLayout() {
   const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useOutletContext();
@@ -48,72 +48,97 @@ function StudentLayout() {
 
       <Flex className='relative w-full'>
         {/* Desktop Sidebar */}
-        <Box className={` overflow-y-auto fixed md:sticky transition-transform duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--secondary-bg] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
-          <Flex align='center' gap='4' px={'4'} className='h-16 md:hidden' justify='between'>
-            <Text as='span' weight='bold' size="6" color={BRAND_COLOR}>
-              EdVance
-            </Text>
-            <IconButton
-              variant='ghost'
-              color='gray'
-              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-              className='md:hidden'
-            >
-              <X size={24} />
-            </IconButton>
-          </Flex>
-
-          {/* Profile Section */}
-          <Flex align="start" gap="4" className="p-4 md:py-8">
-            <Avatar
-              size="5"
-              src={user?.avatar}
-              fallback={user?.firstName?.[0] || "S"}
-              radius="full"
-              highContrast
-            />
-            <div className='space-y-1'>
-              <Text as='p' size="3" weight="bold">
-                {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Student'}
+        <Box className={` fixed md:sticky transition-transform duration-300 ease-in-out left-0 min-w-72 h-dvh md:h-[calc(100vh-4rem)] bg-[--secondary-bg] ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} top-0 md:top-16 z-[999] md:z-40`}>
+          <ScrollArea className='h-full' type='auto' scrollbars='vertical'>
+            <Flex align='center' gap='4' px={'4'} className='h-16 md:hidden'>
+              <IconButton
+                variant='ghost'
+                color='gray'
+                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                className='md:hidden'
+              >
+                <Menu size={24} />
+              </IconButton>
+              <Text as='span' weight='bold' size="6" color={BRAND_COLOR}>
+                EdVance
               </Text>
-              <Badge highContrast>
-                Student
-              </Badge>
-              <Skeleton loading={isLoading} className='w-28'>
-                <Text as='p' size="1" color="gray">
-                  Level {pointAccount.level} {pointAccount.levelName}
-                </Text>
-              </Skeleton>
-            </div>
-          </Flex>
-
-          {/* Navigation Items */}
-          <Flex direction="column" justify='between' px={'3'} pb={'4'}>
-            <Flex direction="column">
-              {navItems.map((item, index) => (
-                <NavLink
-                  key={index}
-                  to={item.disabled ? '#' : item.href}
-                  className={({ isActive }) =>
-                    `${isActive && !item.disabled ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
-                  p-4 py-3 text-sm  rounded-full flex items-center gap-2 relative font-medium ${item.disabled ? 'cursor-not-allowed opacity-80' : ''}`
-                  }
-                  onClick={item.disabled ? undefined : handleSidebarClick}
-                >
-                  <span className="flex flex-1 gap-5 items-center">
-                    {item.icon}
-                    {item.label}
-                    {item.disabled && <Badge color='gray' ml={'auto'}>coming soon</Badge>}
-                  </span>
-                  {item.badge && (
-                    <span className="flex justify-center items-center px-1 h-5 text-xs text-white bg-red-500 rounded-full min-w-5">
-                      {item.badge > 99 ? '99+' : item.badge}
-                    </span>
-                  )}
-                </NavLink>
-              ))}
             </Flex>
-          </Flex>
+
+            {/* Profile Section */}
+            <Flex align="start" gap="4" className="p-4 md:py-8">
+              <Avatar
+                size="5"
+                src={user?.avatar}
+                fallback={user?.firstName?.[0] || "S"}
+                radius="full"
+                highContrast
+              />
+              <div className='space-y-1'>
+                <Text as='p' size="3" weight="bold">
+                  {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Student'}
+                </Text>
+                <Badge highContrast>
+                  Student
+                </Badge>
+                <Skeleton loading={isLoading} className='w-28'>
+                  <Text as='p' size="1" color="gray">
+                    Level {pointAccount.level} {pointAccount.levelName}
+                  </Text>
+                </Skeleton>
+              </div>
+            </Flex>
+            <Separator size={'4'} />
+            {/* Navigation Items */}
+            <Flex direction="column" justify='between' px={'3'} py={'4'}>
+              <Flex direction="column">
+                {navItems.map((item, index) => (
+                  <NavLink
+                    key={index}
+                    to={item.disabled ? '#' : item.href}
+                    className={({ isActive }) =>
+                      `${isActive && !item.disabled ? 'bg-[--accent-a3] text-[--accent-11] font-medium' : 'hover:bg-[--gray-a3]'} 
+                  p-4 py-3 text-sm  rounded-full flex items-center gap-2 relative font-medium ${item.disabled ? 'cursor-not-allowed opacity-80' : ''}`
+                    }
+                    onClick={item.disabled ? undefined : handleSidebarClick}
+                  >
+                    <span className="flex flex-1 gap-5 items-center">
+                      {item.icon}
+                      {item.label}
+                      {item.disabled && <Badge color='gray' ml={'auto'}>coming soon</Badge>}
+                    </span>
+                    {item.badge && (
+                      <span className="flex justify-center items-center px-1 h-5 text-xs text-white bg-red-500 rounded-full min-w-5">
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                ))}
+              </Flex>
+            </Flex>
+            <Separator size={'4'} />
+            <Box my={'4'} className='space-y-2' px={'4'}>
+              <Text as='p' color='gray' size={'1'} className='flex gap-1 items-center'>
+                <Copyright size={12} /> {YEAR} {APP_NAME}. All rights reserved.
+              </Text>
+              <Text size={'1'} as='div' className='flex flex-wrap gap-2 items-center' color='gray'>
+                <RadixLink asChild color='blue'>
+                  <Link to={'#terms'}>
+                    Terms
+                  </Link>
+                </RadixLink>
+                <RadixLink asChild color='blue'>
+                  <Link to={'#privacy'}>
+                    Privacy
+                  </Link>
+                </RadixLink>
+                <RadixLink asChild color='blue'>
+                  <Link to={'#contact'}>
+                    Contact Us
+                  </Link>
+                </RadixLink>
+              </Text>
+            </Box>
+          </ScrollArea>
         </Box >
 
         {/* Mobile Bottom Navigation */}

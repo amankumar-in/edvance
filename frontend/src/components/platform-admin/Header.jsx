@@ -30,7 +30,7 @@ function Header({ toggleSidebar }) {
       <Flex align="center" gap="4" className='text-sm'>
         <div className='hidden md:block'>
           <Select.Root defaultValue="US">
-            <Select.Trigger variant='ghost' />
+            <Select.Trigger variant='ghost' color='gray'/>
             <Select.Content variant="soft" position='popper'>
               <Select.Item value="US">United States</Select.Item>
               <Select.Item value="UG">Uganda</Select.Item>
@@ -38,7 +38,7 @@ function Header({ toggleSidebar }) {
           </Select.Root>
         </div>
         <Separator orientation='vertical' className='hidden md:block' />
-        <IconButton variant='ghost' size='3' highContrast onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+        <IconButton color='gray' variant='ghost' size='3' highContrast onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </IconButton>
         <Separator orientation='vertical' className='hidden md:block' />
@@ -47,7 +47,7 @@ function Header({ toggleSidebar }) {
             as='span'
             size={'2'}
             className="hidden sm:block"
-          >Hi User</Text>
+          >Admin</Text>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               <IconButton
@@ -55,8 +55,7 @@ function Header({ toggleSidebar }) {
                 variant='soft'
               >
                 <Avatar
-                  src={FALLBACK_IMAGES.avatar}
-                  fallback="SH"
+                  fallback="A"
                   className='object-cover object-center w-full h-full'
                 />
               </IconButton>

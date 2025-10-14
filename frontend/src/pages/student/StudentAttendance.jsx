@@ -41,6 +41,7 @@ function StudentAttendance() {
     pointsEarned: pointsEarnedThisMonth = 0,
     monthlyInfo = {},
     scheduledDays = [],
+    markedByRole,
   } = studentClassAttendanceInfo?.data ?? {};
   const { name, grade } = classInfo;
 
@@ -230,7 +231,7 @@ function StudentAttendance() {
                       )} */}
                     </Flex>
 
-                    {/* {todaysClass?.attendanceDetails?.recordedByRole && todaysClass?.attendanceDetails?.recordedByRole !== 'student' && todaysClass?.attendanceDetails?.recordedByRole !== 'parent' && (
+                    {markedByRole && markedByRole !== 'student'  && (
                       <Callout.Root color="blue" variant='surface'>
                         <Callout.Icon>
                           <AlertCircle size={16} />
@@ -239,7 +240,7 @@ function StudentAttendance() {
                           You attendance has been marked by your class teacher.
                         </Callout.Text>
                       </Callout.Root>
-                    )} */}
+                    )}
                   </>
                 )
               )}
@@ -286,7 +287,7 @@ function StudentAttendance() {
             </Card>
 
             {/* Longest Streak */}
-                <Card size={{ initial: '2', sm: '3' }} className='overflow-hidden relative card_no_border'>
+            <Card size={{ initial: '2', sm: '3' }} className='overflow-hidden relative card_no_border'>
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[--purple-a2]"></div>
               <Flex direction="column" gap="2">
                 <Flex align="center" gap="2">
@@ -354,7 +355,7 @@ export default StudentAttendance;
 function AttendancePageHeader({ classId }) {
   return (
     <PageHeader
-      title={classId ? 'Class Attendance' : 'Daily Attendance'}
+      title={classId ? 'Attendance' : 'Daily Attendance'}
       description={classId ? 'Track your class attendance and build your streak' : 'Track your daily attendance and build your streak'}
     />
   )

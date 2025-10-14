@@ -531,7 +531,7 @@
 }
 
 :root {
-  --sidebar: var(--violet-12);
+  --sidebar: var(--cyan-12);
   --inactive-link: #e8e8ec;
   --icon-muted: #bbbbbb;
   --gray-background: rgb(247, 249, 252);
@@ -540,7 +540,7 @@
 }
 
 .dark {
-  --sidebar: var(--violet-2);
+  --sidebar: var(--cyan-2);
   --inactive-link: #e8e8ec;
   --icon-muted: #bbbbbb;
   --gray-background: var(--color-background);
@@ -650,4 +650,8 @@
 
 .dark .card_no_border {
   --card-border-width: 1px;
+}
+
+.scrollbar_thin_stable_both{
+  @apply scrollbar-thin [scrollbar-gutter:stable_both-edges];
 }

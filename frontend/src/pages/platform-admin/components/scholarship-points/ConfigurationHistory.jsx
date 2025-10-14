@@ -12,7 +12,7 @@ import { formatDate } from "../../../../utils/helperFunctions";
 import ConfigurationVersionDetails from "./ConfigurationDetails";
 
 // Configuration History Component
-const ConfigurationHistory = ({ setConfigDialogOpen, configDialogOpen }) => {
+const ConfigurationHistory = ({ setConfigDialogOpen }) => {
   const { data: historyData, isLoading, isError, error } = useGetConfigurationHistory();
   const activateVersionMutation = useActivateConfigurationVersion();
   const [viewDetailsVersion, setViewDetailsVersion] = useState(null);
@@ -114,6 +114,10 @@ const ConfigurationHistory = ({ setConfigDialogOpen, configDialogOpen }) => {
                           </IconButton>
                         </DropdownMenu.Trigger>
                         <DropdownMenu.Content variant="soft">
+                          <DropdownMenu.Item onClick={() => setViewDetailsVersion(config.version)}>
+                            <Edit size={14} />
+                            View Details
+                          </DropdownMenu.Item>
                           {!config.isActive && (
                             <DropdownMenu.Item
                               onClick={() => handleOpenConfirmationDialog(config.version)}
@@ -123,10 +127,6 @@ const ConfigurationHistory = ({ setConfigDialogOpen, configDialogOpen }) => {
                               Activate Version
                             </DropdownMenu.Item>
                           )}
-                          <DropdownMenu.Item onClick={() => setViewDetailsVersion(config.version)}>
-                            <Edit size={14} />
-                            View Details
-                          </DropdownMenu.Item>
                         </DropdownMenu.Content>
                       </DropdownMenu.Root>
                     </Table.Cell>

@@ -6,12 +6,12 @@ const useRecordClassAttendance = () => {
 
   return useMutation({
     mutationFn: recordClassAttendance,
-    onSuccess: (data, variables) => {
-      const { studentId, classId } = variables;
+    onSuccess: () => {
+      // const { studentId, classId } = variables;
       // TODO: invalidate selective queries only not all.
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["class-attendance"] }),
-        queryClient.invalidateQueries({ queryKey: ["student", "class", "attendance", studentId, classId] }),
+        queryClient.invalidateQueries({queryKey:["points"]})
       ])
     }
   });
