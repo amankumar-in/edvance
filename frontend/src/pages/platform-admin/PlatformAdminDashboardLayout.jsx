@@ -3,6 +3,7 @@ import { ThemeProvider } from 'next-themes'
 import React, { useState } from 'react'
 import { Outlet } from 'react-router'
 import { Header, SideBar } from '../../components/platform-admin'
+import Footer from './components/Footer'
 
 function PlatformAdminDashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -26,6 +27,7 @@ function PlatformAdminDashboardLayout() {
               <div className="container flex-1 pt-4 pb-12 md:pt-8" >
                 <Outlet />
               </div>
+              <Footer />
             </Flex>
           </Flex>
         </div>

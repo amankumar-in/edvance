@@ -489,6 +489,10 @@ const router = createBrowserRouter(
             lazy={() => import("../pages/platform-admin/ScholarshipPoints")
               .then(({ default: ScholarshipPoints }) => ({ Component: ScholarshipPoints, }))}
           />
+          <Route path="configuration/edit"
+            lazy={() => import("../pages/platform-admin/EditConfiguration")
+              .then(({ default: EditConfiguration }) => ({ Component: EditConfiguration, }))}
+          />
           <Route path="users/user/:id"
             lazy={() => import("../pages/platform-admin/UserDetails")
               .then(({ default: UserDetails }) => ({ Component: UserDetails, }))}

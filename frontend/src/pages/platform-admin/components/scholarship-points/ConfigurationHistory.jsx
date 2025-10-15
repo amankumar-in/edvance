@@ -13,7 +13,7 @@ import ConfigurationVersionDetails from "./ConfigurationDetails";
 
 // Configuration History Component
 const ConfigurationHistory = ({ setConfigDialogOpen }) => {
-  const { data: historyData, isLoading, isError, error } = useGetConfigurationHistory();
+  const { data: historyData, isLoading, isError, error, refetch, isRefetching } = useGetConfigurationHistory();
   const activateVersionMutation = useActivateConfigurationVersion();
   const [viewDetailsVersion, setViewDetailsVersion] = useState(null);
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
@@ -56,6 +56,8 @@ const ConfigurationHistory = ({ setConfigDialogOpen }) => {
     return (
       <ErrorCallout
         errorMessage={error?.response?.data?.message || 'Failed to load configuration history'}
+        onRetry={refetch}
+        isRetrying={isRefetching}
       />
     );
   }

@@ -1,12 +1,12 @@
 import { Badge, Box, Button, Card, Flex, Heading, Separator, Text } from "@radix-ui/themes";
 import { Edit, Plus } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import { BarLoader } from "react-spinners";
 import { useGetActiveConfiguration } from "../../../../api/points/points.queries";
 import EmptyStateCard from "../../../../components/EmptyStateCard";
 import ErrorCallout from "../../../../components/ErrorCallout";
 import Loader from '../../../../components/Loader';
-import UpdateConfigurationDialog from "../UpdateConfigurationDialog";
 import ConfigurationHistory from "./ConfigurationHistory";
 
 // Point Configuration Component
@@ -14,7 +14,7 @@ const PointConfiguration = () => {
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
 
   // API hooks
-  const { data: configData, isLoading, isError, error, isFetching } = useGetActiveConfiguration();
+  const { data: configData, isLoading, isError, error, isFetching, refetch, isRefetching } = useGetActiveConfiguration();
 
   // Extract configuration data
   const activeConfig = configData?.data;
@@ -33,6 +33,8 @@ const PointConfiguration = () => {
     return (
       <ErrorCallout
         errorMessage={error?.response?.data?.message || error?.message || 'Failed to load point configuration'}
+        onRetry={refetch}
+        isRetrying={isRefetching}
       />
     );
   }
@@ -79,16 +81,12 @@ const PointConfiguration = () => {
           <Badge color="green" variant="soft">Version {activeConfig.version}</Badge>
           <Badge color="blue" variant="outline">Active</Badge>
         </Flex>
-        <UpdateConfigurationDialog
-          configDialogOpen={configDialogOpen}
-          setConfigDialogOpen={setConfigDialogOpen}
-          activeConfig={activeConfig}
-        >
-          <Button onClick={() => setConfigDialogOpen(true)}>
+        <Button asChild>
+          <Link to='/platform-admin/dashboard/configuration/edit'>
             <Edit size={16} />
             Update Configuration
-          </Button>
-        </UpdateConfigurationDialog>
+          </Link>
+        </Button>
       </Flex>
 
       {/* Configuration Sections */}

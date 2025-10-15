@@ -9,15 +9,16 @@ import {
   LayoutDashboard,
   ListTodo,
   Megaphone,
+  Menu,
   MessageCircle,
   Receipt,
   School,
   Settings,
-  Users,
-  X
+  Users
 } from 'lucide-react';
 import React from 'react';
 import { NavLink, useLocation } from 'react-router';
+import { APP_NAME } from '../../utils/constants';
 
 const sideBarItems = [
   {
@@ -75,7 +76,7 @@ const sideBarItems = [
     label: "Communications",
     href: 'communications',
     Icon: MessageCircle,
-    disabled: true,  
+    disabled: true,
   },
   {
     label: "Promotions",
@@ -112,17 +113,19 @@ function SideBar({ isOpen, toggleSidebar }) {
 
       {/* Sidebar */}
       <div
-        className={`fixed overflow-y-auto space-y-6 md:sticky top-0 h-dvh bg-[--sidebar] text-white  z-[70] transition-transform duration-200 ease-linear ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`fixed overflow-y-auto md:sticky top-0 h-dvh bg-[--sidebar] text-white  z-[70] transition-transform duration-200 ease-linear ${isOpen ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'
           } md:left-0 w-64 flex flex-col`}
       >
-        <Text weight="medium" size="7" className='flex justify-between items-center px-6 h-16'>
-          EdVance
+        <Text as='div' weight="medium" size="7" className='flex gap-4 items-center px-6 min-h-16 sticky top-0 bg-[--sidebar]'>
           <IconButton variant='ghost' color='gray' onClick={toggleSidebar} className='md:hidden'>
-            <X color='white' size={20} />
+            <Menu color='white' size={20} />
           </IconButton>
+          <Text as='span'>
+            {APP_NAME}
+          </Text>
         </Text>
 
-        <div className='text-sm'>
+        <div className='text-sm flex-1 py-4'>
           {sideBarItems.map(({ label, href, Icon, disabled }) => {
             if (label === 'Overview') {
               return (

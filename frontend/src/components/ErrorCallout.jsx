@@ -16,6 +16,7 @@ function ErrorCallout({ errorMessage, className, onRetry = false, isRetrying = f
           className='w-max font-medium'
           onClick={onRetry}
           radius='full'
+          disabled={isRetrying}
         >
           <RefreshCw size={16} className={`${isRetrying ? 'animate-spin' : ''}`} /> {isRetrying ? 'Retrying...' : 'Try Again'}
         </Button>
