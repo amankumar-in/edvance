@@ -373,4 +373,11 @@ router.get(
   teacherController.getTeacherById
 );
 
+// ==================== ANALYTICS ROUTES ====================
+router.get(
+  "/",
+  authMiddleware.verifyToken,
+  teacherController.getAllTeachers
+);
+
 module.exports = router;

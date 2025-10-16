@@ -808,4 +808,51 @@ router.post(
 
 router.get("/by-user/:userId", parentController.getParentByUserId);
 
+// ==================== ANALYTICS ROUTES ====================
+
+/**
+ * @openapi
+ * /parents:
+ *   get:
+ *     summary: Get all parents with optional filtering
+ *     description: Retrieves all parents with optional count and school filtering
+ *     tags:
+ *       - Parents
+ *       - Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: count
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: If true, returns only count
+ *       - name: schoolId
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: Filter by school ID
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: Parents retrieved successfully
+ *       500:
+ *         description: Server error
+ */
+router.get(
+  "/",
+  authMiddleware.verifyToken,
+  parentController.getAllParents
+);
+
 module.exports = router;

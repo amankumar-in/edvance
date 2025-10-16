@@ -2032,4 +2032,11 @@ router.post(
   studentController.joinClass
 );
 
+// ==================== ANALYTICS ROUTES ====================
+router.get(
+  "/",
+  authMiddleware.verifyToken,
+  studentController.getAllStudents
+);
+
 module.exports = router;

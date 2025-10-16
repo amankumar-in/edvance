@@ -64,9 +64,9 @@ const runFullAnalyticsJob = async () => {
       // Collect all types of analytics data
       await Promise.all([
         collectUserAnalytics(job._id, startDate, endDate),
-        collectTaskAnalytics(job._id, startDate, endDate),
-        collectPointAnalytics(job._id, startDate, endDate),
-        collectBadgeAnalytics(job._id, startDate, endDate),
+        // collectTaskAnalytics(job._id, startDate, endDate),
+        // collectPointAnalytics(job._id, startDate, endDate),
+        // collectBadgeAnalytics(job._id, startDate, endDate),
       ]);
 
       // Update job as completed

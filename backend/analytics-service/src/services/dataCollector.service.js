@@ -85,20 +85,16 @@ const collectUserMetrics = async (startDate, endDate) => {
     // Get total user counts
     const [
       usersResponse,
-      studentsResponse,
+      studentsResponse, 
       parentsResponse,
       teachersResponse,
       adminsResponse,
-      socialWorkersResponse,
     ] = await Promise.all([
       apiClient.get(`${USER_SERVICE_URL}/api/users?count=true`),
       apiClient.get(`${USER_SERVICE_URL}/api/students?count=true`),
       apiClient.get(`${USER_SERVICE_URL}/api/parents?count=true`),
       apiClient.get(`${USER_SERVICE_URL}/api/teachers?count=true`),
-      apiClient.get(
-        `${USER_SERVICE_URL}/api/users?roles=school_admin,platform_admin&count=true`
-      ),
-      apiClient.get(`${USER_SERVICE_URL}/api/social-workers?count=true`),
+      apiClient.get(`${USER_SERVICE_URL}/api/users?roles=school_admin&count=true`),
     ]);
 
     // Get active users (users with activity in the last 30 days)
@@ -108,8 +104,15 @@ const collectUserMetrics = async (startDate, endDate) => {
 
     // Get new users in the specified date range
     const newUsersResponse = await apiClient.get(
-      `${USER_SERVICE_URL}/api/users?createdAt[gte]=${startDate.toISOString()}&createdAt[lte]=${endDate.toISOString()}&count=true`
-    );
+      `${USER_SERVICE_URL}/api/users`,
+      {
+        params: {
+          createdAtGte: startDate.toISOString(),
+          createdAtLte: endDate.toISOString(),
+          count: 'true'
+        }
+      }
+    );      
 
     // Get schools for school-specific metrics
     const schoolsResponse = await apiClient.get(
@@ -119,16 +122,16 @@ const collectUserMetrics = async (startDate, endDate) => {
     // Prepare base user metrics
     const userMetrics = new UserMetrics({
       date: new Date(),
-      totalUsers: usersResponse.data.total || 0,
-      newUsers: newUsersResponse.data.total || 0,
-      activeUsers: activeUsersResponse.data.total || 0,
+      totalUsers: usersResponse.data?.data?.total || 0,
+      newUsers: newUsersResponse.data?.data?.total || 0,
+      activeUsers: activeUsersResponse.data?.data?.total || 0,
       usersByRole: {
-        students: studentsResponse.data.total || 0,
-        parents: parentsResponse.data.total || 0,
-        teachers: teachersResponse.data.total || 0,
-        school_admin: adminsResponse.data.total || 0,
-        social_worker: socialWorkersResponse.data.total || 0,
-        platform_admin: 0, // This might need special handling
+        students: studentsResponse.data?.data?.total || 0,
+        parents: parentsResponse.data?.data?.total || 0,
+        teachers: teachersResponse.data?.data?.total || 0,
+        school_admin: adminsResponse.data?.data?.total || 0,
+        social_worker: 0, //TODO: Will be added later
+        platform_admin: 1, // This might need special handling
       },
       schoolMetrics: [],
       lastUpdated: new Date(),

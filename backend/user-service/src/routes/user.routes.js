@@ -54,6 +54,18 @@ const router = express.Router();
  *           description: Whether the user account is active
  */
 
+router.get(
+  "/",
+  authMiddleware.verifyToken,
+  userController.getAllUsers
+);
+
+router.get(
+  "/active",
+  authMiddleware.verifyToken,
+  userController.getActiveUsers
+);
+
 /**
  * @openapi
  * /users/me:

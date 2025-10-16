@@ -456,3 +456,137 @@ exports.adminUpdateUserProfile = async (req, res) => {
     });
   }
 };
+
+// ==================== ANALYTICS ENDPOINTS ====================
+
+// Get all users with optional filtering and count
+exports.getAllUsers = async (req, res) => {
+  try {
+    const {
+      count,
+      roles,
+      schoolId,
+      page = 1,
+      limit = 20,
+      sort = "createdAt",
+      order = "desc"
+    } = req.query;
+
+    // Build filter object
+    const filter = {};
+
+    // Filter by roles if provided (can be comma-separated or array)
+    if (roles) {
+      const rolesArray = typeof roles === 'string' ? roles.split(',') : roles;
+      filter.roles = { $in: rolesArray };
+    }
+
+    // Handle date range filtering for createdAt
+    if (req.query.createdAtGte || req.query.createdAtLte) {
+      filter.createdAt = {};
+      if (req.query.createdAtGte) filter.createdAt.$gte = new Date(req.query.createdAtGte);
+      if (req.query.createdAtLte) filter.createdAt.$lte = new Date(req.query.createdAtLte);
+    }
+
+    // If count=true, return only the count
+    if (count === 'true') {
+      const total = await User.countDocuments(filter);
+      return res.status(200).json({
+        success: true,
+        data: {
+          total
+        }
+      });
+    }
+
+    // Otherwise return paginated data
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const sortOrder = order.toLowerCase() === "desc" ? -1 : 1;
+    const sortOptions = {};
+    sortOptions[sort] = sortOrder;
+
+    const users = await User.find(filter)
+      .select('-password')
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    const total = await User.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        users,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Get all users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+};
+
+// Get active users (users with activity in last N days)
+exports.getActiveUsers = async (req, res) => {
+  try {
+    const { days = 30, count, schoolId } = req.query;
+
+    // Calculate date threshold
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - parseInt(days));
+
+    // Build filter - users who logged in or were updated after the threshold
+    const filter = {
+      $or: [
+        { lastLogin: { $gte: dateThreshold } },
+        { updatedAt: { $gte: dateThreshold } }
+      ]
+    };
+
+    // If count=true, return only the count
+    if (count === 'true') {
+      const total = await User.countDocuments(filter);
+      return res.status(200).json({
+        success: true,
+        data: {
+          total
+        }
+      });
+    }
+
+    // Otherwise return the users
+    const users = await User.find(filter)
+      .select('-password')
+      .sort({ lastLoginAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        users,
+        days: parseInt(days),
+        dateThreshold
+      }
+    });
+  } catch (error) {
+    console.error("Get active users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch active users",
+      error: error.message,
+    });
+  }
+};

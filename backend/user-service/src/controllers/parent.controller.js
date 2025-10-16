@@ -794,3 +794,88 @@ exports.createChildAccount = async (req, res) => {
     });
   }
 };
+
+// ==================== ANALYTICS ENDPOINTS ====================
+
+// Get all parents with optional count and filtering
+exports.getAllParents = async (req, res) => {
+  try {
+    const { 
+      count, 
+      schoolId,
+      page = 1, 
+      limit = 20,
+      sort = "createdAt",
+      order = "desc"
+    } = req.query;
+
+    // Build filter object
+    const filter = {};
+    
+    // Filter by school if provided
+    if (schoolId) {
+      filter.schoolId = schoolId;
+    }
+
+    // Handle date range filtering for createdAt
+    if (req.query['createdAt[gte]'] || req.query['createdAt[lte]']) {
+      filter.createdAt = {};
+      if (req.query['createdAt[gte]']) {
+        filter.createdAt.$gte = new Date(req.query['createdAt[gte]']);
+      }
+      if (req.query['createdAt[lte]']) {
+        filter.createdAt.$lte = new Date(req.query['createdAt[lte]']);
+      }
+    }
+
+    // If count=true, return only the count
+    if (count === 'true') {
+      const total = await User.countDocuments({roles: {$in: ['parent']}});
+      return res.status(200).json({
+        success: true,
+        data: {
+          total
+        }
+      });
+    }
+
+    // Otherwise return paginated data
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const sortOrder = order.toLowerCase() === "desc" ? -1 : 1;
+    const sortOptions = {};
+    sortOptions[sort] = sortOrder;
+
+    const parents = await Parent.find(filter)
+      .populate('userId', 'firstName lastName email avatar')
+      .populate('schoolId', 'name')
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    const total = await Parent.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        parents,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Get all parents error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch parents",
+      error: error.message,
+    });
+  }
+};

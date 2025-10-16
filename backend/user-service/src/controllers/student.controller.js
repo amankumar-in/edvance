@@ -975,9 +975,8 @@ exports.respondToParentLinkRequest = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Link request ${
-        action === "approve" ? "approved" : "rejected"
-      } successfully`,
+      message: `Link request ${action === "approve" ? "approved" : "rejected"
+        } successfully`,
     });
   } catch (error) {
     console.error("Respond to parent link request error:", error);
@@ -1008,16 +1007,16 @@ exports.getStudentClasses = async (req, res) => {
     const classes = await SchoolClass.find({
       studentIds: studentId
     })
-    .populate('teacherId', 'userId')
-    .populate({
-      path: 'teacherId',
-      populate: {
-        path: 'userId',
-        select: 'firstName lastName email avatar'
-      }
-    })
-    .populate('schoolId', 'name address')
-    .sort({ name: 1 });
+      .populate('teacherId', 'userId')
+      .populate({
+        path: 'teacherId',
+        populate: {
+          path: 'userId',
+          select: 'firstName lastName email avatar'
+        }
+      })
+      .populate('schoolId', 'name address')
+      .sort({ name: 1 });
 
     // Format the response to include relevant class information
     const formattedClasses = classes.map(classObj => ({
@@ -1030,8 +1029,8 @@ exports.getStudentClasses = async (req, res) => {
       academicTerm: classObj.academicTerm,
       teacher: classObj.teacherId ? {
         _id: classObj.teacherId._id,
-        name: classObj.teacherId.userId ? 
-          `${classObj.teacherId.userId.firstName} ${classObj.teacherId.userId.lastName}` : 
+        name: classObj.teacherId.userId ?
+          `${classObj.teacherId.userId.firstName} ${classObj.teacherId.userId.lastName}` :
           'Unknown Teacher',
         email: classObj.teacherId.userId?.email,
         avatar: classObj.teacherId.userId?.avatar
@@ -1097,7 +1096,7 @@ exports.getMyClasses = async (req, res) => {
 const getStudentClassAttendanceDetails = async (req, res) => {
   try {
     const { studentId, classId } = req.params;
-    
+
     // Verify the student exists and belongs to the authenticated user
     const student = await Student.findById(studentId).populate('userId');
     if (!student) {
@@ -1128,7 +1127,7 @@ const getStudentClassAttendanceDetails = async (req, res) => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    
+
     // Calculate current month range
     const monthStart = new Date(currentYear, currentMonth, 1);
     const monthEnd = new Date(currentYear, currentMonth + 1, 0);
@@ -1152,29 +1151,29 @@ const getStudentClassAttendanceDetails = async (req, res) => {
     // Calculate scheduled days in current month
     const scheduledDaysInMonth = [];
     const currentDate = new Date(monthStart);
-    
+
     while (currentDate <= monthEnd) {
       const dayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
       const isScheduled = schoolClass.schedule.some(scheduleItem =>
         scheduleItem.dayOfWeek === dayOfWeek
       );
-      
+
       if (isScheduled) {
         scheduledDaysInMonth.push(new Date(currentDate));
       }
-      
+
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
     // Calculate attendance rate for current month
     const totalScheduledDaysInMonth = scheduledDaysInMonth.length;
     const presentDaysInMonth = currentMonthRecords.filter(record => record.status === 'present').length;
-    const attendanceRate = totalScheduledDaysInMonth > 0 
-      ? Math.round((presentDaysInMonth / totalScheduledDaysInMonth) * 100) 
+    const attendanceRate = totalScheduledDaysInMonth > 0
+      ? Math.round((presentDaysInMonth / totalScheduledDaysInMonth) * 100)
       : 0;
 
     // Calculate points earned in current month
-    const pointsThisMonth = currentMonthRecords.reduce((sum, record) => 
+    const pointsThisMonth = currentMonthRecords.reduce((sum, record) =>
       sum + (record.pointsAwarded || 0), 0
     );
 
@@ -1197,14 +1196,14 @@ const getStudentClassAttendanceDetails = async (req, res) => {
     });
 
     // Get all scheduled days from the earliest attendance record to today
-    const earliestDate = allAttendanceRecords.length > 0 
-      ? new Date(allAttendanceRecords[0].attendanceDate) 
+    const earliestDate = allAttendanceRecords.length > 0
+      ? new Date(allAttendanceRecords[0].attendanceDate)
       : new Date();
-    
+
     const scheduledDays = [];
     const iterDate = new Date(earliestDate);
     const today = new Date();
-    
+
     while (iterDate <= today) {
       if (isScheduledDay(iterDate)) {
         scheduledDays.push(new Date(iterDate));
@@ -1216,7 +1215,7 @@ const getStudentClassAttendanceDetails = async (req, res) => {
     for (const scheduledDay of scheduledDays) {
       const dateKey = scheduledDay.toISOString().split('T')[0];
       const attendanceRecord = attendanceMap.get(dateKey);
-      
+
       if (attendanceRecord && attendanceRecord.status === 'present') {
         tempStreak++;
         longestStreak = Math.max(longestStreak, tempStreak);
@@ -1227,11 +1226,11 @@ const getStudentClassAttendanceDetails = async (req, res) => {
 
     // Calculate current streak (from the most recent scheduled days backwards)
     const recentScheduledDays = scheduledDays.slice(-30).reverse(); // Last 30 scheduled days, reversed
-    
+
     for (const scheduledDay of recentScheduledDays) {
       const dateKey = scheduledDay.toISOString().split('T')[0];
       const attendanceRecord = attendanceMap.get(dateKey);
-      
+
       if (attendanceRecord && attendanceRecord.status === 'present') {
         currentStreak++;
       } else {
@@ -1242,13 +1241,13 @@ const getStudentClassAttendanceDetails = async (req, res) => {
     // Get last 7 recent attendance records (only for scheduled days)
     const recentAttendance = [];
     const last30ScheduledDays = scheduledDays.slice(-30).reverse(); // Get more days to ensure we have enough records
-    
+
     for (const scheduledDay of last30ScheduledDays) {
       if (recentAttendance.length >= 7) break;
-      
+
       const dateKey = scheduledDay.toISOString().split('T')[0];
       const attendanceRecord = attendanceMap.get(dateKey);
-      
+
       recentAttendance.push({
         date: scheduledDay,
         dayOfWeek: scheduledDay.toLocaleDateString('en-US', { weekday: 'long' }),
@@ -1261,12 +1260,12 @@ const getStudentClassAttendanceDetails = async (req, res) => {
     // Check today's class schedule and attendance status
     const todayDayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long' });
     const todayDateKey = today.toISOString().split('T')[0];
-    
+
     // Check if class is scheduled today
-    const todaysSchedule = schoolClass.schedule.filter(scheduleItem => 
+    const todaysSchedule = schoolClass.schedule.filter(scheduleItem =>
       scheduleItem.dayOfWeek === todayDayOfWeek
     );
-    
+
     const todaysClassInfo = {
       isScheduledToday: todaysSchedule.length > 0,
       schedule: todaysSchedule,
@@ -1274,11 +1273,11 @@ const getStudentClassAttendanceDetails = async (req, res) => {
       attendanceStatus: null,
       attendanceDetails: null,
     };
-    
+
     // If class is scheduled today, check if attendance has been marked
     if (todaysClassInfo.isScheduledToday) {
       const todaysAttendanceRecord = attendanceMap.get(todayDateKey);
-      
+
       if (todaysAttendanceRecord) {
         todaysClassInfo.attendanceMarked = true;
         todaysClassInfo.attendanceStatus = todaysAttendanceRecord.status;
@@ -1442,3 +1441,88 @@ exports.joinClass = async (req, res) => {
 }
 
 exports.getStudentClassAttendanceDetails = getStudentClassAttendanceDetails;
+
+// ==================== ANALYTICS ENDPOINTS ====================
+
+// Get all students with optional count and filtering
+exports.getAllStudents = async (req, res) => {
+  try {
+    const {
+      count,
+      schoolId,
+      page = 1,
+      limit = 20,
+      sort = "createdAt",
+      order = "desc"
+    } = req.query;
+
+    // Build filter object
+    const filter = {};
+
+    // Filter by school if provided
+    if (schoolId) {
+      filter.schoolId = schoolId;
+    }
+
+    // Handle date range filtering for createdAt
+    if (req.query['createdAt[gte]'] || req.query['createdAt[lte]']) {
+      filter.createdAt = {};
+      if (req.query['createdAt[gte]']) {
+        filter.createdAt.$gte = new Date(req.query['createdAt[gte]']);
+      }
+      if (req.query['createdAt[lte]']) {
+        filter.createdAt.$lte = new Date(req.query['createdAt[lte]']);
+      }
+    }
+
+    // If count=true, return only the count
+    if (count === 'true') {
+      const total = await User.countDocuments({ roles: { $in: ['student'] } });
+      return res.status(200).json({
+        success: true,
+        data: {
+          total
+        }
+      });
+    }
+
+    // Otherwise return paginated data
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const sortOrder = order.toLowerCase() === "desc" ? -1 : 1;
+    const sortOptions = {};
+    sortOptions[sort] = sortOrder;
+
+    const students = await Student.find(filter)
+      .populate('userId', 'firstName lastName email avatar')
+      .populate('schoolId', 'name')
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    const total = await Student.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        students,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Get all students error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch students",
+      error: error.message,
+    });
+  }
+};

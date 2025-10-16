@@ -409,11 +409,19 @@ exports.login = async (req, res) => {
       // Verify password
       const isPasswordValid = await user.comparePassword(password);
       if (!isPasswordValid) {
+        user.updateLoginStats(false).catch(err => {
+          console.error("Failed to update login stats:", err.message);
+        });
         return res.status(401).json({
           success: false,
           message: "Invalid credentials",
         });
       }
+
+      // Update login statistics
+      user.updateLoginStats(true).catch(err => {
+        console.error("Failed to update login stats:", err.message);
+      });
 
       // Generate tokens
       const { accessToken, refreshToken } = generateTokens(user._id, user.roles);
@@ -456,13 +464,20 @@ exports.login = async (req, res) => {
         return res.status(403).json({ success: false, message: "This account has been deactivated. Please contact support." });
       }
       if (!user.otp || !user.otpExpires || user.otp !== otp || user.otpExpires < Date.now()) {
+        user.updateLoginStats(false).catch(err => {
+          console.error("Failed to update login stats:", err.message);
+        });
+        
         return res.status(401).json({ success: false, message: "Invalid or expired OTP" });
       }
 
+      // Update login statistics
+      user.updateLoginStats(true).catch(err => {
+        console.error("Failed to update login stats:", err.message);
+      });
+
       // OTP is valid, clear it
-      user.otp = undefined;
-      user.otpExpires = undefined;
-      await user.save();
+      await User.updateOne({ _id: user._id }, { $unset: { otp: "", otpExpires: "" } });
 
       // Generate tokens
       const { accessToken, refreshToken } = generateTokens(user._id, user.roles);

@@ -3,6 +3,7 @@ const TaskMetrics = require("../models/taskMetrics.model");
 const PointMetrics = require("../models/pointMetrics.model");
 const BadgeMetrics = require("../models/badgeMetrics.model");
 const AnalyticsJob = require("../models/analyticsJob.model");
+const { default: mongoose } = require("mongoose");
 
 // Get a dashboard overview of all metrics
 exports.getDashboardOverview = async (req, res) => {
@@ -143,7 +144,7 @@ exports.getSystemHealth = async (req, res) => {
     ]);
 
     // Get the last job run time
-    const lastJob = await AnalyticsJob.findOne().sort({ lastRun: -1 });
+    const lastJob = await AnalyticsJob.findOne().sort({ lastRun: -1 }).limit(1);
 
     const health = {
       status: "healthy",
