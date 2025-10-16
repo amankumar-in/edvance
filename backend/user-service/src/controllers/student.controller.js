@@ -466,7 +466,7 @@ exports.linkWithSchool = async (req, res) => {
       });
     }
 
-    if(!schoolClass?.teacherId) {
+    if (!schoolClass?.teacherId) {
       return res.status(400).json({
         success: false,
         message: "Class is not linked to a teacher. Please contact your school administrator",
@@ -873,7 +873,7 @@ exports.getParentLinkRequests = async (req, res) => {
       try {
         // Get parent information (initiator)
         const parent = await Parent.findById(request.initiatorId).populate('userId', 'firstName lastName email avatar');
-        
+
         const parentUser = parent?.userId;
 
         formattedRequests.push({
@@ -1460,8 +1460,9 @@ exports.getAllStudents = async (req, res) => {
     const filter = {};
 
     // Filter by school if provided
-    if (schoolId) {
-      filter.schoolId = schoolId;
+    if (schoolId && count === 'true') {
+      const total = await Student.countDocuments({ schoolId });
+      return res.status(200).json({ success: true, data: { total } });
     }
 
     // Handle date range filtering for createdAt

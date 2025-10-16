@@ -61,7 +61,9 @@ function Overview() {
       <Flex direction="column" gap="3">
         <Flex align="center" justify="between">
           <Flex align="center" gap="2">
-            <Box className={`p-2 rounded-full bg-[--${color}-3]`}>
+            <Box className={`p-2 rounded-full`}
+            style={{ backgroundColor: `var(--${color}-3)` }}
+            >
               <Icon className={`text-[--${color}-9]`} size={20} />
             </Box>
             <Text as='p' weight="medium" size="2" color='gray'>

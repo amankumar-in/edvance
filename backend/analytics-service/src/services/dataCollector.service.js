@@ -85,39 +85,39 @@ const collectUserMetrics = async (startDate, endDate) => {
     // Get total user counts
     const [
       usersResponse,
-      studentsResponse, 
+      studentsResponse,
       parentsResponse,
       teachersResponse,
       adminsResponse,
+      activeUsersResponse,
+      newUsersResponse, 
+      schoolsResponse
     ] = await Promise.all([
       apiClient.get(`${USER_SERVICE_URL}/api/users?count=true`),
       apiClient.get(`${USER_SERVICE_URL}/api/students?count=true`),
       apiClient.get(`${USER_SERVICE_URL}/api/parents?count=true`),
       apiClient.get(`${USER_SERVICE_URL}/api/teachers?count=true`),
       apiClient.get(`${USER_SERVICE_URL}/api/users?roles=school_admin&count=true`),
-    ]);
-
-    // Get active users (users with activity in the last 30 days)
-    const activeUsersResponse = await apiClient.get(
-      `${USER_SERVICE_URL}/api/users/active?days=30&count=true`
-    );
-
-    // Get new users in the specified date range
-    const newUsersResponse = await apiClient.get(
-      `${USER_SERVICE_URL}/api/users`,
-      {
-        params: {
-          createdAtGte: startDate.toISOString(),
-          createdAtLte: endDate.toISOString(),
-          count: 'true'
+      // Get active users (users with activity in the last 30 days)
+      apiClient.get(
+        `${USER_SERVICE_URL}/api/users/active?days=30&count=true`
+      ),
+      // Get new users in the specified date range
+      apiClient.get(
+        `${USER_SERVICE_URL}/api/users`,
+        {
+          params: {
+            createdAtGte: startDate.toISOString(),
+            createdAtLte: endDate.toISOString(),
+            count: 'true'
+          }
         }
-      }
-    );      
-
-    // Get schools for school-specific metrics
-    const schoolsResponse = await apiClient.get(
-      `${USER_SERVICE_URL}/api/schools`
-    );
+      ),
+      // Get schools for school-specific metrics
+      apiClient.get(
+        `${USER_SERVICE_URL}/api/schools`
+      )
+    ]);
 
     // Prepare base user metrics
     const userMetrics = new UserMetrics({
@@ -149,43 +149,26 @@ const collectUserMetrics = async (startDate, endDate) => {
         const [
           schoolStudentsResponse,
           schoolTeachersResponse,
-          schoolParentsResponse,
           schoolAdminsResponse,
-          schoolActiveUsersResponse,
         ] = await Promise.all([
-          apiClient.get(
-            `${USER_SERVICE_URL}/api/students?schoolId=${schoolId}&count=true`
-          ),
-          apiClient.get(
-            `${USER_SERVICE_URL}/api/teachers?schoolId=${schoolId}&count=true`
-          ),
-          apiClient.get(
-            `${USER_SERVICE_URL}/api/parents?schoolId=${schoolId}&count=true`
-          ),
-          apiClient.get(
-            `${USER_SERVICE_URL}/api/users?roles=school_admin&schoolId=${schoolId}&count=true`
-          ),
-          apiClient.get(
-            `${USER_SERVICE_URL}/api/users/active?schoolId=${schoolId}&days=30&count=true`
-          ),
+          apiClient.get(`${USER_SERVICE_URL}/api/students?schoolId=${schoolId}&count=true`),
+          apiClient.get(`${USER_SERVICE_URL}/api/teachers?schoolId=${schoolId}&count=true`),
+          apiClient.get(`${USER_SERVICE_URL}/api/users?roles=school_admin&schoolId=${schoolId}&count=true`),
         ]);
 
         const schoolTotalUsers =
-          (schoolStudentsResponse.data.total || 0) +
-          (schoolTeachersResponse.data.total || 0) +
-          (schoolParentsResponse.data.total || 0) +
-          (schoolAdminsResponse.data.total || 0);
+          (schoolStudentsResponse.data?.data?.total || 0) +
+          (schoolTeachersResponse.data?.data?.total || 0) +
+          (schoolAdminsResponse.data?.data?.total || 0);
 
         userMetrics.schoolMetrics.push({
           schoolId,
           schoolName,
           totalUsers: schoolTotalUsers,
-          activeUsers: schoolActiveUsersResponse.data.total || 0,
           usersByRole: {
-            students: schoolStudentsResponse.data.total || 0,
-            parents: schoolParentsResponse.data.total || 0,
-            teachers: schoolTeachersResponse.data.total || 0,
-            school_admin: schoolAdminsResponse.data.total || 0,
+            students: schoolStudentsResponse.data?.data?.total || 0,
+            teachers: schoolTeachersResponse.data?.data?.total || 0,
+            school_admin: schoolAdminsResponse.data?.data?.total || 0,
           },
         });
       }

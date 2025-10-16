@@ -201,8 +201,14 @@ exports.getAllTeachers = async (req, res) => {
     const filter = {};
     
     // Filter by school if provided
-    if (schoolId) {
-      filter.schoolId = schoolId;
+    if (schoolId && count === 'true') {
+      const total = await Teacher.countDocuments({ schoolId });
+      return res.status(200).json({
+        success: true,
+        data: {
+          total
+        }
+      });
     }
 
     // Handle date range filtering for createdAt

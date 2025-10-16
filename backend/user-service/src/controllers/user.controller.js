@@ -477,8 +477,20 @@ exports.getAllUsers = async (req, res) => {
 
     // Filter by roles if provided (can be comma-separated or array)
     if (roles) {
-      const rolesArray = typeof roles === 'string' ? roles.split(',') : roles;
-      filter.roles = { $in: rolesArray };
+      if (schoolId && count === 'true' && roles === 'school_admin') {
+        const school = await School.findOne({_id: schoolId}).select('adminIds');
+        const schoolAdminIds = school.adminIds;
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            total: schoolAdminIds.length
+          }
+        });
+      } else {
+        const rolesArray = typeof roles === 'string' ? roles.split(',') : roles;
+        filter.roles = { $in: rolesArray };
+      }
     }
 
     // Handle date range filtering for createdAt
